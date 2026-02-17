@@ -1,0 +1,12 @@
+{
+  "name": "bezent-windsurf",
+  "private": true,
+  "version": "1.0.0",
+  "scripts": {
+    "setup": "npm install --prefix client",
+    "dev": "npm run dev --prefix client",
+    "dev:mobile": "npm run dev:mobile --prefix client",
+    "build": "npm run build --prefix client",
+    "preview": "npm run preview --prefix client"
+  }
+}

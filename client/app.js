@@ -6,6 +6,7 @@ class MarketFlowCRM {
         this.selectedClientName = null;
         this.selectedLeadId = null;
         this.isChatOpen = false;
+        this.chatMessages = this.getStoredChatMessages();
         this.charts = {};
         this._toastEl = null;
         this._toastTimer = null;
@@ -337,6 +338,110 @@ class MarketFlowCRM {
         try { localStorage.setItem(key, JSON.stringify(value)); } catch (_) {}
     }
 
+    getStoredChatMessages() {
+        const items = this.readStore('bezent_chat_messages', []);
+        if (!Array.isArray(items)) return [];
+        return items.filter(m => m && typeof m === 'object').slice(-100);
+    }
+
+    saveChatMessages(messages) {
+        const list = Array.isArray(messages) ? messages.slice(-100) : [];
+        this.writeStore('bezent_chat_messages', list);
+        this.chatMessages = list;
+    }
+
+    addChatMessage(role, text) {
+        const msg = String(text || '').trim();
+        if (!msg) return;
+        const list = Array.isArray(this.chatMessages) ? [...this.chatMessages] : [];
+        list.push({ role: role === 'user' ? 'user' : 'assistant', text: msg, at: Date.now() });
+        this.saveChatMessages(list);
+    }
+
+    getChatAssistantReply(userText) {
+        const q = String(userText || '').trim();
+        const t = q.toLowerCase();
+        if (!t) return "Tell me what you want to know about Bezent (Leads, Clients, Projects, Billing).";
+
+        const includesAny = (arr) => arr.some(w => t.includes(w));
+
+        if (includesAny(['hi', 'hello', 'hey', 'good morning', 'good evening'])) {
+            return "Hi! I can help with Bezent basics: Leads/Clients, Projects, Vendor Code, Project Code, Billing.";
+        }
+
+        if (includesAny(['what is bezent', 'about bezent', 'product', 'crm'])) {
+            return "Bezent is a lightweight CRM dashboard to manage Leads, Clients, Projects/Pipeline and Billing in one place.";
+        }
+
+        if (includesAny(['lead', 'leads'])) {
+            return "Leads: register a lead, track stage (New Lead -> Contacted -> Missed Call -> Follow-up -> Demo -> Quotation -> Negotiation -> Closed -> PO Received), and convert to a Client when confirmed.";
+        }
+
+        if (includesAny(['client', 'clients'])) {
+            return "Clients: maintain client details (name, owner, email, phone, industry, lead source, location, vendor code, city, notes) and view them in Client Directory.";
+        }
+
+        if (includesAny(['vendor code', 'vendorcode', 'vendor'])) {
+            return "Vendor Code is auto-generated from Location + sequence (e.g., CHN001). In Project Registration/Directory you can enter Vendor Code to fetch client/company details automatically.";
+        }
+
+        if (includesAny(['project code', 'projectcode', 'apj'])) {
+            return "Project Code format: APJ + YY + ServiceCode + sequence (e.g., APJ26RE001). It auto-generates based on Service Code and existing projects in the current year. APJ is fixed prefix, YY is last 2 digits of year.";
+        }
+
+        if (includesAny(['service code', 'service'])) {
+            return "Service Code identifies the service type (RE, CAD, 2D, 2DI, 3DI, CD, NPD, SPM, STL, FEA). It drives Project Code generation. Selecting a service code auto-generates the project code in registration.";
+        }
+
+        if (includesAny(['project', 'projects', 'pipeline', 'directory'])) {
+            return "Projects: register projects, track technical statuses (2D/3D Model, 3D Scan, FEA, QC/Inspection, Approval, GL Approval, Revision, Delivery Report, SOP Daily Report), roadmap/progress monitoring, dispatch & delivery details, purchase details, and payment tracking. Use Project Directory for full detailed view.";
+        }
+
+        if (includesAny(['tracking', 'status', 'technical', 'model', 'scan', 'fea', 'qc', 'approval'])) {
+            return "Technical Tracking includes: 2D Model Status, 3D Model Status, 3D Scan Status, FEA Status, QC/Inspection Status, Approval Status, GL Approval Status, Correction/Revision Status, Delivery Report Status, SOP-Based Daily Report Status. Each can be: Pending, In Progress, Completed, or Blocked.";
+        }
+
+        if (includesAny(['monitoring', 'roadmap', 'dashboard', 'daily report', 'photo', 'overall status'])) {
+            return "Project Monitoring tracks: Project Roadmap Submitted (Yes/No), Dashboard Updated (Yes/No), Daily Report Updated (Yes/No), Photo Attached (Yes/No), Overall Project Status, Post Completion Status, and Physical Part Status.";
+        }
+
+        if (includesAny(['dispatch', 'delivery', 'dc', 'delivery confirmation'])) {
+            return "Dispatch & Delivery includes: DC Date, DC Number, Delivery Status (Pending/Completed), Delivery Date, and Delivery Confirmation (Yes/No). These help track when and how projects are delivered to clients.";
+        }
+
+        if (includesAny(['purchase', 'quotation', 'po', 'converted by', 'visit conducted'])) {
+            return "Purchase Details track: Quotation Date/Number, PO Date/Number/Value, Converted By (who converted lead to project), and Visit Conducted (Yes/No). This helps understand the sales-to-project conversion process.";
+        }
+
+        if (includesAny(['invoice', 'billing', 'payment', 'payment terms', 'payment type', 'overdue'])) {
+            return "Billing: create invoices, track Invoice Date/Number/Amount, Past Invoice Amount, Payment Terms, Payment Type, Payment Due Date, Payment Received Date/Amount, Balance Payment Due Date/Amount, and Overdue Status (auto-calculated from due dates).";
+        }
+
+        if (includesAny(['ratings', 'client rating', 'job rating', 'quality rating', 'service rating', 'performance rating', 'feedback'])) {
+            return "Performance & Rating includes: Client Rating (0-10), Job Rating (0-10), Quality Rating (0-10), Service Rating (0-10), Performance Rating (0-10), Feedback/Comments, and Additional Notes. These help evaluate project success and client satisfaction.";
+        }
+
+        if (includesAny(['location', 'city', 'bengaluru', 'pune', 'chennai', 'mumbai', 'hyderabad'])) {
+            return "Location/City options include: Bengaluru, Pune, Chennai, Mumbai, Hyderabad. Location is used to generate Vendor Codes and helps in regional reporting and client management.";
+        }
+
+        if (includesAny(['how', 'help', 'support', 'guide'])) {
+            return "Try asking: 'How to generate vendor code?', 'Explain project code', 'How to register a client?', 'How to create an invoice?', 'What are technical tracking statuses?', or 'How does payment tracking work?'";
+        }
+
+        return "I can answer simple Bezent product questions. Ask about Leads, Clients, Projects, Vendor Code, Project Code, Billing, Tracking, Monitoring, Dispatch, Purchase, Payments, or Ratings.";
+    }
+
+    sendChatMessage(rawText) {
+        const text = String(rawText || '').trim();
+        if (!text) return;
+        this.addChatMessage('user', text);
+        const reply = this.getChatAssistantReply(text);
+        this.addChatMessage('assistant', reply);
+        this.renderChatPanel();
+        this.initializeLucideIcons();
+    }
+
     upsertStoredItem(key, predicateFn, newItem) {
         const items = this.readStore(key, []);
         const list = Array.isArray(items) ? items : [];
@@ -449,6 +554,8 @@ class MarketFlowCRM {
             email: String(c.email || '').trim(),
             phone: String(c.phone || '').trim(),
             leadSource: String(c.leadSource || '').trim(),
+            location: String(c.location || '').trim(),
+            vendorCode: String(c.vendorCode || '').trim(),
             notes: String(c.notes || '').trim()
         };
         if (idx >= 0) items[idx] = { ...items[idx], ...normalized };
@@ -609,7 +716,190 @@ class MarketFlowCRM {
 
     getStoredProjects() {
         const items = this.readStore('bezent_projects', []);
-        return Array.isArray(items) ? items : [];
+        const list = Array.isArray(items) ? items : [];
+        let mutated = false;
+
+        const currentYear = new Date().getFullYear().toString().slice(-2);
+        const prefix = 'APJ';
+        const legacyRe = /^PRJ-(\d{3,})$/i;
+
+        const serviceFromName = (name) => {
+            const n = String(name || '').trim();
+            if (n === 'SEO Revamp') return 'RE';
+            if (n === 'CRM Upgrade') return 'CAD';
+            if (n === 'Re-engagement Funnel') return '2D';
+            if (n === 'Performance Ads') return '2DI';
+            return '';
+        };
+
+        const migrated = list.map(p => {
+            const model = this.ensureProjectModel(p);
+            const code = String(model?.identification?.projectCode || '').trim();
+            const existingService = String(model?.identification?.serviceCode || '').trim();
+            const inferredService = existingService || serviceFromName(model?.name) || 'RE';
+            const m = code.match(legacyRe);
+            if (m) {
+                const seq = String(m[1] || '').padStart(3, '0');
+                model.identification.serviceCode = inferredService;
+                model.identification.projectCode = `${prefix}${currentYear}${inferredService}${seq}`;
+                mutated = true;
+            }
+            return model;
+        });
+
+        if (mutated) {
+            this.writeStore('bezent_projects', migrated);
+        }
+
+        return migrated;
+    }
+
+    getProjectKey(project) {
+        const p = project || {};
+        return `${String(p?.name || '').trim()}__${String(p?.client || '').trim()}`;
+    }
+
+    ensureProjectModel(project) {
+        const p = project || {};
+        return {
+            ...p,
+            identification: {
+                projectCode: p?.identification?.projectCode ?? p?.projectCode ?? '',
+                serviceCode: p?.identification?.serviceCode ?? p?.serviceCode ?? '',
+                vendorCode: p?.identification?.vendorCode ?? p?.vendorCode ?? '',
+                companyName: p?.identification?.companyName ?? p?.companyName ?? (p?.client ?? ''),
+                projectDescription: p?.identification?.projectDescription ?? p?.projectDescription ?? '',
+                partDescription: p?.identification?.partDescription ?? p?.partDescription ?? '',
+                location: p?.identification?.location ?? p?.location ?? '',
+                qty: p?.identification?.qty ?? p?.qty ?? '',
+                projectLead: p?.identification?.projectLead ?? p?.lead ?? p?.leadName ?? '',
+                assignedBy: p?.identification?.assignedBy ?? p?.assignedBy ?? '',
+                assignedTo: p?.identification?.assignedTo ?? p?.assignedTo ?? ''
+            },
+            tracking: {
+                model2dStatus: p?.tracking?.model2dStatus ?? 'Pending',
+                model3dStatus: p?.tracking?.model3dStatus ?? 'Pending',
+                scan3dStatus: p?.tracking?.scan3dStatus ?? 'Pending',
+                feaStatus: p?.tracking?.feaStatus ?? 'Pending',
+                qcInspectionStatus: p?.tracking?.qcInspectionStatus ?? 'Pending',
+                approvalStatus: p?.tracking?.approvalStatus ?? 'Pending',
+                glApprovalStatus: p?.tracking?.glApprovalStatus ?? 'Pending',
+                revisionStatus: p?.tracking?.revisionStatus ?? 'Pending',
+                deliveryReportStatus: p?.tracking?.deliveryReportStatus ?? 'Pending',
+                sopDailyReportStatus: p?.tracking?.sopDailyReportStatus ?? 'Pending'
+            },
+            monitoring: {
+                roadmapSubmitted: p?.monitoring?.roadmapSubmitted ?? 'No',
+                dashboardUpdated: p?.monitoring?.dashboardUpdated ?? 'No',
+                dailyReportUpdated: p?.monitoring?.dailyReportUpdated ?? 'No',
+                overallProjectStatus: p?.monitoring?.overallProjectStatus ?? 'Pending / Delayed',
+                postCompletionStatus: p?.monitoring?.postCompletionStatus ?? '',
+                physicalPartStatus: p?.monitoring?.physicalPartStatus ?? '',
+                photoAttached: p?.monitoring?.photoAttached ?? 'No'
+            },
+            dispatch: {
+                dcDate: p?.dispatch?.dcDate ?? '',
+                dcNumber: p?.dispatch?.dcNumber ?? '',
+                deliveryStatus: p?.dispatch?.deliveryStatus ?? '',
+                deliveryDate: p?.dispatch?.deliveryDate ?? '',
+                deliveryConfirmation: p?.dispatch?.deliveryConfirmation ?? ''
+            },
+            purchase: {
+                quotationDate: p?.purchase?.quotationDate ?? '',
+                quotationNumber: p?.purchase?.quotationNumber ?? '',
+                poDate: p?.purchase?.poDate ?? '',
+                poNumber: p?.purchase?.poNumber ?? '',
+                poValue: p?.purchase?.poValue ?? '',
+                visitConducted: p?.purchase?.visitConducted ?? 'No',
+                convertedBy: p?.purchase?.convertedBy ?? ''
+            },
+            payment: {
+                invoiceDate: p?.payment?.invoiceDate ?? '',
+                invoiceNumber: p?.payment?.invoiceNumber ?? '',
+                invoiceAmount: p?.payment?.invoiceAmount ?? '',
+                pastInvoiceAmount: p?.payment?.pastInvoiceAmount ?? '',
+                paymentTerms: p?.payment?.paymentTerms ?? '',
+                paymentType: p?.payment?.paymentType ?? '',
+                paymentDueDate: p?.payment?.paymentDueDate ?? '',
+                paymentReceivedDate: p?.payment?.paymentReceivedDate ?? '',
+                paymentReceivedAmount: p?.payment?.paymentReceivedAmount ?? '',
+                balancePaymentDueDate: p?.payment?.balancePaymentDueDate ?? '',
+                balancePaymentAmount: p?.payment?.balancePaymentAmount ?? '',
+                overdueStatus: p?.payment?.overdueStatus ?? ''
+            },
+            ratings: {
+                vendorRating: p?.ratings?.vendorRating ?? '',
+                clientRating: p?.ratings?.clientRating ?? '',
+                internalPerformanceRating: p?.ratings?.internalPerformanceRating ?? ''
+            }
+        };
+    }
+
+    getAllProjectsMerged(defaults) {
+        const map = new Map();
+        (Array.isArray(defaults) ? defaults : []).forEach(p => {
+            const key = this.getProjectKey(p);
+            if (!key) return;
+            map.set(key, this.ensureProjectModel(p));
+        });
+        this.getStoredProjects().forEach(p => {
+            const key = this.getProjectKey(p);
+            if (!key) return;
+            map.set(key, this.ensureProjectModel(p));
+        });
+        return Array.from(map.values());
+    }
+
+    updateProjectFieldByKey(projectKey, fieldPath, value) {
+        const key = String(projectKey || '').trim();
+        const path = String(fieldPath || '').trim();
+        if (!key || !path) return { ok: false, message: 'Missing key.' };
+        const items = this.getStoredProjects();
+        let updated = false;
+
+        const computeOverdueStatus = (payment) => {
+            const p = payment || {};
+            const receivedDate = String(p.paymentReceivedDate || '').trim();
+            const receivedAmt = String(p.paymentReceivedAmount || '').trim();
+            if (receivedDate || receivedAmt) return 'Paid';
+            const due = String(p.paymentDueDate || '').trim();
+            if (!due) return '';
+            const dueMs = Date.parse(due);
+            if (!Number.isFinite(dueMs)) return '';
+            const now = new Date();
+            const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+            const diffDays = Math.floor((startOfToday - dueMs) / (1000 * 60 * 60 * 24));
+            if (diffDays <= 0) return 'Pending';
+            if (diffDays <= 30) return '30 Days Due';
+            if (diffDays <= 60) return '60 Days Overdue';
+            return '90+ Days Overdue';
+        };
+
+        const next = items.map(p => {
+            const curKey = this.getProjectKey(p);
+            if (curKey !== key) return p;
+            updated = true;
+            const model = this.ensureProjectModel(p);
+            const parts = path.split('.').filter(Boolean);
+            let ref = model;
+            for (let i = 0; i < parts.length - 1; i++) {
+                const k = parts[i];
+                if (!ref[k] || typeof ref[k] !== 'object') ref[k] = {};
+                ref = ref[k];
+            }
+            ref[parts[parts.length - 1]] = value;
+
+            if (path.startsWith('payment.')) {
+                model.payment = { ...(model.payment || {}) };
+                model.payment.overdueStatus = computeOverdueStatus(model.payment);
+            }
+
+            return model;
+        });
+
+        if (!updated) return { ok: false, message: 'Project not found in stored list.' };
+        this.writeStore('bezent_projects', next);
+        return { ok: true };
     }
 
     saveProject(project) {
@@ -617,7 +907,42 @@ class MarketFlowCRM {
         const name = String(p.name || '').trim();
         const client = String(p.client || '').trim();
         if (!name || !client) return { ok: false, message: 'Project name and client are required.' };
+
+        const computeOverdueStatus = (payment) => {
+            const pay = payment || {};
+            const receivedDate = String(pay.paymentReceivedDate || '').trim();
+            const receivedAmt = String(pay.paymentReceivedAmount || '').trim();
+            if (receivedDate || receivedAmt) return 'Paid';
+            const due = String(pay.paymentDueDate || '').trim();
+            if (!due) return '';
+            const dueMs = Date.parse(due);
+            if (!Number.isFinite(dueMs)) return '';
+            const now = new Date();
+            const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+            const diffDays = Math.floor((startOfToday - dueMs) / (1000 * 60 * 60 * 24));
+            if (diffDays <= 0) return 'Pending';
+            if (diffDays <= 30) return '30 Days Due';
+            if (diffDays <= 60) return '60 Days Overdue';
+            return '90+ Days Overdue';
+        };
+
         const items = this.getStoredProjects();
+        const payment = {
+            invoiceDate: String(p?.payment?.invoiceDate ?? '').trim(),
+            invoiceNumber: String(p?.payment?.invoiceNumber ?? '').trim(),
+            invoiceAmount: String(p?.payment?.invoiceAmount ?? '').trim(),
+            pastInvoiceAmount: String(p?.payment?.pastInvoiceAmount ?? '').trim(),
+            paymentTerms: String(p?.payment?.paymentTerms ?? '').trim(),
+            paymentType: String(p?.payment?.paymentType ?? '').trim(),
+            paymentDueDate: String(p?.payment?.paymentDueDate ?? '').trim(),
+            paymentReceivedDate: String(p?.payment?.paymentReceivedDate ?? '').trim(),
+            paymentReceivedAmount: String(p?.payment?.paymentReceivedAmount ?? '').trim(),
+            balancePaymentDueDate: String(p?.payment?.balancePaymentDueDate ?? '').trim(),
+            balancePaymentAmount: String(p?.payment?.balancePaymentAmount ?? '').trim(),
+            overdueStatus: String(p?.payment?.overdueStatus ?? '').trim()
+        };
+        payment.overdueStatus = payment.overdueStatus || computeOverdueStatus(payment);
+
         items.unshift({
             name,
             client,
@@ -629,10 +954,156 @@ class MarketFlowCRM {
             statusColor: String(p.statusColor || 'emerald').trim() || 'emerald',
             progress: Number.isFinite(Number(p.progress)) ? Number(p.progress) : 0,
             owner: String(p.owner || '—').trim() || '—',
-            spent: String(p.spent || '₹0').trim() || '₹0'
+            spent: String(p.spent || '₹0').trim() || '₹0',
+            identification: {
+                projectCode: String(p?.identification?.projectCode ?? p.projectCode ?? '').trim(),
+                serviceCode: String(p?.identification?.serviceCode ?? p.serviceCode ?? '').trim(),
+                vendorCode: String(p?.identification?.vendorCode ?? p.vendorCode ?? '').trim(),
+                companyName: String(p?.identification?.companyName ?? p.companyName ?? client).trim(),
+                projectDescription: String(p?.identification?.projectDescription ?? p.projectDescription ?? '').trim(),
+                partDescription: String(p?.identification?.partDescription ?? p.partDescription ?? '').trim(),
+                location: String(p?.identification?.location ?? p.location ?? '').trim(),
+                qty: String(p?.identification?.qty ?? p.qty ?? '').trim(),
+                projectLead: String(p?.identification?.projectLead ?? p.projectLead ?? '').trim(),
+                assignedBy: String(p?.identification?.assignedBy ?? p.assignedBy ?? '').trim(),
+                assignedTo: String(p?.identification?.assignedTo ?? p.assignedTo ?? '').trim()
+            },
+            tracking: {
+                model2dStatus: String(p?.tracking?.model2dStatus ?? '').trim(),
+                model3dStatus: String(p?.tracking?.model3dStatus ?? '').trim(),
+                scan3dStatus: String(p?.tracking?.scan3dStatus ?? '').trim(),
+                feaStatus: String(p?.tracking?.feaStatus ?? '').trim(),
+                qcInspectionStatus: String(p?.tracking?.qcInspectionStatus ?? '').trim(),
+                approvalStatus: String(p?.tracking?.approvalStatus ?? '').trim(),
+                glApprovalStatus: String(p?.tracking?.glApprovalStatus ?? '').trim(),
+                revisionStatus: String(p?.tracking?.revisionStatus ?? '').trim(),
+                deliveryReportStatus: String(p?.tracking?.deliveryReportStatus ?? '').trim(),
+                sopDailyReportStatus: String(p?.tracking?.sopDailyReportStatus ?? '').trim()
+            },
+            monitoring: {
+                roadmapSubmitted: String(p?.monitoring?.roadmapSubmitted ?? '').trim(),
+                dashboardUpdated: String(p?.monitoring?.dashboardUpdated ?? '').trim(),
+                dailyReportUpdated: String(p?.monitoring?.dailyReportUpdated ?? '').trim(),
+                photoAttached: String(p?.monitoring?.photoAttached ?? '').trim(),
+                overallProjectStatus: String(p?.monitoring?.overallProjectStatus ?? '').trim(),
+                postCompletionStatus: String(p?.monitoring?.postCompletionStatus ?? '').trim(),
+                physicalPartStatus: String(p?.monitoring?.physicalPartStatus ?? '').trim()
+            },
+            dispatch: {
+                dcDate: String(p?.dispatch?.dcDate ?? '').trim(),
+                dcNumber: String(p?.dispatch?.dcNumber ?? '').trim(),
+                deliveryStatus: String(p?.dispatch?.deliveryStatus ?? '').trim(),
+                deliveryDate: String(p?.dispatch?.deliveryDate ?? '').trim(),
+                deliveryConfirmation: String(p?.dispatch?.deliveryConfirmation ?? '').trim()
+            },
+            purchase: {
+                quotationDate: String(p?.purchase?.quotationDate ?? '').trim(),
+                quotationNumber: String(p?.purchase?.quotationNumber ?? '').trim(),
+                poDate: String(p?.purchase?.poDate ?? '').trim(),
+                poNumber: String(p?.purchase?.poNumber ?? '').trim(),
+                poValue: String(p?.purchase?.poValue ?? '').trim(),
+                convertedBy: String(p?.purchase?.convertedBy ?? '').trim(),
+                visitConducted: String(p?.purchase?.visitConducted ?? '').trim()
+            },
+            payment,
+            ratings: {
+                clientRating: String(p?.ratings?.clientRating ?? '').trim(),
+                jobRating: String(p?.ratings?.jobRating ?? '').trim(),
+                feedbackComments: String(p?.ratings?.feedbackComments ?? '').trim(),
+                qualityRating: String(p?.ratings?.qualityRating ?? '').trim(),
+                serviceRating: String(p?.ratings?.serviceRating ?? '').trim(),
+                performanceRating: String(p?.ratings?.performanceRating ?? '').trim(),
+                additionalNotes: String(p?.ratings?.additionalNotes ?? '').trim()
+            }
         });
         this.writeStore('bezent_projects', items);
         return { ok: true };
+    }
+
+    saveProjectByKey(key) {
+        if (!key) return;
+        const inputs = document.querySelectorAll(`input[data-project-key="${key}"], textarea[data-project-key="${key}"], select[data-project-key="${key}"]`);
+        const updates = {};
+        inputs.forEach(el => {
+            const field = el.dataset.projectField;
+            if (!field) return;
+            const value = el.type === 'checkbox' ? (el.checked ? 'Yes' : 'No') : el.value;
+            this.setNestedProperty(updates, field, value);
+        });
+        const items = this.getStoredProjects();
+        const idx = items.findIndex(p => this.getProjectKey(p) === key);
+        if (idx !== -1) {
+            Object.assign(items[idx], updates);
+            this.writeStore('bezent_projects', items);
+        }
+    }
+
+    deleteProjectByKey(key) {
+        if (!key) return;
+        const items = this.getStoredProjects();
+        const filtered = items.filter(p => this.getProjectKey(p) !== key);
+        this.writeStore('bezent_projects', filtered);
+    }
+
+    setNestedProperty(obj, path, value) {
+        const parts = path.split('.');
+        let cur = obj;
+        for (let i = 0; i < parts.length - 1; i++) {
+            const part = parts[i];
+            if (!(part in cur) || typeof cur[part] !== 'object') cur[part] = {};
+            cur = cur[part];
+        }
+        cur[parts[parts.length - 1]] = value;
+    }
+
+    getClientVendorCode(clientName) {
+        if (!clientName) return '';
+        const clients = this.getStoredClients();
+        const client = clients.find(c => String(c.name || '').trim().toLowerCase() === clientName.toLowerCase());
+        return client?.vendorCode || '';
+    }
+
+    generateVendorCode(location) {
+        if (!location) return '';
+        const clients = this.getStoredClients();
+        const locationClients = clients.filter(c => String(c.location || '').trim() === location);
+        const nextNumber = (locationClients.length + 1).toString().padStart(3, '0');
+        return `${location}${nextNumber}`;
+    }
+
+    getClientByVendorCode(vendorCode) {
+        if (!vendorCode) return null;
+        const clients = this.getStoredClients();
+        return clients.find(c => String(c.vendorCode || '').trim() === vendorCode.trim()) || null;
+    }
+
+    getLocationName(locationCode) {
+        const locationMap = {
+            'CHN': 'Chennai',
+            'HSR': 'Hosur',
+            'OST': 'Other state',
+            'KAK': 'Karnataka',
+            'OTN': 'Other Tamil Nadu'
+        };
+        return locationMap[locationCode] || locationCode;
+    }
+
+    generateProjectCode(serviceCode) {
+        if (!serviceCode) return '';
+        const currentYear = new Date().getFullYear().toString().slice(-2); // Get last 2 digits of year
+        const prefix = 'APJ';
+        const projects = this.getStoredProjects();
+        
+        // Filter projects by current year and service code
+        const yearServiceProjects = projects.filter(p => {
+            const projectCode = String(p.identification?.projectCode || '');
+            return projectCode.startsWith(prefix + currentYear + serviceCode);
+        });
+        
+        // Get next sequence number
+        const nextNumber = (yearServiceProjects.length + 1).toString().padStart(3, '0');
+        
+        return `${prefix}${currentYear}${serviceCode}${nextNumber}`;
     }
 
     saveInvoice(inv) {
@@ -1032,6 +1503,75 @@ class MarketFlowCRM {
                 return true;
             }
 
+            if (a.startsWith('project:dir:select:')) {
+                const key = a.slice('project:dir:select:'.length);
+                this.selectedProjectKey = key;
+
+                try {
+                    const stored = this.getStoredProjects();
+                    const exists = stored.some(p => this.getProjectKey(p) === key);
+                    if (!exists) {
+                        const cached = this._projectsCacheByKey?.get(key);
+                        if (cached) {
+                            stored.unshift(this.ensureProjectModel(cached));
+                            this.writeStore('bezent_projects', stored);
+                        }
+                    }
+                } catch (_) {}
+
+                this.renderContent();
+                this.initializeLucideIcons();
+                return true;
+            }
+
+            if (a.startsWith('project:save:')) {
+                const key = a.slice('project:save:'.length);
+                this.saveProjectByKey(key);
+                this.showToast('Project saved.');
+                return true;
+            }
+
+            if (a.startsWith('project:delete:')) {
+                const key = a.slice('project:delete:'.length);
+                if (confirm('Delete this project? This cannot be undone.')) {
+                    this.deleteProjectByKey(key);
+                    this.selectedProjectKey = null;
+                    this.renderContent();
+                    this.initializeLucideIcons();
+                    this.showToast('Project deleted.');
+                }
+                return true;
+            }
+
+            if (a.startsWith('project:select:')) {
+                const key = a.slice('project:select:'.length);
+                this.selectedProjectKey = key;
+                this.isProjectDetailOpen = true;
+
+                try {
+                    const stored = this.getStoredProjects();
+                    const exists = stored.some(p => this.getProjectKey(p) === key);
+                    if (!exists) {
+                        const cached = this._projectsCacheByKey?.get(key);
+                        if (cached) {
+                            stored.unshift(this.ensureProjectModel(cached));
+                            this.writeStore('bezent_projects', stored);
+                        }
+                    }
+                } catch (_) {}
+
+                this.renderContent();
+                this.initializeLucideIcons();
+                return true;
+            }
+
+            if (a === 'project:detail:close') {
+                this.isProjectDetailOpen = false;
+                this.renderContent();
+                this.initializeLucideIcons();
+                return true;
+            }
+
             if (a === 'chat:open') {
                 this.openChatPanel(this._lastActionButton);
                 return true;
@@ -1159,6 +1699,8 @@ class MarketFlowCRM {
                 const phoneEl = document.getElementById('clientPhone');
                 const industryEl = document.getElementById('clientIndustry');
                 const leadSourceEl = document.getElementById('clientLeadSource');
+                const locationEl = document.getElementById('clientLocation');
+                const vendorCodeEl = document.getElementById('clientVendorCode');
                 const notesEl = document.getElementById('clientNotes');
 
                 if (!nameEl || !nameEl.value.trim()) {
@@ -1196,6 +1738,8 @@ class MarketFlowCRM {
                     phone: phoneEl?.value?.trim() || '',
                     industry: industryEl?.value?.trim() || '',
                     leadSource: leadSourceEl?.value?.trim() || '',
+                    location: locationEl?.value?.trim() || '',
+                    vendorCode: vendorCodeEl?.value?.trim() || '',
                     notes: notesEl?.value?.trim() || '',
                     stage: 'Active',
                     city: '—'
@@ -1292,11 +1836,80 @@ class MarketFlowCRM {
 
             if (a === 'project:register') {
                 const clientEl = document.getElementById('projectClient');
+                const vendorCodeEl = document.getElementById('vendorCode');
                 const nameEl = document.getElementById('projectName');
                 const startDateEl = document.getElementById('projectStartDate');
                 const durationEl = document.getElementById('projectDuration');
                 const budgetEl = document.getElementById('projectBudget');
                 const teamEl = document.getElementById('projectTeam');
+                const projectCodeEl = document.getElementById('projectCode');
+                const serviceCodeEl = document.getElementById('serviceCode');
+                const companyNameEl = document.getElementById('companyName');
+                const projectDescriptionEl = document.getElementById('projectDescription');
+                const partDescriptionEl = document.getElementById('partDescription');
+                const locationEl = document.getElementById('projectLocation');
+                const qtyEl = document.getElementById('projectQty');
+                const projectLeadEl = document.getElementById('projectLead');
+                const assignedByEl = document.getElementById('assignedBy');
+                const assignedToEl = document.getElementById('assignedTo');
+
+                const readVal = (id) => String(document.getElementById(id)?.value || '').trim();
+
+                const trackingKeys = ['model2dStatus','model3dStatus','scan3dStatus','feaStatus','qcInspectionStatus','approvalStatus','glApprovalStatus','revisionStatus','deliveryReportStatus','sopDailyReportStatus'];
+                const tracking = Object.fromEntries(trackingKeys.map(k => [k, readVal(`reg_tracking_${k}`) || 'Pending']));
+
+                const monitoring = {
+                    roadmapSubmitted: readVal('reg_monitoring_roadmapSubmitted') || 'No',
+                    dashboardUpdated: readVal('reg_monitoring_dashboardUpdated') || 'No',
+                    dailyReportUpdated: readVal('reg_monitoring_dailyReportUpdated') || 'No',
+                    photoAttached: readVal('reg_monitoring_photoAttached') || 'No',
+                    overallProjectStatus: readVal('reg_monitoring_overallProjectStatus') || 'Pending / Delayed',
+                    postCompletionStatus: readVal('reg_monitoring_postCompletionStatus') || '',
+                    physicalPartStatus: readVal('reg_monitoring_physicalPartStatus') || ''
+                };
+
+                const dispatch = {
+                    dcDate: readVal('reg_dispatch_dcDate') || '',
+                    dcNumber: readVal('reg_dispatch_dcNumber') || '',
+                    deliveryStatus: readVal('reg_dispatch_deliveryStatus') || 'Pending',
+                    deliveryDate: readVal('reg_dispatch_deliveryDate') || '',
+                    deliveryConfirmation: readVal('reg_dispatch_deliveryConfirmation') || 'No'
+                };
+
+                const purchase = {
+                    quotationDate: readVal('reg_purchase_quotationDate') || '',
+                    quotationNumber: readVal('reg_purchase_quotationNumber') || '',
+                    poDate: readVal('reg_purchase_poDate') || '',
+                    poNumber: readVal('reg_purchase_poNumber') || '',
+                    poValue: readVal('reg_purchase_poValue') || '',
+                    convertedBy: readVal('reg_purchase_convertedBy') || '',
+                    visitConducted: readVal('reg_purchase_visitConducted') || 'No'
+                };
+
+                const payment = {
+                    invoiceDate: readVal('reg_payment_invoiceDate') || '',
+                    invoiceNumber: readVal('reg_payment_invoiceNumber') || '',
+                    invoiceAmount: readVal('reg_payment_invoiceAmount') || '',
+                    pastInvoiceAmount: readVal('reg_payment_pastInvoiceAmount') || '',
+                    paymentTerms: readVal('reg_payment_paymentTerms') || '',
+                    paymentType: readVal('reg_payment_paymentType') || '',
+                    paymentDueDate: readVal('reg_payment_paymentDueDate') || '',
+                    paymentReceivedDate: readVal('reg_payment_paymentReceivedDate') || '',
+                    paymentReceivedAmount: readVal('reg_payment_paymentReceivedAmount') || '',
+                    balancePaymentDueDate: readVal('reg_payment_balancePaymentDueDate') || '',
+                    balancePaymentAmount: readVal('reg_payment_balancePaymentAmount') || ''
+                };
+
+                const ratings = {
+                    clientRating: readVal('reg_ratings_clientRating') || '',
+                    jobRating: readVal('reg_ratings_jobRating') || '',
+                    feedbackComments: readVal('reg_ratings_feedbackComments') || '',
+                    qualityRating: readVal('reg_ratings_qualityRating') || '',
+                    serviceRating: readVal('reg_ratings_serviceRating') || '',
+                    performanceRating: readVal('reg_ratings_performanceRating') || '',
+                    additionalNotes: readVal('reg_ratings_additionalNotes') || ''
+                };
+
                 if (!nameEl?.value?.trim()) {
                     this.showToast('Project name is required.');
                     return true;
@@ -1307,7 +1920,26 @@ class MarketFlowCRM {
                     startDate: startDateEl?.value?.trim() || '',
                     duration: durationEl?.value?.trim() || '',
                     budget: budgetEl?.value?.trim() || '',
-                    team: teamEl?.value?.trim() || ''
+                    team: teamEl?.value?.trim() || '',
+                    identification: {
+                        projectCode: projectCodeEl?.value?.trim() || '',
+                        serviceCode: serviceCodeEl?.value?.trim() || '',
+                        vendorCode: vendorCodeEl?.value?.trim() || this.getClientVendorCode(clientEl?.value?.trim() || ''),
+                        companyName: companyNameEl?.value?.trim() || '',
+                        projectDescription: projectDescriptionEl?.value?.trim() || '',
+                        partDescription: partDescriptionEl?.value?.trim() || '',
+                        location: locationEl?.value?.trim() || '',
+                        qty: qtyEl?.value?.trim() || '',
+                        projectLead: projectLeadEl?.value?.trim() || '',
+                        assignedBy: assignedByEl?.value?.trim() || '',
+                        assignedTo: assignedToEl?.value?.trim() || ''
+                    },
+                    tracking,
+                    monitoring,
+                    dispatch,
+                    purchase,
+                    payment,
+                    ratings
                 });
                 if (result.ok) {
                     this.showToast('Project created.');
@@ -1439,6 +2071,124 @@ class MarketFlowCRM {
 
         this._handleAction = handleAction;
 
+        if (!this._chatSendDelegated) {
+            this._chatSendDelegated = true;
+
+            document.addEventListener('click', (e) => {
+                const target = e.target;
+                if (!(target instanceof Element)) return;
+                
+                const sendBtn = target.closest('#bezentChatSend');
+                if (sendBtn) {
+                    e.stopPropagation();
+                    const input = document.getElementById('bezentChatInput');
+                    const val = String(input?.value || '');
+                    if (input) input.value = '';
+                    this.sendChatMessage(val);
+                    return;
+                }
+
+                const presetBtn = target.closest('.bezent-preset-question');
+                if (presetBtn) {
+                    e.stopPropagation();
+                    const question = presetBtn.getAttribute('data-question') || '';
+                    this.sendChatMessage(question);
+                    return;
+                }
+            });
+
+            document.addEventListener('keydown', (e) => {
+                const target = e.target;
+                if (!(target instanceof HTMLElement)) return;
+                if (target.id !== 'bezentChatInput') return;
+                if (e.key !== 'Enter') return;
+                e.preventDefault();
+                const val = String((target).value || '');
+                (target).value = '';
+                this.sendChatMessage(val);
+            });
+        }
+
+        if (!this._projectChangeDelegated) {
+            this._projectChangeDelegated = true;
+            document.addEventListener('change', (e) => {
+                const target = e.target;
+                if (!(target instanceof Element)) return;
+                const el = target.closest('[data-project-key][data-project-field]');
+                if (!el) return;
+                const projectKey = el.getAttribute('data-project-key') || '';
+                const field = el.getAttribute('data-project-field') || '';
+                if (!projectKey || !field) return;
+                const value = (el instanceof HTMLInputElement || el instanceof HTMLSelectElement || el instanceof HTMLTextAreaElement)
+                    ? el.value
+                    : (el.getAttribute('value') || '');
+                this.saveProjectByKey(projectKey);
+            });
+        }
+
+        if (!this._clientLocationChangeDelegated) {
+            this._clientLocationChangeDelegated = true;
+            document.addEventListener('change', (e) => {
+                const target = e.target;
+                if (!(target instanceof HTMLElement)) return;
+                if (target.id === 'clientLocation') {
+                    const location = target.value;
+                    const vendorCodeEl = document.getElementById('clientVendorCode');
+                    if (vendorCodeEl) {
+                        vendorCodeEl.value = this.generateVendorCode(location);
+                    }
+                }
+            });
+        }
+
+        if (!this._vendorCodeAutoFillDelegated) {
+            this._vendorCodeAutoFillDelegated = true;
+            document.addEventListener('input', (e) => {
+                const target = e.target;
+                if (!(target instanceof HTMLElement)) return;
+                if (target.id === 'vendorCode') {
+                    const vendorCode = target.value.trim();
+                    if (vendorCode.length >= 3) {
+                        const client = this.getClientByVendorCode(vendorCode);
+                        if (client) {
+                            const clientEl = document.getElementById('projectClient');
+                            const companyNameEl = document.getElementById('companyName');
+                            const projectLeadEl = document.getElementById('projectLead');
+                            const assignedByEl = document.getElementById('assignedBy');
+                            
+                            if (clientEl && !clientEl.value) {
+                                clientEl.value = client.name || '';
+                            }
+                            if (companyNameEl && !companyNameEl.value) {
+                                companyNameEl.value = client.name || '';
+                            }
+                            if (projectLeadEl && !projectLeadEl.value) {
+                                projectLeadEl.value = client.owner || '';
+                            }
+                            if (assignedByEl && !assignedByEl.value) {
+                                assignedByEl.value = client.owner || '';
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        if (!this._projectCodeAutoFillDelegated) {
+            this._projectCodeAutoFillDelegated = true;
+            document.addEventListener('change', (e) => {
+                const target = e.target;
+                if (!(target instanceof HTMLElement)) return;
+                if (target.id === 'serviceCode') {
+                    const serviceCode = target.value;
+                    const projectCodeEl = document.getElementById('projectCode');
+                    if (projectCodeEl) {
+                        projectCodeEl.value = this.generateProjectCode(serviceCode);
+                    }
+                }
+            });
+        }
+
         document.addEventListener('click', (e) => {
             const target = e.target;
             if (!(target instanceof Element)) return;
@@ -1469,6 +2219,9 @@ class MarketFlowCRM {
 
                 const label = (btn.textContent || '').replace(/\s+/g, ' ').trim();
                 if (!label) return;
+                
+                // Skip preset question buttons
+                if (btn.classList.contains('bezent-preset-question')) return;
 
                 if (label === 'Monthly') {
                     this.switchSection('dashboard');
@@ -1653,6 +2406,36 @@ class MarketFlowCRM {
         el.style.left = `${left}px`;
         el.style.bottom = '16px';
 
+        const messages = Array.isArray(this.chatMessages) ? this.chatMessages : [];
+        const bubbles = messages.length
+            ? messages.map(m => {
+                const role = m?.role === 'user' ? 'user' : 'assistant';
+                const text = String(m?.text || '').replace(/</g, '&lt;');
+                if (role === 'user') {
+                    return `
+                        <div class="flex items-start justify-end gap-2">
+                            <div class="bg-purple-600 text-white rounded-xl px-3 py-2 text-sm max-w-[75%]">${text}</div>
+                        </div>
+                    `;
+                }
+                return `
+                    <div class="flex items-start gap-2">
+                        <div class="w-7 h-7 rounded-full bg-purple-600 flex items-center justify-center flex-shrink-0">
+                            <i data-lucide="sparkles" class="w-4 h-4 text-white"></i>
+                        </div>
+                        <div class="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-800 max-w-[75%]">${text}</div>
+                    </div>
+                `;
+            }).join('')
+            : `
+                <div class="flex items-start gap-2">
+                    <div class="w-7 h-7 rounded-full bg-purple-600 flex items-center justify-center flex-shrink-0">
+                        <i data-lucide="sparkles" class="w-4 h-4 text-white"></i>
+                    </div>
+                    <div class="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-800">Hi! Ask me about Bezent (Leads, Clients, Projects, Billing).</div>
+                </div>
+            `;
+
         el.innerHTML = `
             <div class="bg-white rounded-xl border border-slate-200 shadow-2xl overflow-hidden">
                 <div class="px-4 py-3 border-b border-slate-200 flex items-center justify-between">
@@ -1670,25 +2453,37 @@ class MarketFlowCRM {
                     </button>
                 </div>
 
-                <div class="p-4 space-y-3 max-h-80 overflow-y-auto">
-                    <div class="flex items-start gap-2">
-                        <div class="w-7 h-7 rounded-full bg-purple-600 flex items-center justify-center flex-shrink-0">
-                            <i data-lucide="sparkles" class="w-4 h-4 text-white"></i>
-                        </div>
-                        <div class="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-800">Hi</div>
-                    </div>
-                </div>
+                <div id="bezentChatMessages" class="p-4 space-y-3 max-h-80 overflow-y-auto">${bubbles}</div>
 
                 <div class="p-3 border-t border-slate-200">
+                    <div class="mb-2 flex flex-wrap gap-1">
+                        ${[
+                            'What is Bezent?',
+                            'How to register a client?',
+                            'How vendor code works?',
+                            'How to create invoice?',
+                            'Technical tracking statuses',
+                            'Project monitoring fields',
+                            'Payment tracking details'
+                        ].map(q => `
+                            <button class="bezent-preset-question px-2 py-1 text-xs bg-purple-50 text-purple-700 rounded-full hover:bg-purple-100 transition-colors" data-question="${q.replace(/"/g, '&quot;')}">${q}</button>
+                        `).join('')}
+                    </div>
                     <div class="flex items-center gap-2">
-                        <input class="flex-1 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="Type a message..." />
-                        <button class="px-3 py-2 text-sm font-medium bg-purple-600 text-white rounded-lg opacity-50 cursor-not-allowed" disabled>Send</button>
+                        <input id="bezentChatInput" class="flex-1 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="Type a message..." />
+                        <button id="bezentChatSend" class="px-3 py-2 text-sm font-medium bg-purple-600 text-white rounded-lg hover:bg-purple-700">Send</button>
                     </div>
                 </div>
             </div>
         `;
 
         this.initializeLucideIcons();
+
+        const msgEl = document.getElementById('bezentChatMessages');
+        if (msgEl) msgEl.scrollTop = msgEl.scrollHeight;
+
+        const inputEl = document.getElementById('bezentChatInput');
+        if (inputEl) inputEl.focus();
     }
 
     initializePredictionsChart() {
@@ -1908,6 +2703,10 @@ class MarketFlowCRM {
     }
 
     switchSubSection(subSection) {
+        if (this.currentSection === 'projects') {
+            const removed = new Set(['po_tracker', 'engineering_workflow', 'material_io', 'bom_stock', 'project_code']);
+            if (removed.has(subSection)) subSection = 'active';
+        }
         this.currentSubSection = subSection;
         this.renderSidebar();
         this.renderContent();
@@ -1945,12 +2744,12 @@ class MarketFlowCRM {
         const icons = {
             dashboard: { overview: 'layout-dashboard', daily: 'calendar-days', weekly: 'bar-chart-3', analytics: 'pie-chart', work: 'check-square', sop: 'list-checks' },
             leads: { registration: 'user-plus', client_registration: 'user-plus', clients: 'users', tracking: 'radar', details: 'file-text', lead_registration: 'user-plus', lead_directory: 'users-round', lead_sources: 'pie-chart', lead_pipeline: 'kanban-square', indiamart: 'clock', categorization: 'tags', smart_feedback: 'messages-square', greetings: 'calendar-heart', lead_sla: 'timer' },
-            projects: { registration: 'folder-plus', pipeline: 'kanban-square', active: 'gantt-chart', completed: 'badge-check', quotation_templates: 'file-text', po_tracker: 'clipboard-check', engineering_workflow: 'git-branch', material_io: 'package', bom_stock: 'boxes', project_code: 'hash' },
-            campaigns: { email: 'mail', sms: 'message-square', wishes: 'sparkles', reengagement: 'repeat', marketing_hub: 'megaphone', seo: 'search', content_library: 'library', maps_reviews: 'map-pin', linkedin_leads: 'linkedin' },
-            billing: { invoices: 'receipt', quotations: 'file-signature', contracts: 'scroll-text', payments: 'credit-card', followup_log: 'list-checks', overdue_risk: 'alert-triangle' },
-            engagement: { followups: 'phone-call', surveys: 'clipboard-list', health: 'heart-pulse', reengagement: 'refresh-cw', field_visits: 'map', route_map: 'route', mobile_sync: 'smartphone', followup_sla: 'timer' },
-            reports: { revenue: 'line-chart', funnel: 'filter', roi: 'target', ltv: 'coins', sop_monthly: 'file-bar-chart', kpi_target: 'bar-chart-4', kri_risk: 'shield-alert', team_scorecard: 'users', project_roadmap: 'road' },
-            ai: { insights: 'brain', workflows: 'workflow', alerts: 'bell-ring', predictions: 'sparkles', lead_prediction: 'sparkles', best_email_timing: 'clock', auto_followup: 'calendar-check', content_generator: 'wand-2' }
+            projects: { registration: 'folder-plus', directory: 'folder', pipeline: 'kanban-square', active: 'gantt-chart', completed: 'badge-check', quotation_templates: 'file-text' },
+            campaigns: { email: 'mail', sms: 'message-square', wishes: 'calendar-heart', reengagement: 'refresh-cw', marketing_hub: 'globe', seo: 'search', content_library: 'library', maps_reviews: 'map-pin', linkedin_leads: 'linkedin' },
+            billing: { invoices: 'file-text', quotations: 'file-text', contracts: 'file-signature', payments: 'credit-card', followup_log: 'clipboard-list', overdue_risk: 'alert-triangle' },
+            engagement: { followups: 'phone-call', surveys: 'clipboard-check', health: 'heart-pulse', reengagement: 'sparkles', field_visits: 'map', route_map: 'route', mobile_sync: 'smartphone', followup_sla: 'timer' },
+            reports: { revenue: 'bar-chart', funnel: 'filter', roi: 'line-chart', ltv: 'badge-dollar-sign', sop_monthly: 'calendar', kpi_target: 'target', kri_risk: 'shield-alert', team_scorecard: 'users', project_roadmap: 'milestone' },
+            ai: { insights: 'sparkles', workflows: 'workflow', alerts: 'bell-dot', predictions: 'brain', lead_prediction: 'radar', best_email_timing: 'clock', auto_followup: 'calendar-clock', content_generator: 'wand-2' }
         };
         const getIcon = (id) => (icons[this.currentSection] && icons[this.currentSection][id]) ? icons[this.currentSection][id] : 'dot';
         
@@ -1998,15 +2797,11 @@ class MarketFlowCRM {
             ],
             projects: [
                 { id: 'registration', label: 'Project Registration' },
+                { id: 'directory', label: 'Project Directory' },
                 { id: 'pipeline', label: 'Sales Pipeline' },
                 { id: 'active', label: 'Active Projects' },
                 { id: 'completed', label: 'Completed Projects' },
-                { id: 'quotation_templates', label: 'Quotation Templates' },
-                { id: 'po_tracker', label: 'PO Tracker' },
-                { id: 'engineering_workflow', label: 'Engineering Workflow' },
-                { id: 'material_io', label: 'Material Inward/Outward' },
-                { id: 'bom_stock', label: 'BOM & Stock Management' },
-                { id: 'project_code', label: 'Project Code Generator' }
+                { id: 'quotation_templates', label: 'Quotation Templates' }
             ],
             campaigns: [
                 { id: 'email', label: 'Email Campaigns' },
@@ -3433,16 +4228,16 @@ class MarketFlowCRM {
 
     getClientsData() {
         const defaults = [
-            { name: 'TechNova Solutions', city: 'Bengaluru', industry: 'IT Services', owner: 'Sarah', stage: 'Active', openInvoices: 2, dueAmount: '₹42,000' },
-            { name: 'GreenLeaf Industries', city: 'Pune', industry: 'Manufacturing', owner: 'Rohan', stage: 'Onboarding', openInvoices: 1, dueAmount: '₹58,000' },
-            { name: 'EduSpark', city: 'Hyderabad', industry: 'Education', owner: 'Meera', stage: 'Active', openInvoices: 0, dueAmount: '₹0' },
-            { name: 'Mumbai Retail Chain', city: 'Mumbai', industry: 'Retail', owner: 'Amit', stage: 'At Risk', openInvoices: 3, dueAmount: '₹1,25,000' },
-            { name: 'BrightFin', city: 'Delhi', industry: 'Finance', owner: 'Sarah', stage: 'Active', openInvoices: 0, dueAmount: '₹0' },
-            { name: 'Digital Dreams', city: 'Chennai', industry: 'Media', owner: 'Rohan', stage: 'Active', openInvoices: 1, dueAmount: '₹25,000' },
-            { name: 'UrbanCafe', city: 'Kolkata', industry: 'Hospitality', owner: 'Meera', stage: 'Onboarding', openInvoices: 0, dueAmount: '₹0' },
-            { name: 'CarePlus Clinics', city: 'Ahmedabad', industry: 'Healthcare', owner: 'Amit', stage: 'At Risk', openInvoices: 1, dueAmount: '₹18,000' },
-            { name: 'Zenith Logistics', city: 'Jaipur', industry: 'Logistics', owner: 'Sarah', stage: 'Active', openInvoices: 0, dueAmount: '₹0' },
-            { name: 'GreenBite Foods', city: 'Surat', industry: 'FMCG', owner: 'Rohan', stage: 'Active', openInvoices: 0, dueAmount: '₹0' }
+            { name: 'TechNova Solutions', city: 'Bengaluru', industry: 'IT Services', owner: 'Sarah', stage: 'Active', openInvoices: 2, dueAmount: '₹42,000', location: 'KAK', vendorCode: 'KAK001' },
+            { name: 'GreenLeaf Industries', city: 'Pune', industry: 'Manufacturing', owner: 'Rohan', stage: 'Onboarding', openInvoices: 1, dueAmount: '₹58,000', location: 'OST', vendorCode: 'OST001' },
+            { name: 'EduSpark', city: 'Hyderabad', industry: 'Education', owner: 'Meera', stage: 'Active', openInvoices: 0, dueAmount: '₹0', location: 'OTN', vendorCode: 'OTN001' },
+            { name: 'Mumbai Retail Chain', city: 'Mumbai', industry: 'Retail', owner: 'Amit', stage: 'At Risk', openInvoices: 3, dueAmount: '₹1,25,000', location: 'CHN', vendorCode: 'CHN001' },
+            { name: 'BrightFin', city: 'Delhi', industry: 'Finance', owner: 'Sarah', stage: 'Active', openInvoices: 0, dueAmount: '₹0', location: 'OST', vendorCode: 'OST002' },
+            { name: 'Digital Dreams', city: 'Chennai', industry: 'Media', owner: 'Rohan', stage: 'Active', openInvoices: 1, dueAmount: '₹25,000', location: 'CHN', vendorCode: 'CHN002' },
+            { name: 'UrbanCafe', city: 'Kolkata', industry: 'Hospitality', owner: 'Meera', stage: 'Onboarding', openInvoices: 0, dueAmount: '₹0', location: 'OTN', vendorCode: 'OTN003' },
+            { name: 'CarePlus Clinics', city: 'Ahmedabad', industry: 'Healthcare', owner: 'Amit', stage: 'At Risk', openInvoices: 1, dueAmount: '₹18,000', location: 'OST', vendorCode: 'OST003' },
+            { name: 'Zenith Logistics', city: 'Jaipur', industry: 'Logistics', owner: 'Sarah', stage: 'Active', openInvoices: 0, dueAmount: '₹0', location: 'KAK', vendorCode: 'KAK002' },
+            { name: 'GreenBite Foods', city: 'Surat', industry: 'FMCG', owner: 'Rohan', stage: 'Active', openInvoices: 0, dueAmount: '₹0', location: 'HSR', vendorCode: 'HSR001' }
         ];
 
         const stored = this.getStoredClients();
@@ -3471,7 +4266,19 @@ class MarketFlowCRM {
     }
 
     getClientDetailMock(clientName) {
-        const map = {
+        const clients = this.getClientsData();
+        const client = clients.find(c => String(c.name || '').trim() === clientName);
+        
+        if (!client) {
+            return {
+                contact: { name: 'Primary Contact', email: 'contact@company.com', phone: '+91 90000 00000' },
+                project: { name: 'New Project', progress: 0, eta: '—', color: 'slate' },
+                alert: null,
+                client: null
+            };
+        }
+
+        const mockDetails = {
             'TechNova Solutions': {
                 contact: { name: 'Aarav Mehta', email: 'aarav@technova.io', phone: '+91 98765 43210' },
                 project: { name: 'SEO Revamp', progress: 62, eta: '12 days', color: 'sky' },
@@ -3507,11 +4314,6 @@ class MarketFlowCRM {
                 project: { name: 'Landing Page Optimization', progress: 58, eta: '10 days', color: 'indigo' },
                 alert: { title: 'Invoice INV-114 pending', amount: '₹25,000', due: 'Due in 2 days' }
             },
-            'NovaHomes': {
-                contact: { name: 'Suresh Patel', email: 'suresh@novahomes.in', phone: '+91 95555 20301' },
-                project: { name: 'Lead Gen Funnel', progress: 69, eta: '8 days', color: 'emerald' },
-                alert: null
-            },
             'CarePlus Clinics': {
                 contact: { name: 'Dr. Ananya Iyer', email: 'ananya@careplus.in', phone: '+91 98888 11550' },
                 project: { name: 'Appointment Campaign', progress: 33, eta: '19 days', color: 'amber' },
@@ -3524,10 +4326,15 @@ class MarketFlowCRM {
             }
         };
 
-        return map[clientName] || {
-            contact: { name: 'Primary Contact', email: 'contact@company.com', phone: '+91 90000 00000' },
+        const mock = mockDetails[clientName] || {
+            contact: { name: 'Primary Contact', email: client.email || 'contact@company.com', phone: client.phone || '+91 90000 00000' },
             project: { name: 'New Project', progress: 0, eta: '—', color: 'slate' },
             alert: null
+        };
+
+        return {
+            ...mock,
+            client: client
         };
     }
 
@@ -3583,6 +4390,21 @@ class MarketFlowCRM {
                                     <option>Campaign</option>
                                     <option>Outbound</option>
                                 </select>
+                            </div>
+                            <div>
+                                <label class="text-xs font-medium text-slate-600">Location</label>
+                                <select id="clientLocation" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500">
+                                    <option value="">Select</option>
+                                    <option value="CHN">Chennai</option>
+                                    <option value="HSR">Hosur</option>
+                                    <option value="OST">Other state</option>
+                                    <option value="KAK">Karnataka</option>
+                                    <option value="OTN">Other Tamil Nadu</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="text-xs font-medium text-slate-600">Vendor Code</label>
+                                <input id="clientVendorCode" type="text" readonly class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm bg-slate-50 text-slate-700" placeholder="Auto-generated based on location" />
                             </div>
                             <div class="col-span-2">
                                 <label class="text-xs font-medium text-slate-600">Notes</label>
@@ -3717,6 +4539,48 @@ class MarketFlowCRM {
                             </div>
 
                             <div class="mt-4 space-y-3">
+                                <div class="p-3 bg-slate-50 rounded-lg">
+                                    <div class="text-xs text-slate-500">Client Name</div>
+                                    <div class="text-sm font-medium text-slate-900">${selected.name || '—'}</div>
+                                </div>
+                                <div class="p-3 bg-slate-50 rounded-lg">
+                                    <div class="text-xs text-slate-500">Owner</div>
+                                    <div class="text-sm font-medium text-slate-900">${selected.owner || '—'}</div>
+                                </div>
+                                <div class="p-3 bg-slate-50 rounded-lg">
+                                    <div class="text-xs text-slate-500">Email</div>
+                                    <div class="text-sm font-medium text-slate-900">${selected.email || detail?.contact?.email || '—'}</div>
+                                </div>
+                                <div class="p-3 bg-slate-50 rounded-lg">
+                                    <div class="text-xs text-slate-500">Phone</div>
+                                    <div class="text-sm font-medium text-slate-900">${selected.phone || detail?.contact?.phone || '—'}</div>
+                                </div>
+                                <div class="p-3 bg-slate-50 rounded-lg">
+                                    <div class="text-xs text-slate-500">Industry</div>
+                                    <div class="text-sm font-medium text-slate-900">${selected.industry || '—'}</div>
+                                </div>
+                                <div class="p-3 bg-slate-50 rounded-lg">
+                                    <div class="text-xs text-slate-500">Lead Source</div>
+                                    <div class="text-sm font-medium text-slate-900">${selected.leadSource || '—'}</div>
+                                </div>
+                                <div class="p-3 bg-slate-50 rounded-lg">
+                                    <div class="text-xs text-slate-500">Location</div>
+                                    <div class="text-sm font-medium text-slate-900">${this.getLocationName(selected.location) || '—'}</div>
+                                </div>
+                                <div class="p-3 bg-slate-50 rounded-lg">
+                                    <div class="text-xs text-slate-500">Vendor Code</div>
+                                    <div class="text-sm font-medium text-slate-900">${selected.vendorCode || '—'}</div>
+                                </div>
+                                <div class="p-3 bg-slate-50 rounded-lg">
+                                    <div class="text-xs text-slate-500">City</div>
+                                    <div class="text-sm font-medium text-slate-900">${selected.city || '—'}</div>
+                                </div>
+                                ${selected.notes ? `
+                                    <div class="p-3 bg-slate-50 rounded-lg">
+                                        <div class="text-xs text-slate-500">Notes</div>
+                                        <div class="text-sm font-medium text-slate-900 whitespace-pre-wrap">${selected.notes}</div>
+                                    </div>
+                                ` : ''}
                                 <div class="p-3 bg-slate-50 rounded-lg">
                                     <div class="text-xs text-slate-500">Primary Contact</div>
                                     <div class="text-sm font-medium text-slate-900">${detail?.contact?.name || selected.owner || '—'}</div>
@@ -3922,6 +4786,9 @@ class MarketFlowCRM {
             case 'registration':
                 container.innerHTML = this.getProjectRegistration();
                 break;
+            case 'directory':
+                container.innerHTML = this.getProjectDirectory();
+                break;
             case 'pipeline':
                 container.innerHTML = this.getSalesPipeline();
                 break;
@@ -3947,8 +4814,8 @@ class MarketFlowCRM {
                     <button data-action="project:register" class="px-4 py-2 text-sm font-medium bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">Create Project</button>
                 </div>
 
-                <div class="grid grid-cols-3 gap-6">
-                    <div class="col-span-2 bg-white rounded-lg border border-slate-200 p-6 shadow-lg">
+                <div class="flex justify-center">
+                    <div class="w-full max-w-4xl bg-white rounded-lg border border-slate-200 p-6 shadow-lg">
                         <div class="grid grid-cols-2 gap-4">
                             <div>
                                 <label class="text-xs font-medium text-slate-600">Client</label>
@@ -4000,28 +4867,998 @@ class MarketFlowCRM {
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                    </div>
 
-                    <div class="bg-white rounded-lg border border-slate-200 p-6 shadow-lg">
-                        <h3 class="text-lg font-semibold text-slate-900">Pipeline Defaults</h3>
-                        <p class="text-sm text-slate-500">Auto-create next items</p>
-                        <div class="mt-4 space-y-2">
-                            ${[
-                                { name: 'Deal', color: 'sky' },
-                                { name: 'Quote', color: 'indigo' },
-                                { name: 'Invoice', color: 'amber' },
-                                { name: 'Payment', color: 'emerald' }
-                            ].map(i => `
-                                <div class="flex items-center justify-between p-3 bg-${i.color}-50 border border-${i.color}-100 rounded-lg">
-                                    <div class="text-sm font-medium text-slate-900">${i.name}</div>
-                                    <i data-lucide="check" class="w-4 h-4 text-${i.color}-700"></i>
-                                </div>
-                            `).join('')}
+                            <div class="col-span-2 mt-4 space-y-4">
+                                <details open class="group">
+                                    <summary class="cursor-pointer select-none text-sm font-semibold text-slate-900">Project Identification Details</summary>
+                                    <div class="mt-3 grid grid-cols-2 gap-3">
+                                        <div>
+                                            <label class="text-xs font-medium text-slate-600">Project Code</label>
+                                            <input id="projectCode" readonly class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm bg-slate-50 text-slate-700" placeholder="Auto-generated based on Service Code" />
+                                        </div>
+                                        <div>
+                                            <label class="text-xs font-medium text-slate-600">Service Code</label>
+                                            <select id="serviceCode" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500">
+                                                <option value="">Select</option>
+                                                <option value="RE">RE</option>
+                                                <option value="CAD">CAD</option>
+                                                <option value="2D">2D</option>
+                                                <option value="2DI">2DI</option>
+                                                <option value="3DI">3DI</option>
+                                                <option value="CD">CD</option>
+                                                <option value="NPD">NPD</option>
+                                                <option value="SPM">SPM</option>
+                                                <option value="STL">STL</option>
+                                                <option value="FEA">FEA</option>
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label class="text-xs font-medium text-slate-600">Vendor Code</label>
+                                            <input id="vendorCode" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" />
+                                        </div>
+                                        <div>
+                                            <label class="text-xs font-medium text-slate-600">Company Name</label>
+                                            <input id="companyName" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" />
+                                        </div>
+                                        <div>
+                                            <label class="text-xs font-medium text-slate-600">Location</label>
+                                            <input id="projectLocation" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" />
+                                        </div>
+                                        <div>
+                                            <label class="text-xs font-medium text-slate-600">Quantity (QTY)</label>
+                                            <input id="projectQty" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" />
+                                        </div>
+                                        <div>
+                                            <label class="text-xs font-medium text-slate-600">Project Lead</label>
+                                            <input id="projectLead" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" />
+                                        </div>
+                                        <div>
+                                            <label class="text-xs font-medium text-slate-600">Assigned By</label>
+                                            <input id="assignedBy" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" />
+                                        </div>
+                                        <div>
+                                            <label class="text-xs font-medium text-slate-600">Assigned To (Employee)</label>
+                                            <input id="assignedTo" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" />
+                                        </div>
+                                        <div class="col-span-2">
+                                            <label class="text-xs font-medium text-slate-600">Project Description</label>
+                                            <textarea id="projectDescription" rows="2" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"></textarea>
+                                        </div>
+                                        <div class="col-span-2">
+                                            <label class="text-xs font-medium text-slate-600">Part Description</label>
+                                            <textarea id="partDescription" rows="2" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"></textarea>
+                                        </div>
+                                    </div>
+                                </details>
+
+                                <details class="group">
+                                    <summary class="cursor-pointer select-none text-sm font-semibold text-slate-900">Technical Scope / Stage Tracking</summary>
+                                    <div class="mt-3 grid grid-cols-2 gap-3">
+                                        ${[
+                                            ['model2dStatus','2D Model Status'],
+                                            ['model3dStatus','3D Model Status'],
+                                            ['scan3dStatus','3D Scan Status'],
+                                            ['feaStatus','FEA Status'],
+                                            ['qcInspectionStatus','QC / Inspection Status'],
+                                            ['approvalStatus','Approval Status'],
+                                            ['glApprovalStatus','GL Approval Status'],
+                                            ['revisionStatus','Correction / Revision Status'],
+                                            ['deliveryReportStatus','Delivery Report Status'],
+                                            ['sopDailyReportStatus','SOP-Based Daily Report Status']
+                                        ].map(([k,label]) => `
+                                            <div>
+                                                <label class="text-xs font-medium text-slate-600">${label}</label>
+                                                <select id="reg_tracking_${k}" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500">
+                                                    ${['Pending','In Progress','Completed','Blocked'].map(opt => `<option>${opt}</option>`).join('')}
+                                                </select>
+                                            </div>
+                                        `).join('')}
+                                    </div>
+                                </details>
+
+                                <details class="group">
+                                    <summary class="cursor-pointer select-none text-sm font-semibold text-slate-900">Project Roadmap & Progress Monitoring</summary>
+                                    <div class="mt-3 grid grid-cols-2 gap-3">
+                                        ${[
+                                            ['reg_monitoring_roadmapSubmitted','Project Roadmap Submitted'],
+                                            ['reg_monitoring_dashboardUpdated','Dashboard Updated'],
+                                            ['reg_monitoring_dailyReportUpdated','Daily Report Updated'],
+                                            ['reg_monitoring_photoAttached','Photo Attached']
+                                        ].map(([id,label]) => `
+                                            <div>
+                                                <label class="text-xs font-medium text-slate-600">${label} (Yes/No)</label>
+                                                <select id="${id}" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500">
+                                                    <option>Yes</option>
+                                                    <option selected>No</option>
+                                                </select>
+                                            </div>
+                                        `).join('')}
+                                        <div class="col-span-2">
+                                            <label class="text-xs font-medium text-slate-600">Overall Project Status</label>
+                                            <select id="reg_monitoring_overallProjectStatus" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500">
+                                                ${['Completed','Partially Completed','Pending / Delayed'].map(opt => `<option ${opt === 'Pending / Delayed' ? 'selected' : ''}>${opt}</option>`).join('')}
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label class="text-xs font-medium text-slate-600">Post Completion Status</label>
+                                            <input id="reg_monitoring_postCompletionStatus" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" />
+                                        </div>
+                                        <div>
+                                            <label class="text-xs font-medium text-slate-600">Physical Part Status</label>
+                                            <input id="reg_monitoring_physicalPartStatus" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" />
+                                        </div>
+                                    </div>
+                                </details>
+
+                                <details class="group">
+                                    <summary class="cursor-pointer select-none text-sm font-semibold text-slate-900">Dispatch & Delivery Details</summary>
+                                    <div class="mt-3 grid grid-cols-2 gap-3">
+                                        <div>
+                                            <label class="text-xs font-medium text-slate-600">DC Date</label>
+                                            <input id="reg_dispatch_dcDate" type="date" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" />
+                                        </div>
+                                        <div>
+                                            <label class="text-xs font-medium text-slate-600">DC Number</label>
+                                            <input id="reg_dispatch_dcNumber" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" />
+                                        </div>
+                                        <div>
+                                            <label class="text-xs font-medium text-slate-600">Delivery Status</label>
+                                            <select id="reg_dispatch_deliveryStatus" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500">
+                                                ${['Pending','In Progress','Completed','Blocked'].map(opt => `<option ${opt === 'Pending' ? 'selected' : ''}>${opt}</option>`).join('')}
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label class="text-xs font-medium text-slate-600">Delivery Date</label>
+                                            <input id="reg_dispatch_deliveryDate" type="date" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" />
+                                        </div>
+                                        <div>
+                                            <label class="text-xs font-medium text-slate-600">Delivery Confirmation (Yes/No)</label>
+                                            <select id="reg_dispatch_deliveryConfirmation" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500">
+                                                <option>Yes</option>
+                                                <option selected>No</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </details>
+
+                                <details class="group">
+                                    <summary class="cursor-pointer select-none text-sm font-semibold text-slate-900">Quotation & Purchase Details</summary>
+                                    <div class="mt-3 grid grid-cols-2 gap-3">
+                                        <div>
+                                            <label class="text-xs font-medium text-slate-600">Quotation Date</label>
+                                            <input id="reg_purchase_quotationDate" type="date" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" />
+                                        </div>
+                                        <div>
+                                            <label class="text-xs font-medium text-slate-600">Quotation Number</label>
+                                            <input id="reg_purchase_quotationNumber" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" />
+                                        </div>
+                                        <div>
+                                            <label class="text-xs font-medium text-slate-600">PO Date</label>
+                                            <input id="reg_purchase_poDate" type="date" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" />
+                                        </div>
+                                        <div>
+                                            <label class="text-xs font-medium text-slate-600">PO Number</label>
+                                            <input id="reg_purchase_poNumber" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" />
+                                        </div>
+                                        <div>
+                                            <label class="text-xs font-medium text-slate-600">PO Value</label>
+                                            <input id="reg_purchase_poValue" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" />
+                                        </div>
+                                        <div>
+                                            <label class="text-xs font-medium text-slate-600">Converted By</label>
+                                            <input id="reg_purchase_convertedBy" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" />
+                                        </div>
+                                        <div>
+                                            <label class="text-xs font-medium text-slate-600">Visit Conducted (Yes/No)</label>
+                                            <select id="reg_purchase_visitConducted" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500">
+                                                <option>Yes</option>
+                                                <option selected>No</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </details>
+
+                                <details class="group">
+                                    <summary class="cursor-pointer select-none text-sm font-semibold text-slate-900">Invoice & Payment Tracking</summary>
+                                    <div class="mt-3 grid grid-cols-2 gap-3">
+                                        <div>
+                                            <label class="text-xs font-medium text-slate-600">Invoice Date</label>
+                                            <input id="reg_payment_invoiceDate" type="date" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" />
+                                        </div>
+                                        <div>
+                                            <label class="text-xs font-medium text-slate-600">Invoice Number</label>
+                                            <input id="reg_payment_invoiceNumber" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" />
+                                        </div>
+                                        <div>
+                                            <label class="text-xs font-medium text-slate-600">Invoice Amount</label>
+                                            <input id="reg_payment_invoiceAmount" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" />
+                                        </div>
+                                        <div>
+                                            <label class="text-xs font-medium text-slate-600">Past Invoice Amount</label>
+                                            <input id="reg_payment_pastInvoiceAmount" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" />
+                                        </div>
+                                        <div>
+                                            <label class="text-xs font-medium text-slate-600">Payment Terms</label>
+                                            <input id="reg_payment_paymentTerms" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" />
+                                        </div>
+                                        <div>
+                                            <label class="text-xs font-medium text-slate-600">Payment Type</label>
+                                            <input id="reg_payment_paymentType" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" />
+                                        </div>
+                                        <div>
+                                            <label class="text-xs font-medium text-slate-600">Payment Due Date</label>
+                                            <input id="reg_payment_paymentDueDate" type="date" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" />
+                                        </div>
+                                        <div>
+                                            <label class="text-xs font-medium text-slate-600">Payment Received Date</label>
+                                            <input id="reg_payment_paymentReceivedDate" type="date" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" />
+                                        </div>
+                                        <div>
+                                            <label class="text-xs font-medium text-slate-600">Payment Received Amount</label>
+                                            <input id="reg_payment_paymentReceivedAmount" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" />
+                                        </div>
+                                        <div>
+                                            <label class="text-xs font-medium text-slate-600">Balance Payment Due Date</label>
+                                            <input id="reg_payment_balancePaymentDueDate" type="date" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" />
+                                        </div>
+                                        <div>
+                                            <label class="text-xs font-medium text-slate-600">Balance Payment Amount</label>
+                                            <input id="reg_payment_balancePaymentAmount" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" />
+                                        </div>
+                                    </div>
+                                </details>
+
+                                <details class="group">
+                                    <summary class="cursor-pointer select-none text-sm font-semibold text-slate-900">Performance & Rating</summary>
+                                    <div class="mt-3 grid grid-cols-2 gap-3">
+                                        ${[
+                                            ['reg_ratings_clientRating','Client Rating'],
+                                            ['reg_ratings_jobRating','Job Rating'],
+                                            ['reg_ratings_qualityRating','Quality Rating'],
+                                            ['reg_ratings_serviceRating','Service Rating'],
+                                            ['reg_ratings_performanceRating','Performance Rating']
+                                        ].map(([id,label]) => `
+                                            <div>
+                                                <label class="text-xs font-medium text-slate-600">${label} (0-10)</label>
+                                                <input id="${id}" type="number" min="0" max="10" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" />
+                                            </div>
+                                        `).join('')}
+                                        <div class="col-span-2">
+                                            <label class="text-xs font-medium text-slate-600">Feedback / Comments</label>
+                                            <textarea id="reg_ratings_feedbackComments" rows="2" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"></textarea>
+                                        </div>
+                                        <div class="col-span-2">
+                                            <label class="text-xs font-medium text-slate-600">Additional Notes</label>
+                                            <textarea id="reg_ratings_additionalNotes" rows="2" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"></textarea>
+                                        </div>
+                                    </div>
+                                </details>
+                            </div>
                         </div>
-                        <button class="mt-5 w-full px-4 py-2 text-sm font-medium bg-purple-50 text-purple-700 rounded-lg hover:bg-purple-100 transition-colors">Customize</button>
                     </div>
                 </div>
+            </div>
+        `;
+    }
+
+    getProjectDirectory() {
+        const defaults = [
+            { 
+                name: 'SEO Revamp', 
+                client: 'TechNova Solutions', 
+                progress: 62, 
+                status: 'On Track', 
+                statusColor: 'emerald', 
+                owner: 'Rohan', 
+                budget: '₹3,20,000', 
+                spent: '₹2,10,000',
+                identification: { 
+                    projectCode: 'APJ26RE001', 
+                    serviceCode: 'RE',
+                    vendorCode: 'KAK001',
+                    companyName: 'TechNova Solutions',
+                    location: 'Bengaluru',
+                    qty: '1',
+                    projectLead: 'Rohan',
+                    assignedBy: 'Sarah',
+                    assignedTo: 'Amit',
+                    projectDescription: 'Complete SEO overhaul with focus on technical optimization and content strategy',
+                    partDescription: 'Website optimization including meta tags, schema markup, and site speed improvements'
+                },
+                tracking: {
+                    model2dStatus: 'Completed',
+                    model3dStatus: 'In Progress',
+                    scan3dStatus: 'Pending',
+                    feaStatus: 'Pending',
+                    qcInspectionStatus: 'Pending',
+                    approvalStatus: 'Pending',
+                    glApprovalStatus: 'Pending',
+                    revisionStatus: 'Pending',
+                    deliveryReportStatus: 'Pending',
+                    sopDailyReportStatus: 'In Progress'
+                },
+                monitoring: {
+                    roadmapSubmitted: 'Yes',
+                    dashboardUpdated: 'Yes',
+                    dailyReportUpdated: 'No',
+                    photoAttached: 'Yes',
+                    overallProjectStatus: 'Partially Completed',
+                    postCompletionStatus: 'Awaiting client feedback',
+                    physicalPartStatus: 'In production'
+                },
+                dispatch: {
+                    dcDate: '2026-02-15',
+                    dcNumber: 'DC/2026/001',
+                    deliveryStatus: 'Pending',
+                    deliveryDate: '2026-02-20',
+                    deliveryConfirmation: 'No'
+                },
+                purchase: {
+                    quotationDate: '2026-01-10',
+                    quotationNumber: 'QTN-2026-001',
+                    poDate: '2026-01-15',
+                    poNumber: 'PO-2026-001',
+                    poValue: '₹3,20,000',
+                    convertedBy: 'Sarah',
+                    visitConducted: 'Yes'
+                },
+                payment: {
+                    invoiceDate: '2026-01-20',
+                    invoiceNumber: 'INV-2026-001',
+                    invoiceAmount: '₹1,60,000',
+                    pastInvoiceAmount: '₹0',
+                    paymentTerms: '50% advance, 50% on delivery',
+                    paymentType: 'Bank Transfer',
+                    paymentDueDate: '2026-02-20',
+                    paymentReceivedDate: '2026-01-25',
+                    paymentReceivedAmount: '₹1,60,000',
+                    balancePaymentDueDate: '2026-02-20',
+                    balancePaymentAmount: '₹1,60,000',
+                    overdueStatus: 'On Time'
+                },
+                ratings: {
+                    clientRating: '8',
+                    jobRating: '7',
+                    qualityRating: '8',
+                    serviceRating: '9',
+                    performanceRating: '8',
+                    feedbackComments: 'Good progress so far, looking forward to final delivery',
+                    additionalNotes: 'Client very responsive to communications'
+                }
+            },
+            { 
+                name: 'CRM Upgrade', 
+                client: 'GreenLeaf Industries', 
+                progress: 45, 
+                status: 'At Risk', 
+                statusColor: 'amber', 
+                owner: 'Sarah', 
+                budget: '₹2,80,000', 
+                spent: '₹1,60,000',
+                identification: { 
+                    projectCode: 'APJ26CAD001', 
+                    serviceCode: 'CAD',
+                    vendorCode: 'OST001',
+                    companyName: 'GreenLeaf Industries',
+                    location: 'Pune',
+                    qty: '1',
+                    projectLead: 'Sarah',
+                    assignedBy: 'Rohan',
+                    assignedTo: 'Meera',
+                    projectDescription: 'CRM system upgrade with custom module development',
+                    partDescription: 'Custom dashboard and reporting modules for manufacturing workflow'
+                },
+                tracking: {
+                    model2dStatus: 'Completed',
+                    model3dStatus: 'Completed',
+                    scan3dStatus: 'Pending',
+                    feaStatus: 'In Progress',
+                    qcInspectionStatus: 'Pending',
+                    approvalStatus: 'Pending',
+                    glApprovalStatus: 'Pending',
+                    revisionStatus: 'Pending',
+                    deliveryReportStatus: 'Pending',
+                    sopDailyReportStatus: 'Yes'
+                },
+                monitoring: {
+                    roadmapSubmitted: 'Yes',
+                    dashboardUpdated: 'No',
+                    dailyReportUpdated: 'Yes',
+                    photoAttached: 'No',
+                    overallProjectStatus: 'Pending / Delayed',
+                    postCompletionStatus: 'Testing phase',
+                    physicalPartStatus: 'Assembly required'
+                },
+                dispatch: {
+                    dcDate: '',
+                    dcNumber: '',
+                    deliveryStatus: 'Pending',
+                    deliveryDate: '2026-03-01',
+                    deliveryConfirmation: 'No'
+                },
+                purchase: {
+                    quotationDate: '2026-01-05',
+                    quotationNumber: 'QTN-2026-002',
+                    poDate: '2026-01-12',
+                    poNumber: 'PO-2026-002',
+                    poValue: '₹2,80,000',
+                    convertedBy: 'Rohan',
+                    visitConducted: 'Yes'
+                },
+                payment: {
+                    invoiceDate: '2026-01-18',
+                    invoiceNumber: 'INV-2026-002',
+                    invoiceAmount: '₹1,40,000',
+                    pastInvoiceAmount: '₹0',
+                    paymentTerms: '50% advance, 50% on delivery',
+                    paymentType: 'Bank Transfer',
+                    paymentDueDate: '2026-02-18',
+                    paymentReceivedDate: '2026-01-22',
+                    paymentReceivedAmount: '₹1,40,000',
+                    balancePaymentDueDate: '2026-03-01',
+                    balancePaymentAmount: '₹1,40,000',
+                    overdueStatus: 'On Time'
+                },
+                ratings: {
+                    clientRating: '6',
+                    jobRating: '7',
+                    qualityRating: '6',
+                    serviceRating: '7',
+                    performanceRating: '6',
+                    feedbackComments: 'Some delays in delivery, but quality is good',
+                    additionalNotes: 'Scope expansion requested by client'
+                }
+            },
+            { 
+                name: 'Re-engagement Funnel', 
+                client: 'EduSpark', 
+                progress: 28, 
+                status: 'On Track', 
+                statusColor: 'sky', 
+                owner: 'Meera', 
+                budget: '₹1,50,000', 
+                spent: '₹98,000',
+                identification: { 
+                    projectCode: 'APJ262D001', 
+                    serviceCode: '2D',
+                    vendorCode: 'OTN001',
+                    companyName: 'EduSpark',
+                    location: 'Hyderabad',
+                    qty: '1',
+                    projectLead: 'Meera',
+                    assignedBy: 'Amit',
+                    assignedTo: 'Rohan',
+                    projectDescription: 'Customer re-engagement campaign with multi-channel approach',
+                    partDescription: 'Email templates, landing pages, and social media content'
+                },
+                tracking: {
+                    model2dStatus: 'In Progress',
+                    model3dStatus: 'Pending',
+                    scan3dStatus: 'Pending',
+                    feaStatus: 'Pending',
+                    qcInspectionStatus: 'Pending',
+                    approvalStatus: 'Pending',
+                    glApprovalStatus: 'Pending',
+                    revisionStatus: 'Pending',
+                    deliveryReportStatus: 'Pending',
+                    sopDailyReportStatus: 'No'
+                },
+                monitoring: {
+                    roadmapSubmitted: 'No',
+                    dashboardUpdated: 'Yes',
+                    dailyReportUpdated: 'No',
+                    photoAttached: 'No',
+                    overallProjectStatus: 'Pending / Delayed',
+                    postCompletionStatus: '',
+                    physicalPartStatus: ''
+                },
+                dispatch: {
+                    dcDate: '',
+                    dcNumber: '',
+                    deliveryStatus: 'Pending',
+                    deliveryDate: '2026-03-15',
+                    deliveryConfirmation: 'No'
+                },
+                purchase: {
+                    quotationDate: '2026-01-25',
+                    quotationNumber: 'QTN-2026-003',
+                    poDate: '2026-02-01',
+                    poNumber: 'PO-2026-003',
+                    poValue: '₹1,50,000',
+                    convertedBy: 'Amit',
+                    visitConducted: 'No'
+                },
+                payment: {
+                    invoiceDate: '',
+                    invoiceNumber: '',
+                    invoiceAmount: '',
+                    pastInvoiceAmount: '₹0',
+                    paymentTerms: '100% on delivery',
+                    paymentType: 'Bank Transfer',
+                    paymentDueDate: '2026-03-15',
+                    paymentReceivedDate: '',
+                    paymentReceivedAmount: '',
+                    balancePaymentDueDate: '2026-03-15',
+                    balancePaymentAmount: '₹1,50,000',
+                    overdueStatus: 'Pending'
+                },
+                ratings: {
+                    clientRating: '',
+                    jobRating: '',
+                    qualityRating: '',
+                    serviceRating: '',
+                    performanceRating: '',
+                    feedbackComments: '',
+                    additionalNotes: ''
+                }
+            },
+            { 
+                name: 'Performance Ads', 
+                client: 'Mumbai Retail Chain', 
+                progress: 71, 
+                status: 'On Track', 
+                statusColor: 'emerald', 
+                owner: 'Amit', 
+                budget: '₹1,80,000', 
+                spent: '₹1,23,000',
+                identification: { 
+                    projectCode: 'APJ262DI001', 
+                    serviceCode: '2DI',
+                    vendorCode: 'CHN001',
+                    companyName: 'Mumbai Retail Chain',
+                    location: 'Mumbai',
+                    qty: '1',
+                    projectLead: 'Amit',
+                    assignedBy: 'Meera',
+                    assignedTo: 'Sarah',
+                    projectDescription: 'Performance marketing campaign for festive season',
+                    partDescription: 'Google Ads, Facebook Ads, and Instagram campaign setup'
+                },
+                tracking: {
+                    model2dStatus: 'Completed',
+                    model3dStatus: 'Completed',
+                    scan3dStatus: 'Completed',
+                    feaStatus: 'Completed',
+                    qcInspectionStatus: 'Completed',
+                    approvalStatus: 'Completed',
+                    glApprovalStatus: 'Completed',
+                    revisionStatus: 'Completed',
+                    deliveryReportStatus: 'In Progress',
+                    sopDailyReportStatus: 'Yes'
+                },
+                monitoring: {
+                    roadmapSubmitted: 'Yes',
+                    dashboardUpdated: 'Yes',
+                    dailyReportUpdated: 'Yes',
+                    photoAttached: 'Yes',
+                    overallProjectStatus: 'Completed',
+                    postCompletionStatus: 'Campaign live and performing well',
+                    physicalPartStatus: 'N/A'
+                },
+                dispatch: {
+                    dcDate: '2026-02-01',
+                    dcNumber: 'DC/2026/002',
+                    deliveryStatus: 'Completed',
+                    deliveryDate: '2026-02-05',
+                    deliveryConfirmation: 'Yes'
+                },
+                purchase: {
+                    quotationDate: '2026-01-08',
+                    quotationNumber: 'QTN-2026-004',
+                    poDate: '2026-01-10',
+                    poNumber: 'PO-2026-004',
+                    poValue: '₹1,80,000',
+                    convertedBy: 'Meera',
+                    visitConducted: 'Yes'
+                },
+                payment: {
+                    invoiceDate: '2026-02-10',
+                    invoiceNumber: 'INV-2026-004',
+                    invoiceAmount: '₹90,000',
+                    pastInvoiceAmount: '₹0',
+                    paymentTerms: '50% advance, 50% on completion',
+                    paymentType: 'Bank Transfer',
+                    paymentDueDate: '2026-02-25',
+                    paymentReceivedDate: '2026-02-12',
+                    paymentReceivedAmount: '₹90,000',
+                    balancePaymentDueDate: '2026-03-10',
+                    balancePaymentAmount: '₹90,000',
+                    overdueStatus: 'On Time'
+                },
+                ratings: {
+                    clientRating: '9',
+                    jobRating: '9',
+                    qualityRating: '8',
+                    serviceRating: '10',
+                    performanceRating: '9',
+                    feedbackComments: 'Excellent results! ROI exceeded expectations.',
+                    additionalNotes: 'Client wants to continue with monthly retainer'
+                }
+            }
+        ];
+        
+        const projects = this.getAllProjectsMerged(defaults);
+        try {
+            this._projectsCacheByKey = new Map(projects.map(p => [this.getProjectKey(p), p]));
+        } catch (_) {
+            this._projectsCacheByKey = null;
+        }
+
+        const selectedKey = this.selectedProjectKey || '';
+        const selected = selectedKey ? (projects.find(p => this.getProjectKey(p) === selectedKey) || null) : null;
+        const esc = (v) => String(v ?? '').replace(/</g, '&lt;').replace(/"/g, '&quot;');
+
+        const renderStatusSelect = (p, path, current) => {
+            const key = this.getProjectKey(p);
+            return `
+                <select data-project-key="${key}" data-project-field="${path}" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500">
+                    ${['Pending','In Progress','Completed','Blocked'].map(opt => `<option ${opt === (current || 'Pending') ? 'selected' : ''}>${opt}</option>`).join('')}
+                </select>
+            `;
+        };
+
+        const renderProfile = (p) => {
+            if (!p) {
+                return `<div class="text-sm text-slate-500">Select a project to view details.</div>`;
+            }
+            const key = this.getProjectKey(p);
+            return `
+                <div class="bg-white rounded-lg border border-slate-200 p-6 shadow-lg">
+                    <div class="flex items-start justify-between gap-3">
+                        <div>
+                            <h3 class="text-lg font-semibold text-slate-900">${esc(p.name)}</h3>
+                            <div class="text-sm text-slate-500">${esc(p.client)}</div>
+                        </div>
+                        <span class="px-2 py-1 text-xs font-medium bg-${p.statusColor || 'sky'}-50 text-${p.statusColor || 'sky'}-700 rounded-full">${esc(p.status || '—')}</span>
+                    </div>
+
+                    <div class="mt-5 space-y-4">
+                        <details open class="group">
+                            <summary class="cursor-pointer select-none text-sm font-semibold text-slate-900">Project Identification Details</summary>
+                            <div class="mt-3 grid grid-cols-2 gap-3">
+                                <div>
+                                    <label class="text-xs font-medium text-slate-600">Project Code</label>
+                                    <input data-project-key="${key}" data-project-field="identification.projectCode" value="${esc(p.identification?.projectCode || '')}" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" />
+                                </div>
+                                <div>
+                                    <label class="text-xs font-medium text-slate-600">Service Code</label>
+                                    <select data-project-key="${key}" data-project-field="identification.serviceCode" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500">
+                                        <option value="">Select</option>
+                                        <option value="RE" ${p.identification?.serviceCode === 'RE' ? 'selected' : ''}>RE</option>
+                                        <option value="CAD" ${p.identification?.serviceCode === 'CAD' ? 'selected' : ''}>CAD</option>
+                                        <option value="2D" ${p.identification?.serviceCode === '2D' ? 'selected' : ''}>2D</option>
+                                        <option value="2DI" ${p.identification?.serviceCode === '2DI' ? 'selected' : ''}>2DI</option>
+                                        <option value="3DI" ${p.identification?.serviceCode === '3DI' ? 'selected' : ''}>3DI</option>
+                                        <option value="CD" ${p.identification?.serviceCode === 'CD' ? 'selected' : ''}>CD</option>
+                                        <option value="NPD" ${p.identification?.serviceCode === 'NPD' ? 'selected' : ''}>NPD</option>
+                                        <option value="SPM" ${p.identification?.serviceCode === 'SPM' ? 'selected' : ''}>SPM</option>
+                                        <option value="STL" ${p.identification?.serviceCode === 'STL' ? 'selected' : ''}>STL</option>
+                                        <option value="FEA" ${p.identification?.serviceCode === 'FEA' ? 'selected' : ''}>FEA</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="text-xs font-medium text-slate-600">Vendor Code</label>
+                                    <input data-project-key="${key}" data-project-field="identification.vendorCode" value="${esc(p.identification?.vendorCode || '')}" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" />
+                                </div>
+                                <div>
+                                    <label class="text-xs font-medium text-slate-600">Company Name</label>
+                                    <input data-project-key="${key}" data-project-field="identification.companyName" value="${esc(p.identification?.companyName || '')}" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" />
+                                </div>
+                                <div>
+                                    <label class="text-xs font-medium text-slate-600">Location</label>
+                                    <input data-project-key="${key}" data-project-field="identification.location" value="${esc(p.identification?.location || '')}" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" />
+                                </div>
+                                <div>
+                                    <label class="text-xs font-medium text-slate-600">Quantity (QTY)</label>
+                                    <input data-project-key="${key}" data-project-field="identification.qty" value="${esc(p.identification?.qty || '')}" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" />
+                                </div>
+                                <div>
+                                    <label class="text-xs font-medium text-slate-600">Project Lead</label>
+                                    <input data-project-key="${key}" data-project-field="identification.projectLead" value="${esc(p.identification?.projectLead || '')}" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" />
+                                </div>
+                                <div>
+                                    <label class="text-xs font-medium text-slate-600">Assigned By</label>
+                                    <input data-project-key="${key}" data-project-field="identification.assignedBy" value="${esc(p.identification?.assignedBy || '')}" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" />
+                                </div>
+                                <div>
+                                    <label class="text-xs font-medium text-slate-600">Assigned To (Employee)</label>
+                                    <input data-project-key="${key}" data-project-field="identification.assignedTo" value="${esc(p.identification?.assignedTo || '')}" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" />
+                                </div>
+                                <div class="col-span-2">
+                                    <label class="text-xs font-medium text-slate-600">Project Description</label>
+                                    <textarea data-project-key="${key}" data-project-field="identification.projectDescription" rows="2" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500">${String(p.identification?.projectDescription || '').replace(/</g, '&lt;')}</textarea>
+                                </div>
+                                <div class="col-span-2">
+                                    <label class="text-xs font-medium text-slate-600">Part Description</label>
+                                    <textarea data-project-key="${key}" data-project-field="identification.partDescription" rows="2" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500">${String(p.identification?.partDescription || '').replace(/</g, '&lt;')}</textarea>
+                                </div>
+                            </div>
+                        </details>
+
+                        <details class="group">
+                            <summary class="cursor-pointer select-none text-sm font-semibold text-slate-900">Technical Scope / Stage Tracking</summary>
+                            <div class="mt-3 grid grid-cols-2 gap-3">
+                                ${[
+                                    ['model2dStatus','2D Model Status'],
+                                    ['model3dStatus','3D Model Status'],
+                                    ['scan3dStatus','3D Scan Status'],
+                                    ['feaStatus','FEA Status'],
+                                    ['qcInspectionStatus','QC / Inspection Status'],
+                                    ['approvalStatus','Approval Status'],
+                                    ['glApprovalStatus','GL Approval Status'],
+                                    ['revisionStatus','Correction / Revision Status'],
+                                    ['deliveryReportStatus','Delivery Report Status'],
+                                    ['sopDailyReportStatus','SOP-Based Daily Report Status']
+                                ].map(([k,label]) => `
+                                    <div>
+                                        <label class="text-xs font-medium text-slate-600">${label}</label>
+                                        ${renderStatusSelect(p, `tracking.${k}`, p.tracking?.[k] || 'Pending')}
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </details>
+
+                        <details class="group">
+                            <summary class="cursor-pointer select-none text-sm font-semibold text-slate-900">Project Roadmap & Progress Monitoring</summary>
+                            <div class="mt-3 grid grid-cols-2 gap-3">
+                                ${[
+                                    ['monitoring.roadmapSubmitted','Project Roadmap Submitted'],
+                                    ['monitoring.dashboardUpdated','Dashboard Updated'],
+                                    ['monitoring.dailyReportUpdated','Daily Report Updated'],
+                                    ['monitoring.photoAttached','Photo Attached']
+                                ].map(([field,label]) => {
+                                    const cur = field.split('.').reduce((acc, part) => acc?.[part], p) || 'No';
+                                    return `
+                                        <div>
+                                            <label class="text-xs font-medium text-slate-600">${label} (Yes/No)</label>
+                                            <select data-project-key="${key}" data-project-field="${field}" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500">
+                                                <option ${cur === 'Yes' ? 'selected' : ''}>Yes</option>
+                                                <option ${cur !== 'Yes' ? 'selected' : ''}>No</option>
+                                            </select>
+                                        </div>
+                                    `;
+                                }).join('')}
+                                <div class="col-span-2">
+                                    <label class="text-xs font-medium text-slate-600">Overall Project Status</label>
+                                    <select data-project-key="${key}" data-project-field="monitoring.overallProjectStatus" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500">
+                                        ${['Completed','Partially Completed','Pending / Delayed'].map(opt => `<option ${opt === (p.monitoring?.overallProjectStatus || 'Pending / Delayed') ? 'selected' : ''}>${opt}</option>`).join('')}
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="text-xs font-medium text-slate-600">Post Completion Status</label>
+                                    <input data-project-key="${key}" data-project-field="monitoring.postCompletionStatus" value="${esc(p.monitoring?.postCompletionStatus || '')}" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" />
+                                </div>
+                                <div>
+                                    <label class="text-xs font-medium text-slate-600">Physical Part Status</label>
+                                    <input data-project-key="${key}" data-project-field="monitoring.physicalPartStatus" value="${esc(p.monitoring?.physicalPartStatus || '')}" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" />
+                                </div>
+                            </div>
+                        </details>
+
+                        <details class="group">
+                            <summary class="cursor-pointer select-none text-sm font-semibold text-slate-900">Dispatch & Delivery Details</summary>
+                            <div class="mt-3 grid grid-cols-2 gap-3">
+                                <div>
+                                    <label class="text-xs font-medium text-slate-600">DC Date</label>
+                                    <input data-project-key="${key}" data-project-field="dispatch.dcDate" type="date" value="${esc(p.dispatch?.dcDate || '')}" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" />
+                                </div>
+                                <div>
+                                    <label class="text-xs font-medium text-slate-600">DC Number</label>
+                                    <input data-project-key="${key}" data-project-field="dispatch.dcNumber" value="${esc(p.dispatch?.dcNumber || '')}" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" />
+                                </div>
+                                <div>
+                                    <label class="text-xs font-medium text-slate-600">Delivery Status</label>
+                                    ${renderStatusSelect(p, 'dispatch.deliveryStatus', p.dispatch?.deliveryStatus || 'Pending')}
+                                </div>
+                                <div>
+                                    <label class="text-xs font-medium text-slate-600">Delivery Date</label>
+                                    <input data-project-key="${key}" data-project-field="dispatch.deliveryDate" type="date" value="${esc(p.dispatch?.deliveryDate || '')}" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" />
+                                </div>
+                                <div>
+                                    <label class="text-xs font-medium text-slate-600">Delivery Confirmation (Yes/No)</label>
+                                    <select data-project-key="${key}" data-project-field="dispatch.deliveryConfirmation" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500">
+                                        <option ${String(p.dispatch?.deliveryConfirmation || 'No') === 'Yes' ? 'selected' : ''}>Yes</option>
+                                        <option ${String(p.dispatch?.deliveryConfirmation || 'No') !== 'Yes' ? 'selected' : ''}>No</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </details>
+
+                        <details class="group">
+                            <summary class="cursor-pointer select-none text-sm font-semibold text-slate-900">Quotation & Purchase Details</summary>
+                            <div class="mt-3 grid grid-cols-2 gap-3">
+                                <div>
+                                    <label class="text-xs font-medium text-slate-600">Quotation Date</label>
+                                    <input data-project-key="${key}" data-project-field="purchase.quotationDate" type="date" value="${esc(p.purchase?.quotationDate || '')}" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" />
+                                </div>
+                                <div>
+                                    <label class="text-xs font-medium text-slate-600">Quotation Number</label>
+                                    <input data-project-key="${key}" data-project-field="purchase.quotationNumber" value="${esc(p.purchase?.quotationNumber || '')}" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" />
+                                </div>
+                                <div>
+                                    <label class="text-xs font-medium text-slate-600">PO Date</label>
+                                    <input data-project-key="${key}" data-project-field="purchase.poDate" type="date" value="${esc(p.purchase?.poDate || '')}" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" />
+                                </div>
+                                <div>
+                                    <label class="text-xs font-medium text-slate-600">PO Number</label>
+                                    <input data-project-key="${key}" data-project-field="purchase.poNumber" value="${esc(p.purchase?.poNumber || '')}" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" />
+                                </div>
+                                <div>
+                                    <label class="text-xs font-medium text-slate-600">PO Value</label>
+                                    <input data-project-key="${key}" data-project-field="purchase.poValue" value="${esc(p.purchase?.poValue || '')}" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" />
+                                </div>
+                                <div>
+                                    <label class="text-xs font-medium text-slate-600">Converted By</label>
+                                    <input data-project-key="${key}" data-project-field="purchase.convertedBy" value="${esc(p.purchase?.convertedBy || '')}" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" />
+                                </div>
+                                <div>
+                                    <label class="text-xs font-medium text-slate-600">Visit Conducted (Yes/No)</label>
+                                    <select data-project-key="${key}" data-project-field="purchase.visitConducted" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500">
+                                        <option ${String(p.purchase?.visitConducted || 'No') === 'Yes' ? 'selected' : ''}>Yes</option>
+                                        <option ${String(p.purchase?.visitConducted || 'No') !== 'Yes' ? 'selected' : ''}>No</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </details>
+
+                        <details class="group">
+                            <summary class="cursor-pointer select-none text-sm font-semibold text-slate-900">Invoice & Payment Tracking</summary>
+                            <div class="mt-3 grid grid-cols-2 gap-3">
+                                ${[
+                                    ['payment.invoiceDate','Invoice Date','date'],
+                                    ['payment.invoiceNumber','Invoice Number','text'],
+                                    ['payment.invoiceAmount','Invoice Amount','text'],
+                                    ['payment.pastInvoiceAmount','Past Invoice Amount','text'],
+                                    ['payment.paymentTerms','Payment Terms','text'],
+                                    ['payment.paymentType','Payment Type','text'],
+                                    ['payment.paymentDueDate','Payment Due Date','date'],
+                                    ['payment.paymentReceivedDate','Payment Received Date','date'],
+                                    ['payment.paymentReceivedAmount','Payment Received Amount','text'],
+                                    ['payment.balancePaymentDueDate','Balance Payment Due Date','date'],
+                                    ['payment.balancePaymentAmount','Balance Payment Amount','text']
+                                ].map(([field,label,type]) => {
+                                    const val = field.split('.').reduce((acc, part) => acc?.[part], p) || '';
+                                    return `
+                                        <div>
+                                            <label class="text-xs font-medium text-slate-600">${label}</label>
+                                            <input data-project-key="${key}" data-project-field="${field}" type="${type}" value="${esc(val)}" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" />
+                                        </div>
+                                    `;
+                                }).join('')}
+                                <div class="col-span-2">
+                                    <label class="text-xs font-medium text-slate-600">Overdue Status (auto)</label>
+                                    <input value="${esc(p.payment?.overdueStatus || '')}" disabled class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm bg-slate-50 text-slate-700" />
+                                </div>
+                            </div>
+                        </details>
+
+                        <details class="group">
+                            <summary class="cursor-pointer select-none text-sm font-semibold text-slate-900">Performance & Rating</summary>
+                            <div class="mt-3 grid grid-cols-2 gap-3">
+                                ${[
+                                    ['ratings.clientRating','Client Rating'],
+                                    ['ratings.jobRating','Job Rating'],
+                                    ['ratings.qualityRating','Quality Rating'],
+                                    ['ratings.serviceRating','Service Rating'],
+                                    ['ratings.performanceRating','Performance Rating']
+                                ].map(([field,label]) => {
+                                    const val = field.split('.').reduce((acc, part) => acc?.[part], p) || '';
+                                    return `
+                                        <div>
+                                            <label class="text-xs font-medium text-slate-600">${label} (0-10)</label>
+                                            <input data-project-key="${key}" data-project-field="${field}" type="number" min="0" max="10" value="${esc(val)}" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" />
+                                        </div>
+                                    `;
+                                }).join('')}
+                                <div class="col-span-2">
+                                    <label class="text-xs font-medium text-slate-600">Feedback / Comments</label>
+                                    <textarea data-project-key="${key}" data-project-field="ratings.feedbackComments" rows="2" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500">${String(p.ratings?.feedbackComments || '').replace(/</g, '&lt;')}</textarea>
+                                </div>
+                                <div class="col-span-2">
+                                    <label class="text-xs font-medium text-slate-600">Additional Notes</label>
+                                    <textarea data-project-key="${key}" data-project-field="ratings.additionalNotes" rows="2" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500">${String(p.ratings?.additionalNotes || '').replace(/</g, '&lt;')}</textarea>
+                                </div>
+                            </div>
+                        </details>
+                    </div>
+
+                    <div class="mt-6 flex gap-2">
+                        <button data-action="project:save:${String(key).replace(/"/g, '&quot;')}" class="px-3 py-1.5 text-xs font-medium bg-green-600 text-white rounded-lg hover:bg-green-700">Save</button>
+                        <button data-action="project:delete:${String(key).replace(/"/g, '&quot;')}" class="px-3 py-1.5 text-xs font-medium bg-red-600 text-white rounded-lg hover:bg-red-700">Delete</button>
+                    </div>
+                </div>
+            `;
+        };
+
+        return `
+            <div class="space-y-6 fade-in">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h2 class="text-2xl font-semibold text-slate-900">Project Directory</h2>
+                        <p class="text-sm text-slate-500">All projects with full profile details</p>
+                    </div>
+                </div>
+
+                ${selected ? `
+                    <div class="grid grid-cols-3 gap-6">
+                        <div class="col-span-1 bg-white rounded-lg border border-slate-200 overflow-hidden">
+                            <div class="p-4 border-b border-slate-200 flex items-center justify-between">
+                                <div class="text-sm font-medium text-slate-900">Projects</div>
+                                <div class="text-xs text-slate-500">${projects.length}</div>
+                            </div>
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-sm">
+                                    <thead class="bg-slate-50 border-b border-slate-200">
+                                        <tr>
+                                            <th class="text-left px-4 py-3 font-medium text-slate-700">Project Code</th>
+                                            <th class="text-left px-4 py-3 font-medium text-slate-700">Company</th>
+                                            <th class="text-left px-4 py-3 font-medium text-slate-700">Lead</th>
+                                            <th class="text-left px-4 py-3 font-medium text-slate-700">Assigned</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-slate-200">
+                                        ${projects.map(p => {
+                                            const k = this.getProjectKey(p);
+                                            const isActive = selected && this.getProjectKey(selected) === k;
+                                            return `
+                                                <tr class="${isActive ? 'bg-purple-50' : ''} hover:bg-slate-50">
+                                                    <td class="px-4 py-3">
+                                                        <button data-action="project:dir:select:${String(k).replace(/"/g, '&quot;')}" class="text-left w-full font-semibold text-slate-900 hover:text-purple-700">
+                                                            ${esc(p.identification?.projectCode || '—')}
+                                                        </button>
+                                                    </td>
+                                                    <td class="px-4 py-3 text-slate-700">${esc(p.identification?.companyName || p.client || '—')}</td>
+                                                    <td class="px-4 py-3 text-slate-700">${esc(p.identification?.projectLead || p.owner || '—')}</td>
+                                                    <td class="px-4 py-3 text-slate-700">${esc(p.identification?.assignedTo || '—')}</td>
+                                                </tr>
+                                            `;
+                                        }).join('')}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div class="col-span-2">
+                            ${renderProfile(selected)}
+                        </div>
+                    </div>
+                ` : `
+                    <div class="bg-white rounded-lg border border-slate-200 overflow-hidden">
+                        <div class="p-4 border-b border-slate-200 flex items-center justify-between">
+                            <div class="text-sm font-medium text-slate-900">Projects</div>
+                            <div class="text-xs text-slate-500">${projects.length}</div>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-sm">
+                                <thead class="bg-slate-50 border-b border-slate-200">
+                                    <tr>
+                                        <th class="text-left px-4 py-3 font-medium text-slate-700">Project Code</th>
+                                        <th class="text-left px-4 py-3 font-medium text-slate-700">Company</th>
+                                        <th class="text-left px-4 py-3 font-medium text-slate-700">Lead</th>
+                                        <th class="text-left px-4 py-3 font-medium text-slate-700">Assigned</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-slate-200">
+                                    ${projects.map(p => {
+                                        const k = this.getProjectKey(p);
+                                        return `
+                                            <tr class="hover:bg-slate-50">
+                                                <td class="px-4 py-3">
+                                                    <button data-action="project:dir:select:${String(k).replace(/"/g, '&quot;')}" class="text-left w-full font-semibold text-slate-900 hover:text-purple-700">
+                                                        ${esc(p.identification?.projectCode || '—')}
+                                                    </button>
+                                                </td>
+                                                <td class="px-4 py-3 text-slate-700">${esc(p.identification?.companyName || p.client || '—')}</td>
+                                                <td class="px-4 py-3 text-slate-700">${esc(p.identification?.projectLead || p.owner || '—')}</td>
+                                                <td class="px-4 py-3 text-slate-700">${esc(p.identification?.assignedTo || '—')}</td>
+                                            </tr>
+                                        `;
+                                    }).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                `}
             </div>
         `;
     }
@@ -4131,12 +5968,82 @@ class MarketFlowCRM {
 
     getActiveProjects() {
         const defaults = [
-            { name: 'SEO Revamp', client: 'TechNova Solutions', progress: 62, status: 'On Track', statusColor: 'emerald', owner: 'Rohan', budget: '₹3,20,000', spent: '₹2,10,000' },
-            { name: 'CRM Upgrade', client: 'GreenLeaf Industries', progress: 45, status: 'At Risk', statusColor: 'amber', owner: 'Sarah', budget: '₹2,80,000', spent: '₹1,60,000' },
-            { name: 'Re-engagement Funnel', client: 'EduSpark', progress: 28, status: 'On Track', statusColor: 'sky', owner: 'Meera', budget: '₹1,50,000', spent: '₹98,000' },
-            { name: 'Performance Ads', client: 'Mumbai Retail Chain', progress: 71, status: 'On Track', statusColor: 'emerald', owner: 'Amit', budget: '₹1,80,000', spent: '₹1,23,000' }
+            { name: 'SEO Revamp', client: 'TechNova Solutions', progress: 62, status: 'On Track', statusColor: 'emerald', owner: 'Rohan', budget: '₹3,20,000', spent: '₹2,10,000', identification: { projectCode: 'APJ26RE001', serviceCode: 'RE' } },
+            { name: 'CRM Upgrade', client: 'GreenLeaf Industries', progress: 45, status: 'At Risk', statusColor: 'amber', owner: 'Sarah', budget: '₹2,80,000', spent: '₹1,60,000', identification: { projectCode: 'APJ26CAD001', serviceCode: 'CAD' } },
+            { name: 'Re-engagement Funnel', client: 'EduSpark', progress: 28, status: 'On Track', statusColor: 'sky', owner: 'Meera', budget: '₹1,50,000', spent: '₹98,000', identification: { projectCode: 'APJ262D001', serviceCode: '2D' } },
+            { name: 'Performance Ads', client: 'Mumbai Retail Chain', progress: 71, status: 'On Track', statusColor: 'emerald', owner: 'Amit', budget: '₹1,80,000', spent: '₹1,23,000', identification: { projectCode: 'APJ262DI001', serviceCode: '2DI' } }
         ];
-        const projects = [...this.getStoredProjects(), ...defaults];
+        const projects = this.getAllProjectsMerged(defaults);
+
+        try {
+            this._projectsCacheByKey = new Map(projects.map(p => [this.getProjectKey(p), p]));
+        } catch (_) {
+            this._projectsCacheByKey = null;
+        }
+
+        const progressStages = ['Brief', 'Planning', 'Execution', 'Review', 'Delivery'];
+        const projectKey = (p) => `${String(p?.name || '').trim()}__${String(p?.client || '').trim()}`;
+        const selectedKey = this.selectedProjectKey || '';
+        const selected = selectedKey ? (projects.find(p => projectKey(p) === selectedKey) || null) : null;
+        const stageIdx = selected ? Math.min(progressStages.length - 1, Math.max(0, Math.floor((Number(selected.progress) || 0) / (100 / progressStages.length)))) : 0;
+        const stageColor = selected?.statusColor || 'sky';
+
+        const renderVerticalProgress = () => {
+            return `
+                <div class="space-y-3">
+                    ${progressStages.map((s, i) => {
+                        const done = i <= stageIdx;
+                        const line = done ? `bg-${stageColor}-500` : 'bg-slate-200';
+                        const dot = done ? `bg-${stageColor}-600 border-${stageColor}-600` : 'bg-white border-slate-300';
+                        const text = done ? 'text-slate-900' : 'text-slate-600';
+                        const showLine = i < progressStages.length - 1;
+                        return `
+                            <div class="flex items-start gap-3">
+                                <div class="flex flex-col items-center">
+                                    <div class="w-6 h-6 rounded-full border ${dot} flex items-center justify-center">
+                                        ${done ? '<i data-lucide="check" class="w-4 h-4 text-white"></i>' : ''}
+                                    </div>
+                                    ${showLine ? `<div class="w-[2px] h-7 ${line} mt-1"></div>` : ''}
+                                </div>
+                                <div class="pt-0.5">
+                                    <div class="text-sm font-semibold ${text}">${s}</div>
+                                    <div class="text-xs text-slate-500">Level ${i + 1}</div>
+                                </div>
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+            `;
+        };
+
+        const renderHorizontalStageProgress = (p) => {
+            const pct = Math.max(0, Math.min(100, Number(p?.progress) || 0));
+            const idx = Math.min(progressStages.length - 1, Math.max(0, Math.floor(pct / (100 / progressStages.length))));
+            const c = p?.statusColor || 'sky';
+            return `
+                <div class="flex items-center gap-3">
+                    <div class="flex items-center flex-1">
+                        ${progressStages.map((_, i) => {
+                            const done = i <= idx;
+                            const isLast = i === progressStages.length - 1;
+                            const dotBg = done ? `bg-${c}-600 border-${c}-600` : 'bg-slate-200 border-slate-200';
+                            const lineBg = done ? `bg-${c}-500` : 'bg-slate-200';
+                            return `
+                                <div class="flex items-center ${isLast ? '' : 'flex-1'}">
+                                    <div class="w-9 h-9 rounded-full border ${dotBg} flex items-center justify-center flex-shrink-0">
+                                        ${done ? '<i data-lucide="check" class="w-5 h-5 text-white"></i>' : ''}
+                                    </div>
+                                    ${isLast ? '' : `<div class="h-[3px] ${lineBg} flex-1"></div>`}
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                    <div class="text-xs font-semibold text-slate-900">${pct}%</div>
+                </div>
+            `;
+        };
+
+        const isSplit = Boolean(this.isProjectDetailOpen && selected);
 
         return `
             <div class="space-y-6 fade-in">
@@ -4149,65 +6056,91 @@ class MarketFlowCRM {
                 </div>
 
                 <div class="grid grid-cols-3 gap-6">
-                    <div class="col-span-2 bg-white rounded-lg border border-slate-200 overflow-hidden">
+                    <div class="${isSplit ? 'col-span-2' : 'col-span-3'} bg-white rounded-lg border border-slate-200 overflow-hidden">
                         <div class="p-4 border-b border-slate-200 flex items-center justify-between">
                             <div class="text-sm font-medium text-slate-900">Project List</div>
                             <div class="text-xs text-slate-500">${projects.length} active</div>
                         </div>
                         <div class="divide-y divide-slate-200">
-                            ${projects.map(p => `
-                                <div class="p-4 hover:bg-slate-50">
-                                    <div class="flex items-start justify-between">
-                                        <div>
-                                            <div class="text-sm font-semibold text-slate-900">${p.name}</div>
-                                            <div class="text-xs text-slate-500">${p.client} • Owner: ${p.owner}</div>
+                            ${projects.map(p => {
+                                const key = projectKey(p);
+                                const isActive = selected && projectKey(selected) === key;
+                                return `
+                                    <button data-action="project:select:${key.replace(/"/g, '&quot;')}" class="w-full text-left p-4 hover:bg-slate-50 ${isActive ? 'bg-purple-50' : ''}">
+                                        <div class="flex items-start justify-between">
+                                            <div>
+                                                <div class="text-sm font-semibold text-slate-900">${p.name}</div>
+                                                <div class="text-xs text-slate-500">${p.client} • Owner: ${p.owner}</div>
+                                            </div>
+                                            <span class="px-2 py-1 text-xs font-medium bg-${p.statusColor}-50 text-${p.statusColor}-700 rounded-full">${p.status}</span>
                                         </div>
-                                        <span class="px-2 py-1 text-xs font-medium bg-${p.statusColor}-50 text-${p.statusColor}-700 rounded-full">${p.status}</span>
-                                    </div>
-                                    <div class="mt-3">
-                                        <div class="flex items-center justify-between text-xs text-slate-600">
-                                            <span>Progress</span>
-                                            <span class="font-medium text-slate-900">${p.progress}%</span>
-                                        </div>
-                                        <div class="mt-2 w-full bg-slate-200 rounded-full h-2">
-                                            <div class="bg-sky-600 h-2 rounded-full" style="width: ${p.progress}%"></div>
-                                        </div>
-                                    </div>
-                                    <div class="mt-3 grid grid-cols-3 gap-3">
-                                        <div class="p-3 bg-slate-50 rounded-lg">
-                                            <div class="text-xs text-slate-500">Budget</div>
-                                            <div class="text-sm font-semibold text-slate-900">${p.budget}</div>
-                                        </div>
-                                        <div class="p-3 bg-slate-50 rounded-lg">
-                                            <div class="text-xs text-slate-500">Spent</div>
-                                            <div class="text-sm font-semibold text-slate-900">${p.spent}</div>
-                                        </div>
-                                        <div class="p-3 bg-slate-50 rounded-lg">
-                                            <div class="text-xs text-slate-500">Team</div>
-                                            <div class="flex -space-x-2 mt-1">
-                                                ${['SK','RM','AM','MR'].map(initials => `
-                                                    <div class="w-7 h-7 rounded-full bg-indigo-600 text-white text-[11px] flex items-center justify-center border-2 border-white">${initials}</div>
-                                                `).join('')}
+
+                                        <div class="mt-4 grid grid-cols-1 lg:grid-cols-2 gap-4 items-center">
+                                            <div>
+                                                ${renderHorizontalStageProgress(p)}
+                                            </div>
+                                            <div class="grid grid-cols-3 gap-3">
+                                                <div class="p-3 bg-slate-50 rounded-lg">
+                                                    <div class="text-xs text-slate-500">Budget</div>
+                                                    <div class="text-sm font-semibold text-slate-900">${p.budget}</div>
+                                                </div>
+                                                <div class="p-3 bg-slate-50 rounded-lg">
+                                                    <div class="text-xs text-slate-500">Spent</div>
+                                                    <div class="text-sm font-semibold text-slate-900">${p.spent}</div>
+                                                </div>
+                                                <div class="p-3 bg-slate-50 rounded-lg">
+                                                    <div class="text-xs text-slate-500">Service Code</div>
+                                                    <div class="text-sm font-semibold text-slate-900">${p.identification?.serviceCode || '—'}</div>
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
-                                </div>
-                            `).join('')}
+                                    </button>
+                                `;
+                            }).join('')}
                         </div>
                     </div>
 
-                    <div class="bg-white rounded-lg border border-slate-200 p-6 shadow-lg">
-                        <h3 class="text-lg font-semibold text-slate-900">Budget vs Spent</h3>
-                        <p class="text-sm text-slate-500">Client-wise comparison</p>
-                        <div class="mt-4 h-72 bg-slate-50 rounded-lg p-3">
-                            <canvas id="budgetSpentChart"></canvas>
+                    ${isSplit ? `
+                        <div class="col-span-1 bg-white rounded-lg border border-slate-200 p-6 shadow-lg">
+                            <div class="flex items-start justify-between gap-3">
+                                <div>
+                                    <h3 class="text-lg font-semibold text-slate-900">${selected.name}</h3>
+                                    <div class="text-sm text-slate-500">${selected.client}</div>
+                                </div>
+                                <button data-action="project:detail:close" class="p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-lg" aria-label="Close">
+                                    <i data-lucide="x" class="w-4 h-4"></i>
+                                </button>
+                            </div>
+
+                            <div class="mt-3 flex items-center justify-between">
+                                <span class="px-2 py-1 text-xs font-medium bg-${stageColor}-50 text-${stageColor}-700 rounded-full">${selected.status}</span>
+                                <div class="text-xs text-slate-600">Progress: <span class="font-semibold text-slate-900">${selected.progress}%</span></div>
+                            </div>
+
+                            <div class="mt-4 grid grid-cols-2 gap-3">
+                                <div class="p-3 bg-slate-50 rounded-lg">
+                                    <div class="text-xs text-slate-500">Owner</div>
+                                    <div class="text-sm font-semibold text-slate-900">${selected.owner || '—'}</div>
+                                </div>
+                                <div class="p-3 bg-slate-50 rounded-lg">
+                                    <div class="text-xs text-slate-500">Lead</div>
+                                    <div class="text-sm font-semibold text-slate-900">${selected.lead || selected.leadName || '—'}</div>
+                                </div>
+                                <div class="p-3 bg-slate-50 rounded-lg">
+                                    <div class="text-xs text-slate-500">Budget</div>
+                                    <div class="text-sm font-semibold text-slate-900">${selected.budget || '—'}</div>
+                                </div>
+                                <div class="p-3 bg-slate-50 rounded-lg">
+                                    <div class="text-xs text-slate-500">Spent</div>
+                                    <div class="text-sm font-semibold text-slate-900">${selected.spent || '—'}</div>
+                                </div>
+                            </div>
+
+                            <div class="mt-5">
+                                <button data-action="nav:projects/directory" class="w-full px-4 py-2 text-sm font-medium bg-purple-50 text-purple-700 rounded-lg hover:bg-purple-100 transition-colors">Open full details in Project Directory</button>
+                            </div>
                         </div>
-                        <div class="mt-4 p-3 bg-rose-50 border border-rose-100 rounded-lg">
-                            <div class="text-sm font-medium text-rose-900">Watchlist</div>
-                            <div class="text-xs text-rose-800">GreenLeaf is trending above expected spend</div>
-                        </div>
-                        <button class="mt-5 w-full px-4 py-2 text-sm font-medium bg-purple-50 text-purple-700 rounded-lg hover:bg-purple-100 transition-colors">View Cost Breakdown</button>
-                    </div>
+                    ` : ''}
                 </div>
             </div>
         `;

@@ -751,6 +751,7 @@ class MarketFlowCRM {
             this.writeStore('bezent_projects', migrated);
         }
 
+        // If no projects in storage, return empty array to allow defaults to load
         return migrated;
     }
 
@@ -1090,18 +1091,18 @@ class MarketFlowCRM {
 
     generateProjectCode(serviceCode) {
         if (!serviceCode) return '';
-        const currentYear = new Date().getFullYear().toString().slice(-2); // Get last 2 digits of year
+        const currentYear = new Date().getFullYear().toString().slice(-2);
         const prefix = 'APJ';
         const projects = this.getStoredProjects();
         
-        // Filter projects by current year and service code
-        const yearServiceProjects = projects.filter(p => {
+        // Filter projects by current year only (any service code)
+        const yearProjects = projects.filter(p => {
             const projectCode = String(p.identification?.projectCode || '');
-            return projectCode.startsWith(prefix + currentYear + serviceCode);
+            return projectCode.startsWith(prefix + currentYear);
         });
         
-        // Get next sequence number
-        const nextNumber = (yearServiceProjects.length + 1).toString().padStart(3, '0');
+        // Get next sequence number across all projects in this year
+        const nextNumber = (yearProjects.length + 1).toString().padStart(3, '0');
         
         return `${prefix}${currentYear}${serviceCode}${nextNumber}`;
     }
@@ -2063,6 +2064,40 @@ class MarketFlowCRM {
                 return true;
             }
 
+            if (a === 'quote:print:sample') {
+                const q = this.getSampleQuotationTemplate();
+                this.openQuotationPrintWindow(q);
+                return true;
+            }
+
+            if (a === 'quote:print:current') {
+                const q = this.computeQuotation(this._quoteDraft || this.getSampleQuotationTemplate());
+                this.openQuotationPrintWindow(q);
+                return true;
+            }
+
+            if (a === 'quote:item:add') {
+                if (!this._quoteDraft) this._quoteDraft = this.getSampleQuotationTemplate();
+                if (!Array.isArray(this._quoteDraft.items)) this._quoteDraft.items = [];
+                this._quoteDraft.items.push({ description: '', hsnSac: '998333', dueOn: '', qty: 1, rate: 0, amount: 0 });
+                this.renderContent();
+                this.initializeLucideIcons();
+                return true;
+            }
+
+            if (a.startsWith('quote:item:remove:')) {
+                const idx = Number(a.slice('quote:item:remove:'.length));
+                if (!this._quoteDraft) this._quoteDraft = this.getSampleQuotationTemplate();
+                const items = Array.isArray(this._quoteDraft.items) ? this._quoteDraft.items : [];
+                if (Number.isFinite(idx) && idx >= 0 && idx < items.length) {
+                    items.splice(idx, 1);
+                    this._quoteDraft.items = items;
+                    this.renderContent();
+                    this.initializeLucideIcons();
+                }
+                return true;
+            }
+
             if (a === 'toast') {
                 return true;
             }
@@ -2137,6 +2172,54 @@ class MarketFlowCRM {
                     if (vendorCodeEl) {
                         vendorCodeEl.value = this.generateVendorCode(location);
                     }
+                }
+            });
+        }
+
+        if (!this._quoteInputDelegated) {
+            this._quoteInputDelegated = true;
+            document.addEventListener('input', (e) => {
+                const target = e.target;
+                if (!(target instanceof Element)) return;
+
+                const fieldEl = target.closest('[data-quote-field]');
+                const itemEl = target.closest('[data-quote-item-index][data-quote-item-field]');
+                if (!fieldEl && !itemEl) return;
+
+                if (!this._quoteDraft) this._quoteDraft = this.getSampleQuotationTemplate();
+
+                if (fieldEl) {
+                    const path = String(fieldEl.getAttribute('data-quote-field') || '').trim();
+                    if (!path) return;
+                    const value = (fieldEl instanceof HTMLInputElement || fieldEl instanceof HTMLTextAreaElement || fieldEl instanceof HTMLSelectElement)
+                        ? fieldEl.value
+                        : (fieldEl.getAttribute('value') || '');
+                    if (path === 'termsText') {
+                        this._quoteDraft.termsText = value;
+                        this._quoteDraft.terms = null;
+                    } else {
+                        this.setNestedProperty(this._quoteDraft, path, value);
+                    }
+                }
+
+                if (itemEl) {
+                    const idx = Number(itemEl.getAttribute('data-quote-item-index'));
+                    const field = String(itemEl.getAttribute('data-quote-item-field') || '').trim();
+                    if (!Number.isFinite(idx) || idx < 0) return;
+                    if (!Array.isArray(this._quoteDraft.items)) this._quoteDraft.items = [];
+                    while (this._quoteDraft.items.length <= idx) this._quoteDraft.items.push({ description: '', hsnSac: '', dueOn: '', qty: 0, rate: 0, amount: 0 });
+                    const value = (itemEl instanceof HTMLInputElement || itemEl instanceof HTMLTextAreaElement || itemEl instanceof HTMLSelectElement)
+                        ? itemEl.value
+                        : (itemEl.getAttribute('value') || '');
+                    if (field === 'qty' || field === 'rate') {
+                        this._quoteDraft.items[idx][field] = Number(String(value).replace(/[^0-9.\-]/g, '')) || 0;
+                    } else {
+                        this._quoteDraft.items[idx][field] = value;
+                    }
+                }
+
+                if (this.currentSection === 'projects' && this.currentSubSection === 'quotation_templates') {
+                    this.renderContent();
                 }
             });
         }
@@ -4798,9 +4881,521 @@ class MarketFlowCRM {
             case 'completed':
                 container.innerHTML = this.getCompletedProjects();
                 break;
+            case 'quotation_templates':
+                container.innerHTML = this.getQuotationTemplates();
+                break;
             default:
                 container.innerHTML = this.getSalesPipeline();
         }
+    }
+
+    getQuotationTemplates() {
+        if (!this._quoteDraft) this._quoteDraft = this.getSampleQuotationTemplate();
+        const draft = this.computeQuotation(this._quoteDraft);
+        const esc = (v) => String(v ?? '').replace(/</g, '&lt;').replace(/"/g, '&quot;');
+        const company = draft.company || {};
+        const buyer = draft.buyer || {};
+        const quote = draft.quote || {};
+        const bank = draft.bank || {};
+        const items = Array.isArray(draft.items) ? draft.items : [];
+        const totals = draft.totals || {};
+        const tax = draft.tax || {};
+
+        return `
+            <div class="space-y-6 fade-in">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h2 class="text-2xl font-semibold text-slate-900">Quotation Templates</h2>
+                        <p class="text-sm text-slate-500">Fill details, auto-calculate GST, then print</p>
+                    </div>
+                    <div class="flex gap-2">
+                        <button data-action="quote:item:add" class="px-4 py-2 text-sm font-medium bg-purple-50 text-purple-700 rounded-lg hover:bg-purple-100 transition-colors">+ Add Line</button>
+                        <button data-action="quote:print:current" class="px-4 py-2 text-sm font-medium bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">Print Quotation</button>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-lg border border-slate-200 p-6 shadow-lg">
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div>
+                            <div class="text-sm font-semibold text-slate-900">Company Details</div>
+                            <div class="mt-3 grid grid-cols-1 md:grid-cols-2 gap-3">
+                                <div class="md:col-span-2">
+                                    <label class="text-xs font-medium text-slate-600">Company Name</label>
+                                    <input data-quote-field="company.name" value="${esc(company.name)}" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm" />
+                                </div>
+                                <div class="md:col-span-2">
+                                    <label class="text-xs font-medium text-slate-600">Address</label>
+                                    <input data-quote-field="company.address" value="${esc(company.address)}" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm" />
+                                </div>
+                                <div>
+                                    <label class="text-xs font-medium text-slate-600">GSTIN</label>
+                                    <input data-quote-field="company.gstin" value="${esc(company.gstin)}" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm" />
+                                </div>
+                                <div>
+                                    <label class="text-xs font-medium text-slate-600">State Code</label>
+                                    <input data-quote-field="company.stateCode" value="${esc(company.stateCode)}" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm" />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <div class="text-sm font-semibold text-slate-900">Quotation Info</div>
+                            <div class="mt-3 grid grid-cols-1 md:grid-cols-2 gap-3">
+                                <div>
+                                    <label class="text-xs font-medium text-slate-600">Quotation No</label>
+                                    <input data-quote-field="quote.no" value="${esc(quote.no)}" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm" />
+                                </div>
+                                <div>
+                                    <label class="text-xs font-medium text-slate-600">Date</label>
+                                    <input data-quote-field="quote.date" value="${esc(quote.date)}" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm" />
+                                </div>
+                                <div>
+                                    <label class="text-xs font-medium text-slate-600">Payment Terms</label>
+                                    <input data-quote-field="quote.paymentTerms" value="${esc(quote.paymentTerms)}" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm" />
+                                </div>
+                                <div>
+                                    <label class="text-xs font-medium text-slate-600">Buyer Reference</label>
+                                    <input data-quote-field="quote.buyerReference" value="${esc(quote.buyerReference)}" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm" />
+                                </div>
+                            </div>
+
+                            <div class="mt-6 text-sm font-semibold text-slate-900">Buyer (Bill To)</div>
+                            <div class="mt-3 grid grid-cols-1 md:grid-cols-2 gap-3">
+                                <div class="md:col-span-2">
+                                    <label class="text-xs font-medium text-slate-600">Buyer Name</label>
+                                    <input data-quote-field="buyer.name" value="${esc(buyer.name)}" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm" />
+                                </div>
+                                <div class="md:col-span-2">
+                                    <label class="text-xs font-medium text-slate-600">Buyer Address</label>
+                                    <input data-quote-field="buyer.address" value="${esc(buyer.address)}" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm" />
+                                </div>
+                                <div class="md:col-span-2">
+                                    <label class="text-xs font-medium text-slate-600">Buyer GSTIN</label>
+                                    <input data-quote-field="buyer.gstin" value="${esc(buyer.gstin)}" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-6">
+                        <div class="flex items-center justify-between">
+                            <div class="text-sm font-semibold text-slate-900">Service Lines</div>
+                            <div class="text-xs text-slate-500">Tax: <span class="font-semibold text-slate-900">${esc(tax.type)}</span> @ <span class="font-semibold text-slate-900">${Number(tax.rate || 0).toFixed(0)}%</span></div>
+                        </div>
+                        <div class="mt-3 overflow-x-auto">
+                            <table class="w-full text-sm">
+                                <thead class="bg-slate-50 border-b border-slate-200">
+                                    <tr>
+                                        <th class="text-left px-3 py-2 font-medium text-slate-700">Sl</th>
+                                        <th class="text-left px-3 py-2 font-medium text-slate-700">Description</th>
+                                        <th class="text-left px-3 py-2 font-medium text-slate-700">HSN/SAC</th>
+                                        <th class="text-left px-3 py-2 font-medium text-slate-700">Due On</th>
+                                        <th class="text-right px-3 py-2 font-medium text-slate-700">Qty</th>
+                                        <th class="text-right px-3 py-2 font-medium text-slate-700">Rate</th>
+                                        <th class="text-right px-3 py-2 font-medium text-slate-700">Amount</th>
+                                        <th class="px-3 py-2"></th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-slate-200">
+                                    ${items.map((it, idx) => `
+                                        <tr>
+                                            <td class="px-3 py-2 text-slate-700">${idx + 1}</td>
+                                            <td class="px-3 py-2">
+                                                <input data-quote-item-index="${idx}" data-quote-item-field="description" value="${esc(it.description)}" class="w-full border border-slate-200 rounded-lg px-2 py-1 text-sm" />
+                                            </td>
+                                            <td class="px-3 py-2">
+                                                <input data-quote-item-index="${idx}" data-quote-item-field="hsnSac" value="${esc(it.hsnSac)}" class="w-full border border-slate-200 rounded-lg px-2 py-1 text-sm" />
+                                            </td>
+                                            <td class="px-3 py-2">
+                                                <input data-quote-item-index="${idx}" data-quote-item-field="dueOn" value="${esc(it.dueOn)}" class="w-full border border-slate-200 rounded-lg px-2 py-1 text-sm" />
+                                            </td>
+                                            <td class="px-3 py-2">
+                                                <input data-quote-item-index="${idx}" data-quote-item-field="qty" value="${esc(it.qty)}" class="w-full border border-slate-200 rounded-lg px-2 py-1 text-sm text-right" />
+                                            </td>
+                                            <td class="px-3 py-2">
+                                                <input data-quote-item-index="${idx}" data-quote-item-field="rate" value="${esc(it.rate)}" class="w-full border border-slate-200 rounded-lg px-2 py-1 text-sm text-right" />
+                                            </td>
+                                            <td class="px-3 py-2 text-right font-semibold text-slate-900">${this.formatINR(Number(it.amount || 0))}</td>
+                                            <td class="px-3 py-2 text-right">
+                                                <button data-action="quote:item:remove:${idx}" class="px-2 py-1 text-xs font-medium bg-rose-50 text-rose-700 rounded-md hover:bg-rose-100">Remove</button>
+                                            </td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="mt-6 grid grid-cols-1 lg:grid-cols-3 gap-4">
+                        <div class="bg-slate-50 border border-slate-200 rounded-lg p-4">
+                            <div class="text-xs text-slate-500">Subtotal</div>
+                            <div class="text-lg font-semibold text-slate-900 mt-1">${this.formatINR(totals.subtotal || 0)}</div>
+                        </div>
+                        <div class="bg-slate-50 border border-slate-200 rounded-lg p-4">
+                            <div class="text-xs text-slate-500">${esc(tax.type)} (${Number(tax.rate || 0).toFixed(0)}%)</div>
+                            <div class="text-lg font-semibold text-slate-900 mt-1">${this.formatINR(totals.tax || 0)}</div>
+                        </div>
+                        <div class="bg-purple-50 border border-purple-200 rounded-lg p-4">
+                            <div class="text-xs text-purple-700">Grand Total</div>
+                            <div class="text-lg font-extrabold text-slate-900 mt-1">${this.formatINR(totals.total || 0)}</div>
+                            <div class="text-xs text-slate-600 mt-1">${esc(this.amountToWordsINR(totals.total || 0))}</div>
+                        </div>
+                    </div>
+
+                    <div class="mt-6 grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div>
+                            <div class="text-sm font-semibold text-slate-900">Terms & Conditions</div>
+                            <textarea data-quote-field="termsText" rows="5" class="mt-2 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm">${esc((draft.terms || []).join('\n'))}</textarea>
+                            <div class="text-[11px] text-slate-500 mt-1">One term per line</div>
+                        </div>
+                        <div>
+                            <div class="text-sm font-semibold text-slate-900">Bank Details</div>
+                            <div class="mt-3 grid grid-cols-1 md:grid-cols-2 gap-3">
+                                <div class="md:col-span-2">
+                                    <label class="text-xs font-medium text-slate-600">Bank Name</label>
+                                    <input data-quote-field="bank.bankName" value="${esc(bank.bankName)}" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm" />
+                                </div>
+                                <div>
+                                    <label class="text-xs font-medium text-slate-600">Account No</label>
+                                    <input data-quote-field="bank.accountNo" value="${esc(bank.accountNo)}" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm" />
+                                </div>
+                                <div>
+                                    <label class="text-xs font-medium text-slate-600">IFSC</label>
+                                    <input data-quote-field="bank.ifsc" value="${esc(bank.ifsc)}" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm" />
+                                </div>
+                                <div>
+                                    <label class="text-xs font-medium text-slate-600">GST Rate (%)</label>
+                                    <input data-quote-field="tax.rate" value="${esc(tax.rate)}" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    getCompanyMaster() {
+        return {
+            name: 'APJ 3D Design Solution India Pvt Ltd',
+            address: 'Hosur, Tamil Nadu (GST State Code: 33)',
+            stateCode: '33',
+            gstin: '33AAXCA1027H1ZR',
+            phone: '',
+            email: ''
+        };
+    }
+
+    getSampleQuotationTemplate() {
+        const company = this.getCompanyMaster();
+        const buyer = {
+            name: 'NEW SWAN ENTERPRISES',
+            address: 'Kolar, Karnataka',
+            gstin: '29AALFN7299M1Z4'
+        };
+
+        const items = [
+            {
+                description: 'Service charges for 3d scanning and inspection',
+                hsnSac: '998333',
+                dueOn: '3-Dec-2025',
+                qty: 13,
+                rate: 2000,
+                amount: 13 * 2000
+            }
+        ];
+        const subtotal = items.reduce((s, it) => s + (Number(it.amount) || 0), 0);
+
+        const sellerState = String(company.stateCode || '').trim();
+        const buyerState = this.getStateCodeFromGSTIN(buyer.gstin) || '';
+        const interstate = sellerState && buyerState && sellerState !== buyerState;
+        const taxType = interstate ? 'IGST' : 'CGST+SGST';
+        const taxRate = 18;
+        const tax = Math.round(subtotal * (taxRate / 100) * 100) / 100;
+        const total = Math.round((subtotal + tax) * 100) / 100;
+
+        return {
+            company,
+            quote: {
+                no: 'APJ3D/QTN2025/317',
+                date: '3-Dec-2025',
+                paymentTerms: '30 Days',
+                buyerReference: 'APJ3D/QTN2025/317'
+            },
+            buyer,
+            items,
+            tax: { type: taxType, rate: taxRate },
+            totals: { subtotal, tax, total },
+            terms: [
+                'Project will be kick-started when 50% advance amount is paid along with PO is raised.',
+                'Project deadline: 5–6 days scanning and inspection after PO received.',
+                'Feedback/Comments on the model to be provided within 2 weeks from the date of submission of the model.',
+                'Final output would be in PDF format.'
+            ],
+            bank: {
+                bankName: 'Punjab National Bank',
+                accountNo: '49620021000079',
+                ifsc: 'PUNB0496200'
+            }
+        };
+    }
+
+    computeQuotation(q) {
+        const base = q || {};
+        const company = base.company || {};
+        const buyer = base.buyer || {};
+        const quote = base.quote || {};
+        const bank = base.bank || {};
+        const tax = base.tax || {};
+        const items = (Array.isArray(base.items) ? base.items : []).map(it => ({ ...it }));
+
+        const sellerState = String(company.stateCode || '').trim();
+        const buyerState = this.getStateCodeFromGSTIN(buyer.gstin) || '';
+        const interstate = sellerState && buyerState && sellerState !== buyerState;
+        const taxType = interstate ? 'IGST' : 'CGST+SGST';
+        const taxRate = Number(tax.rate || 18);
+
+        items.forEach(it => {
+            const qty = Number(it.qty || 0);
+            const rate = Number(it.rate || 0);
+            it.amount = Math.round(qty * rate * 100) / 100;
+        });
+        const subtotal = Math.round(items.reduce((s, it) => s + (Number(it.amount) || 0), 0) * 100) / 100;
+        const taxAmt = Math.round(subtotal * (taxRate / 100) * 100) / 100;
+        const total = Math.round((subtotal + taxAmt) * 100) / 100;
+
+        const terms = Array.isArray(base.terms)
+            ? base.terms
+            : String(base.termsText || '')
+                .split(/\r?\n/)
+                .map(s => s.trim())
+                .filter(Boolean);
+
+        return {
+            ...base,
+            company: { ...company },
+            buyer: { ...buyer },
+            quote: { ...quote },
+            bank: { ...bank },
+            items,
+            terms,
+            tax: { ...tax, type: taxType, rate: taxRate },
+            totals: { subtotal, tax: taxAmt, total }
+        };
+    }
+
+    getStateCodeFromGSTIN(gstin) {
+        const g = String(gstin || '').trim();
+        const m = g.match(/^(\d{2})/);
+        return m ? m[1] : '';
+    }
+
+    amountToWordsINR(amount) {
+        const n = Math.round(Number(amount) || 0);
+        if (!Number.isFinite(n) || n < 0) return 'INR Zero Only';
+        if (n === 0) return 'INR Zero Only';
+        const words = this.numberToWordsIndian(n);
+        return `INR ${words} Only`;
+    }
+
+    numberToWordsIndian(num) {
+        const a = [
+            '', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten',
+            'Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen', 'Seventeen', 'Eighteen', 'Nineteen'
+        ];
+        const b = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'];
+
+        const two = (n) => {
+            if (n === 0) return '';
+            if (n < 20) return a[n];
+            const t = Math.floor(n / 10);
+            const r = n % 10;
+            return `${b[t]}${r ? ' ' + a[r] : ''}`.trim();
+        };
+        const three = (n) => {
+            const h = Math.floor(n / 100);
+            const r = n % 100;
+            const head = h ? `${a[h]} Hundred` : '';
+            const tail = two(r);
+            return `${head}${head && tail ? ' ' : ''}${tail}`.trim();
+        };
+
+        const parts = [];
+        let n = Math.floor(num);
+        const crore = Math.floor(n / 10000000);
+        n %= 10000000;
+        const lakh = Math.floor(n / 100000);
+        n %= 100000;
+        const thousand = Math.floor(n / 1000);
+        n %= 1000;
+        const rest = n;
+
+        if (crore) parts.push(`${three(crore)} Crore`);
+        if (lakh) parts.push(`${three(lakh)} Lakh`);
+        if (thousand) parts.push(`${three(thousand)} Thousand`);
+        if (rest) parts.push(three(rest));
+        return parts.join(' ').replace(/\s+/g, ' ').trim();
+    }
+
+    renderQuotationDocumentHTML(q) {
+        const quote = q || {};
+        const esc = (v) => String(v ?? '').replace(/</g, '&lt;').replace(/"/g, '&quot;');
+        const company = quote.company || {};
+        const buyer = quote.buyer || {};
+        const items = Array.isArray(quote.items) ? quote.items : [];
+        const totals = quote.totals || {};
+        const tax = quote.tax || {};
+        const bank = quote.bank || {};
+        const terms = Array.isArray(quote.terms) ? quote.terms : [];
+
+        return `
+            <div class="doc">
+                <div class="header">
+                    <div>
+                        <div class="title">QUOTATION</div>
+                        <div class="co-name">${esc(company.name)}</div>
+                        <div class="muted">${esc(company.address)}</div>
+                        <div class="muted">GSTIN: ${esc(company.gstin)} • State Code: ${esc(company.stateCode)}</div>
+                    </div>
+                    <div class="qbox">
+                        <div class="row"><div class="lbl">Quotation No.</div><div class="val">${esc(quote.quote?.no)}</div></div>
+                        <div class="row"><div class="lbl">Dated</div><div class="val">${esc(quote.quote?.date)}</div></div>
+                        <div class="row"><div class="lbl">Mode/Terms of Payment</div><div class="val">${esc(quote.quote?.paymentTerms)}</div></div>
+                        <div class="row"><div class="lbl">Buyer Reference</div><div class="val">${esc(quote.quote?.buyerReference)}</div></div>
+                    </div>
+                </div>
+
+                <div class="bill">
+                    <div class="billto">
+                        <div class="sec-title">Buyer (Bill to)</div>
+                        <div class="co-name">${esc(buyer.name)}</div>
+                        <div class="muted">${esc(buyer.address)}</div>
+                        <div class="muted">GSTIN/UIN: ${esc(buyer.gstin)}</div>
+                    </div>
+                    <div class="taxinfo">
+                        <div class="sec-title">Tax</div>
+                        <div class="muted">${esc(tax.type)} @ ${Number(tax.rate || 0).toFixed(0)}%</div>
+                    </div>
+                </div>
+
+                <table class="items">
+                    <thead>
+                        <tr>
+                            <th>Sl</th>
+                            <th>Description of Services</th>
+                            <th>HSN/SAC</th>
+                            <th>Due on</th>
+                            <th class="r">Quantity</th>
+                            <th class="r">Rate</th>
+                            <th class="r">Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${items.map((it, idx) => `
+                            <tr>
+                                <td>${idx + 1}</td>
+                                <td>${esc(it.description)}</td>
+                                <td>${esc(it.hsnSac)}</td>
+                                <td>${esc(it.dueOn)}</td>
+                                <td class="r">${Number(it.qty || 0).toFixed(2)} ${esc(it.uom || 'NOS')}</td>
+                                <td class="r">${this.formatINR(it.rate || 0)}</td>
+                                <td class="r">${this.formatINR(it.amount || 0)}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+
+                <div class="totals">
+                    <div class="left">
+                        <div class="words">Amount Chargeable (in words):</div>
+                        <div class="strong">${esc(this.amountToWordsINR(totals.total || 0))}</div>
+                    </div>
+                    <div class="right">
+                        <div class="trow"><div class="lbl">Subtotal</div><div class="val">${this.formatINR(totals.subtotal || 0)}</div></div>
+                        <div class="trow"><div class="lbl">${esc(tax.type)} ${Number(tax.rate || 0).toFixed(0)}%</div><div class="val">${this.formatINR(totals.tax || 0)}</div></div>
+                        <div class="trow grand"><div class="lbl">Grand Total</div><div class="val">${this.formatINR(totals.total || 0)}</div></div>
+                    </div>
+                </div>
+
+                <div class="bottom">
+                    <div class="terms">
+                        <div class="sec-title">Terms & Conditions</div>
+                        <ol>
+                            ${terms.map(t => `<li>${esc(t)}</li>`).join('')}
+                        </ol>
+                    </div>
+                    <div class="bank">
+                        <div class="sec-title">Company's Bank Details</div>
+                        <div class="muted">Bank Name: ${esc(bank.bankName)}</div>
+                        <div class="muted">A/c No.: ${esc(bank.accountNo)}</div>
+                        <div class="muted">Branch & IFSC Code: ${esc(bank.ifsc)}</div>
+                        <div class="sig">for ${esc(company.name)}<div class="muted" style="margin-top:40px;">Authorised Signatory</div></div>
+                    </div>
+                </div>
+
+                <div class="footer">This is a Computer Generated Document</div>
+            </div>
+        `;
+    }
+
+    openQuotationPrintWindow(q) {
+        const html = this.renderQuotationDocumentHTML(q);
+        const w = window.open('', '_blank');
+        if (!w) {
+            this.showToast('Popup blocked. Allow popups to print quotation.');
+            return;
+        }
+        w.document.open();
+        w.document.write(`
+            <!doctype html>
+            <html>
+            <head>
+                <meta charset="utf-8" />
+                <meta name="viewport" content="width=device-width, initial-scale=1" />
+                <title>Quotation</title>
+                <style>
+                    body{font-family:Arial,Helvetica,sans-serif;margin:0;background:#f8fafc;}
+                    .doc{max-width:900px;margin:24px auto;background:#fff;border:1px solid #e2e8f0;padding:18px;}
+                    .title{font-weight:800;letter-spacing:0.08em;font-size:18px;margin-bottom:8px;}
+                    .co-name{font-weight:700;font-size:14px;color:#0f172a;}
+                    .muted{font-size:12px;color:#475569;}
+                    .strong{font-weight:800;color:#0f172a;}
+                    .header{display:flex;gap:12px;justify-content:space-between;align-items:flex-start;}
+                    .qbox{min-width:280px;border:1px solid #e2e8f0;}
+                    .qbox .row{display:flex;border-bottom:1px solid #e2e8f0;}
+                    .qbox .row:last-child{border-bottom:none;}
+                    .qbox .lbl{width:55%;padding:6px 8px;font-size:11px;color:#334155;background:#f1f5f9;}
+                    .qbox .val{width:45%;padding:6px 8px;font-size:11px;color:#0f172a;}
+                    .bill{display:flex;gap:12px;justify-content:space-between;margin-top:12px;}
+                    .billto,.taxinfo{border:1px solid #e2e8f0;padding:10px;flex:1;}
+                    .sec-title{font-size:12px;font-weight:800;color:#0f172a;margin-bottom:6px;}
+                    table.items{width:100%;border-collapse:collapse;margin-top:12px;font-size:12px;}
+                    table.items th, table.items td{border:1px solid #e2e8f0;padding:8px;vertical-align:top;}
+                    table.items thead th{background:#f8fafc;color:#0f172a;font-weight:800;}
+                    .r{text-align:right;}
+                    .totals{display:flex;gap:12px;justify-content:space-between;margin-top:12px;}
+                    .totals .left{flex:1;border:1px solid #e2e8f0;padding:10px;}
+                    .totals .right{width:320px;border:1px solid #e2e8f0;padding:10px;}
+                    .trow{display:flex;justify-content:space-between;font-size:12px;margin-top:6px;}
+                    .trow.grand{border-top:1px solid #e2e8f0;padding-top:8px;margin-top:8px;font-weight:900;}
+                    .bottom{display:flex;gap:12px;justify-content:space-between;margin-top:12px;}
+                    .terms{flex:1;border:1px solid #e2e8f0;padding:10px;}
+                    .terms ol{margin:0 0 0 18px;padding:0;font-size:11px;color:#334155;}
+                    .bank{width:320px;border:1px solid #e2e8f0;padding:10px;}
+                    .sig{margin-top:10px;font-size:11px;color:#0f172a;font-weight:800;text-align:right;}
+                    .footer{margin-top:10px;text-align:center;font-size:11px;color:#64748b;}
+                    @media print{body{background:#fff;} .doc{margin:0;border:none;max-width:none;}}
+                </style>
+            </head>
+            <body>
+                ${html}
+                <script>
+                    window.onload = () => { try { window.focus(); window.print(); } catch(e) {} };
+                </script>
+            </body>
+            </html>
+        `);
+        w.document.close();
     }
 
     getProjectRegistration() {
@@ -5236,7 +5831,7 @@ class MarketFlowCRM {
                 budget: '₹2,80,000', 
                 spent: '₹1,60,000',
                 identification: { 
-                    projectCode: 'APJ26CAD001', 
+                    projectCode: 'APJ26CAD002', 
                     serviceCode: 'CAD',
                     vendorCode: 'OST001',
                     companyName: 'GreenLeaf Industries',
@@ -5319,7 +5914,7 @@ class MarketFlowCRM {
                 budget: '₹1,50,000', 
                 spent: '₹98,000',
                 identification: { 
-                    projectCode: 'APJ262D001', 
+                    projectCode: 'APJ262D003', 
                     serviceCode: '2D',
                     vendorCode: 'OTN001',
                     companyName: 'EduSpark',
@@ -5402,7 +5997,7 @@ class MarketFlowCRM {
                 budget: '₹1,80,000', 
                 spent: '₹1,23,000',
                 identification: { 
-                    projectCode: 'APJ262DI001', 
+                    projectCode: 'APJ262DI004', 
                     serviceCode: '2DI',
                     vendorCode: 'CHN001',
                     companyName: 'Mumbai Retail Chain',
@@ -5476,8 +6071,25 @@ class MarketFlowCRM {
                 }
             }
         ];
-        
-        const projects = this.getAllProjectsMerged(defaults);
+
+        const defaultCodesByName = {
+            'SEO Revamp': 'APJ26RE001',
+            'CRM Upgrade': 'APJ26CAD002',
+            'Re-engagement Funnel': 'APJ262D003',
+            'Performance Ads': 'APJ262DI004'
+        };
+        defaults.forEach(p => {
+            if (!p.identification || typeof p.identification !== 'object') p.identification = {};
+            if (!p.identification.projectCode) p.identification.projectCode = defaultCodesByName[p.name] || '';
+        });
+
+        const projects = this.getAllProjectsMerged(defaults).map(p => {
+            const model = this.ensureProjectModel(p);
+            if (!model.identification.projectCode) {
+                model.identification.projectCode = defaultCodesByName[model.name] || '';
+            }
+            return model;
+        });
         try {
             this._projectsCacheByKey = new Map(projects.map(p => [this.getProjectKey(p), p]));
         } catch (_) {
@@ -5803,7 +6415,7 @@ class MarketFlowCRM {
                                             return `
                                                 <tr class="${isActive ? 'bg-purple-50' : ''} hover:bg-slate-50">
                                                     <td class="px-4 py-3">
-                                                        <button data-action="project:dir:select:${String(k).replace(/"/g, '&quot;')}" class="text-left w-full font-semibold text-slate-900 hover:text-purple-700">
+                                                        <button data-action="project:dir:select:${String(k).replace(/\"/g, '&quot;')}" class="text-left w-full font-semibold text-slate-900 hover:text-purple-700">
                                                             ${esc(p.identification?.projectCode || '—')}
                                                         </button>
                                                     </td>
@@ -5969,9 +6581,9 @@ class MarketFlowCRM {
     getActiveProjects() {
         const defaults = [
             { name: 'SEO Revamp', client: 'TechNova Solutions', progress: 62, status: 'On Track', statusColor: 'emerald', owner: 'Rohan', budget: '₹3,20,000', spent: '₹2,10,000', identification: { projectCode: 'APJ26RE001', serviceCode: 'RE' } },
-            { name: 'CRM Upgrade', client: 'GreenLeaf Industries', progress: 45, status: 'At Risk', statusColor: 'amber', owner: 'Sarah', budget: '₹2,80,000', spent: '₹1,60,000', identification: { projectCode: 'APJ26CAD001', serviceCode: 'CAD' } },
-            { name: 'Re-engagement Funnel', client: 'EduSpark', progress: 28, status: 'On Track', statusColor: 'sky', owner: 'Meera', budget: '₹1,50,000', spent: '₹98,000', identification: { projectCode: 'APJ262D001', serviceCode: '2D' } },
-            { name: 'Performance Ads', client: 'Mumbai Retail Chain', progress: 71, status: 'On Track', statusColor: 'emerald', owner: 'Amit', budget: '₹1,80,000', spent: '₹1,23,000', identification: { projectCode: 'APJ262DI001', serviceCode: '2DI' } }
+            { name: 'CRM Upgrade', client: 'GreenLeaf Industries', progress: 45, status: 'At Risk', statusColor: 'amber', owner: 'Sarah', budget: '₹2,80,000', spent: '₹1,60,000', identification: { projectCode: 'APJ26CAD002', serviceCode: 'CAD' } },
+            { name: 'Re-engagement Funnel', client: 'EduSpark', progress: 28, status: 'On Track', statusColor: 'sky', owner: 'Meera', budget: '₹1,50,000', spent: '₹98,000', identification: { projectCode: 'APJ262D003', serviceCode: '2D' } },
+            { name: 'Performance Ads', client: 'Mumbai Retail Chain', progress: 71, status: 'On Track', statusColor: 'emerald', owner: 'Amit', budget: '₹1,80,000', spent: '₹1,23,000', identification: { projectCode: 'APJ262DI004', serviceCode: '2DI' } }
         ];
         const projects = this.getAllProjectsMerged(defaults);
 

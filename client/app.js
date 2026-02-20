@@ -2219,7 +2219,7 @@ class MarketFlowCRM {
                 }
 
                 if (this.currentSection === 'projects' && this.currentSubSection === 'quotation_templates') {
-                    this.renderContent();
+                    this.updateQuotationComputedUI();
                 }
             });
         }
@@ -2295,6 +2295,7 @@ class MarketFlowCRM {
                     if (ok) {
                         const msg = btn.getAttribute('data-toast');
                         if (msg) this.showToast(msg);
+                        e.stopPropagation();
                         e.preventDefault();
                         return;
                     }
@@ -2891,11 +2892,7 @@ class MarketFlowCRM {
                 { id: 'sms', label: 'SMS & WhatsApp' },
                 { id: 'wishes', label: 'Personalized Wishes' },
                 { id: 'reengagement', label: 'Re-engagement' },
-                { id: 'marketing_hub', label: 'Digital Marketing Hub' },
-                { id: 'seo', label: 'SEO Tracker' },
-                { id: 'content_library', label: 'Content Library' },
-                { id: 'maps_reviews', label: 'Google Maps Reviews' },
-                { id: 'linkedin_leads', label: 'LinkedIn Lead Gen Tracker' }
+                
             ],
             billing: [
                 { id: 'invoices', label: 'Invoices' },
@@ -4980,7 +4977,7 @@ class MarketFlowCRM {
                     <div class="mt-6">
                         <div class="flex items-center justify-between">
                             <div class="text-sm font-semibold text-slate-900">Service Lines</div>
-                            <div class="text-xs text-slate-500">Tax: <span class="font-semibold text-slate-900">${esc(tax.type)}</span> @ <span class="font-semibold text-slate-900">${Number(tax.rate || 0).toFixed(0)}%</span></div>
+                            <div class="text-xs text-slate-500">Tax: <span id="quoteTaxType" class="font-semibold text-slate-900">${esc(tax.type)}</span> @ <span class="font-semibold text-slate-900">${Number(tax.rate || 0).toFixed(0)}%</span></div>
                         </div>
                         <div class="mt-3 overflow-x-auto">
                             <table class="w-full text-sm">
@@ -5015,7 +5012,7 @@ class MarketFlowCRM {
                                             <td class="px-3 py-2">
                                                 <input data-quote-item-index="${idx}" data-quote-item-field="rate" value="${esc(it.rate)}" class="w-full border border-slate-200 rounded-lg px-2 py-1 text-sm text-right" />
                                             </td>
-                                            <td class="px-3 py-2 text-right font-semibold text-slate-900">${this.formatINR(Number(it.amount || 0))}</td>
+                                            <td class="px-3 py-2 text-right font-semibold text-slate-900"><span data-quote-item-amount="${idx}">${this.formatINR(Number(it.amount || 0))}</span></td>
                                             <td class="px-3 py-2 text-right">
                                                 <button data-action="quote:item:remove:${idx}" class="px-2 py-1 text-xs font-medium bg-rose-50 text-rose-700 rounded-md hover:bg-rose-100">Remove</button>
                                             </td>
@@ -5029,16 +5026,16 @@ class MarketFlowCRM {
                     <div class="mt-6 grid grid-cols-1 lg:grid-cols-3 gap-4">
                         <div class="bg-slate-50 border border-slate-200 rounded-lg p-4">
                             <div class="text-xs text-slate-500">Subtotal</div>
-                            <div class="text-lg font-semibold text-slate-900 mt-1">${this.formatINR(totals.subtotal || 0)}</div>
+                            <div id="quoteSubtotal" class="text-lg font-semibold text-slate-900 mt-1">${this.formatINR(totals.subtotal || 0)}</div>
                         </div>
                         <div class="bg-slate-50 border border-slate-200 rounded-lg p-4">
                             <div class="text-xs text-slate-500">${esc(tax.type)} (${Number(tax.rate || 0).toFixed(0)}%)</div>
-                            <div class="text-lg font-semibold text-slate-900 mt-1">${this.formatINR(totals.tax || 0)}</div>
+                            <div id="quoteTax" class="text-lg font-semibold text-slate-900 mt-1">${this.formatINR(totals.tax || 0)}</div>
                         </div>
                         <div class="bg-purple-50 border border-purple-200 rounded-lg p-4">
                             <div class="text-xs text-purple-700">Grand Total</div>
-                            <div class="text-lg font-extrabold text-slate-900 mt-1">${this.formatINR(totals.total || 0)}</div>
-                            <div class="text-xs text-slate-600 mt-1">${esc(this.amountToWordsINR(totals.total || 0))}</div>
+                            <div id="quoteTotal" class="text-lg font-extrabold text-slate-900 mt-1">${this.formatINR(totals.total || 0)}</div>
+                            <div id="quoteWords" class="text-xs text-slate-600 mt-1">${esc(this.amountToWordsINR(totals.total || 0))}</div>
                         </div>
                     </div>
 
@@ -5182,6 +5179,33 @@ class MarketFlowCRM {
             tax: { ...tax, type: taxType, rate: taxRate },
             totals: { subtotal, tax: taxAmt, total }
         };
+    }
+
+    updateQuotationComputedUI() {
+        if (!(this.currentSection === 'projects' && this.currentSubSection === 'quotation_templates')) return;
+        const computed = this.computeQuotation(this._quoteDraft || this.getSampleQuotationTemplate());
+        const totals = computed.totals || {};
+        const tax = computed.tax || {};
+        const items = Array.isArray(computed.items) ? computed.items : [];
+
+        const taxTypeEl = document.getElementById('quoteTaxType');
+        if (taxTypeEl) taxTypeEl.textContent = String(tax.type || '');
+
+        const subEl = document.getElementById('quoteSubtotal');
+        if (subEl) subEl.textContent = this.formatINR(totals.subtotal || 0);
+        const taxEl = document.getElementById('quoteTax');
+        if (taxEl) taxEl.textContent = this.formatINR(totals.tax || 0);
+        const totalEl = document.getElementById('quoteTotal');
+        if (totalEl) totalEl.textContent = this.formatINR(totals.total || 0);
+        const wordsEl = document.getElementById('quoteWords');
+        if (wordsEl) wordsEl.textContent = this.amountToWordsINR(totals.total || 0);
+
+        items.forEach((it, idx) => {
+            const amtEl = document.querySelector(`[data-quote-item-amount="${idx}"]`);
+            if (amtEl) amtEl.textContent = this.formatINR(Number(it.amount || 0));
+        });
+
+        this._quoteDraft = computed;
     }
 
     getStateCodeFromGSTIN(gstin) {

@@ -29,21 +29,270 @@ class MarketFlowCRM {
             <div class="mt-2">
                 <div class="flex items-center justify-between">
                     ${stages.map((s, i) => {
-                        const done = i <= currentIdx;
-                        const isLast = i === stages.length - 1;
-                        const dot = done ? 'bg-purple-600 text-white border-purple-600' : 'bg-white text-slate-500 border-slate-300';
-                        const line = done ? 'bg-purple-600' : 'bg-slate-200';
-                        return `
+            const done = i <= currentIdx;
+            const isLast = i === stages.length - 1;
+            const dot = done ? 'bg-purple-600 text-white border-purple-600' : 'bg-white text-slate-500 border-slate-300';
+            const line = done ? 'bg-purple-600' : 'bg-slate-200';
+            return `
                             <div class="flex items-center ${isLast ? '' : 'flex-1'}" title="${s}">
                                 <div class="w-6 h-6 rounded-full border ${dot} flex items-center justify-center text-[11px] font-semibold">${i + 1}</div>
                                 ${isLast ? '' : `<div class="h-0.5 flex-1 mx-2 ${line}"></div>`}
                             </div>
                         `;
-                    }).join('')}
+        }).join('')}
                 </div>
                 <div class="mt-2 flex items-center justify-between text-[10px] text-slate-500">
                     <div class="font-medium">${stages[0]}</div>
                     <div class="font-medium">${stages[stages.length - 1]}</div>
+                </div>
+            </div>
+        `;
+    }
+
+    getRfpTemplates() {
+        if (!this._rfpDraft) this._rfpDraft = this.getStoredRfpDraft() || this.getSampleRfpTemplate();
+        const draft = this.computeRfp(this._rfpDraft);
+        const esc = (v) => String(v ?? '').replace(/</g, '&lt;').replace(/"/g, '&quot;');
+
+        const client = draft.client || {};
+        const provider = draft.provider || {};
+        const items = Array.isArray(draft.items) ? draft.items : [];
+        const bank = draft.bank || {};
+        const totals = draft.totals || {};
+
+        return `
+            <div class="space-y-6 fade-in">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h2 class="text-2xl font-semibold text-slate-900">RFP Templates</h2>
+                        <p class="text-sm text-slate-500">Fill RFP sections, reuse line-items quotation, then print</p>
+                    </div>
+                    <div class="flex gap-2">
+                        <button data-action="rfp:item:add" class="px-4 py-2 text-sm font-medium bg-purple-50 text-purple-700 rounded-lg hover:bg-purple-100 transition-colors">+ Add Line</button>
+                        <button data-action="rfp:print:current" class="px-4 py-2 text-sm font-medium bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">Print RFP</button>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-lg border border-slate-200 p-6 shadow-lg space-y-6">
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div>
+                            <div class="text-sm font-semibold text-slate-900">1. Company Information (Client)</div>
+                            <div class="mt-3 grid grid-cols-1 md:grid-cols-2 gap-3">
+                                <div class="md:col-span-2">
+                                    <label class="text-xs font-medium text-slate-600">Company Name</label>
+                                    <input data-rfp-field="client.companyName" value="${esc(client.companyName)}" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm" />
+                                </div>
+                                <div>
+                                    <label class="text-xs font-medium text-slate-600">Contact person</label>
+                                    <input data-rfp-field="client.contactPerson" value="${esc(client.contactPerson)}" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm" />
+                                </div>
+                                <div>
+                                    <label class="text-xs font-medium text-slate-600">Project Name</label>
+                                    <input data-rfp-field="client.projectName" value="${esc(client.projectName)}" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm" />
+                                </div>
+                                <div>
+                                    <label class="text-xs font-medium text-slate-600">GST Number</label>
+                                    <input data-rfp-field="client.gstNumber" value="${esc(client.gstNumber)}" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm" />
+                                </div>
+                                <div>
+                                    <label class="text-xs font-medium text-slate-600">Date of Request</label>
+                                    <input data-rfp-field="client.dateOfRequest" value="${esc(client.dateOfRequest)}" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm" />
+                                </div>
+                                <div class="md:col-span-2">
+                                    <label class="text-xs font-medium text-slate-600">Company Address</label>
+                                    <input data-rfp-field="client.companyAddress" value="${esc(client.companyAddress)}" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm" />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <div class="text-sm font-semibold text-slate-900">2. Service Provider</div>
+                            <div class="mt-3 grid grid-cols-1 md:grid-cols-2 gap-3">
+                                <div class="md:col-span-2">
+                                    <label class="text-xs font-medium text-slate-600">Logo</label>
+                                    <div class="mt-1 flex items-center gap-3">
+                                        <div class="h-12 w-12 rounded-md border border-slate-200 bg-white flex items-center justify-center overflow-hidden">
+                                            <img id="rfpLogoPreview" src="${esc(provider.logoDataUrl || '')}" alt="" style="max-width:100%;max-height:100%;${provider.logoDataUrl ? '' : 'display:none;'}" />
+                                        </div>
+                                        <input id="rfpLogoUpload" type="file" accept="image/*" class="block text-sm" />
+                                    </div>
+                                </div>
+                                <div class="md:col-span-2">
+                                    <label class="text-xs font-medium text-slate-600">Company Name</label>
+                                    <input data-rfp-field="provider.companyName" value="${esc(provider.companyName)}" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm" />
+                                </div>
+                                <div class="md:col-span-2">
+                                    <label class="text-xs font-medium text-slate-600">Head Office</label>
+                                    <input data-rfp-field="provider.headOffice" value="${esc(provider.headOffice)}" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm" />
+                                </div>
+                                <div class="md:col-span-2">
+                                    <label class="text-xs font-medium text-slate-600">CIN / GSTIN</label>
+                                    <input data-rfp-field="provider.cinGstin" value="${esc(provider.cinGstin)}" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm" />
+                                </div>
+                                <div>
+                                    <label class="text-xs font-medium text-slate-600">Contact Person</label>
+                                    <input data-rfp-field="provider.contactPerson" value="${esc(provider.contactPerson)}" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm" />
+                                </div>
+                                <div>
+                                    <label class="text-xs font-medium text-slate-600">Proposal sent on (V1)</label>
+                                    <input data-rfp-field="provider.proposalSentOn" value="${esc(provider.proposalSentOn)}" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div>
+                            <div class="text-sm font-semibold text-slate-900">3. Scope of work (one bullet per line)</div>
+                            <textarea data-rfp-field="scopeText" rows="6" class="mt-2 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm">${esc(draft.scopeText || '')}</textarea>
+                        </div>
+                        <div>
+                            <div class="text-sm font-semibold text-slate-900">4. Implementation Plan (one bullet per line)</div>
+                            <textarea data-rfp-field="implementationText" rows="6" class="mt-2 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm">${esc(draft.implementationText || '')}</textarea>
+                        </div>
+                        <div>
+                            <div class="text-sm font-semibold text-slate-900">5. Project Timeline (one bullet per line)</div>
+                            <textarea data-rfp-field="timelineText" rows="5" class="mt-2 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm">${esc(draft.timelineText || '')}</textarea>
+                        </div>
+                        <div>
+                            <div class="text-sm font-semibold text-slate-900">6. Payment Terms Schedule (one bullet per line)</div>
+                            <textarea data-rfp-field="paymentText" rows="5" class="mt-2 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm">${esc(draft.paymentText || '')}</textarea>
+                        </div>
+                        <div>
+                            <div class="text-sm font-semibold text-slate-900">7. Client Responsibilities (one bullet per line)</div>
+                            <textarea data-rfp-field="responsibilitiesText" rows="6" class="mt-2 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm">${esc(draft.responsibilitiesText || '')}</textarea>
+                        </div>
+                        <div>
+                            <div class="text-sm font-semibold text-slate-900">8. Project Delays (one bullet per line)</div>
+                            <textarea data-rfp-field="delaysText" rows="4" class="mt-2 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm">${esc(draft.delaysText || '')}</textarea>
+                        </div>
+                        <div>
+                            <div class="text-sm font-semibold text-slate-900">9. Project Commencement Date</div>
+                            <textarea data-rfp-field="commencementText" rows="3" class="mt-2 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm">${esc(draft.commencementText || '')}</textarea>
+                        </div>
+                        <div>
+                            <div class="text-sm font-semibold text-slate-900">10. Project Changes (one bullet per line)</div>
+                            <textarea data-rfp-field="changesText" rows="5" class="mt-2 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm">${esc(draft.changesText || '')}</textarea>
+                        </div>
+                    </div>
+
+                    <div>
+                        <div class="flex items-center justify-between">
+                            <div class="text-sm font-semibold text-slate-900">11. Service Cost / Quotation</div>
+                            <div class="flex items-center gap-3">
+                                <div class="text-xs text-slate-500">Tax: <span class="font-semibold text-slate-900">IGST</span> @ <span class="font-semibold text-slate-900">18%</span></div>
+                                <button data-action="rfp:item:add" class="flex items-center gap-1 px-3 py-1.5 text-xs font-semibold bg-purple-600 text-white rounded-lg hover:bg-purple-700">&#43; Add Line</button>
+                            </div>
+                        </div>
+
+                        <div class="mt-2 grid grid-cols-1 md:grid-cols-3 gap-3">
+                            <div>
+                                <label class="text-xs font-medium text-slate-600">Quote ID</label>
+                                <input data-rfp-field="quoteId" value="${esc(draft.quoteId)}" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm" />
+                            </div>
+                        </div>
+
+                        <div class="mt-3 overflow-x-auto">
+                            <table class="w-full text-sm">
+                                <thead class="bg-slate-50 border-b border-slate-200">
+                                    <tr>
+                                        <th class="text-left px-3 py-2 font-medium text-slate-700">Sl</th>
+                                        <th class="text-left px-3 py-2 font-medium text-slate-700">Item/Service Description</th>
+                                        <th class="text-left px-3 py-2 font-medium text-slate-700">Unit</th>
+                                        <th class="text-right px-3 py-2 font-medium text-slate-700">Qty</th>
+                                        <th class="text-right px-3 py-2 font-medium text-slate-700">Unit rate</th>
+                                        <th class="text-right px-3 py-2 font-medium text-slate-700">Amount</th>
+                                        <th class="px-3 py-2"></th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-slate-200">
+                                    ${items.map((it, idx) => `
+                                        <tr>
+                                            <td class="px-3 py-2 text-slate-700">${idx + 1}</td>
+                                            <td class="px-3 py-2">
+                                                <input data-rfp-item-index="${idx}" data-rfp-item-field="description" value="${esc(it.description)}" class="w-full border border-slate-200 rounded-lg px-2 py-1 text-sm" />
+                                                <select data-rfp-item-index="${idx}" data-rfp-item-field="serviceCharge" class="mt-1 w-full border border-slate-200 rounded-lg px-2 py-1 text-xs text-slate-600">
+                                                    <option value="">-- Service Charge (optional) --</option>
+                                                    <option value="3D Scanning" ${it.serviceCharge === '3D Scanning' ? 'selected' : ''}>3D Scanning</option>
+                                                    <option value="3D Inspection" ${it.serviceCharge === '3D Inspection' ? 'selected' : ''}>3D Inspection</option>
+                                                    <option value="3D Modelling" ${it.serviceCharge === '3D Modelling' ? 'selected' : ''}>3D Modelling</option>
+                                                    <option value="3D Reverse Engineering" ${it.serviceCharge === '3D Reverse Engineering' ? 'selected' : ''}>3D Reverse Engineering</option>
+                                                    <option value="3D Printing" ${it.serviceCharge === '3D Printing' ? 'selected' : ''}>3D Printing</option>
+                                                    <option value="Consultation" ${it.serviceCharge === 'Consultation' ? 'selected' : ''}>Consultation</option>
+                                                </select>
+                                            </td>
+                                            <td class="px-3 py-2">
+                                                <input data-rfp-item-index="${idx}" data-rfp-item-field="uom" value="${esc(it.uom || 'AE')}" class="w-full border border-slate-200 rounded-lg px-2 py-1 text-sm" />
+                                            </td>
+                                            <td class="px-3 py-2">
+                                                <input data-rfp-item-index="${idx}" data-rfp-item-field="qty" value="${esc(it.qty)}" class="w-full border border-slate-200 rounded-lg px-2 py-1 text-sm text-right" />
+                                            </td>
+                                            <td class="px-3 py-2">
+                                                <input data-rfp-item-index="${idx}" data-rfp-item-field="rate" value="${esc(it.rate)}" class="w-full border border-slate-200 rounded-lg px-2 py-1 text-sm text-right" />
+                                            </td>
+                                            <td class="px-3 py-2 text-right font-semibold text-slate-900"><span data-rfp-item-amount="${idx}">${this.formatINR(Number(it.amount || 0))}</span></td>
+                                            <td class="px-3 py-2 text-right">
+                                                <button data-action="rfp:item:remove:${idx}" class="px-2 py-1 text-xs font-medium bg-rose-50 text-rose-700 rounded-md hover:bg-rose-100">Remove</button>
+                                            </td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+
+
+                        <div class="mt-4 grid grid-cols-1 lg:grid-cols-3 gap-4">
+                            <div class="bg-slate-50 border border-slate-200 rounded-lg p-4">
+                                <div class="text-xs text-slate-500">Sub Total</div>
+                                <div id="rfpSubtotal" class="text-lg font-semibold text-slate-900 mt-1">${this.formatINR(totals.subtotal || 0)}</div>
+                            </div>
+                            <div class="bg-slate-50 border border-slate-200 rounded-lg p-4">
+                                <div class="text-xs text-slate-500">IGST (18%)</div>
+                                <div id="rfpTax" class="text-lg font-semibold text-slate-900 mt-1">${this.formatINR(totals.tax || 0)}</div>
+                            </div>
+                            <div class="bg-purple-50 border border-purple-200 rounded-lg p-4">
+                                <div class="text-xs text-purple-700">Total</div>
+                                <div id="rfpTotal" class="text-lg font-extrabold text-slate-900 mt-1">${this.formatINR(totals.total || 0)}</div>
+                                <div id="rfpWords" class="text-xs text-slate-600 mt-1">${esc(this.amountToWordsINR(totals.total || 0))}</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div>
+                            <div class="text-sm font-semibold text-slate-900">12. Account Information (Banking details)</div>
+                            <div class="mt-3 grid grid-cols-1 md:grid-cols-2 gap-3">
+                                <div class="md:col-span-2">
+                                    <label class="text-xs font-medium text-slate-600">Beneficiary name</label>
+                                    <input data-rfp-field="bank.beneficiary" value="${esc(bank.beneficiary)}" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm" />
+                                </div>
+                                <div class="md:col-span-2">
+                                    <label class="text-xs font-medium text-slate-600">Bank Name</label>
+                                    <select id="rfpBankSelect" data-rfp-field="bank.bankName" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm">
+                                        <option value="">-- Select Bank --</option>
+                                        <option value="Punjab National Bank" ${bank.bankName === 'Punjab National Bank' ? 'selected' : ''}>Punjab National Bank</option>
+                                        <option value="Indian Bank" ${bank.bankName === 'Indian Bank' ? 'selected' : ''}>Indian Bank </option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="text-xs font-medium text-slate-600">Account Number</label>
+                                    <input id="rfpBankAccountNo" data-rfp-field="bank.accountNo" value="${esc(bank.accountNo)}" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm" />
+                                </div>
+                                <div>
+                                    <label class="text-xs font-medium text-slate-600">Branch</label>
+                                    <input id="rfpBankBranch" data-rfp-field="bank.branch" value="${esc(bank.branch || '')}" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm bg-slate-50" readonly />
+                                </div>
+                                <div>
+                                    <label class="text-xs font-medium text-slate-600">IFSC Code</label>
+                                    <input id="rfpBankIfsc" data-rfp-field="bank.ifsc" value="${esc(bank.ifsc)}" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm" />
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="text-sm font-semibold text-slate-900">13. Confidentiality & Data Security</div>
+                            <textarea data-rfp-field="confidentialityText" rows="8" class="mt-2 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm">${esc(draft.confidentialityText || '')}</textarea>
+                        </div>
+                    </div>
                 </div>
             </div>
         `;
@@ -335,7 +584,7 @@ class MarketFlowCRM {
     }
 
     writeStore(key, value) {
-        try { localStorage.setItem(key, JSON.stringify(value)); } catch (_) {}
+        try { localStorage.setItem(key, JSON.stringify(value)); } catch (_) { }
     }
 
     getStoredChatMessages() {
@@ -1094,16 +1343,16 @@ class MarketFlowCRM {
         const currentYear = new Date().getFullYear().toString().slice(-2);
         const prefix = 'APJ';
         const projects = this.getStoredProjects();
-        
+
         // Filter projects by current year only (any service code)
         const yearProjects = projects.filter(p => {
             const projectCode = String(p.identification?.projectCode || '');
             return projectCode.startsWith(prefix + currentYear);
         });
-        
+
         // Get next sequence number across all projects in this year
         const nextNumber = (yearProjects.length + 1).toString().padStart(3, '0');
-        
+
         return `${prefix}${currentYear}${serviceCode}${nextNumber}`;
     }
 
@@ -1300,7 +1549,7 @@ class MarketFlowCRM {
 
     closeModal() {
         if (this._modalEl) {
-            try { this._modalEl.remove(); } catch (_) {}
+            try { this._modalEl.remove(); } catch (_) { }
             this._modalEl = null;
         }
         if (this._modalKeyHandler) {
@@ -1518,7 +1767,7 @@ class MarketFlowCRM {
                             this.writeStore('bezent_projects', stored);
                         }
                     }
-                } catch (_) {}
+                } catch (_) { }
 
                 this.renderContent();
                 this.initializeLucideIcons();
@@ -1559,7 +1808,7 @@ class MarketFlowCRM {
                             this.writeStore('bezent_projects', stored);
                         }
                     }
-                } catch (_) {}
+                } catch (_) { }
 
                 this.renderContent();
                 this.initializeLucideIcons();
@@ -1856,7 +2105,7 @@ class MarketFlowCRM {
 
                 const readVal = (id) => String(document.getElementById(id)?.value || '').trim();
 
-                const trackingKeys = ['model2dStatus','model3dStatus','scan3dStatus','feaStatus','qcInspectionStatus','approvalStatus','glApprovalStatus','revisionStatus','deliveryReportStatus','sopDailyReportStatus'];
+                const trackingKeys = ['model2dStatus', 'model3dStatus', 'scan3dStatus', 'feaStatus', 'qcInspectionStatus', 'approvalStatus', 'glApprovalStatus', 'revisionStatus', 'deliveryReportStatus', 'sopDailyReportStatus'];
                 const tracking = Object.fromEntries(trackingKeys.map(k => [k, readVal(`reg_tracking_${k}`) || 'Pending']));
 
                 const monitoring = {
@@ -2076,12 +2325,27 @@ class MarketFlowCRM {
                 return true;
             }
 
+            if (a === 'rfp:print:current') {
+                const r = this.computeRfp(this._rfpDraft || this.getSampleRfpTemplate());
+                this.openRfpPrintWindow(r);
+                return true;
+            }
+
             if (a === 'quote:item:add') {
                 if (!this._quoteDraft) this._quoteDraft = this.getSampleQuotationTemplate();
                 if (!Array.isArray(this._quoteDraft.items)) this._quoteDraft.items = [];
                 this._quoteDraft.items.push({ description: '', hsnSac: '998333', dueOn: '', qty: 1, rate: 0, amount: 0 });
                 this.renderContent();
                 this.initializeLucideIcons();
+                return true;
+            }
+
+            if (a === 'rfp:item:add') {
+                if (!this._rfpDraft) this._rfpDraft = this.getStoredRfpDraft() || this.getSampleRfpTemplate();
+                if (!Array.isArray(this._rfpDraft.items)) this._rfpDraft.items = [];
+                this._rfpDraft.items.push({ description: '', uom: 'AE', qty: 1, rate: 0, amount: 0 });
+                this.saveRfpDraft();
+                this.renderContent();
                 return true;
             }
 
@@ -2095,6 +2359,18 @@ class MarketFlowCRM {
                     this.renderContent();
                     this.initializeLucideIcons();
                 }
+                return true;
+            }
+
+            if (a.startsWith('rfp:item:remove:')) {
+                const idx = Number(a.split(':').pop());
+                if (!this._rfpDraft) this._rfpDraft = this.getStoredRfpDraft() || this.getSampleRfpTemplate();
+                if (!Array.isArray(this._rfpDraft.items)) this._rfpDraft.items = [];
+                if (Number.isFinite(idx) && idx >= 0) {
+                    this._rfpDraft.items.splice(idx, 1);
+                }
+                this.saveRfpDraft();
+                this.renderContent();
                 return true;
             }
 
@@ -2112,7 +2388,7 @@ class MarketFlowCRM {
             document.addEventListener('click', (e) => {
                 const target = e.target;
                 if (!(target instanceof Element)) return;
-                
+
                 const sendBtn = target.closest('#bezentChatSend');
                 if (sendBtn) {
                     e.stopPropagation();
@@ -2224,6 +2500,208 @@ class MarketFlowCRM {
             });
         }
 
+        if (!this._rfpInputDelegated) {
+            this._rfpInputDelegated = true;
+            document.addEventListener('input', (e) => {
+                const target = e.target;
+                if (!(target instanceof Element)) return;
+
+                const fieldEl = target.closest('[data-rfp-field]');
+                const itemEl = target.closest('[data-rfp-item-index][data-rfp-item-field]');
+                if (!fieldEl && !itemEl) return;
+
+                if (!this._rfpDraft) this._rfpDraft = this.getStoredRfpDraft() || this.getSampleRfpTemplate();
+
+                if (fieldEl) {
+                    const path = String(fieldEl.getAttribute('data-rfp-field') || '').trim();
+                    if (!path) return;
+                    const value = (fieldEl instanceof HTMLInputElement || fieldEl instanceof HTMLTextAreaElement || fieldEl instanceof HTMLSelectElement)
+                        ? fieldEl.value
+                        : (fieldEl.getAttribute('value') || '');
+
+                    if (path.endsWith('Text')) {
+                        this.setNestedProperty(this._rfpDraft, path, value);
+                    } else {
+                        this.setNestedProperty(this._rfpDraft, path, value);
+                    }
+                }
+
+                if (itemEl) {
+                    const idx = Number(itemEl.getAttribute('data-rfp-item-index'));
+                    const field = String(itemEl.getAttribute('data-rfp-item-field') || '').trim();
+                    if (!Number.isFinite(idx) || idx < 0) return;
+                    if (!Array.isArray(this._rfpDraft.items)) this._rfpDraft.items = [];
+                    while (this._rfpDraft.items.length <= idx) this._rfpDraft.items.push({ description: '', uom: 'AE', qty: 1, rate: 0, amount: 0 });
+                    const value = (itemEl instanceof HTMLInputElement || itemEl instanceof HTMLTextAreaElement || itemEl instanceof HTMLSelectElement)
+                        ? itemEl.value
+                        : (itemEl.getAttribute('value') || '');
+                    if (field === 'qty' || field === 'rate') {
+                        this._rfpDraft.items[idx][field] = Number(String(value).replace(/[^0-9.\-]/g, '')) || 0;
+                    } else {
+                        this._rfpDraft.items[idx][field] = value;
+                    }
+                }
+
+                if (this.currentSection === 'projects' && this.currentSubSection === 'rfp_templates') {
+                    this.updateRfpComputedUI();
+                }
+            });
+        }
+
+        if (!this._rfpLogoDelegated) {
+            this._rfpLogoDelegated = true;
+            document.addEventListener('change', (e) => {
+                const target = e.target;
+                if (!(target instanceof Element)) return;
+                const el = target.closest('#rfpLogoUpload');
+                if (!el) return;
+                if (!(el instanceof HTMLInputElement)) return;
+                const file = el.files && el.files[0];
+                if (!file) return;
+                if (!this._rfpDraft) this._rfpDraft = this.getStoredRfpDraft() || this.getSampleRfpTemplate();
+
+                const reader = new FileReader();
+                reader.onload = () => {
+                    const dataUrl = String(reader.result || '');
+                    if (!dataUrl) return;
+                    if (!this._rfpDraft.provider) this._rfpDraft.provider = {};
+                    this._rfpDraft.provider.logoDataUrl = dataUrl;
+                    this.saveRfpDraft();
+                    this.updateRfpLogoUI();
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        if (!this._quoteLogoDelegated) {
+            this._quoteLogoDelegated = true;
+            document.addEventListener('change', (e) => {
+                const target = e.target;
+                if (!(target instanceof Element)) return;
+                const el = target.closest('#quoteLogoUpload');
+                if (!el) return;
+                if (!(el instanceof HTMLInputElement)) return;
+                const file = el.files && el.files[0];
+                if (!file) return;
+                if (!this._quoteDraft) this._quoteDraft = this.getStoredQuoteDraft() || this.getSampleQuotationTemplate();
+
+                const reader = new FileReader();
+                reader.onload = () => {
+                    const dataUrl = String(reader.result || '');
+                    if (!dataUrl) return;
+                    if (!this._quoteDraft.company) this._quoteDraft.company = {};
+                    this._quoteDraft.company.logoDataUrl = dataUrl;
+                    this.saveQuoteDraft();
+                    this.updateQuotationLogoUI();
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        if (!this._descPickerDelegated) {
+            this._descPickerDelegated = true;
+
+            // Toggle the second-line service charge box
+            document.addEventListener('click', (e) => {
+                const target = e.target;
+                if (!(target instanceof Element)) return;
+
+                const toggleBtn = target.closest('[data-desc-add-toggle]');
+                if (toggleBtn) {
+                    e.stopPropagation();
+                    const idx = toggleBtn.getAttribute('data-desc-add-toggle');
+                    const box = document.getElementById('desc-line2-' + idx);
+                    if (!box) return;
+                    const isVisible = box.style.display !== 'none';
+                    box.style.display = isVisible ? 'none' : 'block';
+                    return;
+                }
+            });
+
+            // Save serviceCharge field on select change
+            document.addEventListener('change', (e) => {
+                const target = e.target;
+                if (!(target instanceof HTMLSelectElement)) return;
+                const itemEl = target.closest('[data-quote-item-index][data-quote-item-field="serviceCharge"]');
+                if (!itemEl) return;
+                const idx = Number(itemEl.getAttribute('data-quote-item-index'));
+                if (!Number.isFinite(idx) || idx < 0) return;
+                if (!this._quoteDraft) this._quoteDraft = this.getSampleQuotationTemplate();
+                if (!Array.isArray(this._quoteDraft.items)) this._quoteDraft.items = [];
+                while (this._quoteDraft.items.length <= idx) this._quoteDraft.items.push({ description: '', hsnSac: '', dueOn: '', qty: 0, rate: 0, amount: 0 });
+                this._quoteDraft.items[idx].serviceCharge = target.value;
+                this.saveQuoteDraft();
+            });
+        }
+
+        if (!this._bankSelectDelegated) {
+            this._bankSelectDelegated = true;
+
+            const BANK_PRESETS = {
+                'Punjab National Bank': {
+                    accountNo: '4962002100007908',
+                    ifsc: 'PUNB0496200',
+                    branch: 'Hosur'
+                },
+                'Indian Bank': {
+                    accountNo: '8085328025',
+                    ifsc: 'IDIB0001047',
+                    branch: 'SPECIALISED MSME BRANCH HOSUR'
+                }
+            };
+
+            document.addEventListener('change', (e) => {
+                const target = e.target;
+                if (!(target instanceof HTMLSelectElement)) return;
+                if (target.id !== 'quoteBankSelect') return;
+
+                const preset = BANK_PRESETS[target.value];
+                if (!preset) return;
+
+                const accEl = document.getElementById('quoteBankAccountNo');
+                const ifscEl = document.getElementById('quoteBankIfsc');
+                const branchEl = document.getElementById('quoteBankBranch');
+
+                if (accEl) { accEl.value = preset.accountNo; accEl.dispatchEvent(new Event('input', { bubbles: true })); }
+                if (ifscEl) { ifscEl.value = preset.ifsc; ifscEl.dispatchEvent(new Event('input', { bubbles: true })); }
+                if (branchEl) { branchEl.value = preset.branch; branchEl.dispatchEvent(new Event('input', { bubbles: true })); }
+            });
+        }
+
+        if (!this._rfpBankSelectDelegated) {
+            this._rfpBankSelectDelegated = true;
+
+            const RFP_BANK_PRESETS = {
+                'Punjab National Bank': {
+                    accountNo: '4962002100007908',
+                    ifsc: 'PUNB0496200',
+                    branch: 'Hosur'
+                },
+                'Indian Bank': {
+                    accountNo: '8085328025',
+                    ifsc: 'IDIB0001047',
+                    branch: 'SPECIALISED MSME BRANCH HOSUR'
+                }
+            };
+
+            document.addEventListener('change', (e) => {
+                const target = e.target;
+                if (!(target instanceof HTMLSelectElement)) return;
+                if (target.id !== 'rfpBankSelect') return;
+
+                const preset = RFP_BANK_PRESETS[target.value];
+                if (!preset) return;
+
+                const accEl = document.getElementById('rfpBankAccountNo');
+                const ifscEl = document.getElementById('rfpBankIfsc');
+                const branchEl = document.getElementById('rfpBankBranch');
+
+                if (accEl) { accEl.value = preset.accountNo; accEl.dispatchEvent(new Event('input', { bubbles: true })); }
+                if (ifscEl) { ifscEl.value = preset.ifsc; ifscEl.dispatchEvent(new Event('input', { bubbles: true })); }
+                if (branchEl) { branchEl.value = preset.branch; branchEl.dispatchEvent(new Event('input', { bubbles: true })); }
+            });
+        }
+
         if (!this._vendorCodeAutoFillDelegated) {
             this._vendorCodeAutoFillDelegated = true;
             document.addEventListener('input', (e) => {
@@ -2238,7 +2716,7 @@ class MarketFlowCRM {
                             const companyNameEl = document.getElementById('companyName');
                             const projectLeadEl = document.getElementById('projectLead');
                             const assignedByEl = document.getElementById('assignedBy');
-                            
+
                             if (clientEl && !clientEl.value) {
                                 clientEl.value = client.name || '';
                             }
@@ -2303,7 +2781,7 @@ class MarketFlowCRM {
 
                 const label = (btn.textContent || '').replace(/\s+/g, ' ').trim();
                 if (!label) return;
-                
+
                 // Skip preset question buttons
                 if (btn.classList.contains('bezent-preset-question')) return;
 
@@ -2542,14 +3020,14 @@ class MarketFlowCRM {
                 <div class="p-3 border-t border-slate-200">
                     <div class="mb-2 flex flex-wrap gap-1">
                         ${[
-                            'What is Bezent?',
-                            'How to register a client?',
-                            'How vendor code works?',
-                            'How to create invoice?',
-                            'Technical tracking statuses',
-                            'Project monitoring fields',
-                            'Payment tracking details'
-                        ].map(q => `
+                'What is Bezent?',
+                'How to register a client?',
+                'How vendor code works?',
+                'How to create invoice?',
+                'Technical tracking statuses',
+                'Project monitoring fields',
+                'Payment tracking details'
+            ].map(q => `
                             <button class="bezent-preset-question px-2 py-1 text-xs bg-purple-50 text-purple-700 rounded-full hover:bg-purple-100 transition-colors" data-question="${q.replace(/"/g, '&quot;')}">${q}</button>
                         `).join('')}
                     </div>
@@ -2685,7 +3163,7 @@ class MarketFlowCRM {
                 overdue = Number(parsed.overdue || 0);
                 pending = Number(parsed.pending || 0);
             }
-        } catch (_) {}
+        } catch (_) { }
 
         const ctx = document.getElementById('invoiceStatusChart');
         if (ctx) {
@@ -2761,26 +3239,26 @@ class MarketFlowCRM {
 
     switchSection(section) {
         this.currentSection = section;
-        
+
         // Update active tab
         document.querySelectorAll('.nav-tab').forEach(tab => {
             tab.classList.remove('bg-purple-50', 'text-purple-700');
             tab.classList.add('text-slate-600', 'hover:text-slate-900', 'hover:bg-slate-50');
         });
-        
+
         const activeTab = document.querySelector(`[data-section="${section}"]`);
         if (activeTab) {
             activeTab.classList.remove('text-slate-600', 'hover:text-slate-900', 'hover:bg-slate-50');
             activeTab.classList.add('bg-purple-50', 'text-purple-700');
         }
-        
+
         // Reset sub-section to default for each section
         this.currentSubSection = this.getDefaultSubSection(section);
-        
+
         // Update sidebar and content
         this.renderSidebar();
         this.renderContent();
-        
+
         // Re-initialize icons
         this.initializeLucideIcons();
         this.closeMobileSidebar();
@@ -2828,7 +3306,7 @@ class MarketFlowCRM {
         const icons = {
             dashboard: { overview: 'layout-dashboard', daily: 'calendar-days', weekly: 'bar-chart-3', analytics: 'pie-chart', work: 'check-square', sop: 'list-checks' },
             leads: { registration: 'user-plus', client_registration: 'user-plus', clients: 'users', tracking: 'radar', details: 'file-text', lead_registration: 'user-plus', lead_directory: 'users-round', lead_sources: 'pie-chart', lead_pipeline: 'kanban-square', indiamart: 'clock', categorization: 'tags', smart_feedback: 'messages-square', greetings: 'calendar-heart', lead_sla: 'timer' },
-            projects: { registration: 'folder-plus', directory: 'folder', pipeline: 'kanban-square', active: 'gantt-chart', completed: 'badge-check', quotation_templates: 'file-text' },
+            projects: { registration: 'folder-plus', directory: 'folder', pipeline: 'kanban-square', active: 'gantt-chart', completed: 'badge-check', quotation_templates: 'file-text', rfp_templates: 'file-text' },
             campaigns: { email: 'mail', sms: 'message-square', wishes: 'calendar-heart', reengagement: 'refresh-cw', marketing_hub: 'globe', seo: 'search', content_library: 'library', maps_reviews: 'map-pin', linkedin_leads: 'linkedin' },
             billing: { invoices: 'file-text', quotations: 'file-text', contracts: 'file-signature', payments: 'credit-card', followup_log: 'clipboard-list', overdue_risk: 'alert-triangle' },
             engagement: { followups: 'phone-call', surveys: 'clipboard-check', health: 'heart-pulse', reengagement: 'sparkles', field_visits: 'map', route_map: 'route', mobile_sync: 'smartphone', followup_sla: 'timer' },
@@ -2836,7 +3314,7 @@ class MarketFlowCRM {
             ai: { insights: 'sparkles', workflows: 'workflow', alerts: 'bell-dot', predictions: 'brain', lead_prediction: 'radar', best_email_timing: 'clock', auto_followup: 'calendar-clock', content_generator: 'wand-2' }
         };
         const getIcon = (id) => (icons[this.currentSection] && icons[this.currentSection][id]) ? icons[this.currentSection][id] : 'dot';
-        
+
         sidebarNav.innerHTML = `
             <div class="flex flex-col h-full min-h-[calc(100vh-8rem)]">
                 <div>
@@ -2845,9 +3323,9 @@ class MarketFlowCRM {
                     </h2>
                     ${subNavItems.map(item => `
                         <button class="sidebar-item w-full flex items-center gap-3 text-left px-3 py-2 text-sm font-medium rounded-lg transition-colors mb-1
-                            ${item.id === this.currentSubSection 
-                                ? 'bg-purple-50 text-purple-700' 
-                                : 'text-slate-700 hover:bg-slate-50'}"
+                            ${item.id === this.currentSubSection
+                ? 'bg-purple-50 text-purple-700'
+                : 'text-slate-700 hover:bg-slate-50'}"
                             data-subsection="${item.id}">
                             <i data-lucide="${getIcon(item.id)}" class="w-4 h-4"></i>
                             <span class="sidebar-label">${item.label}</span>
@@ -2885,14 +3363,15 @@ class MarketFlowCRM {
                 { id: 'pipeline', label: 'Sales Pipeline' },
                 { id: 'active', label: 'Active Projects' },
                 { id: 'completed', label: 'Completed Projects' },
-                { id: 'quotation_templates', label: 'Quotation Templates' }
+                { id: 'quotation_templates', label: 'Quotation Templates' },
+                { id: 'rfp_templates', label: 'RFP Templates' }
             ],
             campaigns: [
                 { id: 'email', label: 'Email Campaigns' },
                 { id: 'sms', label: 'SMS & WhatsApp' },
                 { id: 'wishes', label: 'Personalized Wishes' },
                 { id: 'reengagement', label: 'Re-engagement' },
-                
+
             ],
             billing: [
                 { id: 'invoices', label: 'Invoices' },
@@ -2934,14 +3413,14 @@ class MarketFlowCRM {
                 { id: 'content_generator', label: 'AI Content Generator' }
             ]
         };
-        
+
         return navigation[section] || [];
     }
 
     renderContent() {
         const mainContent = document.getElementById('main-content');
-        
-        switch(this.currentSection) {
+
+        switch (this.currentSection) {
             case 'dashboard':
                 this.renderDashboardContent(mainContent);
                 break;
@@ -3061,13 +3540,13 @@ class MarketFlowCRM {
     destroyCharts() {
         this.stopChartRotation('invoiceStatusChart');
         Object.values(this.charts).forEach(chart => {
-            try { chart.destroy(); } catch (_) {}
+            try { chart.destroy(); } catch (_) { }
         });
         this.charts = {};
     }
 
     renderDashboardContent(container) {
-        switch(this.currentSubSection) {
+        switch (this.currentSubSection) {
             case 'overview':
                 container.innerHTML = this.getDashboardOverview();
                 break;
@@ -3919,11 +4398,10 @@ class MarketFlowCRM {
                 <div class="flex-1">
                     <span class="text-sm ${task.completed ? 'line-through text-slate-500' : 'text-slate-700'}">${task.text}</span>
                 </div>
-                <span class="px-2 py-1 text-xs font-medium rounded-full ${
-                    task.priority === 'High' ? 'bg-red-100 text-red-700' :
-                    task.priority === 'Medium' ? 'bg-yellow-100 text-yellow-700' :
+                <span class="px-2 py-1 text-xs font-medium rounded-full ${task.priority === 'High' ? 'bg-red-100 text-red-700' :
+                task.priority === 'Medium' ? 'bg-yellow-100 text-yellow-700' :
                     'bg-green-100 text-green-700'
-                }">${task.priority}</span>
+            }">${task.priority}</span>
             </div>
         `).join('');
     }
@@ -4183,9 +4661,9 @@ class MarketFlowCRM {
                                 </thead>
                                 <tbody class="divide-y divide-slate-200">
                                     ${leads.map(l => {
-                                        const converted = String(l.status || '').toLowerCase() === 'converted';
-                                        const isSelected = selected && String(selected.id || '').trim().toLowerCase() === String(l.id || '').trim().toLowerCase();
-                                        return `
+            const converted = String(l.status || '').toLowerCase() === 'converted';
+            const isSelected = selected && String(selected.id || '').trim().toLowerCase() === String(l.id || '').trim().toLowerCase();
+            return `
                                             <tr data-lead-id="${l.id}" class="hover:bg-slate-50 cursor-pointer ${isSelected ? 'bg-slate-50' : ''}">
                                                 <td class="px-4 py-3 font-medium text-slate-900">${l.id}</td>
                                                 <td class="px-4 py-3 text-slate-700">${l.company}</td>
@@ -4195,13 +4673,13 @@ class MarketFlowCRM {
                                                 <td class="px-4 py-3 text-slate-700">${l.feedbackStatus || '—'}</td>
                                                 <td class="px-4 py-3">
                                                     ${converted
-                                                        ? `<span class="px-2 py-1 text-xs font-medium bg-emerald-50 text-emerald-700 rounded-full">Converted</span>`
-                                                        : `<button data-action="lead:convert" data-lead-id="${l.id}" class="px-3 py-1.5 text-xs font-medium bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">Convert to Client</button>`
-                                                    }
+                    ? `<span class="px-2 py-1 text-xs font-medium bg-emerald-50 text-emerald-700 rounded-full">Converted</span>`
+                    : `<button data-action="lead:convert" data-lead-id="${l.id}" class="px-3 py-1.5 text-xs font-medium bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">Convert to Client</button>`
+                }
                                                 </td>
                                             </tr>
                                         `;
-                                    }).join('')}
+        }).join('')}
                                 </tbody>
                             </table>
                         </div>
@@ -4269,9 +4747,9 @@ class MarketFlowCRM {
                                 <div class="grid grid-cols-2 gap-2">
                                     <button data-action="lead:update" class="px-3 py-2 text-sm font-medium bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">Save</button>
                                     ${String(selected.status || '').toLowerCase() === 'converted'
-                                        ? `<button data-action="nav:leads/client_directory" class="px-3 py-2 text-sm font-medium bg-emerald-50 text-emerald-700 rounded-lg hover:bg-emerald-100 transition-colors">Open Client</button>`
-                                        : `<button data-action="lead:convert" data-lead-id="${selected.id}" class="px-3 py-2 text-sm font-medium bg-slate-900 text-white rounded-lg hover:bg-slate-800 transition-colors">Convert</button>`
-                                    }
+                    ? `<button data-action="nav:leads/client_directory" class="px-3 py-2 text-sm font-medium bg-emerald-50 text-emerald-700 rounded-lg hover:bg-emerald-100 transition-colors">Open Client</button>`
+                    : `<button data-action="lead:convert" data-lead-id="${selected.id}" class="px-3 py-2 text-sm font-medium bg-slate-900 text-white rounded-lg hover:bg-slate-800 transition-colors">Convert</button>`
+                }
                                 </div>
 
                                 <div class="mt-2">
@@ -4348,7 +4826,7 @@ class MarketFlowCRM {
     getClientDetailMock(clientName) {
         const clients = this.getClientsData();
         const client = clients.find(c => String(c.name || '').trim() === clientName);
-        
+
         if (!client) {
             return {
                 contact: { name: 'Primary Contact', email: 'contact@company.com', phone: '+91 90000 00000' },
@@ -4771,11 +5249,11 @@ class MarketFlowCRM {
                             </thead>
                             <tbody class="divide-y divide-slate-200">
                                 ${contacts.map(c => {
-                                    const esc = (v) => String(v ?? '').replace(/</g, '&lt;');
-                                    const typeChip = String(c.type || '').toLowerCase() === 'client'
-                                        ? '<span class="px-2 py-1 text-xs font-medium bg-emerald-50 text-emerald-700 rounded-full">Client</span>'
-                                        : '<span class="px-2 py-1 text-xs font-medium bg-amber-50 text-amber-700 rounded-full">Lead</span>';
-                                    return `
+            const esc = (v) => String(v ?? '').replace(/</g, '&lt;');
+            const typeChip = String(c.type || '').toLowerCase() === 'client'
+                ? '<span class="px-2 py-1 text-xs font-medium bg-emerald-50 text-emerald-700 rounded-full">Client</span>'
+                : '<span class="px-2 py-1 text-xs font-medium bg-amber-50 text-amber-700 rounded-full">Lead</span>';
+            return `
                                         <tr data-contact-row="1" data-type="${esc(c.type).toLowerCase()}" data-name="${esc(c.name)}" data-phone="${esc(c.phone)}" data-email="${esc(c.email)}" data-owner="${esc(c.owner).toLowerCase()}" data-source="${esc(c.source).toLowerCase()}" class="hover:bg-slate-50">
                                             <td class="px-4 py-3">${typeChip}</td>
                                             <td class="px-4 py-3">
@@ -4787,7 +5265,7 @@ class MarketFlowCRM {
                                             <td class="px-4 py-3 text-slate-700">${esc(c.source) || '—'}</td>
                                         </tr>
                                     `;
-                                }).join('')}
+        }).join('')}
                             </tbody>
                         </table>
                     </div>
@@ -4881,13 +5359,16 @@ class MarketFlowCRM {
             case 'quotation_templates':
                 container.innerHTML = this.getQuotationTemplates();
                 break;
+            case 'rfp_templates':
+                container.innerHTML = this.getRfpTemplates();
+                break;
             default:
                 container.innerHTML = this.getSalesPipeline();
         }
     }
 
     getQuotationTemplates() {
-        if (!this._quoteDraft) this._quoteDraft = this.getSampleQuotationTemplate();
+        if (!this._quoteDraft) this._quoteDraft = this.getStoredQuoteDraft() || this.getSampleQuotationTemplate();
         const draft = this.computeQuotation(this._quoteDraft);
         const esc = (v) => String(v ?? '').replace(/</g, '&lt;').replace(/"/g, '&quot;');
         const company = draft.company || {};
@@ -4917,6 +5398,16 @@ class MarketFlowCRM {
                             <div class="text-sm font-semibold text-slate-900">Company Details</div>
                             <div class="mt-3 grid grid-cols-1 md:grid-cols-2 gap-3">
                                 <div class="md:col-span-2">
+                                    <label class="text-xs font-medium text-slate-600">Company Logo</label>
+                                    <div class="mt-1 flex items-center gap-3">
+                                        <div class="h-12 w-12 rounded-md border border-slate-200 bg-white flex items-center justify-center overflow-hidden">
+                                            <img id="quoteLogoPreview" src="${esc(company.logoDataUrl || '')}" alt="" style="max-width:100%;max-height:100%;${company.logoDataUrl ? '' : 'display:none;'}" />
+                                        </div>
+                                        <input id="quoteLogoUpload" type="file" accept="image/*" class="block text-sm" />
+                                    </div>
+                                    <div class="text-[11px] text-slate-500 mt-1">Upload a logo to show near the company name in the print template.</div>
+                                </div>
+                                <div class="md:col-span-2">
                                     <label class="text-xs font-medium text-slate-600">Company Name</label>
                                     <input data-quote-field="company.name" value="${esc(company.name)}" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm" />
                                 </div>
@@ -4929,8 +5420,20 @@ class MarketFlowCRM {
                                     <input data-quote-field="company.gstin" value="${esc(company.gstin)}" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm" />
                                 </div>
                                 <div>
+                                    <label class="text-xs font-medium text-slate-600">State Name</label>
+                                    <input data-quote-field="company.stateName" value="${esc(company.stateName)}" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm" />
+                                </div>
+                                <div>
                                     <label class="text-xs font-medium text-slate-600">State Code</label>
                                     <input data-quote-field="company.stateCode" value="${esc(company.stateCode)}" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm" />
+                                </div>
+                                <div>
+                                    <label class="text-xs font-medium text-slate-600">Contact</label>
+                                    <input data-quote-field="company.phone" value="${esc(company.phone)}" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm" />
+                                </div>
+                                <div class="md:col-span-2">
+                                    <label class="text-xs font-medium text-slate-600">E-Mail</label>
+                                    <input data-quote-field="company.email" value="${esc(company.email)}" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm" />
                                 </div>
                             </div>
                         </div>
@@ -4953,6 +5456,26 @@ class MarketFlowCRM {
                                 <div>
                                     <label class="text-xs font-medium text-slate-600">Buyer Reference</label>
                                     <input data-quote-field="quote.buyerReference" value="${esc(quote.buyerReference)}" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm" />
+                                </div>
+                                <div>
+                                    <label class="text-xs font-medium text-slate-600">Buyer Ref/Order No</label>
+                                    <input data-quote-field="quote.buyerRefOrderNo" value="${esc(quote.buyerRefOrderNo)}" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm" />
+                                </div>
+                                <div>
+                                    <label class="text-xs font-medium text-slate-600">Other References</label>
+                                    <input data-quote-field="quote.otherReferences" value="${esc(quote.otherReferences)}" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm" />
+                                </div>
+                                <div>
+                                    <label class="text-xs font-medium text-slate-600">Dispatched Through</label>
+                                    <input data-quote-field="quote.dispatchedThrough" value="${esc(quote.dispatchedThrough)}" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm" />
+                                </div>
+                                <div>
+                                    <label class="text-xs font-medium text-slate-600">Destination</label>
+                                    <input data-quote-field="quote.destination" value="${esc(quote.destination)}" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm" />
+                                </div>
+                                <div class="md:col-span-2">
+                                    <label class="text-xs font-medium text-slate-600">Terms of Delivery</label>
+                                    <input data-quote-field="quote.termsOfDelivery" value="${esc(quote.termsOfDelivery)}" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm" />
                                 </div>
                             </div>
 
@@ -4997,9 +5520,36 @@ class MarketFlowCRM {
                                     ${items.map((it, idx) => `
                                         <tr>
                                             <td class="px-3 py-2 text-slate-700">${idx + 1}</td>
-                                            <td class="px-3 py-2">
-                                                <input data-quote-item-index="${idx}" data-quote-item-field="description" value="${esc(it.description)}" class="w-full border border-slate-200 rounded-lg px-2 py-1 text-sm" />
-                                            </td>
+                                             <td class="px-3 py-2">
+                                                 <div style="display:flex;flex-direction:column;gap:4px;">
+                                                     <input data-quote-item-index="${idx}" data-quote-item-field="description" value="${esc(it.description)}" class="w-full border border-slate-200 rounded-lg px-2 py-1 text-sm" />
+                                                     <div style="display:flex;align-items:center;">
+                                                         <button type="button" data-desc-add-toggle="${idx}" title="Add service charge line" style="width:20px;height:20px;border-radius:4px;border:1px solid #c4b5fd;background:#f5f3ff;color:#7c3aed;font-size:15px;font-weight:700;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;">+</button>
+                                                     </div>
+                                                     <div id="desc-line2-${idx}" style="display:${it.serviceCharge ? 'block' : 'none'}; ">
+                                                         <select data-quote-item-index="${idx}" data-quote-item-field="serviceCharge" style="width:100%;border:1px solid #e2e8f0;border-radius:8px;padding:4px 6px;font-size:12px;color:#0f172a;background:#fff;cursor:pointer;">
+                                                             <option value="">-- Select Service Charge --</option>
+                                                             ${[
+                'Service Charge for 2D & 3D Inspection',
+                'Service Charge for 2D Dimension',
+                'Service Charge for 2D Drafting',
+                'Service Charge for 2D Inspection',
+                'Service Charge for 2D Modelling',
+                'Service Charge for 2D to 3D Conversion',
+                'Service Charge for 2D to 3D Modelling',
+                'Service Charge for 3D Inspection',
+                'Service Charge for 3D Modelling',
+                'Service Charge for 3D Scanning',
+                'Service Charge for 3D Scanning and Inspection',
+                'Service Charge for 3D Scanning and Modelling',
+                'Service Charge for 3D Scanning and Modelling and 2D Drafting',
+                'Service Charge for CAD Conversion',
+                'Service Charge for Onsite 3D Scanning'
+            ].map(opt => `<option value="${esc(opt)}" ${it.serviceCharge === opt ? 'selected' : ''}>${opt}</option>`).join('')}
+                                                         </select>
+                                                     </div>
+                                                 </div>
+                                             </td>
                                             <td class="px-3 py-2">
                                                 <input data-quote-item-index="${idx}" data-quote-item-field="hsnSac" value="${esc(it.hsnSac)}" class="w-full border border-slate-200 rounded-lg px-2 py-1 text-sm" />
                                             </td>
@@ -5050,15 +5600,23 @@ class MarketFlowCRM {
                             <div class="mt-3 grid grid-cols-1 md:grid-cols-2 gap-3">
                                 <div class="md:col-span-2">
                                     <label class="text-xs font-medium text-slate-600">Bank Name</label>
-                                    <input data-quote-field="bank.bankName" value="${esc(bank.bankName)}" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm" />
+                                    <select id="quoteBankSelect" data-quote-field="bank.bankName" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm">
+                                        <option value="">-- Select Bank --</option>
+                                        <option value="Punjab National Bank" ${bank.bankName === 'Punjab National Bank' || !bank.bankName ? 'selected' : ''}>Punjab National Bank</option>
+                                        <option value="Indian Bank" ${bank.bankName === 'Indian Bank' ? 'selected' : ''}>Indian Bank</option>
+                                    </select>
                                 </div>
                                 <div>
                                     <label class="text-xs font-medium text-slate-600">Account No</label>
-                                    <input data-quote-field="bank.accountNo" value="${esc(bank.accountNo)}" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm" />
+                                    <input id="quoteBankAccountNo" data-quote-field="bank.accountNo" value="${esc(bank.accountNo)}" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm" />
                                 </div>
                                 <div>
                                     <label class="text-xs font-medium text-slate-600">IFSC</label>
-                                    <input data-quote-field="bank.ifsc" value="${esc(bank.ifsc)}" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm" />
+                                    <input id="quoteBankIfsc" data-quote-field="bank.ifsc" value="${esc(bank.ifsc)}" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm" />
+                                </div>
+                                <div class="md:col-span-2">
+                                    <label class="text-xs font-medium text-slate-600">Branch</label>
+                                    <input id="quoteBankBranch" data-quote-field="bank.branch" value="${esc(bank.branch || '')}" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm" readonly style="background:#f8fafc;" />
                                 </div>
                                 <div>
                                     <label class="text-xs font-medium text-slate-600">GST Rate (%)</label>
@@ -5075,12 +5633,540 @@ class MarketFlowCRM {
     getCompanyMaster() {
         return {
             name: 'APJ 3D Design Solution India Pvt Ltd',
-            address: 'Hosur, Tamil Nadu (GST State Code: 33)',
+            address: '743TB, GKD NAGAR, Near Dhasce Kalyanamandapam, Basthi, Hosur, Krishnagiri, Pin-635109',
+            stateName: 'Tamil Nadu',
             stateCode: '33',
             gstin: '33AAXCA1027H1ZR',
-            phone: '',
-            email: ''
+            phone: '7550398310',
+            email: 'service@apj3d.com'
         };
+    }
+
+    getSampleRfpTemplate() {
+        return {
+            client: {
+                companyName: 'Advanced Structures India Pvt Ltd',
+                contactPerson: 'Mr. Alexander K A– Senior Manager',
+                projectName: '3D Scanning Support',
+                gstNumber: '29AAMCA5005G1ZR',
+                companyAddress: '2B, Bommasandra Jigani Link Rd, 4th Phase, Bommasandra Industrial Area, Bengaluru - Karnataka 560099',
+                dateOfRequest: '24th Sep 2025'
+            },
+            provider: {
+                companyName: 'APJ 3D Design Solutions India Pvt Ltd',
+                headOffice: 'No.74/37B, Basthi Road, GKD Nagar, Hosur – Tamil Nadu 635109, India',
+                cinGstin: 'U29113TZ2022PTC039089 / GSTIN: 33AAXCA1027H1ZR',
+                contactPerson: 'Sathish S – Managing Director',
+                proposalSentOn: '24th Sep 2025',
+                logoDataUrl: ''
+            },
+            scopeText: 'Quantity: E-Axle Assembly\n3D scanning in assembled condition (output file in .stl format)\nCreating Part model and 2D drawings In Catia V5 Software\nAll parts Will be modelled with origin ref. as VCS\nHierarchical cad model for following parts with ASI -part IDs.',
+            implementationText: 'Once the commercial service agreement (RFP) is finalized, and the purchase order (PO) is received from your end, the project will be initiated.\nOur team would visit onsite to perform 3D scanning (scanner used would be ZEISS T Scan Hawk)\nWe are considered max 30 parts in that assembly',
+            timelineText: '3D model – 25 Working day’s\n3D scanning- 4 days\nWork will be kick-started once PO is raised.',
+            paymentText: 'Advance Payment (40%): An initial payment of 40% of the total project cost is due upon issuance of the Purchase Order (PO).\nIntermediate Payment (60%): A second payment of 60% of the total project cost is due upon successful delivery of the 3D model in a mutually agreed-upon file format (. STP).',
+            responsibilitiesText: 'The Client shall provide [APJ 3D] with all necessary information, materials, and access required to perform the Services.\nPart names\nPart numbers\nPart thicknesses\nAny relevant technical drawings, specifications, or other documentation.\nAll project inputs must be submitted by email to (servcie@apj3d.com & Info@apj3d.com )',
+            delaysText: 'Delays in providing the required information (as outlined in Section 7) by the Client may result in corresponding delays to the project timeline.\nAPJ 3D shall not be held responsible for any delays in the project caused by the Client\'s failure to provide timely and accurate information.',
+            commencementText: 'The project commencement date shall be considered as the date on which both parties have signed and agreed to these Terms and Conditions in writing.',
+            changesText: 'Any changes to the original project scope may result in adjustments to the project timeline.\nAdditional charges to reflect the increased scope of work or required adjustments.\nAll changes to the project scope must be agreed upon in writing by both parties before implementation.',
+            quoteId: 'APJ3D2025_26_0222',
+            items: [
+                { description: 'Price for 3D Scanning, 3D modelling and 2D drafting of E-Axle\nOutput format- Catia V5', uom: 'AE', qty: 1, rate: 0, amount: 0 }
+            ],
+            bank: {
+                beneficiary: 'APJ 3D Design Solution India Pvt Ltd',
+                bankName: 'Punjab National Bank',
+                accountNo: '4962002100007908',
+                ifsc: 'PUNB0496200'
+            },
+            confidentialityText: 'We maintain 100% confidentiality of the project/data which we support. Under no circumstances may the service provider distribute or disclose any Confidential Information other than as permitted by this Agreement. The service provider and user attest that we will only use the Confidential Information to carry out the project needs set forth in this Agreement, and for no other purpose, without first obtaining their express prior written agreement. Also, we have restricted access to our production team for copying, storing the data from workspace through LAN. Files will be shared via Google drive (from our domain server)'
+        };
+    }
+
+    computeRfp(r) {
+        const base = r || {};
+        const items = (Array.isArray(base.items) ? base.items : []).map(it => ({ ...it }));
+
+        items.forEach(it => {
+            const qty = Number(it.qty || 0);
+            const rate = Number(it.rate || 0);
+            it.amount = Math.round(qty * rate * 100) / 100;
+        });
+
+        const subtotal = Math.round(items.reduce((s, it) => s + (Number(it.amount) || 0), 0) * 100) / 100;
+        const taxRate = 18;
+        const taxAmt = Math.round(subtotal * (taxRate / 100) * 100) / 100;
+        const total = Math.round((subtotal + taxAmt) * 100) / 100;
+
+        return {
+            ...base,
+            items,
+            tax: { type: 'IGST', rate: taxRate },
+            totals: { subtotal, tax: taxAmt, total }
+        };
+    }
+
+    getStoredRfpDraft() {
+        const stored = this.readStore('bezent_rfp_draft', null);
+        if (!stored || typeof stored !== 'object') return null;
+        return stored;
+    }
+
+    saveRfpDraft() {
+        try {
+            if (!this._rfpDraft) return;
+            this.writeStore('bezent_rfp_draft', this._rfpDraft);
+        } catch (e) {
+        }
+    }
+
+    updateRfpLogoUI() {
+        if (!(this.currentSection === 'projects' && this.currentSubSection === 'rfp_templates')) return;
+        const src = String(this._rfpDraft?.provider?.logoDataUrl || '');
+        const img = document.getElementById('rfpLogoPreview');
+        if (img && img instanceof HTMLImageElement) {
+            img.src = src;
+            img.style.display = src ? '' : 'none';
+        }
+    }
+
+    updateRfpComputedUI() {
+        if (!(this.currentSection === 'projects' && this.currentSubSection === 'rfp_templates')) return;
+        const computed = this.computeRfp(this._rfpDraft || this.getSampleRfpTemplate());
+        const totals = computed.totals || {};
+        const items = Array.isArray(computed.items) ? computed.items : [];
+
+        items.forEach((it, idx) => {
+            const amtEl = document.querySelector(`[data-rfp-item-amount="${idx}"]`);
+            if (amtEl) amtEl.textContent = this.formatINR(Number(it.amount || 0));
+        });
+
+        const subEl = document.getElementById('rfpSubtotal');
+        if (subEl) subEl.textContent = this.formatINR(totals.subtotal || 0);
+        const taxEl = document.getElementById('rfpTax');
+        if (taxEl) taxEl.textContent = this.formatINR(totals.tax || 0);
+        const totalEl = document.getElementById('rfpTotal');
+        if (totalEl) totalEl.textContent = this.formatINR(totals.total || 0);
+        const wordsEl = document.getElementById('rfpWords');
+        if (wordsEl) wordsEl.textContent = this.amountToWordsINR(totals.total || 0);
+
+        this._rfpDraft = computed;
+        this.saveRfpDraft();
+    }
+
+    linesToBullets(text) {
+        return String(text || '')
+            .split(/\r?\n/)
+            .map(s => s.trim())
+            .filter(Boolean);
+    }
+
+    renderRfpDocumentHTML(r) {
+        const doc = r || {};
+        const esc = (v) => String(v ?? '').replace(/</g, '&lt;').replace(/"/g, '&quot;');
+        const client = doc.client || {};
+        const provider = doc.provider || {};
+        const items = Array.isArray(doc.items) ? doc.items : [];
+        const totals = doc.totals || {};
+
+        const scope = this.linesToBullets(doc.scopeText);
+        const impl = this.linesToBullets(doc.implementationText);
+        const timeline = this.linesToBullets(doc.timelineText);
+        const pay = this.linesToBullets(doc.paymentText);
+        const resp = this.linesToBullets(doc.responsibilitiesText);
+        const delays = this.linesToBullets(doc.delaysText);
+        const changes = this.linesToBullets(doc.changesText);
+
+        const bank = doc.bank || {};
+
+        const list = (arr) => `<ol>${arr.map(x => `<li>${esc(x)}</li>`).join('')}</ol>`;
+
+        return `
+            <!-- ══ COVER PAGE ══ -->
+            <div class="cover-page">
+
+                <!-- Background SVG: blueprint grid + 3D shapes -->
+                <svg class="cover-bg-svg" viewBox="0 0 1000 1414" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <linearGradient id="bgGrad" x1="0" y1="0" x2="1" y2="1">
+                            <stop offset="0%" stop-color="#04091a"/>
+                            <stop offset="45%" stop-color="#0b1f52"/>
+                            <stop offset="100%" stop-color="#1a4aad"/>
+                        </linearGradient>
+                        <linearGradient id="cubeTop" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stop-color="#3b82f6" stop-opacity="0.9"/>
+                            <stop offset="100%" stop-color="#1d4ed8" stop-opacity="0.7"/>
+                        </linearGradient>
+                        <linearGradient id="cubeLeft" x1="0" y1="0" x2="1" y2="0">
+                            <stop offset="0%" stop-color="#1e40af" stop-opacity="0.95"/>
+                            <stop offset="100%" stop-color="#1d4ed8" stop-opacity="0.6"/>
+                        </linearGradient>
+                        <linearGradient id="cubeRight" x1="1" y1="0" x2="0" y2="0">
+                            <stop offset="0%" stop-color="#0c1a5e" stop-opacity="0.95"/>
+                            <stop offset="100%" stop-color="#1e3a8a" stop-opacity="0.55"/>
+                        </linearGradient>
+                        <filter id="glow">
+                            <feGaussianBlur stdDeviation="6" result="blur"/>
+                            <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+                        </filter>
+                        <filter id="softglow">
+                            <feGaussianBlur stdDeviation="18" result="blur"/>
+                            <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+                        </filter>
+                    </defs>
+
+                    <!-- Background fill -->
+                    <rect width="1000" height="1414" fill="url(#bgGrad)"/>
+
+                    <!-- Blueprint grid (vertical lines) -->
+                    <g stroke="#1e40af" stroke-width="0.4" opacity="0.35">
+                        ${Array.from({ length: 42 }, (_, i) => `<line x1="${i * 24}" y1="0" x2="${i * 24}" y2="1414"/>`).join('')}
+                    </g>
+                    <!-- Blueprint grid (horizontal lines) -->
+                    <g stroke="#1e40af" stroke-width="0.4" opacity="0.35">
+                        ${Array.from({ length: 60 }, (_, i) => `<line x1="0" y1="${i * 24}" x2="1000" y2="${i * 24}"/>`).join('')}
+                    </g>
+                    <!-- Perspective floor grid -->
+                    <g stroke="#2563eb" stroke-width="0.8" opacity="0.25">
+                        ${Array.from({ length: 16 }, (_, i) => `<line x1="${500 + i * 90}" y1="1414" x2="500" y2="820"/><line x1="${500 - i * 90}" y1="1414" x2="500" y2="820"/>`)}
+                        ${Array.from({ length: 10 }, (_, i) => `<line x1="0" y1="${820 + i * 66}" x2="1000" y2="${820 + i * 66}"/>`)}
+                    </g>
+
+                    <!-- Glowing orb behind cube -->
+                    <ellipse cx="500" cy="600" rx="220" ry="180" fill="#3b82f6" opacity="0.10" filter="url(#softglow)"/>
+
+                    <!-- Large 3D isometric wireframe cube -->
+                    <!-- Top face -->
+                    <polygon points="500,280  700,390  500,500  300,390" fill="url(#cubeTop)" stroke="#93c5fd" stroke-width="1.5" filter="url(#glow)"/>
+                    <!-- Left face -->
+                    <polygon points="300,390  500,500  500,710  300,600" fill="url(#cubeLeft)" stroke="#60a5fa" stroke-width="1.5"/>
+                    <!-- Right face -->
+                    <polygon points="700,390  500,500  500,710  700,600" fill="url(#cubeRight)" stroke="#3b82f6" stroke-width="1.5"/>
+
+                    <!-- Cube wireframe inner lines -->
+                    <line x1="500" y1="500" x2="500" y2="280" stroke="#93c5fd" stroke-width="1" opacity="0.6" stroke-dasharray="6,4"/>
+                    <line x1="300" y1="390" x2="500" y2="390" stroke="#93c5fd" stroke-width="1" opacity="0.5" stroke-dasharray="6,4"/>
+                    <line x1="700" y1="390" x2="500" y2="390" stroke="#93c5fd" stroke-width="1" opacity="0.5" stroke-dasharray="6,4"/>
+                    <line x1="500" y1="390" x2="500" y2="500" stroke="#bfdbfe" stroke-width="1.2" opacity="0.7"/>
+
+                    <!-- Small floating cube top-right -->
+                    <polygon points="780,180  860,225  780,270  700,225" fill="#1e40af" stroke="#60a5fa" stroke-width="1" opacity="0.75"/>
+                    <polygon points="700,225  780,270  780,370  700,325" fill="#0f2d6b" stroke="#3b82f6" stroke-width="1" opacity="0.75"/>
+                    <polygon points="860,225  780,270  780,370  860,325" fill="#1730a0" stroke="#2563eb" stroke-width="1" opacity="0.75"/>
+
+                    <!-- Small floating cube top-left -->
+                    <polygon points="180,250  250,290  180,330  110,290" fill="#1e40af" stroke="#60a5fa" stroke-width="1" opacity="0.65"/>
+                    <polygon points="110,290  180,330  180,410  110,370" fill="#0f2d6b" stroke="#3b82f6" stroke-width="1" opacity="0.65"/>
+                    <polygon points="250,290  180,330  180,410  250,370" fill="#1730a0" stroke="#2563eb" stroke-width="1" opacity="0.65"/>
+
+                    <!-- 2D drawing cross-hairs -->
+                    <circle cx="160" cy="650" r="30" fill="none" stroke="#3b82f6" stroke-width="1" opacity="0.5"/>
+                    <line x1="120" y1="650" x2="200" y2="650" stroke="#3b82f6" stroke-width="1" opacity="0.5"/>
+                    <line x1="160" y1="610" x2="160" y2="690" stroke="#3b82f6" stroke-width="1" opacity="0.5"/>
+                    <circle cx="840" cy="680" r="22" fill="none" stroke="#60a5fa" stroke-width="1" opacity="0.5"/>
+                    <line x1="808" y1="680" x2="872" y2="680" stroke="#60a5fa" stroke-width="1" opacity="0.5"/>
+                    <line x1="840" y1="648" x2="840" y2="712" stroke="#60a5fa" stroke-width="1" opacity="0.5"/>
+
+                    <!-- Dimension arrows (2D drafting style) -->
+                    <line x1="250" y1="750" x2="750" y2="750" stroke="#93c5fd" stroke-width="1" opacity="0.4"/>
+                    <polygon points="250,745 250,755 234,750" fill="#93c5fd" opacity="0.4"/>
+                    <polygon points="750,745 750,755 766,750" fill="#93c5fd" opacity="0.4"/>
+                    <text x="490" y="745" text-anchor="middle" font-size="11" fill="#93c5fd" opacity="0.5" font-family="monospace">500 mm</text>
+
+                    <!-- Hexagonal mesh (bottom area) -->
+                    <g stroke="#1e40af" stroke-width="0.8" fill="none" opacity="0.2">
+                        ${Array.from({ length: 8 }, (_, col) => Array.from({ length: 5 }, (_, row) => { const x = 80 + col * 120 + (row % 2) * 60; const cx = x, cy = 900 + row * 104; const r = 36; const pts = Array.from({ length: 6 }, (_, k) => { const a = Math.PI / 180 * (60 * k - 30); return `${cx + r * Math.cos(a)},${cy + r * Math.sin(a)}`; }).join(' '); return `<polygon points="${pts}"/>`; }).join('')).join('')}
+                    </g>
+
+                    <!-- Scanline accent -->
+                    <rect x="0" y="788" width="1000" height="2" fill="#3b82f6" opacity="0.4"/>
+                    <rect x="0" y="792" width="1000" height="1" fill="#93c5fd" opacity="0.2"/>
+
+                    <!-- Corner accent bracket top-left -->
+                    <polyline points="40,100 40,40 100,40" fill="none" stroke="#3b82f6" stroke-width="2.5" opacity="0.7"/>
+                    <!-- Corner accent bracket top-right -->
+                    <polyline points="960,100 960,40 900,40" fill="none" stroke="#3b82f6" stroke-width="2.5" opacity="0.7"/>
+                    <!-- Corner accent bracket bottom-left -->
+                    <polyline points="40,1314 40,1374 100,1374" fill="none" stroke="#3b82f6" stroke-width="2.5" opacity="0.7"/>
+                    <!-- Corner accent bracket bottom-right -->
+                    <polyline points="960,1314 960,1374 900,1374" fill="none" stroke="#3b82f6" stroke-width="2.5" opacity="0.7"/>
+                </svg>
+
+                <!-- Cover text content -->
+                <div class="cover-content">
+                    <div class="cover-title">APJ 3D Solutions<br/>Pvt Ltd</div>
+                    <div class="cover-divider"></div>
+                    <div class="cover-subtitle">REQUEST FOR PROPOSAL</div>
+                </div>
+                <!-- Masks the fixed footer on page 1 only -->
+                <div class="cover-footer-mask"></div>
+            </div>
+
+            <div class="doc">
+
+                <!-- ══ HEADER BANNER ══ -->
+                <div class="hdr">
+                    <div class="hdr-logo">
+                        ${provider.logoDataUrl ? `<img src="${esc(provider.logoDataUrl)}" alt="logo" />` : ''}
+                    </div>
+                    <div class="hdr-text">
+
+                        <div class="hdr-company">${esc(provider.companyName)}</div>
+                        <div class="hdr-sub">${esc(provider.headOffice)}<br>${esc(provider.cinGstin)}</div>
+                    </div>
+                </div>
+
+                <!-- ══ TITLE BAR ══ -->
+                <div class="title-bar">Request for Proposal</div>
+
+                <!-- ══ INFO STRIP ══ -->
+                <div class="info-strip">
+                    <div class="info-col">
+                        <div class="info-heading">Our Details</div>
+                        <div class="info-row"><span class="info-key">Contact Person</span><span class="info-val">${esc(provider.contactPerson)}</span></div>
+                        <div class="info-row"><span class="info-key">Quote ID</span><span class="info-val" style="font-weight:700;color:#1d4ed8;">${esc(doc.quoteId)}</span></div>
+                        <div class="info-row"><span class="info-key">Proposal Date</span><span class="info-val">${esc(provider.proposalSentOn)}</span></div>
+                    </div>
+                    <div class="info-col">
+                        <div class="info-heading">Client Details</div>
+                        <div class="info-row"><span class="info-key">Company</span><span class="info-val">${esc(client.companyName)}</span></div>
+                        <div class="info-row"><span class="info-key">Contact Person</span><span class="info-val">${esc(client.contactPerson)}</span></div>
+                        <div class="info-row"><span class="info-key">Address</span><span class="info-val">${esc(client.companyAddress)}</span></div>
+                        <div class="info-row"><span class="info-key">GST Number</span><span class="info-val">${esc(client.gstNumber)}</span></div>
+                        <div class="info-row"><span class="info-key">Project Name</span><span class="info-val">${esc(client.projectName)}</span></div>
+                        <div class="info-row"><span class="info-key">Date of Request</span><span class="info-val">${esc(client.dateOfRequest)}</span></div>
+                        <div class="info-row"><span class="info-key">Tax</span><span class="info-val">IGST @ 18%</span></div>
+                    </div>
+                </div>
+
+                <!-- ══ BODY SECTIONS ══ -->
+                <div class="body">
+
+                    ${[
+                ['Scope of Work', list(scope)],
+                ['Implementation Plan', list(impl)],
+                ['Project Timeline', list(timeline)],
+                ['Payment Terms Schedule', list(pay)],
+                ['Client Responsibilities', list(resp)],
+                ['Project Delays', list(delays)],
+                ['Project Commencement Date', `<div class="sec-body">${esc(doc.commencementText || '')}</div>`],
+                ['Project Changes', list(changes)],
+            ].map(([title, body]) => `
+                        <div class="sec">
+                            <div class="sec-hdr">
+                                <div class="sec-bar"></div>
+                                <div class="sec-title">${title}</div>
+                            </div>
+                            <div class="sec-body">${body}</div>
+                            <hr class="sec-divider">
+                        </div>
+                    `).join('')}
+
+                    <!-- Service Cost -->
+                    <div class="sec">
+                        <div class="sec-hdr">
+                            <div class="sec-bar"></div>
+                            <div class="sec-title">Service Cost / Quotation</div>
+                        </div>
+                        <table class="items">
+                            <thead>
+                                <tr>
+                                    <th>Sl.No</th>
+                                    <th>Item / Service Description</th>
+                                    <th>Unit</th>
+                                    <th class="r">Quantity</th>
+                                    <th class="r">Unit Rate</th>
+                                    <th class="r">Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${items.map((it, idx) => `
+                                    <tr>
+                                        <td>${idx + 1}</td>
+                                        <td>${esc(it.description)}${it.serviceCharge ? `<div style="font-size:10px;color:#64748b;margin-top:2px;">${esc(it.serviceCharge)}</div>` : ''}</td>
+                                        <td>${esc(it.uom || '')}</td>
+                                        <td class="r">${Number(it.qty || 0).toFixed(2)}</td>
+                                        <td class="r">${this.formatINR(it.rate || 0)}</td>
+                                        <td class="r">${this.formatINR(it.amount || 0)}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                            <tfoot>
+                                <tr class="tfoot-subtotal">
+                                    <td colspan="5" style="text-align:right;">Sub Total</td>
+                                    <td class="r">${this.formatINR(totals.subtotal || 0)}</td>
+                                </tr>
+                                <tr class="tfoot-tax">
+                                    <td colspan="5" style="text-align:right;">IGST (18%)</td>
+                                    <td class="r">${this.formatINR(totals.tax || 0)}</td>
+                                </tr>
+                                <tr class="tfoot-total">
+                                    <td colspan="5" style="text-align:right;">Grand Total</td>
+                                    <td class="r">${this.formatINR(totals.total || 0)}</td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                        <div class="words-box">
+                            <div class="words-label">Indian Rupees (in words)</div>
+                            <div class="words-val">${esc(this.amountToWordsINR(totals.total || 0))}</div>
+                        </div>
+                        <hr class="sec-divider" style="margin-top:16px;">
+                    </div>
+
+                    <!-- Bank Details -->
+                    <div class="sec">
+                        <div class="sec-hdr">
+                            <div class="sec-bar"></div>
+                            <div class="sec-title">Account Information (Banking Details)</div>
+                        </div>
+                        <div class="bank-card">
+                            <div class="bank-row"><span class="bank-key">Beneficiary Name</span><span class="bank-val">${esc(bank.beneficiary)}</span></div>
+                            <div class="bank-row"><span class="bank-key">Bank Name</span><span class="bank-val">${esc(bank.bankName)}</span></div>
+                            <div class="bank-row"><span class="bank-key">Account Number</span><span class="bank-val">${esc(bank.accountNo)}</span></div>
+                            ${bank.branch ? `<div class="bank-row"><span class="bank-key">Branch</span><span class="bank-val">${esc(bank.branch)}</span></div>` : ''}
+                            <div class="bank-row"><span class="bank-key">IFSC Code</span><span class="bank-val">${esc(bank.ifsc)}</span></div>
+                        </div>
+                        <hr class="sec-divider" style="margin-top:16px;">
+                    </div>
+
+                    <!-- Confidentiality -->
+                    <div class="sec">
+                        <div class="sec-hdr">
+                            <div class="sec-bar"></div>
+                            <div class="sec-title">Confidentiality &amp; Data Security</div>
+                        </div>
+                        <div class="sec-body">${esc(doc.confidentialityText || '')}</div>
+                    </div>
+
+                </div>
+
+                <!-- ══ FOOTER ══ -->
+                <div class="doc-footer">This is a Computer Generated Document &nbsp;|&nbsp; ${esc(provider.companyName)}</div>
+
+            </div>
+
+            <!-- Fixed footer repeated on every print page -->
+            <div class="print-footer">This is a Computer Generated Document &nbsp;|&nbsp; ${esc(provider.companyName)}</div>
+        `;
+    }
+
+    openRfpPrintWindow(r) {
+        const html = this.renderRfpDocumentHTML(r);
+        const w = window.open('', '_blank');
+        if (!w) {
+            this.showToast('Popup blocked. Allow popups to print RFP.');
+            return;
+        }
+        w.document.open();
+        w.document.write(`
+            <!doctype html>
+            <html>
+            <head>
+                <meta charset="utf-8" />
+                <meta name="viewport" content="width=device-width, initial-scale=1" />
+                <title>RFP / Proposal</title>
+                <style>
+                    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+                    *{box-sizing:border-box;margin:0;padding:0;}
+                    body{font-family:'Inter',Arial,sans-serif;background:#f1f5f9;color:#0f172a;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+
+                    /* ══ Cover Page ══ */
+                    .cover-page{position:relative;width:100%;max-width:860px;height:1215px;margin:28px auto 0;overflow:hidden;page-break-after:always;break-after:page;display:flex;align-items:center;justify-content:center;background:#04091a;border-radius:16px;box-shadow:0 4px 32px rgba(0,0,0,0.10);}
+                    .cover-bg-svg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;}
+                    .cover-content{position:relative;z-index:10;text-align:center;color:#fff;padding:40px 60px;max-width:700px;}
+                    .cover-logo-wrap{margin-bottom:32px;display:flex;justify-content:center;}
+                    .cover-logo{width:110px;height:110px;object-fit:contain;filter:drop-shadow(0 0 20px rgba(59,130,246,0.7));}
+                    .cover-eyebrow{font-size:13px;font-weight:600;letter-spacing:.22em;text-transform:uppercase;color:#93c5fd;margin-bottom:20px;}
+                    .cover-title{font-size:52px;font-weight:900;line-height:1.1;background:linear-gradient(135deg,#c8c8c8 0%,#ffffff 30%,#a0a0a0 55%,#e8e8e8 75%,#b0b0b0 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:28px;letter-spacing:-.5px;}
+                    .cover-divider{width:80px;height:3px;background:linear-gradient(90deg,#1d4ed8,#60a5fa,#1d4ed8);margin:0 auto 24px;border-radius:2px;}
+                    .cover-subtitle{font-size:16px;font-weight:700;letter-spacing:.28em;text-transform:uppercase;color:#dbeafe;margin-bottom:14px;}
+                    .cover-meta{font-size:13px;color:#93c5fd;letter-spacing:.1em;}
+
+                    /* ── Outer wrapper ── */
+                    .doc{max-width:860px;margin:28px auto 40px;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 4px 32px rgba(0,0,0,0.10);}
+                    .title-bar{background:#fff;color:#0c1a3a;text-align:center;padding:10px 0;font-size:13px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;}
+
+                    /* ── Header banner ── */
+                    .hdr{background:linear-gradient(135deg,#0a1628 0%,#1e3a8a 55%,#1d4ed8 100%);color:#fff;padding:32px 36px 24px;display:flex;align-items:center;gap:10px;}
+                    .hdr-logo{width:120px;height:120px;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;}
+                    .hdr-logo img{width:114px;height:114px;object-fit:contain;}
+                    .hdr-text{flex:1;}
+                    .hdr-label{font-size:10px;letter-spacing:.18em;text-transform:uppercase;opacity:.75;margin-bottom:4px;}
+                    .hdr-company{font-size:20px;font-weight:800;line-height:1.2;margin-bottom:6px;}
+                    .hdr-sub{font-size:11px;opacity:.85;line-height:1.6;}
+                    .hdr-badge{background:rgba(255,255,255,0.18);border:1px solid rgba(255,255,255,0.3);border-radius:8px;padding:10px 16px;text-align:right;flex-shrink:0;}
+                    .hdr-badge-label{font-size:9px;letter-spacing:.12em;text-transform:uppercase;opacity:.7;}
+                    .hdr-badge-val{font-size:15px;font-weight:700;margin-top:2px;}
+
+                    /* ── Info strip (two columns) ── */
+                    .info-strip{display:grid;grid-template-columns:1fr 1fr;gap:0;border-bottom:1px solid #e2e8f0;}
+                    .info-col{padding:18px 28px;}
+                    .info-col:first-child{border-right:1px solid #e2e8f0;background:#eff6ff;}
+                    .info-col:last-child{background:#f8fafc;}
+                    .info-heading{font-size:9px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#1d4ed8;margin-bottom:10px;}
+                    .info-row{display:flex;gap:8px;margin-bottom:5px;font-size:11px;}
+                    .info-key{color:#64748b;min-width:110px;font-weight:500;}
+                    .info-val{color:#0f172a;font-weight:600;flex:1;}
+
+                    /* ── Section ── */
+                    .body{padding:0 28px 28px;}
+                    .sec{margin-top:20px;}
+                    .sec-hdr{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+                    .sec-bar{width:4px;height:20px;background:linear-gradient(180deg,#1e3a8a,#3b82f6);border-radius:2px;flex-shrink:0;}
+                    .sec-title{font-size:12px;font-weight:700;color:#0c1a3a;text-transform:uppercase;letter-spacing:.06em;}
+                    .sec-body{font-size:11.5px;color:#1e293b;line-height:1.7;padding-left:14px;}
+                    .sec-body ol,.sec-body ul{padding-left:18px;margin:0;}
+                    .sec-body li{margin-bottom:3px;}
+                    .sec-divider{border:none;border-top:1px solid #bfdbfe;margin:4px 0 0;}
+
+                    /* ── Items table ── */
+                    table.items{width:100%;border-collapse:collapse;font-size:11px;margin-top:6px;}
+                    table.items th{background:#0f2d6b;color:#fff;font-weight:700;padding:8px 10px;text-align:left;}
+                    table.items th.r{text-align:right;}
+                    table.items td{padding:7px 10px;border-bottom:1px solid #f1f5f9;vertical-align:top;}
+                    table.items td.r{text-align:right;}
+                    table.items tbody tr:nth-child(even){background:#eff6ff;}
+                    table.items tbody tr:hover{background:#dbeafe;}
+                    .tfoot-subtotal td{background:#f8fafc;font-weight:600;border-top:2px solid #e2e8f0;}
+                    .tfoot-tax td{background:#f8fafc;font-weight:600;}
+                    .tfoot-total td{background:#0f2d6b;color:#fff;font-weight:800;font-size:12px;}
+                    .tfoot-total td.r{text-align:right;}
+
+                    /* ── Amount words ── */
+                    .words-box{background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:10px 14px;margin-top:12px;}
+                    .words-label{font-size:9px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#1d4ed8;margin-bottom:3px;}
+                    .words-val{font-size:11.5px;font-weight:700;color:#1e293b;}
+
+                    /* ── Bank details card ── */
+                    .bank-card{background:linear-gradient(135deg,#eff6ff,#dbeafe);border:1px solid #93c5fd;border-radius:10px;padding:14px 18px;margin-top:6px;}
+                    .bank-row{display:flex;gap:8px;font-size:11px;margin-bottom:4px;}
+                    .bank-key{color:#1d4ed8;font-weight:600;min-width:130px;}
+                    .bank-val{color:#0f172a;font-weight:500;}
+
+                    /* ── Footer ── */
+                    .doc-footer{background:linear-gradient(135deg,#0a1628,#1e3a8a);color:rgba(255,255,255,0.85);text-align:center;padding:14px;font-size:10px;letter-spacing:.06em;}
+
+                    /* ── Fixed print footer (every page) ── */
+                    .print-footer{display:none;}
+                    .cover-footer-mask{display:none;}
+
+                    @media print{
+                        body{background:#fff;padding-bottom:40px;}
+                        .cover-page{margin:0;border-radius:0;box-shadow:none;max-width:none;width:100%;height:100vh;position:relative;z-index:10001;isolation:isolate;}
+                        .doc{margin:0;border-radius:0;box-shadow:none;max-width:none;}
+                        .doc-footer{display:none;}
+                        .hdr,.tfoot-total td,.table.items th{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+                        .print-footer{display:block;position:fixed;bottom:0;left:0;right:0;background:linear-gradient(135deg,#0a1628,#1e3a8a);color:rgba(255,255,255,0.85);text-align:center;padding:10px 14px;font-size:10px;letter-spacing:.06em;-webkit-print-color-adjust:exact;print-color-adjust:exact;z-index:9999;}
+                    }
+                </style>
+            </head>
+            <body>
+                ${html}
+                <script>window.onload = () => { try { window.focus(); window.print(); } catch(e) {} };<\/script>
+            </body>
+            </html>
+        `);
+        w.document.close();
     }
 
     getSampleQuotationTemplate() {
@@ -5112,12 +6198,17 @@ class MarketFlowCRM {
         const total = Math.round((subtotal + tax) * 100) / 100;
 
         return {
-            company,
+            company: { ...company, logoDataUrl: '' },
             quote: {
                 no: 'APJ3D/QTN2025/317',
                 date: '3-Dec-2025',
                 paymentTerms: '30 Days',
-                buyerReference: 'APJ3D/QTN2025/317'
+                otherReferences: '',
+                buyerReference: 'APJ3D/QTN2025/317',
+                buyerRefOrderNo: '',
+                dispatchedThrough: '',
+                destination: '',
+                termsOfDelivery: ''
             },
             buyer,
             items,
@@ -5181,6 +6272,30 @@ class MarketFlowCRM {
         };
     }
 
+    getStoredQuoteDraft() {
+        const stored = this.readStore('bezent_quote_draft', null);
+        if (!stored || typeof stored !== 'object') return null;
+        return stored;
+    }
+
+    saveQuoteDraft() {
+        try {
+            if (!this._quoteDraft) return;
+            this.writeStore('bezent_quote_draft', this._quoteDraft);
+        } catch (e) {
+        }
+    }
+
+    updateQuotationLogoUI() {
+        if (!(this.currentSection === 'projects' && this.currentSubSection === 'quotation_templates')) return;
+        const src = String(this._quoteDraft?.company?.logoDataUrl || '');
+        const img = document.getElementById('quoteLogoPreview');
+        if (img && img instanceof HTMLImageElement) {
+            img.src = src;
+            img.style.display = src ? '' : 'none';
+        }
+    }
+
     updateQuotationComputedUI() {
         if (!(this.currentSection === 'projects' && this.currentSubSection === 'quotation_templates')) return;
         const computed = this.computeQuotation(this._quoteDraft || this.getSampleQuotationTemplate());
@@ -5206,6 +6321,7 @@ class MarketFlowCRM {
         });
 
         this._quoteDraft = computed;
+        this.saveQuoteDraft();
     }
 
     getStateCodeFromGSTIN(gstin) {
@@ -5274,33 +6390,55 @@ class MarketFlowCRM {
 
         return `
             <div class="doc">
-                <div class="header">
-                    <div>
-                        <div class="title">QUOTATION</div>
-                        <div class="co-name">${esc(company.name)}</div>
-                        <div class="muted">${esc(company.address)}</div>
-                        <div class="muted">GSTIN: ${esc(company.gstin)} • State Code: ${esc(company.stateCode)}</div>
-                    </div>
-                    <div class="qbox">
-                        <div class="row"><div class="lbl">Quotation No.</div><div class="val">${esc(quote.quote?.no)}</div></div>
-                        <div class="row"><div class="lbl">Dated</div><div class="val">${esc(quote.quote?.date)}</div></div>
-                        <div class="row"><div class="lbl">Mode/Terms of Payment</div><div class="val">${esc(quote.quote?.paymentTerms)}</div></div>
-                        <div class="row"><div class="lbl">Buyer Reference</div><div class="val">${esc(quote.quote?.buyerReference)}</div></div>
-                    </div>
-                </div>
+                <div class="title">QUOTATION</div>
 
-                <div class="bill">
-                    <div class="billto">
-                        <div class="sec-title">Buyer (Bill to)</div>
-                        <div class="co-name">${esc(buyer.name)}</div>
-                        <div class="muted">${esc(buyer.address)}</div>
-                        <div class="muted">GSTIN/UIN: ${esc(buyer.gstin)}</div>
-                    </div>
-                    <div class="taxinfo">
-                        <div class="sec-title">Tax</div>
-                        <div class="muted">${esc(tax.type)} @ ${Number(tax.rate || 0).toFixed(0)}%</div>
-                    </div>
-                </div>
+                <table class="top">
+                    <tr>
+                        <td class="top-left">
+                            <table class="co">
+                                <tr>
+                                    <td class="co-logo">
+                                        <div class="logo-box">
+                                            ${company.logoDataUrl ? `<img class="logo" src="${esc(company.logoDataUrl)}" alt="" />` : ''}
+                                        </div>
+                                    </td>
+                                    <td class="co-text">
+                                        <div class="co-name">${esc(company.name)}</div>
+                                        <div class="muted">${esc(company.address)}</div>
+                                        <div class="muted">GSTIN/UIN: ${esc(company.gstin)}</div>
+                                        <div class="muted">State Name: ${esc(company.stateName || '')} &nbsp; Code: ${esc(company.stateCode)}</div>
+                                        <div class="muted">Contact: ${esc(company.phone || '')}</div>
+                                        <div class="muted">E-Mail: ${esc(company.email || '')}</div>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                        <td class="top-right">
+                            <table class="meta">
+                                <tr><td class="ml">Quotation No.</td><td class="mv">${esc(quote.quote?.no)}</td></tr>
+                                <tr><td class="ml">Dated</td><td class="mv">${esc(quote.quote?.date)}</td></tr>
+                                <tr><td class="ml">Mode/Terms of Payment</td><td class="mv">${esc(quote.quote?.paymentTerms)}</td></tr>
+                                <tr><td class="ml">Other References</td><td class="mv">${esc(quote.quote?.otherReferences)}</td></tr>
+                            </table>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="top-left">
+                            <div class="sec-title">Buyer (Bill to)</div>
+                            <div class="co-name">${esc(buyer.name)}</div>
+                            <div class="muted">${esc(buyer.address)}</div>
+                            <div class="muted">GSTIN/UIN: ${esc(buyer.gstin)}</div>
+                        </td>
+                        <td class="top-right">
+                            <table class="meta">
+                                <tr><td class="ml">Buyer Ref./Order No.</td><td class="mv">${esc(quote.quote?.buyerRefOrderNo)}</td></tr>
+                                <tr><td class="ml">Dispatched through</td><td class="mv">${esc(quote.quote?.dispatchedThrough)}</td></tr>
+                                <tr><td class="ml">Destination</td><td class="mv">${esc(quote.quote?.destination)}</td></tr>
+                                <tr><td class="ml">Terms of Delivery</td><td class="mv">${esc(quote.quote?.termsOfDelivery)}</td></tr>
+                            </table>
+                        </td>
+                    </tr>
+                </table>
 
                 <table class="items">
                     <thead>
@@ -5311,6 +6449,8 @@ class MarketFlowCRM {
                             <th>Due on</th>
                             <th class="r">Quantity</th>
                             <th class="r">Rate</th>
+                            <th>per</th>
+                            <th class="r">Disc. %</th>
                             <th class="r">Amount</th>
                         </tr>
                     </thead>
@@ -5318,28 +6458,35 @@ class MarketFlowCRM {
                         ${items.map((it, idx) => `
                             <tr>
                                 <td>${idx + 1}</td>
-                                <td>${esc(it.description)}</td>
+                                <td>${esc(it.description)}${it.serviceCharge ? `<div style="font-size:10px;color:#475569;margin-top:2px;">${esc(it.serviceCharge)}</div>` : ''}</td>
                                 <td>${esc(it.hsnSac)}</td>
                                 <td>${esc(it.dueOn)}</td>
                                 <td class="r">${Number(it.qty || 0).toFixed(2)} ${esc(it.uom || 'NOS')}</td>
                                 <td class="r">${this.formatINR(it.rate || 0)}</td>
+                                <td>${esc(it.uom || 'NOS')}</td>
+                                <td class="r">${esc(it.discPct ?? '')}</td>
                                 <td class="r">${this.formatINR(it.amount || 0)}</td>
                             </tr>
                         `).join('')}
                     </tbody>
+                    <tfoot>
+                        <tr>
+                            <td colspan="4" class="r strong">Total</td>
+                            <td class="r">${Number(items.reduce((s, it) => s + (Number(it.qty) || 0), 0) || 0).toFixed(2)} ${esc(items[0]?.uom || 'NOS')}</td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td class="r strong">${this.formatINR(totals.total || 0)}</td>
+                        </tr>
+                    </tfoot>
                 </table>
 
-                <div class="totals">
-                    <div class="left">
-                        <div class="words">Amount Chargeable (in words):</div>
-                        <div class="strong">${esc(this.amountToWordsINR(totals.total || 0))}</div>
-                    </div>
-                    <div class="right">
-                        <div class="trow"><div class="lbl">Subtotal</div><div class="val">${this.formatINR(totals.subtotal || 0)}</div></div>
-                        <div class="trow"><div class="lbl">${esc(tax.type)} ${Number(tax.rate || 0).toFixed(0)}%</div><div class="val">${this.formatINR(totals.tax || 0)}</div></div>
-                        <div class="trow grand"><div class="lbl">Grand Total</div><div class="val">${this.formatINR(totals.total || 0)}</div></div>
-                    </div>
+                <div class="words">
+                    <div class="muted">Amount Chargeable (in words)</div>
+                    <div class="strong">${esc(this.amountToWordsINR(totals.total || 0))}</div>
                 </div>
+
+                <div class="eo">E. &amp; O.E</div>
 
                 <div class="bottom">
                     <div class="terms">
@@ -5352,7 +6499,8 @@ class MarketFlowCRM {
                         <div class="sec-title">Company's Bank Details</div>
                         <div class="muted">Bank Name: ${esc(bank.bankName)}</div>
                         <div class="muted">A/c No.: ${esc(bank.accountNo)}</div>
-                        <div class="muted">Branch & IFSC Code: ${esc(bank.ifsc)}</div>
+                        ${bank.branch ? `<div class="muted">Branch: ${esc(bank.branch)}</div>` : ''}
+                        <div class="muted">IFSC Code: ${esc(bank.ifsc)}</div>
                         <div class="sig">for ${esc(company.name)}<div class="muted" style="margin-top:40px;">Authorised Signatory</div></div>
                     </div>
                 </div>
@@ -5378,37 +6526,51 @@ class MarketFlowCRM {
                 <meta name="viewport" content="width=device-width, initial-scale=1" />
                 <title>Quotation</title>
                 <style>
-                    body{font-family:Arial,Helvetica,sans-serif;margin:0;background:#f8fafc;}
-                    .doc{max-width:900px;margin:24px auto;background:#fff;border:1px solid #e2e8f0;padding:18px;}
-                    .title{font-weight:800;letter-spacing:0.08em;font-size:18px;margin-bottom:8px;}
-                    .co-name{font-weight:700;font-size:14px;color:#0f172a;}
-                    .muted{font-size:12px;color:#475569;}
+                    body{font-family:Arial,Helvetica,sans-serif;margin:0;background:#fff;}
+                    .doc{max-width:900px;margin:18px auto;background:#fff;padding:0;}
+                    .title{font-weight:800;letter-spacing:0.06em;font-size:16px;text-align:center;padding:8px 0;border:1px solid #cbd5e1;border-bottom:none;}
+                    .co-name{font-weight:700;font-size:12px;color:#0f172a;}
+                    .muted{font-size:11px;color:#0f172a;}
                     .strong{font-weight:800;color:#0f172a;}
-                    .header{display:flex;gap:12px;justify-content:space-between;align-items:flex-start;}
-                    .qbox{min-width:280px;border:1px solid #e2e8f0;}
-                    .qbox .row{display:flex;border-bottom:1px solid #e2e8f0;}
-                    .qbox .row:last-child{border-bottom:none;}
-                    .qbox .lbl{width:55%;padding:6px 8px;font-size:11px;color:#334155;background:#f1f5f9;}
-                    .qbox .val{width:45%;padding:6px 8px;font-size:11px;color:#0f172a;}
-                    .bill{display:flex;gap:12px;justify-content:space-between;margin-top:12px;}
-                    .billto,.taxinfo{border:1px solid #e2e8f0;padding:10px;flex:1;}
-                    .sec-title{font-size:12px;font-weight:800;color:#0f172a;margin-bottom:6px;}
-                    table.items{width:100%;border-collapse:collapse;margin-top:12px;font-size:12px;}
-                    table.items th, table.items td{border:1px solid #e2e8f0;padding:8px;vertical-align:top;}
-                    table.items thead th{background:#f8fafc;color:#0f172a;font-weight:800;}
+                    .sec-title{font-size:11px;font-weight:800;color:#0f172a;margin:0 0 4px 0;}
                     .r{text-align:right;}
-                    .totals{display:flex;gap:12px;justify-content:space-between;margin-top:12px;}
-                    .totals .left{flex:1;border:1px solid #e2e8f0;padding:10px;}
-                    .totals .right{width:320px;border:1px solid #e2e8f0;padding:10px;}
-                    .trow{display:flex;justify-content:space-between;font-size:12px;margin-top:6px;}
-                    .trow.grand{border-top:1px solid #e2e8f0;padding-top:8px;margin-top:8px;font-weight:900;}
-                    .bottom{display:flex;gap:12px;justify-content:space-between;margin-top:12px;}
-                    .terms{flex:1;border:1px solid #e2e8f0;padding:10px;}
-                    .terms ol{margin:0 0 0 18px;padding:0;font-size:11px;color:#334155;}
-                    .bank{width:320px;border:1px solid #e2e8f0;padding:10px;}
+
+                    table.co{width:100%;border-collapse:collapse;}
+                    table.co td{border:none;padding:0;vertical-align:top;}
+                    td.co-logo{width:116px;padding-right:10px;}
+                    td.co-text{padding-left:0;}
+                    .logo-box{width:110px;height:110px;display:flex;align-items:center;justify-content:center;}
+                    img.logo{width:104px;height:104px;object-fit:contain;display:block;}
+
+                    table.top{width:100%;border-collapse:collapse;border:1px solid #cbd5e1;border-top:none;}
+                    table.top td{border:1px solid #cbd5e1;vertical-align:top;padding:8px;}
+                    td.top-left{width:60%;}
+                    td.top-right{width:40%;padding:0;}
+
+                    table.meta{width:100%;border-collapse:collapse;}
+                    table.meta td{border:1px solid #cbd5e1;padding:6px 8px;font-size:11px;}
+                    table.meta td.ml{width:55%;background:#f8fafc;font-weight:700;}
+                    table.meta td.mv{width:45%;}
+
+                    table.items{width:100%;border-collapse:collapse;margin-top:10px;font-size:11px;}
+                    table.items th, table.items td{border:1px solid #cbd5e1;padding:6px;vertical-align:top;}
+                    table.items thead th{background:#f8fafc;color:#0f172a;font-weight:800;}
+                    table.items tfoot td{font-weight:800;}
+
+                    .words{border:1px solid #cbd5e1;border-top:none;padding:8px;}
+                    .eo{font-size:11px;text-align:right;margin-top:2px;}
+
+                    .bottom{display:flex;gap:10px;justify-content:space-between;margin-top:10px;}
+                    .terms{flex:1;border:1px solid #cbd5e1;padding:8px;min-height:140px;}
+                    .terms ol{margin:0 0 0 18px;padding:0;font-size:11px;color:#0f172a;}
+                    .bank{width:320px;border:1px solid #cbd5e1;padding:8px;}
                     .sig{margin-top:10px;font-size:11px;color:#0f172a;font-weight:800;text-align:right;}
-                    .footer{margin-top:10px;text-align:center;font-size:11px;color:#64748b;}
-                    @media print{body{background:#fff;} .doc{margin:0;border:none;max-width:none;}}
+                    .footer{margin-top:10px;text-align:center;font-size:11px;color:#0f172a;}
+
+                    @media print{
+                        body{background:#fff;}
+                        .doc{margin:0 auto;max-width:none;}
+                    }
                 </style>
             </head>
             <body>
@@ -5554,21 +6716,21 @@ class MarketFlowCRM {
                                     <summary class="cursor-pointer select-none text-sm font-semibold text-slate-900">Technical Scope / Stage Tracking</summary>
                                     <div class="mt-3 grid grid-cols-2 gap-3">
                                         ${[
-                                            ['model2dStatus','2D Model Status'],
-                                            ['model3dStatus','3D Model Status'],
-                                            ['scan3dStatus','3D Scan Status'],
-                                            ['feaStatus','FEA Status'],
-                                            ['qcInspectionStatus','QC / Inspection Status'],
-                                            ['approvalStatus','Approval Status'],
-                                            ['glApprovalStatus','GL Approval Status'],
-                                            ['revisionStatus','Correction / Revision Status'],
-                                            ['deliveryReportStatus','Delivery Report Status'],
-                                            ['sopDailyReportStatus','SOP-Based Daily Report Status']
-                                        ].map(([k,label]) => `
+                ['model2dStatus', '2D Model Status'],
+                ['model3dStatus', '3D Model Status'],
+                ['scan3dStatus', '3D Scan Status'],
+                ['feaStatus', 'FEA Status'],
+                ['qcInspectionStatus', 'QC / Inspection Status'],
+                ['approvalStatus', 'Approval Status'],
+                ['glApprovalStatus', 'GL Approval Status'],
+                ['revisionStatus', 'Correction / Revision Status'],
+                ['deliveryReportStatus', 'Delivery Report Status'],
+                ['sopDailyReportStatus', 'SOP-Based Daily Report Status']
+            ].map(([k, label]) => `
                                             <div>
                                                 <label class="text-xs font-medium text-slate-600">${label}</label>
                                                 <select id="reg_tracking_${k}" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500">
-                                                    ${['Pending','In Progress','Completed','Blocked'].map(opt => `<option>${opt}</option>`).join('')}
+                                                    ${['Pending', 'In Progress', 'Completed', 'Blocked'].map(opt => `<option>${opt}</option>`).join('')}
                                                 </select>
                                             </div>
                                         `).join('')}
@@ -5579,11 +6741,11 @@ class MarketFlowCRM {
                                     <summary class="cursor-pointer select-none text-sm font-semibold text-slate-900">Project Roadmap & Progress Monitoring</summary>
                                     <div class="mt-3 grid grid-cols-2 gap-3">
                                         ${[
-                                            ['reg_monitoring_roadmapSubmitted','Project Roadmap Submitted'],
-                                            ['reg_monitoring_dashboardUpdated','Dashboard Updated'],
-                                            ['reg_monitoring_dailyReportUpdated','Daily Report Updated'],
-                                            ['reg_monitoring_photoAttached','Photo Attached']
-                                        ].map(([id,label]) => `
+                ['reg_monitoring_roadmapSubmitted', 'Project Roadmap Submitted'],
+                ['reg_monitoring_dashboardUpdated', 'Dashboard Updated'],
+                ['reg_monitoring_dailyReportUpdated', 'Daily Report Updated'],
+                ['reg_monitoring_photoAttached', 'Photo Attached']
+            ].map(([id, label]) => `
                                             <div>
                                                 <label class="text-xs font-medium text-slate-600">${label} (Yes/No)</label>
                                                 <select id="${id}" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500">
@@ -5595,7 +6757,7 @@ class MarketFlowCRM {
                                         <div class="col-span-2">
                                             <label class="text-xs font-medium text-slate-600">Overall Project Status</label>
                                             <select id="reg_monitoring_overallProjectStatus" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500">
-                                                ${['Completed','Partially Completed','Pending / Delayed'].map(opt => `<option ${opt === 'Pending / Delayed' ? 'selected' : ''}>${opt}</option>`).join('')}
+                                                ${['Completed', 'Partially Completed', 'Pending / Delayed'].map(opt => `<option ${opt === 'Pending / Delayed' ? 'selected' : ''}>${opt}</option>`).join('')}
                                             </select>
                                         </div>
                                         <div>
@@ -5623,7 +6785,7 @@ class MarketFlowCRM {
                                         <div>
                                             <label class="text-xs font-medium text-slate-600">Delivery Status</label>
                                             <select id="reg_dispatch_deliveryStatus" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500">
-                                                ${['Pending','In Progress','Completed','Blocked'].map(opt => `<option ${opt === 'Pending' ? 'selected' : ''}>${opt}</option>`).join('')}
+                                                ${['Pending', 'In Progress', 'Completed', 'Blocked'].map(opt => `<option ${opt === 'Pending' ? 'selected' : ''}>${opt}</option>`).join('')}
                                             </select>
                                         </div>
                                         <div>
@@ -5731,12 +6893,12 @@ class MarketFlowCRM {
                                     <summary class="cursor-pointer select-none text-sm font-semibold text-slate-900">Performance & Rating</summary>
                                     <div class="mt-3 grid grid-cols-2 gap-3">
                                         ${[
-                                            ['reg_ratings_clientRating','Client Rating'],
-                                            ['reg_ratings_jobRating','Job Rating'],
-                                            ['reg_ratings_qualityRating','Quality Rating'],
-                                            ['reg_ratings_serviceRating','Service Rating'],
-                                            ['reg_ratings_performanceRating','Performance Rating']
-                                        ].map(([id,label]) => `
+                ['reg_ratings_clientRating', 'Client Rating'],
+                ['reg_ratings_jobRating', 'Job Rating'],
+                ['reg_ratings_qualityRating', 'Quality Rating'],
+                ['reg_ratings_serviceRating', 'Service Rating'],
+                ['reg_ratings_performanceRating', 'Performance Rating']
+            ].map(([id, label]) => `
                                             <div>
                                                 <label class="text-xs font-medium text-slate-600">${label} (0-10)</label>
                                                 <input id="${id}" type="number" min="0" max="10" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" />
@@ -5762,17 +6924,17 @@ class MarketFlowCRM {
 
     getProjectDirectory() {
         const defaults = [
-            { 
-                name: 'SEO Revamp', 
-                client: 'TechNova Solutions', 
-                progress: 62, 
-                status: 'On Track', 
-                statusColor: 'emerald', 
-                owner: 'Rohan', 
-                budget: '₹3,20,000', 
+            {
+                name: 'SEO Revamp',
+                client: 'TechNova Solutions',
+                progress: 62,
+                status: 'On Track',
+                statusColor: 'emerald',
+                owner: 'Rohan',
+                budget: '₹3,20,000',
                 spent: '₹2,10,000',
-                identification: { 
-                    projectCode: 'APJ26RE001', 
+                identification: {
+                    projectCode: 'APJ26RE001',
                     serviceCode: 'RE',
                     vendorCode: 'KAK001',
                     companyName: 'TechNova Solutions',
@@ -5845,17 +7007,17 @@ class MarketFlowCRM {
                     additionalNotes: 'Client very responsive to communications'
                 }
             },
-            { 
-                name: 'CRM Upgrade', 
-                client: 'GreenLeaf Industries', 
-                progress: 45, 
-                status: 'At Risk', 
-                statusColor: 'amber', 
-                owner: 'Sarah', 
-                budget: '₹2,80,000', 
+            {
+                name: 'CRM Upgrade',
+                client: 'GreenLeaf Industries',
+                progress: 45,
+                status: 'At Risk',
+                statusColor: 'amber',
+                owner: 'Sarah',
+                budget: '₹2,80,000',
                 spent: '₹1,60,000',
-                identification: { 
-                    projectCode: 'APJ26CAD002', 
+                identification: {
+                    projectCode: 'APJ26CAD002',
                     serviceCode: 'CAD',
                     vendorCode: 'OST001',
                     companyName: 'GreenLeaf Industries',
@@ -5928,17 +7090,17 @@ class MarketFlowCRM {
                     additionalNotes: 'Scope expansion requested by client'
                 }
             },
-            { 
-                name: 'Re-engagement Funnel', 
-                client: 'EduSpark', 
-                progress: 28, 
-                status: 'On Track', 
-                statusColor: 'sky', 
-                owner: 'Meera', 
-                budget: '₹1,50,000', 
+            {
+                name: 'Re-engagement Funnel',
+                client: 'EduSpark',
+                progress: 28,
+                status: 'On Track',
+                statusColor: 'sky',
+                owner: 'Meera',
+                budget: '₹1,50,000',
                 spent: '₹98,000',
-                identification: { 
-                    projectCode: 'APJ262D003', 
+                identification: {
+                    projectCode: 'APJ262D003',
                     serviceCode: '2D',
                     vendorCode: 'OTN001',
                     companyName: 'EduSpark',
@@ -6011,17 +7173,17 @@ class MarketFlowCRM {
                     additionalNotes: ''
                 }
             },
-            { 
-                name: 'Performance Ads', 
-                client: 'Mumbai Retail Chain', 
-                progress: 71, 
-                status: 'On Track', 
-                statusColor: 'emerald', 
-                owner: 'Amit', 
-                budget: '₹1,80,000', 
+            {
+                name: 'Performance Ads',
+                client: 'Mumbai Retail Chain',
+                progress: 71,
+                status: 'On Track',
+                statusColor: 'emerald',
+                owner: 'Amit',
+                budget: '₹1,80,000',
                 spent: '₹1,23,000',
-                identification: { 
-                    projectCode: 'APJ262DI004', 
+                identification: {
+                    projectCode: 'APJ262DI004',
                     serviceCode: '2DI',
                     vendorCode: 'CHN001',
                     companyName: 'Mumbai Retail Chain',
@@ -6128,7 +7290,7 @@ class MarketFlowCRM {
             const key = this.getProjectKey(p);
             return `
                 <select data-project-key="${key}" data-project-field="${path}" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500">
-                    ${['Pending','In Progress','Completed','Blocked'].map(opt => `<option ${opt === (current || 'Pending') ? 'selected' : ''}>${opt}</option>`).join('')}
+                    ${['Pending', 'In Progress', 'Completed', 'Blocked'].map(opt => `<option ${opt === (current || 'Pending') ? 'selected' : ''}>${opt}</option>`).join('')}
                 </select>
             `;
         };
@@ -6215,17 +7377,17 @@ class MarketFlowCRM {
                             <summary class="cursor-pointer select-none text-sm font-semibold text-slate-900">Technical Scope / Stage Tracking</summary>
                             <div class="mt-3 grid grid-cols-2 gap-3">
                                 ${[
-                                    ['model2dStatus','2D Model Status'],
-                                    ['model3dStatus','3D Model Status'],
-                                    ['scan3dStatus','3D Scan Status'],
-                                    ['feaStatus','FEA Status'],
-                                    ['qcInspectionStatus','QC / Inspection Status'],
-                                    ['approvalStatus','Approval Status'],
-                                    ['glApprovalStatus','GL Approval Status'],
-                                    ['revisionStatus','Correction / Revision Status'],
-                                    ['deliveryReportStatus','Delivery Report Status'],
-                                    ['sopDailyReportStatus','SOP-Based Daily Report Status']
-                                ].map(([k,label]) => `
+                    ['model2dStatus', '2D Model Status'],
+                    ['model3dStatus', '3D Model Status'],
+                    ['scan3dStatus', '3D Scan Status'],
+                    ['feaStatus', 'FEA Status'],
+                    ['qcInspectionStatus', 'QC / Inspection Status'],
+                    ['approvalStatus', 'Approval Status'],
+                    ['glApprovalStatus', 'GL Approval Status'],
+                    ['revisionStatus', 'Correction / Revision Status'],
+                    ['deliveryReportStatus', 'Delivery Report Status'],
+                    ['sopDailyReportStatus', 'SOP-Based Daily Report Status']
+                ].map(([k, label]) => `
                                     <div>
                                         <label class="text-xs font-medium text-slate-600">${label}</label>
                                         ${renderStatusSelect(p, `tracking.${k}`, p.tracking?.[k] || 'Pending')}
@@ -6238,13 +7400,13 @@ class MarketFlowCRM {
                             <summary class="cursor-pointer select-none text-sm font-semibold text-slate-900">Project Roadmap & Progress Monitoring</summary>
                             <div class="mt-3 grid grid-cols-2 gap-3">
                                 ${[
-                                    ['monitoring.roadmapSubmitted','Project Roadmap Submitted'],
-                                    ['monitoring.dashboardUpdated','Dashboard Updated'],
-                                    ['monitoring.dailyReportUpdated','Daily Report Updated'],
-                                    ['monitoring.photoAttached','Photo Attached']
-                                ].map(([field,label]) => {
-                                    const cur = field.split('.').reduce((acc, part) => acc?.[part], p) || 'No';
-                                    return `
+                    ['monitoring.roadmapSubmitted', 'Project Roadmap Submitted'],
+                    ['monitoring.dashboardUpdated', 'Dashboard Updated'],
+                    ['monitoring.dailyReportUpdated', 'Daily Report Updated'],
+                    ['monitoring.photoAttached', 'Photo Attached']
+                ].map(([field, label]) => {
+                    const cur = field.split('.').reduce((acc, part) => acc?.[part], p) || 'No';
+                    return `
                                         <div>
                                             <label class="text-xs font-medium text-slate-600">${label} (Yes/No)</label>
                                             <select data-project-key="${key}" data-project-field="${field}" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500">
@@ -6253,11 +7415,11 @@ class MarketFlowCRM {
                                             </select>
                                         </div>
                                     `;
-                                }).join('')}
+                }).join('')}
                                 <div class="col-span-2">
                                     <label class="text-xs font-medium text-slate-600">Overall Project Status</label>
                                     <select data-project-key="${key}" data-project-field="monitoring.overallProjectStatus" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500">
-                                        ${['Completed','Partially Completed','Pending / Delayed'].map(opt => `<option ${opt === (p.monitoring?.overallProjectStatus || 'Pending / Delayed') ? 'selected' : ''}>${opt}</option>`).join('')}
+                                        ${['Completed', 'Partially Completed', 'Pending / Delayed'].map(opt => `<option ${opt === (p.monitoring?.overallProjectStatus || 'Pending / Delayed') ? 'selected' : ''}>${opt}</option>`).join('')}
                                     </select>
                                 </div>
                                 <div>
@@ -6341,26 +7503,26 @@ class MarketFlowCRM {
                             <summary class="cursor-pointer select-none text-sm font-semibold text-slate-900">Invoice & Payment Tracking</summary>
                             <div class="mt-3 grid grid-cols-2 gap-3">
                                 ${[
-                                    ['payment.invoiceDate','Invoice Date','date'],
-                                    ['payment.invoiceNumber','Invoice Number','text'],
-                                    ['payment.invoiceAmount','Invoice Amount','text'],
-                                    ['payment.pastInvoiceAmount','Past Invoice Amount','text'],
-                                    ['payment.paymentTerms','Payment Terms','text'],
-                                    ['payment.paymentType','Payment Type','text'],
-                                    ['payment.paymentDueDate','Payment Due Date','date'],
-                                    ['payment.paymentReceivedDate','Payment Received Date','date'],
-                                    ['payment.paymentReceivedAmount','Payment Received Amount','text'],
-                                    ['payment.balancePaymentDueDate','Balance Payment Due Date','date'],
-                                    ['payment.balancePaymentAmount','Balance Payment Amount','text']
-                                ].map(([field,label,type]) => {
-                                    const val = field.split('.').reduce((acc, part) => acc?.[part], p) || '';
-                                    return `
+                    ['payment.invoiceDate', 'Invoice Date', 'date'],
+                    ['payment.invoiceNumber', 'Invoice Number', 'text'],
+                    ['payment.invoiceAmount', 'Invoice Amount', 'text'],
+                    ['payment.pastInvoiceAmount', 'Past Invoice Amount', 'text'],
+                    ['payment.paymentTerms', 'Payment Terms', 'text'],
+                    ['payment.paymentType', 'Payment Type', 'text'],
+                    ['payment.paymentDueDate', 'Payment Due Date', 'date'],
+                    ['payment.paymentReceivedDate', 'Payment Received Date', 'date'],
+                    ['payment.paymentReceivedAmount', 'Payment Received Amount', 'text'],
+                    ['payment.balancePaymentDueDate', 'Balance Payment Due Date', 'date'],
+                    ['payment.balancePaymentAmount', 'Balance Payment Amount', 'text']
+                ].map(([field, label, type]) => {
+                    const val = field.split('.').reduce((acc, part) => acc?.[part], p) || '';
+                    return `
                                         <div>
                                             <label class="text-xs font-medium text-slate-600">${label}</label>
                                             <input data-project-key="${key}" data-project-field="${field}" type="${type}" value="${esc(val)}" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" />
                                         </div>
                                     `;
-                                }).join('')}
+                }).join('')}
                                 <div class="col-span-2">
                                     <label class="text-xs font-medium text-slate-600">Overdue Status (auto)</label>
                                     <input value="${esc(p.payment?.overdueStatus || '')}" disabled class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm bg-slate-50 text-slate-700" />
@@ -6372,20 +7534,20 @@ class MarketFlowCRM {
                             <summary class="cursor-pointer select-none text-sm font-semibold text-slate-900">Performance & Rating</summary>
                             <div class="mt-3 grid grid-cols-2 gap-3">
                                 ${[
-                                    ['ratings.clientRating','Client Rating'],
-                                    ['ratings.jobRating','Job Rating'],
-                                    ['ratings.qualityRating','Quality Rating'],
-                                    ['ratings.serviceRating','Service Rating'],
-                                    ['ratings.performanceRating','Performance Rating']
-                                ].map(([field,label]) => {
-                                    const val = field.split('.').reduce((acc, part) => acc?.[part], p) || '';
-                                    return `
+                    ['ratings.clientRating', 'Client Rating'],
+                    ['ratings.jobRating', 'Job Rating'],
+                    ['ratings.qualityRating', 'Quality Rating'],
+                    ['ratings.serviceRating', 'Service Rating'],
+                    ['ratings.performanceRating', 'Performance Rating']
+                ].map(([field, label]) => {
+                    const val = field.split('.').reduce((acc, part) => acc?.[part], p) || '';
+                    return `
                                         <div>
                                             <label class="text-xs font-medium text-slate-600">${label} (0-10)</label>
                                             <input data-project-key="${key}" data-project-field="${field}" type="number" min="0" max="10" value="${esc(val)}" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" />
                                         </div>
                                     `;
-                                }).join('')}
+                }).join('')}
                                 <div class="col-span-2">
                                     <label class="text-xs font-medium text-slate-600">Feedback / Comments</label>
                                     <textarea data-project-key="${key}" data-project-field="ratings.feedbackComments" rows="2" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500">${String(p.ratings?.feedbackComments || '').replace(/</g, '&lt;')}</textarea>
@@ -6434,9 +7596,9 @@ class MarketFlowCRM {
                                     </thead>
                                     <tbody class="divide-y divide-slate-200">
                                         ${projects.map(p => {
-                                            const k = this.getProjectKey(p);
-                                            const isActive = selected && this.getProjectKey(selected) === k;
-                                            return `
+            const k = this.getProjectKey(p);
+            const isActive = selected && this.getProjectKey(selected) === k;
+            return `
                                                 <tr class="${isActive ? 'bg-purple-50' : ''} hover:bg-slate-50">
                                                     <td class="px-4 py-3">
                                                         <button data-action="project:dir:select:${String(k).replace(/\"/g, '&quot;')}" class="text-left w-full font-semibold text-slate-900 hover:text-purple-700">
@@ -6448,7 +7610,7 @@ class MarketFlowCRM {
                                                     <td class="px-4 py-3 text-slate-700">${esc(p.identification?.assignedTo || '—')}</td>
                                                 </tr>
                                             `;
-                                        }).join('')}
+        }).join('')}
                                     </tbody>
                                 </table>
                             </div>
@@ -6476,8 +7638,8 @@ class MarketFlowCRM {
                                 </thead>
                                 <tbody class="divide-y divide-slate-200">
                                     ${projects.map(p => {
-                                        const k = this.getProjectKey(p);
-                                        return `
+            const k = this.getProjectKey(p);
+            return `
                                             <tr class="hover:bg-slate-50">
                                                 <td class="px-4 py-3">
                                                     <button data-action="project:dir:select:${String(k).replace(/"/g, '&quot;')}" class="text-left w-full font-semibold text-slate-900 hover:text-purple-700">
@@ -6489,7 +7651,7 @@ class MarketFlowCRM {
                                                 <td class="px-4 py-3 text-slate-700">${esc(p.identification?.assignedTo || '—')}</td>
                                             </tr>
                                         `;
-                                    }).join('')}
+        }).join('')}
                                 </tbody>
                             </table>
                         </div>
@@ -6519,7 +7681,7 @@ class MarketFlowCRM {
                     meta: `Stage: ${c.stage || 'Active'}`
                 });
             });
-        } catch (_) {}
+        } catch (_) { }
 
         // Projects: stored projects should show up here (plus defaults)
         try {
@@ -6532,7 +7694,7 @@ class MarketFlowCRM {
                     meta: p.startDate ? `Start: ${p.startDate}` : (p.duration ? `Duration: ${p.duration}` : 'In progress')
                 });
             });
-        } catch (_) {}
+        } catch (_) { }
 
         // Deals: use a small subset of active projects as "deal" placeholders
         try {
@@ -6545,7 +7707,7 @@ class MarketFlowCRM {
                     meta: 'Next: approval / scope'
                 });
             });
-        } catch (_) {}
+        } catch (_) { }
 
         // Payment: invoices (stored + defaults)
         try {
@@ -6563,7 +7725,7 @@ class MarketFlowCRM {
                     meta: `${i.status} • ${i.due}`
                 });
             });
-        } catch (_) {}
+        } catch (_) { }
 
         return `
             <div class="space-y-6 fade-in">
@@ -6628,12 +7790,12 @@ class MarketFlowCRM {
             return `
                 <div class="space-y-3">
                     ${progressStages.map((s, i) => {
-                        const done = i <= stageIdx;
-                        const line = done ? `bg-${stageColor}-500` : 'bg-slate-200';
-                        const dot = done ? `bg-${stageColor}-600 border-${stageColor}-600` : 'bg-white border-slate-300';
-                        const text = done ? 'text-slate-900' : 'text-slate-600';
-                        const showLine = i < progressStages.length - 1;
-                        return `
+                const done = i <= stageIdx;
+                const line = done ? `bg-${stageColor}-500` : 'bg-slate-200';
+                const dot = done ? `bg-${stageColor}-600 border-${stageColor}-600` : 'bg-white border-slate-300';
+                const text = done ? 'text-slate-900' : 'text-slate-600';
+                const showLine = i < progressStages.length - 1;
+                return `
                             <div class="flex items-start gap-3">
                                 <div class="flex flex-col items-center">
                                     <div class="w-6 h-6 rounded-full border ${dot} flex items-center justify-center">
@@ -6647,7 +7809,7 @@ class MarketFlowCRM {
                                 </div>
                             </div>
                         `;
-                    }).join('')}
+            }).join('')}
                 </div>
             `;
         };
@@ -6660,11 +7822,11 @@ class MarketFlowCRM {
                 <div class="flex items-center gap-3">
                     <div class="flex items-center flex-1">
                         ${progressStages.map((_, i) => {
-                            const done = i <= idx;
-                            const isLast = i === progressStages.length - 1;
-                            const dotBg = done ? `bg-${c}-600 border-${c}-600` : 'bg-slate-200 border-slate-200';
-                            const lineBg = done ? `bg-${c}-500` : 'bg-slate-200';
-                            return `
+                const done = i <= idx;
+                const isLast = i === progressStages.length - 1;
+                const dotBg = done ? `bg-${c}-600 border-${c}-600` : 'bg-slate-200 border-slate-200';
+                const lineBg = done ? `bg-${c}-500` : 'bg-slate-200';
+                return `
                                 <div class="flex items-center ${isLast ? '' : 'flex-1'}">
                                     <div class="w-9 h-9 rounded-full border ${dotBg} flex items-center justify-center flex-shrink-0">
                                         ${done ? '<i data-lucide="check" class="w-5 h-5 text-white"></i>' : ''}
@@ -6672,7 +7834,7 @@ class MarketFlowCRM {
                                     ${isLast ? '' : `<div class="h-[3px] ${lineBg} flex-1"></div>`}
                                 </div>
                             `;
-                        }).join('')}
+            }).join('')}
                     </div>
                     <div class="text-xs font-semibold text-slate-900">${pct}%</div>
                 </div>
@@ -6699,9 +7861,9 @@ class MarketFlowCRM {
                         </div>
                         <div class="divide-y divide-slate-200">
                             ${projects.map(p => {
-                                const key = projectKey(p);
-                                const isActive = selected && projectKey(selected) === key;
-                                return `
+            const key = projectKey(p);
+            const isActive = selected && projectKey(selected) === key;
+            return `
                                     <button data-action="project:select:${key.replace(/"/g, '&quot;')}" class="w-full text-left p-4 hover:bg-slate-50 ${isActive ? 'bg-purple-50' : ''}">
                                         <div class="flex items-start justify-between">
                                             <div>
@@ -6732,7 +7894,7 @@ class MarketFlowCRM {
                                         </div>
                                     </button>
                                 `;
-                            }).join('')}
+        }).join('')}
                         </div>
                     </div>
 
@@ -6819,7 +7981,7 @@ class MarketFlowCRM {
                                         <td class="px-4 py-3 text-right font-medium text-slate-900">${i.value}</td>
                                         <td class="px-4 py-3">
                                             <div class="flex items-center gap-1">
-                                                ${Array.from({length: 5}).map((_, idx) => `
+                                                ${Array.from({ length: 5 }).map((_, idx) => `
                                                     <i data-lucide="star" class="w-4 h-4 ${idx < i.rating ? 'text-amber-500' : 'text-slate-300'}"></i>
                                                 `).join('')}
                                             </div>
@@ -6993,11 +8155,11 @@ class MarketFlowCRM {
                         <h3 class="text-lg font-semibold text-slate-900">Audience Segments</h3>
                         <div class="mt-4 space-y-3">
                             ${[
-                                { name: 'Overdue invoices', count: 4, color: 'rose' },
-                                { name: 'Onboarding clients', count: 6, color: 'amber' },
-                                { name: 'High LTV clients', count: 12, color: 'emerald' },
-                                { name: 'Inactive 30+ days', count: 18, color: 'indigo' }
-                            ].map(seg => `
+                { name: 'Overdue invoices', count: 4, color: 'rose' },
+                { name: 'Onboarding clients', count: 6, color: 'amber' },
+                { name: 'High LTV clients', count: 12, color: 'emerald' },
+                { name: 'Inactive 30+ days', count: 18, color: 'indigo' }
+            ].map(seg => `
                                 <div class="p-3 bg-${seg.color}-50 border border-${seg.color}-100 rounded-lg flex items-center justify-between">
                                     <div class="text-sm font-medium text-slate-900">${seg.name}</div>
                                     <span class="text-sm font-semibold text-slate-900">${seg.count}</span>
@@ -8147,11 +9309,11 @@ class MarketFlowCRM {
                     </div>
                     <div class="mt-4 space-y-3">
                         ${[
-                            { t: 'Send reminder for INV-102 (TechNova)', tag: 'Billing', color: 'rose' },
-                            { t: 'Schedule renewal call with TechNova', tag: 'Retention', color: 'emerald' },
-                            { t: 'Auto-follow-up for qualified leads within 24h', tag: 'Pipeline', color: 'indigo' },
-                            { t: 'Resend Quarterly Offer to non-openers', tag: 'Campaign', color: 'amber' }
-                        ].map(a => `
+                { t: 'Send reminder for INV-102 (TechNova)', tag: 'Billing', color: 'rose' },
+                { t: 'Schedule renewal call with TechNova', tag: 'Retention', color: 'emerald' },
+                { t: 'Auto-follow-up for qualified leads within 24h', tag: 'Pipeline', color: 'indigo' },
+                { t: 'Resend Quarterly Offer to non-openers', tag: 'Campaign', color: 'amber' }
+            ].map(a => `
                             <div class="flex items-center justify-between p-4 bg-slate-50 rounded-lg">
                                 <div class="text-sm font-medium text-slate-900">${a.t}</div>
                                 <span class="px-2 py-1 text-xs font-medium bg-${a.color}-50 text-${a.color}-700 rounded-full">${a.tag}</span>
@@ -8446,7 +9608,7 @@ class MarketFlowCRM {
 
         const apply = (collapsed) => {
             document.body.classList.toggle('sidebar-collapsed', collapsed);
-            try { localStorage.setItem('mf_sidebar_collapsed', collapsed ? '1' : '0'); } catch (_) {}
+            try { localStorage.setItem('mf_sidebar_collapsed', collapsed ? '1' : '0'); } catch (_) { }
             const icon = btn.querySelector('i[data-lucide]');
             if (icon) icon.setAttribute('data-lucide', collapsed ? 'chevrons-right' : 'chevrons-left');
             this.initializeLucideIcons();
@@ -8454,7 +9616,7 @@ class MarketFlowCRM {
         };
 
         let initial = false;
-        try { initial = localStorage.getItem('mf_sidebar_collapsed') === '1'; } catch (_) {}
+        try { initial = localStorage.getItem('mf_sidebar_collapsed') === '1'; } catch (_) { }
         apply(initial);
 
         btn.addEventListener('click', () => {
@@ -8629,7 +9791,7 @@ class MarketFlowCRM {
 
         if (logout) {
             logout.addEventListener('click', () => {
-                try { localStorage.removeItem('bezent_user_email'); } catch (_) {}
+                try { localStorage.removeItem('bezent_user_email'); } catch (_) { }
                 window.location.href = 'index.html';
             });
         }
@@ -8693,28 +9855,28 @@ class MarketFlowCRM {
                 if (!c?.name) return;
                 dynamic.push({ type: 'Client', title: c.name, subtitle: `Owner: ${c.owner || '—'}`, section: 'leads', subsection: 'clients' });
             });
-        } catch (_) {}
+        } catch (_) { }
 
         try {
             this.getStoredProjects().forEach(p => {
                 if (!p?.name) return;
                 dynamic.push({ type: 'Project', title: p.name, subtitle: `Client: ${p.client || '—'}`, section: 'projects', subsection: 'active' });
             });
-        } catch (_) {}
+        } catch (_) { }
 
         try {
             this.getStoredInvoices().forEach(i => {
                 if (!i?.no) return;
                 dynamic.push({ type: 'Invoice', title: i.no, subtitle: `${i.client || '—'} • ${i.amount || ''} • ${i.status || ''}`, section: 'billing', subsection: 'invoices' });
             });
-        } catch (_) {}
+        } catch (_) { }
 
         try {
             this.getStoredCampaigns().forEach(c => {
                 if (!c?.name) return;
                 dynamic.push({ type: 'Campaign', title: c.name, subtitle: `Status: ${c.status || 'Draft'}`, section: 'campaigns', subsection: 'email' });
             });
-        } catch (_) {}
+        } catch (_) { }
 
         return [...dynamic, ...items].map(i => ({
             ...i,

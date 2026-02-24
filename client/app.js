@@ -55,7 +55,11 @@ class MarketFlowCRM {
         const esc = (v) => String(v ?? '').replace(/</g, '&lt;').replace(/"/g, '&quot;');
 
         const client = draft.client || {};
-        const provider = draft.provider || {};
+        const provider = {
+            ...(draft.provider || {}),
+            companyName: 'APJ 3D Solutions India Pvt Ltd',
+            headOffice: 'Regd: Ground floor HW2, Forge Factory, #3 KCT Tech Park, Athipalayam Road, Chinnavedampatti, Coimbatore District, Tamil Nadu - 641049 | Corp: CP3 & CP4, Sipcot Industrial Complex, Phase-II, Moranapalli, Hosur, Krishnagiri, Tamil Nadu - 635109'
+        };
         const items = Array.isArray(draft.items) ? draft.items : [];
         const bank = draft.bank || {};
         const totals = draft.totals || {};
@@ -5632,8 +5636,8 @@ class MarketFlowCRM {
 
     getCompanyMaster() {
         return {
-            name: 'APJ 3D Design Solution India Pvt Ltd',
-            address: '743TB, GKD NAGAR, Near Dhasce Kalyanamandapam, Basthi, Hosur, Krishnagiri, Pin-635109',
+            name: 'APJ 3D Solutions India Pvt Ltd',
+            address: 'Regd: Ground floor HW2, Forge Factory, #3 KCT Tech Park, Athipalayam Road, Chinnavedampatti, Coimbatore District, Tamil Nadu - 641049 | Corp: CP3 & CP4, Sipcot Industrial Complex, Phase-II, Moranapalli, Hosur, Krishnagiri, Tamil Nadu - 635109',
             stateName: 'Tamil Nadu',
             stateCode: '33',
             gstin: '33AAXCA1027H1ZR',
@@ -5653,8 +5657,8 @@ class MarketFlowCRM {
                 dateOfRequest: '24th Sep 2025'
             },
             provider: {
-                companyName: 'APJ 3D Design Solutions India Pvt Ltd',
-                headOffice: 'No.74/37B, Basthi Road, GKD Nagar, Hosur – Tamil Nadu 635109, India',
+                companyName: 'APJ 3D Solutions India Pvt Ltd',
+                headOffice: 'Regd: Ground floor HW2, Forge Factory, #3 KCT Tech Park, Athipalayam Road, Chinnavedampatti, Coimbatore District, Tamil Nadu - 641049 | Corp: CP3 & CP4, Sipcot Industrial Complex, Phase-II, Moranapalli, Hosur, Krishnagiri, Tamil Nadu - 635109',
                 cinGstin: 'U29113TZ2022PTC039089 / GSTIN: 33AAXCA1027H1ZR',
                 contactPerson: 'Sathish S – Managing Director',
                 proposalSentOn: '24th Sep 2025',
@@ -5673,7 +5677,7 @@ class MarketFlowCRM {
                 { description: 'Price for 3D Scanning, 3D modelling and 2D drafting of E-Axle\nOutput format- Catia V5', uom: 'AE', qty: 1, rate: 0, amount: 0 }
             ],
             bank: {
-                beneficiary: 'APJ 3D Design Solution India Pvt Ltd',
+                beneficiary: 'APJ 3D Solutions India Pvt Ltd',
                 bankName: 'Punjab National Bank',
                 accountNo: '4962002100007908',
                 ifsc: 'PUNB0496200'
@@ -5764,7 +5768,11 @@ class MarketFlowCRM {
         const doc = r || {};
         const esc = (v) => String(v ?? '').replace(/</g, '&lt;').replace(/"/g, '&quot;');
         const client = doc.client || {};
-        const provider = doc.provider || {};
+        const provider = {
+            ...(doc.provider || {}),
+            companyName: 'APJ 3D Solutions India Pvt Ltd',
+            headOffice: 'Regd: Ground floor HW2, Forge Factory, #3 KCT Tech Park, Athipalayam Road, Chinnavedampatti, Coimbatore District, Tamil Nadu - 641049 | Corp: CP3 & CP4, Sipcot Industrial Complex, Phase-II, Moranapalli, Hosur, Krishnagiri, Tamil Nadu - 635109'
+        };
         const items = Array.isArray(doc.items) ? doc.items : [];
         const totals = doc.totals || {};
 
@@ -5814,81 +5822,27 @@ class MarketFlowCRM {
                         </filter>
                     </defs>
 
-                    <!-- Background fill -->
-                    <rect width="1000" height="1414" fill="url(#bgGrad)"/>
+                    <!-- Background image -->
+                    <image href="/assets/rfp-cover-bg.png" x="0" y="0" width="1000" height="1414" preserveAspectRatio="xMidYMid slice"/>
+                    <!-- Dark blue overlay – higher opacity suppresses background dimension lines -->
+                    <rect width="1000" height="1414" fill="#04091a" opacity="0.65"/>
 
-                    <!-- Blueprint grid (vertical lines) -->
-                    <g stroke="#1e40af" stroke-width="0.4" opacity="0.35">
-                        ${Array.from({ length: 42 }, (_, i) => `<line x1="${i * 24}" y1="0" x2="${i * 24}" y2="1414"/>`).join('')}
-                    </g>
-                    <!-- Blueprint grid (horizontal lines) -->
-                    <g stroke="#1e40af" stroke-width="0.4" opacity="0.35">
-                        ${Array.from({ length: 60 }, (_, i) => `<line x1="0" y1="${i * 24}" x2="1000" y2="${i * 24}"/>`).join('')}
-                    </g>
-                    <!-- Perspective floor grid -->
-                    <g stroke="#2563eb" stroke-width="0.8" opacity="0.25">
-                        ${Array.from({ length: 16 }, (_, i) => `<line x1="${500 + i * 90}" y1="1414" x2="500" y2="820"/><line x1="${500 - i * 90}" y1="1414" x2="500" y2="820"/>`)}
-                        ${Array.from({ length: 10 }, (_, i) => `<line x1="0" y1="${820 + i * 66}" x2="1000" y2="${820 + i * 66}"/>`)}
+
+
+                    <!-- Perspective floor grid (XYZ 3D axis feel) -->
+                    <g stroke="#2563eb" stroke-width="0.8" opacity="0.3">
+                        ${Array.from({ length: 18 }, (_, i) => `<line x1="${500 + i * 80}" y1="1414" x2="500" y2="820"/><line x1="${500 - i * 80}" y1="1414" x2="500" y2="820"/>`).join('')}
+                        ${Array.from({ length: 10 }, (_, i) => `<line x1="0" y1="${820 + i * 60}" x2="1000" y2="${820 + i * 60}"/>`).join('')}
                     </g>
 
-                    <!-- Glowing orb behind cube -->
-                    <ellipse cx="500" cy="600" rx="220" ry="180" fill="#3b82f6" opacity="0.10" filter="url(#softglow)"/>
-
-                    <!-- Large 3D isometric wireframe cube -->
-                    <!-- Top face -->
-                    <polygon points="500,280  700,390  500,500  300,390" fill="url(#cubeTop)" stroke="#93c5fd" stroke-width="1.5" filter="url(#glow)"/>
-                    <!-- Left face -->
-                    <polygon points="300,390  500,500  500,710  300,600" fill="url(#cubeLeft)" stroke="#60a5fa" stroke-width="1.5"/>
-                    <!-- Right face -->
-                    <polygon points="700,390  500,500  500,710  700,600" fill="url(#cubeRight)" stroke="#3b82f6" stroke-width="1.5"/>
-
-                    <!-- Cube wireframe inner lines -->
-                    <line x1="500" y1="500" x2="500" y2="280" stroke="#93c5fd" stroke-width="1" opacity="0.6" stroke-dasharray="6,4"/>
-                    <line x1="300" y1="390" x2="500" y2="390" stroke="#93c5fd" stroke-width="1" opacity="0.5" stroke-dasharray="6,4"/>
-                    <line x1="700" y1="390" x2="500" y2="390" stroke="#93c5fd" stroke-width="1" opacity="0.5" stroke-dasharray="6,4"/>
-                    <line x1="500" y1="390" x2="500" y2="500" stroke="#bfdbfe" stroke-width="1.2" opacity="0.7"/>
-
-                    <!-- Small floating cube top-right -->
-                    <polygon points="780,180  860,225  780,270  700,225" fill="#1e40af" stroke="#60a5fa" stroke-width="1" opacity="0.75"/>
-                    <polygon points="700,225  780,270  780,370  700,325" fill="#0f2d6b" stroke="#3b82f6" stroke-width="1" opacity="0.75"/>
-                    <polygon points="860,225  780,270  780,370  860,325" fill="#1730a0" stroke="#2563eb" stroke-width="1" opacity="0.75"/>
-
-                    <!-- Small floating cube top-left -->
-                    <polygon points="180,250  250,290  180,330  110,290" fill="#1e40af" stroke="#60a5fa" stroke-width="1" opacity="0.65"/>
-                    <polygon points="110,290  180,330  180,410  110,370" fill="#0f2d6b" stroke="#3b82f6" stroke-width="1" opacity="0.65"/>
-                    <polygon points="250,290  180,330  180,410  250,370" fill="#1730a0" stroke="#2563eb" stroke-width="1" opacity="0.65"/>
-
-                    <!-- 2D drawing cross-hairs -->
-                    <circle cx="160" cy="650" r="30" fill="none" stroke="#3b82f6" stroke-width="1" opacity="0.5"/>
-                    <line x1="120" y1="650" x2="200" y2="650" stroke="#3b82f6" stroke-width="1" opacity="0.5"/>
-                    <line x1="160" y1="610" x2="160" y2="690" stroke="#3b82f6" stroke-width="1" opacity="0.5"/>
-                    <circle cx="840" cy="680" r="22" fill="none" stroke="#60a5fa" stroke-width="1" opacity="0.5"/>
-                    <line x1="808" y1="680" x2="872" y2="680" stroke="#60a5fa" stroke-width="1" opacity="0.5"/>
-                    <line x1="840" y1="648" x2="840" y2="712" stroke="#60a5fa" stroke-width="1" opacity="0.5"/>
-
-                    <!-- Dimension arrows (2D drafting style) -->
-                    <line x1="250" y1="750" x2="750" y2="750" stroke="#93c5fd" stroke-width="1" opacity="0.4"/>
-                    <polygon points="250,745 250,755 234,750" fill="#93c5fd" opacity="0.4"/>
-                    <polygon points="750,745 750,755 766,750" fill="#93c5fd" opacity="0.4"/>
-                    <text x="490" y="745" text-anchor="middle" font-size="11" fill="#93c5fd" opacity="0.5" font-family="monospace">500 mm</text>
-
-                    <!-- Hexagonal mesh (bottom area) -->
-                    <g stroke="#1e40af" stroke-width="0.8" fill="none" opacity="0.2">
-                        ${Array.from({ length: 8 }, (_, col) => Array.from({ length: 5 }, (_, row) => { const x = 80 + col * 120 + (row % 2) * 60; const cx = x, cy = 900 + row * 104; const r = 36; const pts = Array.from({ length: 6 }, (_, k) => { const a = Math.PI / 180 * (60 * k - 30); return `${cx + r * Math.cos(a)},${cy + r * Math.sin(a)}`; }).join(' '); return `<polygon points="${pts}"/>`; }).join('')).join('')}
-                    </g>
-
-                    <!-- Scanline accent -->
-                    <rect x="0" y="788" width="1000" height="2" fill="#3b82f6" opacity="0.4"/>
-                    <rect x="0" y="792" width="1000" height="1" fill="#93c5fd" opacity="0.2"/>
-
-                    <!-- Corner accent bracket top-left -->
-                    <polyline points="40,100 40,40 100,40" fill="none" stroke="#3b82f6" stroke-width="2.5" opacity="0.7"/>
-                    <!-- Corner accent bracket top-right -->
-                    <polyline points="960,100 960,40 900,40" fill="none" stroke="#3b82f6" stroke-width="2.5" opacity="0.7"/>
-                    <!-- Corner accent bracket bottom-left -->
-                    <polyline points="40,1314 40,1374 100,1374" fill="none" stroke="#3b82f6" stroke-width="2.5" opacity="0.7"/>
-                    <!-- Corner accent bracket bottom-right -->
-                    <polyline points="960,1314 960,1374 900,1374" fill="none" stroke="#3b82f6" stroke-width="2.5" opacity="0.7"/>
+                    <!-- Corner accent bracket top-left (┌) -->
+                    <polyline points="40,100 40,40 100,40" fill="none" stroke="#3b82f6" stroke-width="2.5" opacity="0.8"/>
+                    <!-- Corner accent bracket top-right (┐) -->
+                    <polyline points="960,100 960,40 900,40" fill="none" stroke="#3b82f6" stroke-width="2.5" opacity="0.8"/>
+                    <!-- Corner accent bracket bottom-left (└) -->
+                    <polyline points="40,1314 40,1374 100,1374" fill="none" stroke="#3b82f6" stroke-width="2.5" opacity="0.8"/>
+                    <!-- Corner accent bracket bottom-right (┘) -->
+                    <polyline points="960,1314 960,1374 900,1374" fill="none" stroke="#3b82f6" stroke-width="2.5" opacity="0.8"/>
                 </svg>
 
                 <!-- Cover text content -->
@@ -5911,7 +5865,8 @@ class MarketFlowCRM {
                     <div class="hdr-text">
 
                         <div class="hdr-company">${esc(provider.companyName)}</div>
-                        <div class="hdr-sub">${esc(provider.headOffice)}<br>${esc(provider.cinGstin)}</div>
+                        ${provider.headOffice.split('|').map(a => `<div class="hdr-sub">${esc(a.trim())}</div>`).join('')}
+                        <div class="hdr-sub">${esc(provider.cinGstin)}</div>
                     </div>
                 </div>
 
@@ -6093,7 +6048,7 @@ class MarketFlowCRM {
                     .hdr-text{flex:1;}
                     .hdr-label{font-size:10px;letter-spacing:.18em;text-transform:uppercase;opacity:.75;margin-bottom:4px;}
                     .hdr-company{font-size:20px;font-weight:800;line-height:1.2;margin-bottom:6px;}
-                    .hdr-sub{font-size:11px;opacity:.85;line-height:1.6;}
+                    .hdr-sub{font-size:9px;opacity:.85;line-height:1.55;}
                     .hdr-badge{background:rgba(255,255,255,0.18);border:1px solid rgba(255,255,255,0.3);border-radius:8px;padding:10px 16px;text-align:right;flex-shrink:0;}
                     .hdr-badge-label{font-size:9px;letter-spacing:.12em;text-transform:uppercase;opacity:.7;}
                     .hdr-badge-val{font-size:15px;font-weight:700;margin-top:2px;}
@@ -6380,7 +6335,7 @@ class MarketFlowCRM {
     renderQuotationDocumentHTML(q) {
         const quote = q || {};
         const esc = (v) => String(v ?? '').replace(/</g, '&lt;').replace(/"/g, '&quot;');
-        const company = quote.company || {};
+        const company = { ...(quote.company || {}), ...this.getCompanyMaster() };
         const buyer = quote.buyer || {};
         const items = Array.isArray(quote.items) ? quote.items : [];
         const totals = quote.totals || {};
@@ -6390,44 +6345,29 @@ class MarketFlowCRM {
 
         return `
             <div class="doc">
+                <div class="hdr">
+                    <div class="hdr-logo-box">
+                        ${company.logoDataUrl ? `<img src="${esc(company.logoDataUrl)}" alt="" />` : ''}
+                    </div>
+                    <div class="hdr-text">
+                        <div class="hdr-company">${esc(company.name)}</div>
+                        ${company.address.split('|').map(a => `<div class="hdr-sub">${esc(a.trim())}</div>`).join('')}
+                        <div class="hdr-sub">GSTIN: ${esc(company.gstin)} &nbsp;|&nbsp; State: ${esc(company.stateName || '')} – ${esc(company.stateCode)}</div>
+                        <div class="hdr-sub">${esc(company.phone || '')} &nbsp;|&nbsp; ${esc(company.email || '')}</div>
+                    </div>
+                </div>
                 <div class="title">QUOTATION</div>
+                <div class="doc-body">
 
                 <table class="top">
                     <tr>
                         <td class="top-left">
-                            <table class="co">
-                                <tr>
-                                    <td class="co-logo">
-                                        <div class="logo-box">
-                                            ${company.logoDataUrl ? `<img class="logo" src="${esc(company.logoDataUrl)}" alt="" />` : ''}
-                                        </div>
-                                    </td>
-                                    <td class="co-text">
-                                        <div class="co-name">${esc(company.name)}</div>
-                                        <div class="muted">${esc(company.address)}</div>
-                                        <div class="muted">GSTIN/UIN: ${esc(company.gstin)}</div>
-                                        <div class="muted">State Name: ${esc(company.stateName || '')} &nbsp; Code: ${esc(company.stateCode)}</div>
-                                        <div class="muted">Contact: ${esc(company.phone || '')}</div>
-                                        <div class="muted">E-Mail: ${esc(company.email || '')}</div>
-                                    </td>
-                                </tr>
-                            </table>
-                        </td>
-                        <td class="top-right">
                             <table class="meta">
                                 <tr><td class="ml">Quotation No.</td><td class="mv">${esc(quote.quote?.no)}</td></tr>
                                 <tr><td class="ml">Dated</td><td class="mv">${esc(quote.quote?.date)}</td></tr>
                                 <tr><td class="ml">Mode/Terms of Payment</td><td class="mv">${esc(quote.quote?.paymentTerms)}</td></tr>
                                 <tr><td class="ml">Other References</td><td class="mv">${esc(quote.quote?.otherReferences)}</td></tr>
                             </table>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td class="top-left">
-                            <div class="sec-title">Buyer (Bill to)</div>
-                            <div class="co-name">${esc(buyer.name)}</div>
-                            <div class="muted">${esc(buyer.address)}</div>
-                            <div class="muted">GSTIN/UIN: ${esc(buyer.gstin)}</div>
                         </td>
                         <td class="top-right">
                             <table class="meta">
@@ -6436,6 +6376,14 @@ class MarketFlowCRM {
                                 <tr><td class="ml">Destination</td><td class="mv">${esc(quote.quote?.destination)}</td></tr>
                                 <tr><td class="ml">Terms of Delivery</td><td class="mv">${esc(quote.quote?.termsOfDelivery)}</td></tr>
                             </table>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="2" style="border:1px solid #cbd5e1;padding:8px;">
+                            <div class="sec-title">Buyer (Bill to)</div>
+                            <div class="co-name">${esc(buyer.name)}</div>
+                            <div class="muted">${esc(buyer.address)}</div>
+                            <div class="muted">GSTIN/UIN: ${esc(buyer.gstin)}</div>
                         </td>
                     </tr>
                 </table>
@@ -6505,6 +6453,7 @@ class MarketFlowCRM {
                     </div>
                 </div>
 
+                </div>
                 <div class="footer">This is a Computer Generated Document</div>
             </div>
         `;
@@ -6526,8 +6475,16 @@ class MarketFlowCRM {
                 <meta name="viewport" content="width=device-width, initial-scale=1" />
                 <title>Quotation</title>
                 <style>
-                    body{font-family:Arial,Helvetica,sans-serif;margin:0;background:#fff;}
-                    .doc{max-width:900px;margin:18px auto;background:#fff;padding:0;}
+                    body{font-family:Arial,Helvetica,sans-serif;margin:0;background:#f1f5f9;}
+                    .doc{max-width:900px;margin:18px auto;background:#fff;padding:0;border-radius:12px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,0.08);-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+                    .doc-body{padding:0 20px;}
+                    .hdr{background:linear-gradient(135deg,#0a1628 0%,#1e3a8a 55%,#1d4ed8 100%);color:#fff;padding:18px 22px;display:flex;align-items:center;gap:14px;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+                    .hdr-logo-box{width:80px;height:80px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+                    .hdr-logo-box img{width:74px;height:74px;object-fit:contain;}
+                    .hdr-text{flex:1;}
+                    .hdr-company{font-size:16px;font-weight:800;margin-bottom:3px;}
+                    .hdr-sub{font-size:9px;opacity:.85;line-height:1.55;}
+
                     .title{font-weight:800;letter-spacing:0.06em;font-size:16px;text-align:center;padding:8px 0;border:1px solid #cbd5e1;border-bottom:none;}
                     .co-name{font-weight:700;font-size:12px;color:#0f172a;}
                     .muted{font-size:11px;color:#0f172a;}
@@ -6560,12 +6517,12 @@ class MarketFlowCRM {
                     .words{border:1px solid #cbd5e1;border-top:none;padding:8px;}
                     .eo{font-size:11px;text-align:right;margin-top:2px;}
 
-                    .bottom{display:flex;gap:10px;justify-content:space-between;margin-top:10px;}
+                    .bottom{display:flex;gap:10px;justify-content:space-between;margin-top:10px;margin-bottom:16px;}
                     .terms{flex:1;border:1px solid #cbd5e1;padding:8px;min-height:140px;}
                     .terms ol{margin:0 0 0 18px;padding:0;font-size:11px;color:#0f172a;}
                     .bank{width:320px;border:1px solid #cbd5e1;padding:8px;}
                     .sig{margin-top:10px;font-size:11px;color:#0f172a;font-weight:800;text-align:right;}
-                    .footer{margin-top:10px;text-align:center;font-size:11px;color:#0f172a;}
+                    .footer{background:#1e3a8a;color:#fff;text-align:center;font-size:10px;padding:8px 14px;letter-spacing:.05em;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
 
                     @media print{
                         body{background:#fff;}

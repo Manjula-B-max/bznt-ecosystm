@@ -1,4 +1,4 @@
-// MarketFlow CRM Dashboard Application
+﻿// MarketFlow CRM Dashboard Application
 class MarketFlowCRM {
     constructor() {
         this.currentSection = 'dashboard';
@@ -522,7 +522,7 @@ class MarketFlowCRM {
         const nameEl = document.getElementById('profileName');
 
         let email = '';
-        try { email = localStorage.getItem('bezent_user_email') || ''; } catch (_) { email = ''; }
+        try { email = localStorage.getItem('APJ 3D Solutions_user_email') || ''; } catch (_) { email = ''; }
 
         const cleaned = String(email || '').trim().toLowerCase();
         if (!cleaned) return;
@@ -614,16 +614,16 @@ class MarketFlowCRM {
     getChatAssistantReply(userText) {
         const q = String(userText || '').trim();
         const t = q.toLowerCase();
-        if (!t) return "Tell me what you want to know about Bezent (Leads, Clients, Projects, Billing).";
+        if (!t) return "Tell me what you want to know about BEZENT (Leads, Clients, Projects, Billing).";
 
         const includesAny = (arr) => arr.some(w => t.includes(w));
 
         if (includesAny(['hi', 'hello', 'hey', 'good morning', 'good evening'])) {
-            return "Hi! I can help with Bezent basics: Leads/Clients, Projects, Vendor Code, Project Code, Billing.";
+            return "Hi! I can help with BEZENT basics: Leads/Clients, Projects, Vendor Code, Project Code, Billing.";
         }
 
         if (includesAny(['what is bezent', 'about bezent', 'product', 'crm'])) {
-            return "Bezent is a lightweight CRM dashboard to manage Leads, Clients, Projects/Pipeline and Billing in one place.";
+            return "BEZENT is a lightweight CRM dashboard to manage Leads, Clients, Projects/Pipeline and Billing in one place.";
         }
 
         if (includesAny(['lead', 'leads'])) {
@@ -682,7 +682,7 @@ class MarketFlowCRM {
             return "Try asking: 'How to generate vendor code?', 'Explain project code', 'How to register a client?', 'How to create an invoice?', 'What are technical tracking statuses?', or 'How does payment tracking work?'";
         }
 
-        return "I can answer simple Bezent product questions. Ask about Leads, Clients, Projects, Vendor Code, Project Code, Billing, Tracking, Monitoring, Dispatch, Purchase, Payments, or Ratings.";
+        return "I can answer simple BEZENT product questions. Ask about Leads, Clients, Projects, Vendor Code, Project Code, Billing, Tracking, Monitoring, Dispatch, Purchase, Payments, or Ratings.";
     }
 
     sendChatMessage(rawText) {
@@ -706,12 +706,12 @@ class MarketFlowCRM {
     }
 
     getStoredClients() {
-        const items = this.readStore('bezent_clients', []);
+        const items = this.readStore('APJ 3D Solutions_clients', []);
         return Array.isArray(items) ? items : [];
     }
 
     getStoredLeads() {
-        const items = this.readStore('bezent_leads', []);
+        const items = this.readStore('APJ 3D Solutions_leads', []);
         return Array.isArray(items) ? items : [];
     }
 
@@ -742,7 +742,7 @@ class MarketFlowCRM {
 
         if (idx >= 0) items[idx] = { ...items[idx], ...normalized };
         else items.unshift(normalized);
-        this.writeStore('bezent_leads', items);
+        this.writeStore('APJ 3D Solutions_leads', items);
         return { ok: true, id };
     }
 
@@ -777,7 +777,7 @@ class MarketFlowCRM {
                 { at: Date.now(), type: 'convert', note: `Converted to client: ${clientName}` }
             ]
         };
-        this.writeStore('bezent_leads', leads);
+        this.writeStore('APJ 3D Solutions_leads', leads);
         return { ok: true, clientName };
     }
 
@@ -786,7 +786,7 @@ class MarketFlowCRM {
         if (!n) return { ok: false, message: 'Client name missing.' };
         const items = this.getStoredClients();
         const next = items.filter(x => String(x?.name || '').trim().toLowerCase() !== n.toLowerCase());
-        this.writeStore('bezent_clients', next);
+        this.writeStore('APJ 3D Solutions_clients', next);
         return { ok: true };
     }
 
@@ -813,12 +813,12 @@ class MarketFlowCRM {
         };
         if (idx >= 0) items[idx] = { ...items[idx], ...normalized };
         else items.unshift(normalized);
-        this.writeStore('bezent_clients', items);
+        this.writeStore('APJ 3D Solutions_clients', items);
         return { ok: true };
     }
 
     getStoredCampaigns() {
-        const items = this.readStore('bezent_campaigns', []);
+        const items = this.readStore('APJ 3D Solutions_campaigns', []);
         return Array.isArray(items) ? items : [];
     }
 
@@ -835,7 +835,7 @@ class MarketFlowCRM {
             status: String(c.status || 'Draft').trim() || 'Draft',
             statusColor: String(c.statusColor || 'slate').trim() || 'slate'
         });
-        this.writeStore('bezent_campaigns', items);
+        this.writeStore('APJ 3D Solutions_campaigns', items);
         return { ok: true };
     }
 
@@ -852,7 +852,7 @@ class MarketFlowCRM {
             statusColor: String(c.statusColor || 'slate').trim() || 'slate'
         };
         this.upsertStoredItem(
-            'bezent_campaigns',
+            'APJ 3D Solutions_campaigns',
             (x) => String(x?.name || '').trim().toLowerCase() === name.toLowerCase(),
             normalized
         );
@@ -864,7 +864,7 @@ class MarketFlowCRM {
         if (!n) return { ok: false, message: 'Campaign name missing.' };
         const items = this.getStoredCampaigns();
         const next = items.filter(x => String(x?.name || '').trim().toLowerCase() !== n.toLowerCase());
-        this.writeStore('bezent_campaigns', next);
+        this.writeStore('APJ 3D Solutions_campaigns', next);
         return { ok: true };
     }
 
@@ -932,7 +932,7 @@ class MarketFlowCRM {
     }
 
     getStoredInvoices() {
-        const items = this.readStore('bezent_invoices', []);
+        const items = this.readStore('APJ 3D Solutions_invoices', []);
         return Array.isArray(items) ? items : [];
     }
 
@@ -968,7 +968,7 @@ class MarketFlowCRM {
     }
 
     getStoredProjects() {
-        const items = this.readStore('bezent_projects', []);
+        const items = this.readStore('APJ 3D Solutions_projects', []);
         const list = Array.isArray(items) ? items : [];
         let mutated = false;
 
@@ -1001,7 +1001,7 @@ class MarketFlowCRM {
         });
 
         if (mutated) {
-            this.writeStore('bezent_projects', migrated);
+            this.writeStore('APJ 3D Solutions_projects', migrated);
         }
 
         // If no projects in storage, return empty array to allow defaults to load
@@ -1152,7 +1152,7 @@ class MarketFlowCRM {
         });
 
         if (!updated) return { ok: false, message: 'Project not found in stored list.' };
-        this.writeStore('bezent_projects', next);
+        this.writeStore('APJ 3D Solutions_projects', next);
         return { ok: true };
     }
 
@@ -1270,7 +1270,7 @@ class MarketFlowCRM {
                 additionalNotes: String(p?.ratings?.additionalNotes ?? '').trim()
             }
         });
-        this.writeStore('bezent_projects', items);
+        this.writeStore('APJ 3D Solutions_projects', items);
         return { ok: true };
     }
 
@@ -1288,7 +1288,7 @@ class MarketFlowCRM {
         const idx = items.findIndex(p => this.getProjectKey(p) === key);
         if (idx !== -1) {
             Object.assign(items[idx], updates);
-            this.writeStore('bezent_projects', items);
+            this.writeStore('APJ 3D Solutions_projects', items);
         }
     }
 
@@ -1296,7 +1296,7 @@ class MarketFlowCRM {
         if (!key) return;
         const items = this.getStoredProjects();
         const filtered = items.filter(p => this.getProjectKey(p) !== key);
-        this.writeStore('bezent_projects', filtered);
+        this.writeStore('APJ 3D Solutions_projects', filtered);
     }
 
     setNestedProperty(obj, path, value) {
@@ -1375,7 +1375,7 @@ class MarketFlowCRM {
             status: String(i.status || 'Pending').trim() || 'Pending',
             color: String(i.color || 'amber').trim() || 'amber'
         });
-        this.writeStore('bezent_invoices', items);
+        this.writeStore('APJ 3D Solutions_invoices', items);
         return { ok: true };
     }
 
@@ -1386,7 +1386,7 @@ class MarketFlowCRM {
         const color = status === 'Paid' ? 'emerald' : status === 'Overdue' ? 'rose' : 'amber';
 
         this.upsertStoredItem(
-            'bezent_invoices',
+            'APJ 3D Solutions_invoices',
             (x) => String(x?.no || '').trim().toLowerCase() === no.toLowerCase(),
             {
                 ...invoice,
@@ -1443,7 +1443,7 @@ class MarketFlowCRM {
             `Status: ${i.status || ''}`,
             `Due: ${i.due || ''}`,
             '',
-            'Generated by Bezent Dashboard'
+            'Generated by APJ 3D Solutions Dashboard'
         ];
         const blob = new Blob([lines.join('\n')], { type: 'text/plain;charset=utf-8' });
         const url = URL.createObjectURL(blob);
@@ -1768,7 +1768,7 @@ class MarketFlowCRM {
                         const cached = this._projectsCacheByKey?.get(key);
                         if (cached) {
                             stored.unshift(this.ensureProjectModel(cached));
-                            this.writeStore('bezent_projects', stored);
+                            this.writeStore('APJ 3D Solutions_projects', stored);
                         }
                     }
                 } catch (_) { }
@@ -1809,7 +1809,7 @@ class MarketFlowCRM {
                         const cached = this._projectsCacheByKey?.get(key);
                         if (cached) {
                             stored.unshift(this.ensureProjectModel(cached));
-                            this.writeStore('bezent_projects', stored);
+                            this.writeStore('APJ 3D Solutions_projects', stored);
                         }
                     }
                 } catch (_) { }
@@ -2998,7 +2998,7 @@ class MarketFlowCRM {
                     <div class="w-7 h-7 rounded-full bg-purple-600 flex items-center justify-center flex-shrink-0">
                         <i data-lucide="sparkles" class="w-4 h-4 text-white"></i>
                     </div>
-                    <div class="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-800">Hi! Ask me about Bezent (Leads, Clients, Projects, Billing).</div>
+                    <div class="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-800">Hi! Ask me about BEZENT (Leads, Clients, Projects, Billing).</div>
                 </div>
             `;
 
@@ -3010,7 +3010,7 @@ class MarketFlowCRM {
                             <i data-lucide="sparkles" class="w-4 h-4 text-white"></i>
                         </div>
                         <div>
-                            <div class="text-sm font-semibold text-slate-900">Bezent</div>
+                            <div class="text-sm font-semibold text-slate-900">BEZENT</div>
                             <div class="text-xs text-slate-500">Assistant</div>
                         </div>
                     </div>
@@ -3024,7 +3024,7 @@ class MarketFlowCRM {
                 <div class="p-3 border-t border-slate-200">
                     <div class="mb-2 flex flex-wrap gap-1">
                         ${[
-                'What is Bezent?',
+                'What is APJ 3D Solutions?',
                 'How to register a client?',
                 'How vendor code works?',
                 'How to create invoice?',
@@ -3340,7 +3340,7 @@ class MarketFlowCRM {
                 <div class="mt-auto pt-3">
                     <button data-action="chat:open" class="sidebar-item w-full flex items-center gap-3 text-left px-3 py-2 text-sm font-medium rounded-lg transition-colors text-slate-700 hover:bg-slate-50">
                         <i data-lucide="message-circle" class="w-4 h-4 text-purple-600"></i>
-                        <span class="sidebar-label">Bezent</span>
+                        <span class="sidebar-label">BEZENT</span>
                     </button>
                 </div>
             </div>
@@ -3372,7 +3372,7 @@ class MarketFlowCRM {
             ],
             campaigns: [
                 { id: 'email', label: 'Email Campaigns' },
-                { id: 'sms', label: 'SMS & WhatsApp' },
+                { id: 'sms', label: 'SMS Alerts' },
                 { id: 'wishes', label: 'Personalized Wishes' },
                 { id: 'reengagement', label: 'Re-engagement' },
 
@@ -3480,7 +3480,220 @@ class MarketFlowCRM {
         }
 
         if (this.currentSection === 'campaigns' && this.currentSubSection === 'email') {
-            this.initializeCampaignPerformanceChart();
+            const goContacts = () => this.switchSubSection('contacts_directory');
+            const goAlerts = () => this.switchSubSection('alert_gmass');
+            // Header buttons
+            document.getElementById('emailCampOpenContacts')?.addEventListener('click', goContacts);
+            document.getElementById('emailCampOpenAlerts')?.addEventListener('click', goAlerts);
+            // Large dashboard cards
+            document.getElementById('emailCampCardContacts')?.addEventListener('click', goContacts);
+            document.getElementById('emailCampCardAlerts')?.addEventListener('click', goAlerts);
+            // Bottom panel "View All" links
+            document.getElementById('emailCampOpenContacts2')?.addEventListener('click', goContacts);
+            document.getElementById('emailCampOpenAlerts2')?.addEventListener('click', goAlerts);
+        }
+
+        if (this.currentSection === 'campaigns' && this.currentSubSection === 'contacts_directory') {
+            this.setupCampaignContactsInteractions();
+        }
+
+        if (this.currentSection === 'campaigns' && this.currentSubSection === 'alert_gmass') {
+            this.setupAlertGmassInteractions();
+        }
+
+        if (this.currentSection === 'campaigns' && this.currentSubSection === 'wishes') {
+            const rawJson = document.getElementById('wishesAllCards')?.textContent || '[]';
+            let allCards = [];
+            try { allCards = JSON.parse(rawJson); } catch (_) { }
+
+            let activeCard = null;
+
+            const step1El = document.getElementById('wishesStep1');
+            const step2El = document.getElementById('wishesStep2');
+            const backWrap = document.getElementById('wishesStep2Back');
+            const cardListEl = document.getElementById('wishesCardList');
+            const previewEl = document.getElementById('wishesCardPreview');
+            const clientSection = document.getElementById('wishesClientSection');
+            const selCountEl = document.getElementById('wishesSelCount');
+            const sendBtn = document.getElementById('wishesSendGmass');
+            const selectAllBtn = document.getElementById('wishesSelectAll');
+            const backBtn = document.getElementById('wishesBackBtn');
+
+            const setStep = (n) => {
+                const dots = [null, document.getElementById('step1dot'), document.getElementById('step2dot'), document.getElementById('step3dot')];
+                const lbls = [null, document.getElementById('step1lbl'), document.getElementById('step2lbl'), document.getElementById('step3lbl')];
+                dots.forEach((d, i) => { if (d) d.className = `w-2 h-2 rounded-full ${i <= n ? 'bg-purple-500' : 'bg-slate-200'}`; });
+                lbls.forEach((l, i) => { if (l) l.className = i <= n ? 'font-semibold text-purple-600' : 'text-slate-400'; });
+            };
+
+            const updateCount = () => {
+                const n = document.querySelectorAll('.wishes-client-check:checked').length;
+                if (selCountEl) selCountEl.textContent = n;
+                if (sendBtn) sendBtn.disabled = (n === 0 || !activeCard);
+            };
+
+            // STEP 1 — Occasion click
+            document.querySelectorAll('.wishes-occ-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const occId = btn.dataset.occId;
+                    const cards = allCards.filter(c => c.occId === occId);
+                    activeCard = null;
+                    if (clientSection) clientSection.classList.add('hidden');
+                    if (sendBtn) sendBtn.disabled = true;
+
+                    // Build card variant buttons
+                    if (cardListEl) {
+                        cardListEl.innerHTML = cards.map((c, i) => `
+                            <button class="wishes-card-btn w-full text-left flex items-center gap-3 px-4 py-3 rounded-xl border-2 border-slate-200 bg-white hover:border-purple-400 hover:bg-purple-50 transition-all" data-card-idx="${i}" data-card-id="${c.id}">
+                                <div class="w-8 h-8 rounded-lg bg-purple-50 flex items-center justify-center flex-shrink-0 text-purple-500 font-bold text-sm">${i + 1}</div>
+                                <div class="flex-1">
+                                    <div class="text-sm font-bold text-slate-900">${c.variant}</div>
+                                    <div class="text-xs text-slate-400 truncate">${c.subject.replace('{{name}}', '[Name]')}</div>
+                                </div>
+                                <svg class="w-4 h-4 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+                            </button>
+                        `).join('');
+
+                        // Attach card-variant click handlers
+                        cardListEl.querySelectorAll('.wishes-card-btn').forEach(cb => {
+                            cb.addEventListener('click', () => {
+                                const card = cards[parseInt(cb.dataset.cardIdx)];
+                                activeCard = card;
+                                cardListEl.querySelectorAll('.wishes-card-btn').forEach(b => b.classList.remove('border-purple-500', 'bg-purple-50'));
+                                cb.classList.add('border-purple-500', 'bg-purple-50');
+
+                                // Render HTML email preview in iframe
+                                if (previewEl) {
+                                    previewEl.innerHTML = `
+                                        <div class="rounded-2xl overflow-hidden border border-slate-200 shadow-sm">
+                                            <div class="px-4 py-3 bg-gradient-to-r from-purple-50 to-indigo-50 border-b border-slate-100 flex items-center justify-between">
+                                                <div>
+                                                    <div class="text-xs font-bold text-slate-400 uppercase tracking-widest">Email Card Preview</div>
+                                                    <div class="text-sm font-bold text-slate-900 mt-0.5">${card.variant}</div>
+                                                    <div class="text-xs text-purple-700 font-medium mt-0.5">Subject: ${card.subject.replace('{{name}}', '[Name]')}</div>
+                                                </div>
+                                            </div>
+                                            <iframe id="wishesPreviewFrame" class="w-full border-0" style="height:420px;" sandbox="allow-same-origin"></iframe>
+                                        </div>`;
+                                    const frame = document.getElementById('wishesPreviewFrame');
+                                    if (frame) { frame.srcdoc = card.htmlBody.replace(/\{\{name\}\}/g, 'Valued Client'); }
+                                }
+                                if (clientSection) clientSection.classList.remove('hidden');
+                                setStep(3);
+                                updateCount();
+                            });
+                        });
+                    }
+
+                    // Switch to step 2
+                    if (step1El) step1El.classList.add('hidden');
+                    if (step2El) step2El.classList.remove('hidden');
+                    if (backWrap) backWrap.classList.remove('hidden');
+                    setStep(2);
+                });
+            });
+
+            // Back button
+            backBtn?.addEventListener('click', () => {
+                if (step2El) step2El.classList.add('hidden');
+                if (step1El) step1El.classList.remove('hidden');
+                if (backWrap) backWrap.classList.add('hidden');
+                if (clientSection) clientSection.classList.add('hidden');
+                activeCard = null;
+                setStep(1);
+            });
+
+            // Checkboxes
+            document.querySelectorAll('.wishes-client-check').forEach(cb => cb.addEventListener('change', updateCount));
+
+            selectAllBtn?.addEventListener('click', () => {
+                const all = document.querySelectorAll('.wishes-client-check');
+                const anyUnchecked = [...all].some(cb => !cb.checked);
+                all.forEach(cb => { cb.checked = anyUnchecked; });
+                updateCount();
+            });
+
+            sendBtn?.addEventListener('click', () => {
+                if (!activeCard) return;
+                const checked = [...document.querySelectorAll('.wishes-client-check:checked')];
+                const emails = checked.map(cb => cb.dataset.email).filter(Boolean).join(',');
+                if (!emails) { alert('Please select contacts with email addresses.'); return; }
+                const url = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(emails)}&cc=send%40gmass.co&su=${encodeURIComponent(activeCard.subject)}&body=${encodeURIComponent('Please use the HTML version of this email — the full card template was copied to clipboard.')}`;
+                try { navigator.clipboard.writeText(activeCard.htmlBody); } catch (_) { }
+                window.open(url, '_blank');
+            });
+        }
+
+
+        if (this.currentSection === 'campaigns' && this.currentSubSection === 'reengagement') {
+            const rawJson = document.getElementById('reengSegData')?.textContent || '[]';
+            let segments = [];
+            try { segments = JSON.parse(rawJson); } catch (e) { }
+
+            let activeSeg = null;
+
+            const panelWrap = document.getElementById('reengPanelWrap');
+            const contactSect = document.getElementById('reengContactSection');
+            const selCountEl = document.getElementById('reengSelCount');
+            const sendBtn = document.getElementById('reengSendGmass');
+            const selectAllBtn = document.getElementById('reengSelectAll');
+
+            const updateCount = () => {
+                const n = document.querySelectorAll('.reeng-contact-check:checked').length;
+                if (selCountEl) selCountEl.textContent = n;
+                if (sendBtn) sendBtn.disabled = (n === 0 || !activeSeg);
+            };
+
+            document.querySelectorAll('.reeng-seg-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    activeSeg = segments.find(s => s.id === btn.dataset.segId);
+                    if (!activeSeg || !panelWrap) return;
+                    // Mark active
+                    document.querySelectorAll('.reeng-seg-btn').forEach(b => { b.classList.remove('border-purple-400'); });
+                    btn.classList.add('border-purple-400');
+                    // Render preview
+                    panelWrap.innerHTML = `
+                        <div class="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
+                            <div class="px-5 py-4 bg-gradient-to-r from-slate-50 to-purple-50 border-b border-slate-100 flex items-center gap-3">
+                                <div class="w-8 h-8 rounded-lg bg-purple-100 flex items-center justify-center">
+                                    <svg class="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                                </div>
+                                <div>
+                                    <div class="text-xs font-bold text-slate-400 uppercase tracking-widest">Re-engagement: ${activeSeg.title}</div>
+                                    <div class="text-xs text-purple-700 font-semibold mt-1">Subject: ${activeSeg.subject}</div>
+                                </div>
+                            </div>
+                            <div class="p-5">
+                                <div class="text-xs text-slate-500 mb-2 italic">${activeSeg.preview}</div>
+                                <div class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2 mt-3">Full Email Body</div>
+                                <pre class="text-sm text-slate-700 leading-relaxed whitespace-pre-wrap font-sans bg-slate-50 rounded-xl p-4 border border-slate-100">${activeSeg.body}</pre>
+                                <div class="mt-3 text-xs text-slate-400 italic">{{name}} is replaced with each recipient's name before sending.</div>
+                            </div>
+                        </div>`;
+                    if (contactSect) contactSect.classList.remove('hidden');
+                    updateCount();
+                });
+            });
+
+            document.querySelectorAll('.reeng-contact-check').forEach(cb => {
+                cb.addEventListener('change', updateCount);
+            });
+
+            selectAllBtn?.addEventListener('click', () => {
+                const all = [...document.querySelectorAll('.reeng-contact-check')];
+                const anyUnchecked = all.some(cb => !cb.checked);
+                all.forEach(cb => { cb.checked = anyUnchecked; });
+                updateCount();
+            });
+
+            sendBtn?.addEventListener('click', () => {
+                if (!activeSeg) return;
+                const checked = [...document.querySelectorAll('.reeng-contact-check:checked')];
+                const emails = checked.map(cb => cb.dataset.email).filter(Boolean).join(',');
+                if (!emails) { alert('Please select contacts with email addresses.'); return; }
+                const url = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(emails)}&cc=send%40gmass.co&su=${encodeURIComponent(activeSeg.subject)}&body=${encodeURIComponent(activeSeg.body)}`;
+                window.open(url, '_blank');
+            });
         }
 
         if (this.currentSection === 'reports' && this.currentSubSection === 'revenue') {
@@ -5710,7 +5923,7 @@ class MarketFlowCRM {
     }
 
     getStoredRfpDraft() {
-        const stored = this.readStore('bezent_rfp_draft', null);
+        const stored = this.readStore('APJ 3D Solutions_rfp_draft', null);
         if (!stored || typeof stored !== 'object') return null;
         return stored;
     }
@@ -5718,7 +5931,7 @@ class MarketFlowCRM {
     saveRfpDraft() {
         try {
             if (!this._rfpDraft) return;
-            this.writeStore('bezent_rfp_draft', this._rfpDraft);
+            this.writeStore('APJ 3D Solutions_rfp_draft', this._rfpDraft);
         } catch (e) {
         }
     }
@@ -5847,7 +6060,7 @@ class MarketFlowCRM {
 
                 <!-- Cover text content -->
                 <div class="cover-content">
-                    <div class="cover-title">APJ 3D Solutions<br/>Pvt Ltd</div>
+                    <div class="cover-title">BEZENT<br/>Pvt Ltd</div>
                     <div class="cover-divider"></div>
                     <div class="cover-subtitle">REQUEST FOR PROPOSAL</div>
                 </div>
@@ -6228,7 +6441,7 @@ class MarketFlowCRM {
     }
 
     getStoredQuoteDraft() {
-        const stored = this.readStore('bezent_quote_draft', null);
+        const stored = this.readStore('APJ 3D Solutions_quote_draft', null);
         if (!stored || typeof stored !== 'object') return null;
         return stored;
     }
@@ -6236,7 +6449,7 @@ class MarketFlowCRM {
     saveQuoteDraft() {
         try {
             if (!this._quoteDraft) return;
-            this.writeStore('bezent_quote_draft', this._quoteDraft);
+            this.writeStore('APJ 3D Solutions_quote_draft', this._quoteDraft);
         } catch (e) {
         }
     }
@@ -7983,6 +8196,12 @@ class MarketFlowCRM {
             case 'email':
                 container.innerHTML = this.getEmailCampaigns();
                 break;
+            case 'contacts_directory':
+                container.innerHTML = this.getEmailCampaignContacts();
+                break;
+            case 'alert_gmass':
+                container.innerHTML = this.getEmailCampaignAlerts();
+                break;
             case 'sms':
                 container.innerHTML = this.getSmsWhatsappCampaigns();
                 break;
@@ -7998,213 +8217,1464 @@ class MarketFlowCRM {
     }
 
     getEmailCampaigns() {
-        const defaults = [
-            { name: 'CRM Upgrade', audience: 45, open: 31, click: 8, status: 'Sent', statusColor: 'emerald' },
-            { name: 'Quarterly Offer', audience: 126, open: 28, click: 7, status: 'Scheduled', statusColor: 'amber' },
-            { name: 'New Service Launch', audience: 78, open: 24, click: 6, status: 'Draft', statusColor: 'slate' }
+        const esc = v => String(v ?? '').replace(/</g, '&lt;');
+        const now = Date.now();
+
+        // ── Live data ──────────────────────────────────────────────────────
+        const clients = this.getClientsData();
+        const leads = this.getLeadsData();
+        const allContacts = [...clients.map(c => ({ ...c, _type: 'Client' })),
+        ...leads.map(l => ({ ...l, _type: 'Lead' }))];
+
+        const totalContacts = allContacts.length;
+        const totalClients = clients.length;
+        const totalLeads = leads.length;
+        const withEmail = clients.filter(c => c.email && c.email.includes('@')).length;
+        const withoutEmail = totalContacts - withEmail;
+        const overdueClients = clients.filter(c => c.dueAmount && c.dueAmount !== '₹0' && c.dueAmount !== '—').length;
+
+        // ── Stored projects merged with fallback ────────────────────────────
+        const fallbackProjects = [
+            { name: 'SEO Revamp', client: 'TechNova Solutions', monitoring: { overallProjectStatus: 'Active' }, payment: { overdueStatus: '30 Days Due', balancePaymentAmount: '42000' } },
+            { name: 'CRM Upgrade', client: 'GreenLeaf Industries', monitoring: { overallProjectStatus: 'Pending / Delayed' }, payment: { overdueStatus: '60 Days Overdue', balancePaymentAmount: '58000' } },
+            { name: 'Re-engagement Funnel', client: 'EduSpark', monitoring: { overallProjectStatus: 'Completed' }, payment: { overdueStatus: 'Paid' } }
         ];
-        const campaigns = [...this.getStoredCampaigns(), ...defaults];
+        const storedProjects = this.getStoredProjects ? this.getStoredProjects() : [];
+        const seenPj = new Set();
+        const projects = [];
+        [...storedProjects, ...fallbackProjects].forEach(p => {
+            const key = String(p.identification?.projectName || p.name || '').trim().toLowerCase();
+            if (!key || seenPj.has(key)) return;
+            seenPj.add(key);
+            projects.push({
+                name: p.identification?.projectName || p.name || '—',
+                client: p.identification?.clientName || p.client || '—',
+                status: p.monitoring?.overallProjectStatus || '—',
+                overdue: p.payment?.overdueStatus || '',
+                balance: p.payment?.balancePaymentAmount || ''
+            });
+        });
+
+        // ── Trigger counts ─────────────────────────────────────────────────
+        const trigPayment = projects.filter(p => p.overdue && p.overdue !== 'Paid' && p.balance).length
+            + overdueClients;
+        const trigDelayed = projects.filter(p => p.status === 'Pending / Delayed').length;
+        const trigCompleted = projects.filter(p => p.status === 'Completed').length;
+        const trigFollowup = leads.filter(l => ['Follow-up', 'Quotation', 'Negotiation'].includes(l.stage)).length;
+        const totalTriggers = trigPayment + trigDelayed + trigCompleted + trigFollowup;
+
+        // ── Top 5 recent clients (for quick-list) ──────────────────────────
+        const recentClients = clients.slice(0, 5);
+
+        // ── Overdue projects for alert preview ─────────────────────────────
+        const alertProjects = projects.filter(p => p.overdue && p.overdue !== 'Paid').slice(0, 3);
 
         return `
             <div class="space-y-6 fade-in">
+
+                <!-- Header -->
                 <div class="flex items-center justify-between">
                     <div>
-                        <h2 class="text-2xl font-semibold text-slate-900">Email Campaigns</h2>
-                        <p class="text-sm text-slate-500">Open & click rates with performance trends</p>
+                        <h2 class="text-2xl font-bold text-slate-900">Campaign Hub</h2>
+                        <p class="text-sm text-slate-500 mt-0.5">Live overview of your contacts &amp; alert triggers</p>
                     </div>
-                    <button data-action="campaign:create" class="px-4 py-2 text-sm font-medium bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">+ New Campaign</button>
+                    <div class="flex items-center gap-2">
+                        <button id="emailCampOpenContacts" class="px-4 py-2 text-sm font-medium bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 transition-colors flex items-center gap-1.5">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                            Contacts
+                        </button>
+                        <button id="emailCampOpenAlerts" class="px-4 py-2 text-sm font-medium bg-amber-50 text-amber-700 rounded-lg hover:bg-amber-100 transition-colors flex items-center gap-1.5">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+                            Alerts &amp; GMass
+                        </button>
+                        <button data-action="campaign:create" class="px-4 py-2 text-sm font-semibold bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors shadow-sm">+ New Campaign</button>
+                    </div>
                 </div>
 
-                <div class="grid grid-cols-3 gap-6">
-                    ${campaigns.map(c => `
-                        <div class="bg-white rounded-lg border border-slate-200 p-6 shadow-lg">
-                            <div class="flex items-start justify-between">
+                <!-- Two big CTA cards -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+
+                    <!-- Contacts card -->
+                    <div class="relative overflow-hidden bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl p-6 shadow-xl cursor-pointer group" id="emailCampCardContacts">
+                        <div class="absolute inset-0 opacity-10 pointer-events-none" style="background: radial-gradient(circle at 80% 20%, #a78bfa 0%, transparent 60%)"></div>
+                        <div class="flex items-start justify-between">
+                            <div>
+                                <div class="flex items-center gap-2 mb-3">
+                                    <div class="w-9 h-9 rounded-xl bg-white/10 flex items-center justify-center">
+                                        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                                    </div>
+                                    <span class="text-xs font-semibold text-slate-400 uppercase tracking-widest">Contacts Directory</span>
+                                </div>
+                                <div class="text-5xl font-extrabold text-white">${totalContacts}</div>
+                                <div class="text-sm text-slate-400 mt-1">Total contacts in CRM</div>
+                            </div>
+                            <div class="flex flex-col gap-2 text-right">
                                 <div>
-                                    <div class="text-lg font-semibold text-slate-900">${c.name}</div>
-                                    <div class="text-xs text-slate-500 mt-1">Audience: ${c.audience}</div>
+                                    <div class="text-xs text-slate-400">Clients</div>
+                                    <div class="text-xl font-bold text-emerald-400">${totalClients}</div>
                                 </div>
-                                <span class="px-2 py-1 text-xs font-medium bg-${c.statusColor}-50 text-${c.statusColor}-700 rounded-full">${c.status}</span>
-                            </div>
-                            <div class="mt-4 grid grid-cols-2 gap-3">
-                                <div class="p-3 bg-slate-50 rounded-lg">
-                                    <div class="text-xs text-slate-500">Open Rate</div>
-                                    <div class="text-lg font-semibold text-slate-900">${c.open}%</div>
+                                <div>
+                                    <div class="text-xs text-slate-400">Leads</div>
+                                    <div class="text-xl font-bold text-indigo-400">${totalLeads}</div>
                                 </div>
-                                <div class="p-3 bg-slate-50 rounded-lg">
-                                    <div class="text-xs text-slate-500">Click Rate</div>
-                                    <div class="text-lg font-semibold text-slate-900">${c.click}%</div>
-                                </div>
-                            </div>
-                            <div class="mt-4 grid grid-cols-3 gap-2">
-                                <button data-action="campaign:preview" data-campaign-name="${c.name}" class="flex-1 px-3 py-2 text-sm font-medium bg-purple-50 text-purple-700 rounded-lg hover:bg-purple-100 transition-colors">Preview</button>
-                                ${c.status === 'Sent' ? `
-                                    <button data-action="campaign:duplicate" data-campaign-name="${c.name}" class="flex-1 px-3 py-2 text-sm font-medium bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">Duplicate</button>
-                                ` : c.status === 'Scheduled' ? `
-                                    <button data-action="campaign:schedule" data-campaign-name="${c.name}" class="flex-1 px-3 py-2 text-sm font-medium bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">Reschedule</button>
-                                ` : `
-                                    <button data-action="campaign:send" data-campaign-name="${c.name}" class="flex-1 px-3 py-2 text-sm font-medium bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">Send</button>
-                                `}
-                            </div>
-
-                            <div class="mt-2 flex gap-2">
-                                <button data-action="campaign:schedule" data-campaign-name="${c.name}" class="flex-1 px-3 py-2 text-xs font-medium bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 transition-colors">Schedule</button>
-                                <button data-action="campaign:delete" data-campaign-name="${c.name}" class="flex-1 px-3 py-2 text-xs font-medium bg-rose-50 text-rose-700 rounded-lg hover:bg-rose-100 transition-colors">Delete</button>
                             </div>
                         </div>
-                    `).join('')}
+                        <div class="mt-5 grid grid-cols-2 gap-3">
+                            <div class="bg-white/8 rounded-xl p-3">
+                                <div class="text-xs text-slate-400">With Email</div>
+                                <div class="text-lg font-bold text-white mt-0.5">${withEmail}</div>
+                                <div class="mt-1.5 h-1.5 bg-white/10 rounded-full overflow-hidden">
+                                    <div class="h-full bg-emerald-400 rounded-full transition-all" style="width:${totalContacts ? Math.round(withEmail / totalContacts * 100) : 0}%"></div>
+                                </div>
+                            </div>
+                            <div class="bg-white/8 rounded-xl p-3">
+                                <div class="text-xs text-slate-400">Missing Email</div>
+                                <div class="text-lg font-bold text-rose-400 mt-0.5">${withoutEmail}</div>
+                                <div class="mt-1.5 h-1.5 bg-white/10 rounded-full overflow-hidden">
+                                    <div class="h-full bg-rose-400 rounded-full transition-all" style="width:${totalContacts ? Math.round(withoutEmail / totalContacts * 100) : 0}%"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mt-4 flex items-center justify-between">
+                            <div class="text-xs text-slate-400">${overdueClients} client(s) with outstanding balances</div>
+                            <div class="flex items-center gap-1 text-xs font-semibold text-purple-300 group-hover:text-purple-200 transition-colors">
+                                Open Directory
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Alerts & GMass card -->
+                    <div class="relative overflow-hidden bg-gradient-to-br from-amber-600 to-orange-700 rounded-2xl p-6 shadow-xl cursor-pointer group" id="emailCampCardAlerts">
+                        <div class="absolute inset-0 opacity-10 pointer-events-none" style="background: radial-gradient(circle at 80% 20%, #fde68a 0%, transparent 60%)"></div>
+                        <div class="flex items-start justify-between">
+                            <div>
+                                <div class="flex items-center gap-2 mb-3">
+                                    <div class="w-9 h-9 rounded-xl bg-white/10 flex items-center justify-center">
+                                        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+                                    </div>
+                                    <span class="text-xs font-semibold text-amber-200 uppercase tracking-widest">Alerts &amp; GMass</span>
+                                </div>
+                                <div class="text-5xl font-extrabold text-white">${totalTriggers}</div>
+                                <div class="text-sm text-amber-200 mt-1">Active trigger alerts</div>
+                            </div>
+                            <div class="flex flex-col gap-2 text-right">
+                                <div>
+                                    <div class="text-xs text-amber-200">Overdue Pay</div>
+                                    <div class="text-xl font-bold text-white">${trigPayment}</div>
+                                </div>
+                                <div>
+                                    <div class="text-xs text-amber-200">Delayed Proj</div>
+                                    <div class="text-xl font-bold text-white">${trigDelayed}</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mt-5 grid grid-cols-2 gap-3">
+                            <div class="bg-white/10 rounded-xl p-3">
+                                <div class="text-xs text-amber-200">Completed Projects</div>
+                                <div class="text-lg font-bold text-white mt-0.5">${trigCompleted} <span class="text-xs font-normal text-amber-200">need follow-up</span></div>
+                            </div>
+                            <div class="bg-white/10 rounded-xl p-3">
+                                <div class="text-xs text-amber-200">Lead Follow-ups</div>
+                                <div class="text-lg font-bold text-white mt-0.5">${trigFollowup} <span class="text-xs font-normal text-amber-200">pending</span></div>
+                            </div>
+                        </div>
+                        <div class="mt-4 flex items-center justify-between">
+                            <div class="text-xs text-amber-200">Auto-emails ready to send via GMass</div>
+                            <div class="flex items-center gap-1 text-xs font-semibold text-white/80 group-hover:text-white transition-colors">
+                                Open Alerts
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="bg-white rounded-lg border border-slate-200 p-6 shadow-lg">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <h3 class="text-lg font-semibold text-slate-900">Performance (Last 4 Weeks)</h3>
-                            <p class="text-sm text-slate-500">Open rate and click rate trend</p>
-                        </div>
-                        <button data-action="toast" class="px-3 py-2 text-sm font-medium bg-purple-50 text-purple-700 rounded-lg hover:bg-purple-100 transition-colors">Export</button>
+                <!-- Stats row -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div class="bg-white rounded-xl border border-slate-200 p-4 shadow-sm">
+                        <div class="text-xs font-semibold text-slate-500 uppercase tracking-wide">Total Contacts</div>
+                        <div class="text-3xl font-extrabold text-slate-900 mt-2">${totalContacts}</div>
+                        <div class="text-xs text-slate-400 mt-1">${totalClients} clients · ${totalLeads} leads</div>
                     </div>
-                    <div class="mt-4 h-72 bg-slate-50 rounded-lg p-3">
-                        <canvas id="campaignChart"></canvas>
+                    <div class="bg-white rounded-xl border border-emerald-200 p-4 shadow-sm">
+                        <div class="text-xs font-semibold text-emerald-600 uppercase tracking-wide">Email-Ready</div>
+                        <div class="text-3xl font-extrabold text-slate-900 mt-2">${withEmail}</div>
+                        <div class="text-xs text-slate-400 mt-1">${totalContacts ? Math.round(withEmail / totalContacts * 100) : 0}% of all contacts</div>
+                    </div>
+                    <div class="bg-white rounded-xl border border-rose-200 p-4 shadow-sm">
+                        <div class="text-xs font-semibold text-rose-600 uppercase tracking-wide">Payment Alerts</div>
+                        <div class="text-3xl font-extrabold text-slate-900 mt-2">${trigPayment}</div>
+                        <div class="text-xs text-slate-400 mt-1">overdue / outstanding</div>
+                    </div>
+                    <div class="bg-white rounded-xl border border-amber-200 p-4 shadow-sm">
+                        <div class="text-xs font-semibold text-amber-600 uppercase tracking-wide">Active Triggers</div>
+                        <div class="text-3xl font-extrabold text-slate-900 mt-2">${totalTriggers}</div>
+                        <div class="text-xs text-slate-400 mt-1">auto-emails queued</div>
+                    </div>
+                </div>
+
+                <!-- Bottom split: contacts list + trigger breakdown -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+
+                    <!-- Recent contacts -->
+                    <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                        <div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
+                            <div>
+                                <div class="text-sm font-bold text-slate-900">Recent Clients</div>
+                                <div class="text-xs text-slate-400 mt-0.5">Latest ${recentClients.length} in directory</div>
+                            </div>
+                            <button id="emailCampOpenContacts2" class="text-xs font-semibold text-purple-600 hover:text-purple-700 transition-colors">View All →</button>
+                        </div>
+                        <div class="divide-y divide-slate-50">
+                            ${recentClients.map(c => `
+                                <div class="flex items-center gap-3 px-5 py-3">
+                                    <div class="w-8 h-8 rounded-full bg-purple-100 text-purple-700 font-bold text-sm flex items-center justify-center flex-shrink-0">
+                                        ${esc(String(c.name || '?')[0].toUpperCase())}
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <div class="text-sm font-semibold text-slate-900 truncate">${esc(c.name)}</div>
+                                        <div class="text-xs text-slate-400 truncate">${esc(c.email || '— no email —')} · ${esc(c.city || '—')}</div>
+                                    </div>
+                                    <div class="text-right flex-shrink-0">
+                                        <span class="px-2 py-0.5 text-[10px] font-semibold rounded-full ${c.stage === 'Active' ? 'bg-emerald-50 text-emerald-700' : c.stage === 'At Risk' ? 'bg-rose-50 text-rose-700' : 'bg-amber-50 text-amber-700'}">${esc(c.stage || '—')}</span>
+                                        ${c.dueAmount && c.dueAmount !== '₹0' ? `<div class="text-[10px] text-rose-500 font-semibold mt-0.5">${esc(c.dueAmount)} due</div>` : ''}
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+
+                    <!-- Trigger breakdown -->
+                    <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                        <div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
+                            <div>
+                                <div class="text-sm font-bold text-slate-900">Trigger Breakdown</div>
+                                <div class="text-xs text-slate-400 mt-0.5">Auto-emails by category</div>
+                            </div>
+                            <button id="emailCampOpenAlerts2" class="text-xs font-semibold text-amber-600 hover:text-amber-700 transition-colors">View All →</button>
+                        </div>
+                        <div class="px-5 py-4 space-y-4">
+                            ${[
+                { label: 'Payment Overdue', count: trigPayment, color: 'rose', w: totalTriggers ? Math.round(trigPayment / totalTriggers * 100) : 0 },
+                { label: 'Project Delayed', count: trigDelayed, color: 'amber', w: totalTriggers ? Math.round(trigDelayed / totalTriggers * 100) : 0 },
+                { label: 'Completed Follow-up', count: trigCompleted, color: 'emerald', w: totalTriggers ? Math.round(trigCompleted / totalTriggers * 100) : 0 },
+                { label: 'Lead Follow-up', count: trigFollowup, color: 'indigo', w: totalTriggers ? Math.round(trigFollowup / totalTriggers * 100) : 0 }
+            ].map(t => `
+                                <div>
+                                    <div class="flex items-center justify-between mb-1.5">
+                                        <div class="text-xs font-semibold text-slate-700">${t.label}</div>
+                                        <div class="text-xs font-bold text-${t.color}-600">${t.count} alert${t.count !== 1 ? 's' : ''}</div>
+                                    </div>
+                                    <div class="h-2 bg-slate-100 rounded-full overflow-hidden">
+                                        <div class="h-full bg-${t.color}-400 rounded-full transition-all duration-500" style="width:${t.w}%"></div>
+                                    </div>
+                                </div>
+                            `).join('')}
+                            <div class="pt-2 border-t border-slate-100">
+                                ${alertProjects.length ? alertProjects.map(p => `
+                                    <div class="flex items-center justify-between py-2">
+                                        <div>
+                                            <div class="text-xs font-semibold text-slate-800">${esc(p.name)}</div>
+                                            <div class="text-[11px] text-slate-400">${esc(p.client)}</div>
+                                        </div>
+                                        <span class="px-2 py-0.5 text-[10px] font-bold bg-rose-50 text-rose-600 rounded-full">${esc(p.overdue)}</span>
+                                    </div>
+                                `).join('') : '<div class="text-xs text-slate-400 py-2">No overdue projects — great work!</div>'}
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
         `;
     }
 
-    getSmsWhatsappCampaigns() {
-        const schedule = [
-            { time: '11:00 AM', title: 'Payment reminder', channel: 'WhatsApp', color: 'emerald' },
-            { time: '2:30 PM', title: 'Greetings: Client anniversary', channel: 'SMS', color: 'amber' },
-            { time: '5:00 PM', title: 'Re-engagement ping', channel: 'WhatsApp', color: 'indigo' }
-        ];
+    getEmailCampaignContacts() {
+        const esc = (v) => String(v ?? '').replace(/</g, '&lt;').replace(/"/g, '&quot;');
+
+        // Helper: parse email into parts
+        const parseEmail = (email) => {
+            if (!email || email === '—' || !email.includes('@')) return { user: '—', domain: '—', tld: '—', full: email || '—' };
+            const [user, hostRaw] = email.split('@');
+            const parts = (hostRaw || '').split('.');
+            const tld = parts.length >= 2 ? '.' + parts.slice(-1)[0] : '—';
+            const domain = parts.length >= 2 ? parts.slice(0, -1).join('.') : hostRaw;
+            return { user: user || '—', domain: domain || '—', tld, full: email };
+        };
+
+        const clients = this.getClientsData().map(c => {
+            const ep = parseEmail(String(c.email || '').trim());
+            return {
+                type: 'Client', typeColor: 'emerald',
+                name: String(c.name || '').trim(),
+                emailFull: ep.full, emailUser: ep.user, emailDomain: ep.domain, emailTld: ep.tld,
+                phone: String(c.phone || '').trim() || '—',
+                city: String(c.city || '').trim() || '—',
+                industry: String(c.industry || '').trim() || '—',
+                owner: String(c.owner || '').trim() || '—',
+                stage: String(c.stage || 'Active').trim(),
+                source: String(c.leadSource || '').trim() || '—',
+                vendorCode: String(c.vendorCode || '').trim() || '—',
+                dueAmount: String(c.dueAmount || '₹0').trim()
+            };
+        }).filter(x => x.name);
+
+        const leads = this.getLeadsData().map(l => ({
+            type: 'Lead', typeColor: 'indigo',
+            name: String(l.company || '').trim(),
+            emailFull: '—', emailUser: '—', emailDomain: '—', emailTld: '—',
+            phone: String(l.contact || '').trim() || '—',
+            city: '—', industry: '—',
+            owner: String(l.assignedTo || '').trim() || '—',
+            stage: String(l.stage || 'New Lead').trim(),
+            source: String(l.source || '').trim() || '—',
+            vendorCode: '—', dueAmount: '—'
+        })).filter(x => x.name);
+
+        const all = [...clients, ...leads];
+        all.sort((a, b) => String(a.name).localeCompare(String(b.name)));
+
+        const uniq = (arr) => [...new Set(arr.filter(Boolean).map(v => String(v)))].sort();
+        const allTypes = ['All', 'Client', 'Lead'];
+        const allOwners = ['All', ...uniq(all.map(r => r.owner !== '—' ? r.owner : null))];
+        const allSources = ['All', ...uniq(all.map(r => r.source !== '—' ? r.source : null))];
+        const allStages = ['All', ...uniq(all.map(r => r.stage))];
+        const allIndustries = ['All', ...uniq(all.map(r => r.industry !== '—' ? r.industry : null))];
+        const allCities = ['All', ...uniq(all.map(r => r.city !== '—' ? r.city : null))];
+        const allDomains = ['All', ...uniq(clients.map(r => r.emailDomain !== '—' ? r.emailDomain : null))];
+        const allTlds = ['All', ...uniq(clients.map(r => r.emailTld !== '—' ? r.emailTld : null))];
+
+        const fi = (id, ph) => `<input id="${id}" type="text" placeholder="${ph}" class="w-full mt-1 px-2 py-1 text-xs border border-slate-200 rounded-md focus:outline-none focus:ring-1 focus:ring-purple-400 bg-white" />`;
+        const fs = (id, opts) => `<select id="${id}" class="w-full mt-1 px-2 py-1 text-xs border border-slate-200 rounded-md focus:outline-none focus:ring-1 focus:ring-purple-400 bg-white">${opts.map(v => `<option>${esc(v)}</option>`).join('')}</select>`;
 
         return `
-            <div class="space-y-6 fade-in">
+            <div class="space-y-4 fade-in">
+
+                <!-- Header -->
                 <div class="flex items-center justify-between">
                     <div>
-                        <h2 class="text-2xl font-semibold text-slate-900">SMS / WhatsApp</h2>
-                        <p class="text-sm text-slate-500">Scheduled messages timeline + segments</p>
+                        <h2 class="text-2xl font-semibold text-slate-900">Contacts Directory</h2>
+                        <p class="text-sm text-slate-500" id="cdCount">${all.length} contacts — Clients &amp; Leads</p>
                     </div>
-                    <button data-action="toast" class="px-4 py-2 text-sm font-medium bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">Schedule Message</button>
+                    <div class="flex gap-2">
+                        <button id="cdClearFilters" class="px-3 py-2 text-sm font-medium bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 transition-colors">Clear Filters</button>
+                        <button id="cdExportCsv"   class="px-3 py-2 text-sm font-medium bg-emerald-50 text-emerald-700 rounded-lg hover:bg-emerald-100 transition-colors">Export CSV</button>
+                        <button id="cdSelectAll"   class="px-3 py-2 text-sm font-medium bg-purple-50 text-purple-700 rounded-lg hover:bg-purple-100 transition-colors">Select All</button>
+                        <button id="cdAddToGmass"  class="px-3 py-2 text-sm font-medium bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">Add to GMass</button>
+                    </div>
                 </div>
 
-                <div class="grid grid-cols-3 gap-6">
-                    <div class="col-span-2 bg-white rounded-lg border border-slate-200 p-6 shadow-lg">
-                        <h3 class="text-lg font-semibold text-slate-900">Today’s Schedule</h3>
-                        <div class="mt-4 space-y-3">
-                            ${schedule.map(s => `
-                                <div class="flex items-center justify-between p-4 bg-slate-50 rounded-lg">
-                                    <div class="flex items-center gap-3">
-                                        <div class="w-10 h-10 rounded-lg bg-${s.color}-50 flex items-center justify-center">
-                                            <i data-lucide="message-square" class="w-5 h-5 text-${s.color}-700"></i>
-                                        </div>
-                                        <div>
-                                            <div class="text-sm font-medium text-slate-900">${s.title}</div>
-                                            <div class="text-xs text-slate-500">${s.channel}</div>
-                                        </div>
+                <!-- Table with inline column filters -->
+                <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm border-collapse">
+                            <thead class="bg-slate-50 border-b-2 border-slate-200 sticky top-0 z-10">
+                                <!-- Column labels row -->
+                                <tr>
+                                    <th class="px-3 py-2 text-left w-8">
+                                        <input type="checkbox" id="cdCheckAll" class="rounded border-slate-300" />
+                                    </th>
+                                    <th class="px-3 py-2 text-left text-[10px] font-bold text-slate-600 uppercase tracking-wider whitespace-nowrap">Type</th>
+                                    <th class="px-3 py-2 text-left text-[10px] font-bold text-slate-600 uppercase tracking-wider whitespace-nowrap">Name</th>
+                                    <th class="px-3 py-2 text-left text-[10px] font-bold text-slate-600 uppercase tracking-wider whitespace-nowrap">Email User</th>
+                                    <th class="px-3 py-2 text-left text-[10px] font-bold text-slate-600 uppercase tracking-wider whitespace-nowrap">Domain</th>
+                                    <th class="px-3 py-2 text-left text-[10px] font-bold text-slate-600 uppercase tracking-wider whitespace-nowrap">TLD</th>
+                                    <th class="px-3 py-2 text-left text-[10px] font-bold text-slate-600 uppercase tracking-wider whitespace-nowrap">Phone</th>
+                                    <th class="px-3 py-2 text-left text-[10px] font-bold text-slate-600 uppercase tracking-wider whitespace-nowrap">City</th>
+                                    <th class="px-3 py-2 text-left text-[10px] font-bold text-slate-600 uppercase tracking-wider whitespace-nowrap">Industry</th>
+                                    <th class="px-3 py-2 text-left text-[10px] font-bold text-slate-600 uppercase tracking-wider whitespace-nowrap">Owner</th>
+                                    <th class="px-3 py-2 text-left text-[10px] font-bold text-slate-600 uppercase tracking-wider whitespace-nowrap">Stage</th>
+                                    <th class="px-3 py-2 text-left text-[10px] font-bold text-slate-600 uppercase tracking-wider whitespace-nowrap">Source</th>
+                                    <th class="px-3 py-2 text-left text-[10px] font-bold text-slate-600 uppercase tracking-wider whitespace-nowrap">Vendor</th>
+                                    <th class="px-3 py-2 text-left text-[10px] font-bold text-slate-600 uppercase tracking-wider whitespace-nowrap">Due Amt</th>
+                                </tr>
+                                <!-- Inline filter row -->
+                                <tr class="bg-slate-100 border-b border-slate-200">
+                                    <td class="px-3 py-1.5"></td>
+                                    <td class="px-2 py-1.5">${fs('cdFilterType', allTypes)}</td>
+                                    <td class="px-2 py-1.5">${fi('cdFilterName', 'Search…')}</td>
+                                    <td class="px-2 py-1.5">${fi('cdFilterEmailUser', 'user…')}</td>
+                                    <td class="px-2 py-1.5">${fs('cdFilterDomain', allDomains)}</td>
+                                    <td class="px-2 py-1.5">${fs('cdFilterTld', allTlds)}</td>
+                                    <td class="px-2 py-1.5">${fi('cdFilterPhone', 'phone…')}</td>
+                                    <td class="px-2 py-1.5">${fs('cdFilterCity', allCities)}</td>
+                                    <td class="px-2 py-1.5">${fs('cdFilterIndustry', allIndustries)}</td>
+                                    <td class="px-2 py-1.5">${fs('cdFilterOwner', allOwners)}</td>
+                                    <td class="px-2 py-1.5">${fs('cdFilterStage', allStages)}</td>
+                                    <td class="px-2 py-1.5">${fs('cdFilterSource', allSources)}</td>
+                                    <td class="px-2 py-1.5"></td>
+                                    <td class="px-2 py-1.5"></td>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-100" id="cdTableBody">
+                                ${all.map(r => `
+                                    <tr data-cd-row="1"
+                                        data-name="${esc(r.name.toLowerCase())}"
+                                        data-emailuser="${esc(r.emailUser.toLowerCase())}"
+                                        data-domain="${esc(r.emailDomain.toLowerCase())}"
+                                        data-tld="${esc(r.emailTld.toLowerCase())}"
+                                        data-phone="${esc(r.phone.toLowerCase())}"
+                                        data-type="${esc(r.type.toLowerCase())}"
+                                        data-owner="${esc(r.owner.toLowerCase())}"
+                                        data-source="${esc(r.source.toLowerCase())}"
+                                        data-stage="${esc(r.stage.toLowerCase())}"
+                                        data-industry="${esc(r.industry.toLowerCase())}"
+                                        data-city="${esc(r.city.toLowerCase())}"
+                                        class="hover:bg-purple-50/30 transition-colors">
+                                        <td class="px-3 py-2.5">
+                                            <input type="checkbox" class="cd-row-check rounded border-slate-300"
+                                                data-contact-name="${esc(r.name)}"
+                                                data-contact-email="${esc(r.emailFull)}" />
+                                        </td>
+                                        <td class="px-3 py-2.5">
+                                            <span class="px-2 py-0.5 text-[10px] font-bold bg-${r.typeColor}-50 text-${r.typeColor}-700 rounded-full">${esc(r.type)}</span>
+                                        </td>
+                                        <td class="px-3 py-2.5 font-semibold text-slate-900 whitespace-nowrap">${esc(r.name)}</td>
+                                        <td class="px-3 py-2.5 text-slate-600 font-mono text-xs">${r.emailUser !== '—' ? esc(r.emailUser) : '<span class="text-slate-300">—</span>'}</td>
+                                        <td class="px-3 py-2.5 text-indigo-600 font-mono text-xs font-medium">${r.emailDomain !== '—' ? esc(r.emailDomain) : '<span class="text-slate-300">—</span>'}</td>
+                                        <td class="px-3 py-2.5 text-slate-500 font-mono text-xs">${r.emailTld !== '—' ? esc(r.emailTld) : '<span class="text-slate-300">—</span>'}</td>
+                                        <td class="px-3 py-2.5 text-slate-600 whitespace-nowrap">${esc(r.phone)}</td>
+                                        <td class="px-3 py-2.5 text-slate-600">${esc(r.city)}</td>
+                                        <td class="px-3 py-2.5 text-slate-600">${esc(r.industry)}</td>
+                                        <td class="px-3 py-2.5 text-slate-600">${esc(r.owner)}</td>
+                                        <td class="px-3 py-2.5">
+                                            <span class="px-2 py-0.5 text-[10px] font-semibold rounded-full
+                                                ${r.stage === 'Active' ? 'bg-emerald-50 text-emerald-700' :
+                r.stage === 'At Risk' ? 'bg-rose-50 text-rose-700' :
+                    r.stage === 'Completed' ? 'bg-blue-50 text-blue-700' :
+                        'bg-amber-50 text-amber-700'}">
+                                                ${esc(r.stage)}
+                                            </span>
+                                        </td>
+                                        <td class="px-3 py-2.5 text-slate-600 whitespace-nowrap">${esc(r.source)}</td>
+                                        <td class="px-3 py-2.5 text-slate-500 font-mono text-xs">${esc(r.vendorCode)}</td>
+                                        <td class="px-3 py-2.5 font-semibold whitespace-nowrap
+                                            ${r.dueAmount !== '—' && r.dueAmount !== '₹0' ? 'text-rose-600' : 'text-slate-400'}">
+                                            ${esc(r.dueAmount)}
+                                        </td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Selection floating bar -->
+                <div id="cdSelectionBar" class="hidden fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-slate-900 text-white rounded-2xl shadow-2xl px-6 py-3 flex items-center gap-4">
+                    <span id="cdSelCount" class="text-sm font-semibold">0 selected</span>
+                    <button id="cdSendToGmass" class="px-4 py-2 text-sm font-semibold bg-purple-500 text-white rounded-lg hover:bg-purple-400 transition-colors">Send to GMass</button>
+                    <button id="cdCopyEmails"  class="px-4 py-2 text-sm font-semibold bg-slate-700 text-white rounded-lg hover:bg-slate-600 transition-colors">Copy Emails</button>
+                    <button id="cdClearSel"    class="text-xs text-slate-400 hover:text-white transition-colors">Clear</button>
+                </div>
+            </div>
+        `;
+    }
+
+    setupCampaignContactsInteractions() {
+        const g = id => document.getElementById(id);
+        const nameEl = g('cdFilterName');
+        const userEl = g('cdFilterEmailUser');
+        const domainEl = g('cdFilterDomain');
+        const tldEl = g('cdFilterTld');
+        const phoneEl = g('cdFilterPhone');
+        const typeEl = g('cdFilterType');
+        const ownerEl = g('cdFilterOwner');
+        const sourceEl = g('cdFilterSource');
+        const stageEl = g('cdFilterStage');
+        const industryEl = g('cdFilterIndustry');
+        const cityEl = g('cdFilterCity');
+        const countEl = g('cdCount');
+        const checkAll = g('cdCheckAll');
+        const selBar = g('cdSelectionBar');
+        const selCount = g('cdSelCount');
+
+        const rows = () => Array.from(document.querySelectorAll('tr[data-cd-row="1"]'));
+        const getChecked = () => Array.from(document.querySelectorAll('.cd-row-check:checked'));
+
+        const updateSelBar = () => {
+            const n = getChecked().length;
+            if (n > 0) {
+                selBar?.classList.remove('hidden');
+                if (selBar) selBar.style.display = 'flex';
+                if (selCount) selCount.textContent = `${n} selected`;
+            } else {
+                selBar?.classList.add('hidden');
+                if (selBar) selBar.style.display = 'none';
+            }
+        };
+
+        const applyFilters = () => {
+            const nQ = (nameEl?.value || '').trim().toLowerCase();
+            const uQ = (userEl?.value || '').trim().toLowerCase();
+            const dQ = (domainEl?.value || 'All').toLowerCase();
+            const tQ = (tldEl?.value || 'All').toLowerCase();
+            const pQ = (phoneEl?.value || '').trim().toLowerCase();
+            const tyQ = (typeEl?.value || 'All').toLowerCase();
+            const oQ = (ownerEl?.value || 'All').toLowerCase();
+            const sQ = (sourceEl?.value || 'All').toLowerCase();
+            const stQ = (stageEl?.value || 'All').toLowerCase();
+            const iQ = (industryEl?.value || 'All').toLowerCase();
+            const cQ = (cityEl?.value || 'All').toLowerCase();
+
+            let vis = 0;
+            rows().forEach(r => {
+                const d = r.dataset;
+                const ok =
+                    (!nQ || d.name.includes(nQ)) &&
+                    (!uQ || d.emailuser.includes(uQ)) &&
+                    (dQ === 'all' || d.domain === dQ) &&
+                    (tQ === 'all' || d.tld === tQ) &&
+                    (!pQ || d.phone.includes(pQ)) &&
+                    (tyQ === 'all' || d.type === tyQ) &&
+                    (oQ === 'all' || d.owner === oQ) &&
+                    (sQ === 'all' || d.source === sQ) &&
+                    (stQ === 'all' || d.stage === stQ) &&
+                    (iQ === 'all' || d.industry === iQ) &&
+                    (cQ === 'all' || d.city === cQ);
+                r.style.display = ok ? '' : 'none';
+                if (ok) vis++;
+            });
+            if (countEl) countEl.textContent = `Showing ${vis} of ${rows().length} contacts`;
+        };
+
+        // Text inputs
+        [nameEl, userEl, phoneEl].forEach(el => el?.addEventListener('input', applyFilters));
+        // Selects
+        [domainEl, tldEl, typeEl, ownerEl, sourceEl, stageEl, industryEl, cityEl]
+            .forEach(el => el?.addEventListener('change', applyFilters));
+
+        // Clear all filters
+        g('cdClearFilters')?.addEventListener('click', () => {
+            [nameEl, userEl, phoneEl].forEach(el => { if (el) el.value = ''; });
+            [domainEl, tldEl, typeEl, ownerEl, sourceEl, stageEl, industryEl, cityEl]
+                .forEach(el => { if (el) el.selectedIndex = 0; });
+            applyFilters();
+        });
+
+        // Check All header checkbox
+        checkAll?.addEventListener('change', () => {
+            document.querySelectorAll('.cd-row-check').forEach(ch => ch.checked = checkAll.checked);
+            updateSelBar();
+        });
+
+        // Row checkboxes (delegated)
+        document.addEventListener('change', (e) => {
+            if (e.target.classList.contains('cd-row-check')) updateSelBar();
+        }, { once: false });
+
+        // Select All button (toggle)
+        g('cdSelectAll')?.addEventListener('click', () => {
+            const checks = document.querySelectorAll('.cd-row-check');
+            const allChecked = Array.from(checks).every(c => c.checked);
+            checks.forEach(ch => ch.checked = !allChecked);
+            if (checkAll) checkAll.checked = !allChecked;
+            updateSelBar();
+        });
+
+        // GMass helper
+        const openGmass = (emails) => {
+            const valid = emails.filter(e => e && e !== '—' && e.includes('@'));
+            if (!valid.length) { this.showToast('No valid emails selected.'); return; }
+            window.open(`https://mail.google.com/mail/u/0/?view=cm&fs=1&to=${encodeURIComponent(valid.join(','))}&cc=send%40gmass.co`, '_blank');
+            this.showToast(`Opened GMass for ${valid.length} contacts.`);
+        };
+
+        g('cdAddToGmass')?.addEventListener('click', () => {
+            openGmass(Array.from(document.querySelectorAll('.cd-row-check')).map(ch => ch.dataset.contactEmail));
+        });
+        g('cdSendToGmass')?.addEventListener('click', () => {
+            openGmass(getChecked().map(ch => ch.dataset.contactEmail));
+        });
+
+        g('cdCopyEmails')?.addEventListener('click', () => {
+            const emails = getChecked().map(ch => ch.dataset.contactEmail).filter(e => e && e !== '—' && e.includes('@'));
+            if (!emails.length) { this.showToast('No valid emails selected.'); return; }
+            navigator.clipboard.writeText(emails.join(',')).then(() => {
+                this.showToast(`Copied ${emails.length} email(s) to clipboard.`);
+            }).catch(() => this.showToast('Copy failed – please copy manually.'));
+        });
+
+        g('cdClearSel')?.addEventListener('click', () => {
+            document.querySelectorAll('.cd-row-check').forEach(ch => ch.checked = false);
+            if (checkAll) checkAll.checked = false;
+            updateSelBar();
+        });
+
+        // Export CSV (includes email user + domain + tld columns)
+        g('cdExportCsv')?.addEventListener('click', () => {
+            const visible = rows().filter(r => r.style.display !== 'none');
+            const headers = ['Type', 'Name', 'Email User', 'Domain', 'TLD', 'Phone', 'City', 'Industry', 'Owner', 'Stage', 'Source', 'Vendor Code', 'Due Amount'];
+            const csvRows = [headers.join(',')];
+            visible.forEach(r => {
+                const cells = Array.from(r.querySelectorAll('td')).slice(1);
+                csvRows.push(cells.map(td => `"${(td.textContent || '').trim().replace(/,/g, ';')}"`).join(','));
+            });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(new Blob([csvRows.join('\n')], { type: 'text/csv' }));
+            a.download = 'contacts_directory.csv';
+            a.click();
+            this.showToast('CSV exported.');
+        });
+
+        applyFilters();
+    }
+
+    getEmailCampaignAlerts() {
+        const esc = (v) => String(v ?? '').replace(/</g, '&lt;').replace(/"/g, '&quot;');
+        const now = Date.now();
+        const fmt = (ts) => ts ? new Date(ts).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : '—';
+
+        // Pull live data for alerts
+        const clients = this.getClientsData();
+        const leads = this.getLeadsData();
+        // Merge stored projects with fallback demo data for alert triggers
+        const fallbackProjects = [
+            { name: 'SEO Revamp', client: 'TechNova Solutions', monitoring: { overallProjectStatus: 'Active' }, payment: { paymentDueDate: new Date(now - 3 * 86400000).toISOString().split('T')[0], paymentReceivedDate: '', balancePaymentAmount: '42000', overdueStatus: '30 Days Due' } },
+            { name: 'CRM Upgrade', client: 'GreenLeaf Industries', monitoring: { overallProjectStatus: 'Pending / Delayed' }, payment: { paymentDueDate: new Date(now - 65 * 86400000).toISOString().split('T')[0], paymentReceivedDate: '', balancePaymentAmount: '58000', overdueStatus: '60 Days Overdue' } },
+            { name: 'Re-engagement Funnel', client: 'EduSpark', monitoring: { overallProjectStatus: 'Completed' }, payment: { paymentDueDate: '', paymentReceivedDate: new Date(now - 5 * 86400000).toISOString().split('T')[0], overdueStatus: 'Paid' } }
+        ];
+        const storedProjects = this.getStoredProjects ? this.getStoredProjects() : [];
+        const seenProj = new Set();
+        const projects = [];
+        [...storedProjects, ...fallbackProjects].forEach(p => {
+            const key = String((p.identification?.projectName || p.name || '')).trim().toLowerCase();
+            if (!key || seenProj.has(key)) return;
+            seenProj.add(key);
+            // Normalize shape: stored projects use nested identification/monitoring/payment
+            projects.push({
+                name: p.identification?.projectName || p.name || '—',
+                client: p.identification?.clientName || p.client || '—',
+                monitoring: p.monitoring || {},
+                payment: p.payment || {}
+            });
+        });
+
+        // Build alert items categorized
+        const alerts = [];
+
+        // Payment overdue alerts from projects
+        projects.forEach(p => {
+            const pay = p.payment || {};
+            const bal = String(pay.balancePaymentAmount || '').trim();
+            const due = String(pay.paymentDueDate || '').trim();
+            const ovr = String(pay.overdueStatus || '').trim();
+            if (ovr && ovr !== 'Paid' && bal) {
+                alerts.push({
+                    id: `pay_${p.name}_${p.client}`,
+                    category: 'Payment',
+                    categoryColor: 'rose',
+                    icon: 'credit-card',
+                    title: `Payment Overdue – ${p.name}`,
+                    subtitle: `Client: ${p.client || '—'} | Due: ${fmt(due ? Date.parse(due) : null)} | Balance: ₹${bal}`,
+                    status: ovr,
+                    statusColor: ovr.includes('90') ? 'rose' : ovr.includes('60') ? 'orange' : 'amber',
+                    trigger: 'payment_overdue',
+                    recipient: String(clients.find(c => c.name === p.client)?.email || ''),
+                    clientName: p.client || '—',
+                    draftSubject: `Payment Reminder – ${p.name} [${ovr}]`,
+                    draftBody: `Dear ${p.client || 'Client'},\n\nThis is a reminder regarding the pending payment of ₹${bal} for project "${p.name}".\nDue Date: ${fmt(due ? Date.parse(due) : null)} | Status: ${ovr}\n\nKindly ensure timely payment to avoid further delays.\n\nWarm regards,\nAPJ 3D Solutions Team`
+                });
+            }
+        });
+
+        // Project update alerts (delayed projects)
+        projects.forEach(p => {
+            const mon = p.monitoring || {};
+            const status = String(mon.overallProjectStatus || '').trim();
+            if (status === 'Pending / Delayed') {
+                alerts.push({
+                    id: `proj_${p.name}_${p.client}`,
+                    category: 'Project Update',
+                    categoryColor: 'amber',
+                    icon: 'folder-clock',
+                    title: `Project Delayed – ${p.name}`,
+                    subtitle: `Client: ${p.client || '—'} | Status: ${status}`,
+                    status: 'Delayed',
+                    statusColor: 'amber',
+                    trigger: 'project_delayed',
+                    recipient: String(clients.find(c => c.name === p.client)?.email || ''),
+                    clientName: p.client || '—',
+                    draftSubject: `Project Update – ${p.name} – Status: Delayed`,
+                    draftBody: `Dear ${p.client || 'Client'},\n\nWe wanted to inform you that the project "${p.name}" is currently experiencing delays.\nOur team is working diligently to get back on track and will provide you with an updated timeline shortly.\n\nWe apologize for any inconvenience caused.\n\nBest regards,\nAPJ 3D Solutions Team`
+                });
+            }
+        });
+
+        // Completed project follow-up
+        projects.forEach(p => {
+            const mon = p.monitoring || {};
+            const status = String(mon.overallProjectStatus || '').trim();
+            if (status === 'Completed') {
+                alerts.push({
+                    id: `comp_${p.name}_${p.client}`,
+                    category: 'Follow-up',
+                    categoryColor: 'emerald',
+                    icon: 'check-circle',
+                    title: `Project Completed – ${p.name}`,
+                    subtitle: `Client: ${p.client || '—'} | Gather feedback & upsell`,
+                    status: 'Completed',
+                    statusColor: 'emerald',
+                    trigger: 'project_completed',
+                    recipient: String(clients.find(c => c.name === p.client)?.email || ''),
+                    clientName: p.client || '—',
+                    draftSubject: `Your Project "${p.name}" is Complete! – Feedback Request`,
+                    draftBody: `Dear ${p.client || 'Client'},\n\nWe are pleased to inform you that project "${p.name}" has been successfully completed!\n\nWe would love to hear your feedback. Please feel free to share your experience with us.\nAlso, if you need any additional services, our team is ready to assist.\n\nThank you for choosing APJ 3D Solutions.\n\nWarm regards,\nAPJ 3D Solutions Team`
+                });
+            }
+        });
+
+        // Lead follow-up alerts (high priority leads)
+        leads.filter(l => ['Follow-up', 'Quotation', 'Negotiation'].includes(l.stage)).slice(0, 4).forEach(l => {
+            alerts.push({
+                id: `lead_${l.id}`,
+                category: 'Lead Follow-up',
+                categoryColor: 'indigo',
+                icon: 'user-plus',
+                title: `Follow-up Required – ${l.company}`,
+                subtitle: `Stage: ${l.stage} | Assigned: ${l.assignedTo || '—'} | Source: ${l.source}`,
+                status: l.stage,
+                statusColor: 'indigo',
+                trigger: 'lead_followup',
+                recipient: '',
+                clientName: l.company,
+                draftSubject: `Following Up – ${l.company} – ${l.stage} Stage`,
+                draftBody: `Dear ${l.company},\n\nThank you for your interest in APJ 3D Solutions.\n\nWe wanted to follow up regarding your inquiry which is currently at the "${l.stage}" stage. Our team is eager to move forward and ensure we can meet your requirements.\n\nWould you be available for a brief call or meeting to discuss next steps?\n\nLooking forward to hearing from you.\n\nBest regards,\nAPJ 3D Solutions Team`
+            });
+        });
+
+        // Overdue client alerts (dueAmount != 0)
+        clients.filter(c => c.dueAmount && c.dueAmount !== '₹0' && c.dueAmount !== '—').slice(0, 3).forEach(c => {
+            alerts.push({
+                id: `clientdue_${c.name}`,
+                category: 'Payment',
+                categoryColor: 'rose',
+                icon: 'alert-circle',
+                title: `Outstanding Balance – ${c.name}`,
+                subtitle: `Amount Due: ${c.dueAmount} | ${c.openInvoices} open invoice(s)`,
+                status: 'Outstanding',
+                statusColor: 'rose',
+                trigger: 'payment_overdue',
+                recipient: String(c.email || ''),
+                clientName: c.name,
+                draftSubject: `Payment Reminder – Outstanding Balance of ${c.dueAmount}`,
+                draftBody: `Dear ${c.name},\n\nThis is a gentle reminder that you have an outstanding balance of ${c.dueAmount} with ${c.openInvoices} open invoice(s).\n\nKindly arrange for payment at your earliest convenience to avoid any service disruptions.\n\nFor payment assistance, please contact our accounts team.\n\nThank you for your prompt attention.\n\nBest regards,\nAPJ 3D Solutions Team`
+            });
+        });
+
+        const triggerLabels = {
+            payment_overdue: { label: 'Payment Overdue', color: 'rose' },
+            project_delayed: { label: 'Project Delayed', color: 'amber' },
+            project_completed: { label: 'Project Completed', color: 'emerald' },
+            lead_followup: { label: 'Lead Follow-up', color: 'indigo' }
+        };
+
+        return `
+            <div class="space-y-5 fade-in">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h2 class="text-2xl font-semibold text-slate-900">Alerts &amp; GMass</h2>
+                        <p class="text-sm text-slate-500">${alerts.length} active triggers — auto-generate emails &amp; send via GMass</p>
+                    </div>
+                    <div class="flex gap-2">
+                        <button id="agSendAllGmass" class="px-4 py-2 text-sm font-medium bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">Send All to GMass</button>
+                        <button id="agRecheckTriggers" class="px-4 py-2 text-sm font-medium bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 transition-colors">Re-check Triggers</button>
+                    </div>
+                </div>
+
+                <!-- Trigger Stats -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    ${Object.entries(triggerLabels).map(([k, v]) => {
+            const cnt = alerts.filter(a => a.trigger === k).length;
+            return `
+                        <div class="bg-white rounded-xl border border-${v.color}-200 p-4 shadow-sm">
+                            <div class="text-xs font-semibold text-${v.color}-700 uppercase tracking-wide">${esc(v.label)}</div>
+                            <div class="text-3xl font-extrabold text-slate-900 mt-2">${cnt}</div>
+                            <div class="text-xs text-slate-500 mt-1">${cnt === 1 ? 'alert pending' : 'alerts pending'}</div>
+                        </div>`;
+        }).join('')}
+                </div>
+
+                <!-- Filter Bar -->
+                <div class="bg-white rounded-xl border border-slate-200 p-4 shadow-sm flex flex-wrap gap-3 items-center">
+                    <select id="agFilterCategory" class="border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400">
+                        <option>All Categories</option>
+                        <option>Payment</option>
+                        <option>Project Update</option>
+                        <option>Follow-up</option>
+                        <option>Lead Follow-up</option>
+                    </select>
+                    <input id="agFilterSearch" type="text" placeholder="Search alerts…" class="border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400 flex-1" />
+                    <span id="agFilterCount" class="text-sm text-slate-500">Showing ${alerts.length} of ${alerts.length}</span>
+                </div>
+
+                <!-- Alert Cards -->
+                <div id="agAlertsList" class="space-y-3">
+                    ${alerts.map(a => `
+                        <div class="ag-alert-card bg-white rounded-xl border border-${a.statusColor}-200 p-5 shadow-sm transition-all"
+                             data-category="${esc(a.category.toLowerCase())}"
+                             data-title="${esc(a.title.toLowerCase())}">
+                            <div class="flex flex-col md:flex-row md:items-start gap-4">
+                                <div class="flex-1">
+                                    <div class="flex items-center gap-3 flex-wrap">
+                                        <span class="px-2 py-0.5 text-xs font-bold bg-${a.categoryColor}-50 text-${a.categoryColor}-700 rounded-full uppercase tracking-wide">${esc(a.category)}</span>
+                                        <span class="px-2 py-0.5 text-xs font-semibold bg-${a.statusColor}-100 text-${a.statusColor}-700 rounded-full">${esc(a.status)}</span>
+                                        <span class="text-[11px] text-slate-400">Trigger: <strong class="text-slate-600">${esc(a.trigger.replace(/_/g, ' '))}</strong></span>
                                     </div>
-                                    <div class="text-sm font-medium text-slate-900">${s.time}</div>
+                                    <div class="mt-2 text-sm font-bold text-slate-900">${esc(a.title)}</div>
+                                    <div class="text-xs text-slate-500 mt-1">${esc(a.subtitle)}</div>
+                                    <div class="mt-3 font-semibold text-xs text-slate-700">Auto-Generated Email Preview:</div>
+                                    <div class="mt-1 bg-slate-50 border border-slate-200 rounded-lg p-3">
+                                        <div class="text-xs font-semibold text-slate-500">To: <span class="text-slate-800">${esc(a.recipient || '(email not set — update client record)')}</span></div>
+                                        <div class="text-xs font-semibold text-slate-500 mt-1">Subject: <span class="text-slate-800">${esc(a.draftSubject)}</span></div>
+                                        <textarea id="agBody_${esc(a.id)}" rows="4" class="mt-2 w-full text-xs bg-white border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-400 resize-y">${esc(a.draftBody)}</textarea>
+                                    </div>
                                 </div>
-                            `).join('')}
+                                <div class="flex flex-col gap-2 min-w-[140px]">
+                                    <button class="ag-trigger-gmass px-4 py-2 text-sm font-semibold bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+                                            data-alert-id="${esc(a.id)}"
+                                            data-recipient="${esc(a.recipient)}"
+                                            data-subject="${esc(a.draftSubject)}">
+                                        Send via GMass
+                                    </button>
+                                    <button class="ag-trigger-draft px-4 py-2 text-sm font-semibold bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 transition-colors"
+                                            data-alert-id="${esc(a.id)}"
+                                            data-recipient="${esc(a.recipient)}"
+                                            data-subject="${esc(a.draftSubject)}">
+                                        Open in Gmail
+                                    </button>
+                                    <button class="ag-copy-body px-4 py-2 text-sm font-semibold bg-emerald-50 text-emerald-700 rounded-lg hover:bg-emerald-100 transition-colors"
+                                            data-alert-id="${esc(a.id)}">
+                                        Copy Body
+                                    </button>
+                                </div>
+                            </div>
                         </div>
-                    </div>
+                    `).join('')}
+                </div>
+            </div>
+        `;
+    }
 
-                    <div class="bg-white rounded-lg border border-slate-200 p-6 shadow-lg">
-                        <h3 class="text-lg font-semibold text-slate-900">Audience Segments</h3>
-                        <div class="mt-4 space-y-3">
-                            ${[
-                { name: 'Overdue invoices', count: 4, color: 'rose' },
-                { name: 'Onboarding clients', count: 6, color: 'amber' },
-                { name: 'High LTV clients', count: 12, color: 'emerald' },
-                { name: 'Inactive 30+ days', count: 18, color: 'indigo' }
-            ].map(seg => `
-                                <div class="p-3 bg-${seg.color}-50 border border-${seg.color}-100 rounded-lg flex items-center justify-between">
-                                    <div class="text-sm font-medium text-slate-900">${seg.name}</div>
-                                    <span class="text-sm font-semibold text-slate-900">${seg.count}</span>
-                                </div>
-                            `).join('')}
-                        </div>
-                        <button data-action="toast" class="mt-5 w-full px-4 py-2 text-sm font-medium bg-purple-50 text-purple-700 rounded-lg hover:bg-purple-100 transition-colors">Build Segment</button>
+    setupAlertGmassInteractions() {
+        const categoryEl = document.getElementById('agFilterCategory');
+        const searchEl = document.getElementById('agFilterSearch');
+        const countEl = document.getElementById('agFilterCount');
+        const cards = () => Array.from(document.querySelectorAll('.ag-alert-card'));
+
+        const applyFilters = () => {
+            const catQ = (categoryEl?.value || 'All Categories').toLowerCase();
+            const srchQ = (searchEl?.value || '').trim().toLowerCase();
+            let vis = 0;
+            cards().forEach(card => {
+                const cat = (card.dataset.category || '').toLowerCase();
+                const title = (card.dataset.title || '').toLowerCase();
+                const catOk = catQ === 'all categories' || cat.includes(catQ);
+                const srchOk = !srchQ || title.includes(srchQ) || cat.includes(srchQ);
+                card.style.display = (catOk && srchOk) ? '' : 'none';
+                if (catOk && srchOk) vis++;
+            });
+            const total = cards().length;
+            if (countEl) countEl.textContent = `Showing ${vis} of ${total}`;
+        };
+
+        categoryEl?.addEventListener('change', applyFilters);
+        searchEl?.addEventListener('input', applyFilters);
+
+        const openGmassEmail = (recipient, subject, bodyId) => {
+            const bodyEl = document.getElementById(`agBody_${bodyId}`);
+            const body = bodyEl ? bodyEl.value : '';
+            // GMass trigger URL via Gmail compose with cc to gmass
+            const gmassUrl = `https://mail.google.com/mail/u/0/?view=cm&fs=1&to=${encodeURIComponent(recipient)}&cc=${encodeURIComponent('send@gmass.co')}&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+            if (!recipient || !recipient.includes('@')) {
+                this.showToast('No email found for this contact. Please update the client email record and try again.');
+                return;
+            }
+            window.open(gmassUrl, '_blank');
+            this.showToast('Opened GMass compose window.');
+        };
+
+        const openGmailDraft = (recipient, subject, bodyId) => {
+            const bodyEl = document.getElementById(`agBody_${bodyId}`);
+            const body = bodyEl ? bodyEl.value : '';
+            const gmailUrl = `https://mail.google.com/mail/u/0/?view=cm&fs=1&to=${encodeURIComponent(recipient)}&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+            if (!recipient || !recipient.includes('@')) {
+                this.showToast('No email found for this contact. Please update the client email record.');
+                return;
+            }
+            window.open(gmailUrl, '_blank');
+            this.showToast('Opened Gmail draft.');
+        };
+
+        document.querySelectorAll('.ag-trigger-gmass').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const alertId = btn.dataset.alertId;
+                const recipient = btn.dataset.recipient;
+                const subject = btn.dataset.subject;
+                openGmassEmail(recipient, subject, alertId);
+            });
+        });
+
+        document.querySelectorAll('.ag-trigger-draft').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const alertId = btn.dataset.alertId;
+                const recipient = btn.dataset.recipient;
+                const subject = btn.dataset.subject;
+                openGmailDraft(recipient, subject, alertId);
+            });
+        });
+
+        document.querySelectorAll('.ag-copy-body').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const bodyEl = document.getElementById(`agBody_${btn.dataset.alertId}`);
+                if (!bodyEl) return;
+                navigator.clipboard.writeText(bodyEl.value).then(() => {
+                    this.showToast('Email body copied to clipboard.');
+                }).catch(() => this.showToast('Copy failed.'));
+            });
+        });
+
+        document.getElementById('agSendAllGmass')?.addEventListener('click', () => {
+            this.showToast('Opening GMass for all alerts — check popup blocker if nothing opens.');
+            const btns = document.querySelectorAll('.ag-trigger-gmass');
+            if (btns.length === 0) { this.showToast('No alerts available.'); return; }
+            // Open only first to avoid popup block (user can send others one by one)
+            btns[0].click();
+            this.showToast(`Triggered GMass for first alert. Send remaining ${btns.length - 1} individually.`);
+        });
+
+        document.getElementById('agRecheckTriggers')?.addEventListener('click', () => {
+            this.renderContent();
+            this.initializeLucideIcons();
+            this.showToast('Triggers re-evaluated from live data.');
+        });
+
+        applyFilters();
+    }
+
+    getSmsWhatsappCampaigns() {
+        const esc = v => String(v ?? '').replace(/</g, '&lt;');
+        const clients = this.getClientsData();
+        const leads = this.getLeadsData();
+
+        const alerts = [];
+
+        clients.forEach(c => {
+            if (c.dueAmount && c.dueAmount !== '₹0' && c.dueAmount !== '—') {
+                alerts.push({
+                    type: 'payment', urgency: 'high', name: c.name || '—', phone: c.phone || '',
+                    detail: `Due: ${c.dueAmount}`,
+                    smsBody: `Hi ${c.name}, this is a reminder that your payment of ${c.dueAmount} is overdue. Please clear it at your earliest. – APJ 3D Solutions`,
+                    waBody: `Hi ${c.name},\n\nThis is an urgent reminder that your payment of ${c.dueAmount} is overdue.\n\nPlease arrange payment at the earliest.\n\nTeam APJ 3D Solutions`
+                });
+            }
+        });
+
+        const fallback = [
+            { name: 'CRM Upgrade', client: 'GreenLeaf Industries', monitoring: { overallProjectStatus: 'Pending / Delayed' }, identification: { clientPhone: '' } },
+            { name: 'SEO Revamp', client: 'TechNova Solutions', monitoring: { overallProjectStatus: 'Pending / Delayed' }, identification: { clientPhone: '' } }
+        ];
+        const stored = this.getStoredProjects ? this.getStoredProjects() : [];
+        const seen = new Set();
+        [...stored, ...fallback].forEach(p => {
+            const pName = p.identification?.projectName || p.name || '';
+            const key = pName.toLowerCase();
+            if (!key || seen.has(key)) return;
+            seen.add(key);
+            if ((p.monitoring?.overallProjectStatus || '') === 'Pending / Delayed') {
+                const cName = p.identification?.clientName || p.client || '—';
+                const phone = p.identification?.clientPhone || '';
+                alerts.push({
+                    type: 'delay', urgency: 'medium', name: cName, phone,
+                    detail: `Project "${pName}" delayed`,
+                    smsBody: `Hi ${cName}, your project "${pName}" is currently delayed. Our team will update you shortly. – APJ 3D Solutions`,
+                    waBody: `Hi ${cName},\n\nYour project "${pName}" is facing a delay. Our team is on it.\n\nTeam APJ 3D Solutions`
+                });
+            }
+        });
+
+        leads.filter(l => ['Quotation', 'Negotiation'].includes(l.stage)).slice(0, 4).forEach(l => {
+            alerts.push({
+                type: 'lead', urgency: 'medium', name: l.company || l.contact || '—', phone: l.contact || '',
+                detail: `Stage: ${l.stage}`,
+                smsBody: `Hi, following up on your ${l.stage} with APJ 3D Solutions. Any questions? – APJ 3D Solutions`,
+                waBody: `Hi,\n\nFollowing up on your ${l.stage} with APJ 3D Solutions.\nLet us know if you have any questions!\n\nTeam APJ 3D Solutions`
+            });
+        });
+
+        const urgCol = { high: 'rose', medium: 'amber', low: 'slate' };
+        const tSvg = {
+            payment: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>`,
+            delay: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>`,
+            lead: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>`
+        };
+        const tLabel = { payment: 'Payment Overdue', delay: 'Project Delayed', lead: 'Lead Follow-up' };
+
+        return `
+            <div class="space-y-5 fade-in">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h2 class="text-2xl font-bold text-slate-900">SMS Alerts</h2>
+                        <p class="text-sm text-slate-500 mt-0.5">${alerts.length} urgent alert${alerts.length !== 1 ? 's' : ''} — trigger SMS or WhatsApp directly</p>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="px-3 py-1.5 text-xs font-bold bg-rose-50 text-rose-600 rounded-full">${alerts.filter(a => a.urgency === 'high').length} High</span>
+                        <span class="px-3 py-1.5 text-xs font-bold bg-amber-50 text-amber-600 rounded-full">${alerts.filter(a => a.urgency === 'medium').length} Medium</span>
                     </div>
                 </div>
+
+                ${alerts.length === 0 ? `
+                    <div class="bg-emerald-50 border border-emerald-200 rounded-2xl p-10 text-center">
+                        <div class="w-12 h-12 mx-auto mb-3 rounded-full bg-emerald-100 flex items-center justify-center">
+                            <svg class="w-6 h-6 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                        </div>
+                        <div class="text-lg font-bold text-emerald-800">No urgent alerts!</div>
+                        <div class="text-sm text-emerald-600 mt-1">All clients and projects are on track.</div>
+                    </div>
+                `: `
+                    <div class="space-y-3">
+                        ${alerts.map(a => {
+            const col = urgCol[a.urgency];
+            const rawP = (a.phone || '').replace(/\D/g, '');
+            const hasP = rawP.length >= 8;
+            const smsUrl = hasP ? `sms:${rawP}?body=${encodeURIComponent(a.smsBody)}` : null;
+            const waUrl = hasP ? `https://wa.me/91${rawP}?text=${encodeURIComponent(a.waBody)}` : null;
+            const cpSms = esc(a.smsBody).replace(/'/g, '&#39;');
+            const cpWa = esc(a.waBody).replace(/'/g, '&#39;');
+            return `
+                            <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm flex items-center gap-4">
+                                <div class="w-11 h-11 rounded-xl bg-${col}-50 text-${col}-600 flex items-center justify-center flex-shrink-0">${tSvg[a.type]}</div>
+                                <div class="flex-1 min-w-0">
+                                    <div class="flex items-center gap-2 flex-wrap">
+                                        <span class="text-sm font-bold text-slate-900">${esc(a.name)}</span>
+                                        <span class="px-1.5 py-0.5 text-[10px] font-bold bg-${col}-50 text-${col}-600 rounded-full uppercase tracking-wide">${a.urgency}</span>
+                                        <span class="px-1.5 py-0.5 text-[10px] font-semibold bg-slate-100 text-slate-600 rounded-full">${tLabel[a.type]}</span>
+                                    </div>
+                                    <div class="text-xs text-slate-500 mt-0.5">${esc(a.detail)}</div>
+                                    <div class="mt-2 p-2.5 bg-slate-50 rounded-lg text-xs text-slate-600 font-mono leading-relaxed">${esc(a.smsBody)}</div>
+                                </div>
+                                <div class="flex flex-col gap-2 flex-shrink-0">
+                                    ${smsUrl
+                    ? `<a href="${smsUrl}" class="flex items-center gap-1.5 px-3 py-2 text-xs font-bold bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors whitespace-nowrap"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.65 3.38 2 2 0 0 1 3.62 1h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.59a16 16 0 0 0 6 6l.96-.96a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg> Send SMS</a>`
+                    : `<button onclick="navigator.clipboard.writeText('${cpSms}')" class="flex items-center gap-1.5 px-3 py-2 text-xs font-bold bg-emerald-50 text-emerald-700 rounded-lg hover:bg-emerald-100 transition-colors whitespace-nowrap"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><rect x="9" y="2" width="6" height="6" rx="1"/><path d="M8 22H16M12 17V22"/><rect x="2" y="8" width="20" height="14" rx="2"/></svg> Copy SMS</button>`
+                }
+                                    ${waUrl
+                    ? `<a href="${waUrl}" target="_blank" class="flex items-center gap-1.5 px-3 py-2 text-xs font-bold bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors whitespace-nowrap"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> WhatsApp</a>`
+                    : `<button onclick="navigator.clipboard.writeText('${cpWa}')" class="flex items-center gap-1.5 px-3 py-2 text-xs font-bold bg-green-50 text-green-700 rounded-lg hover:bg-green-100 transition-colors whitespace-nowrap"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><rect x="9" y="2" width="6" height="6" rx="1"/><path d="M8 22H16M12 17V22"/><rect x="2" y="8" width="20" height="14" rx="2"/></svg> Copy WA</button>`
+                }
+                                </div>
+                            </div>`;
+        }).join('')}
+                    </div>
+                `}
             </div>
         `;
     }
 
     getWishesCampaigns() {
-        const templates = [
-            { title: 'Birthday Wish', channel: 'WhatsApp', color: 'emerald' },
-            { title: 'Anniversary Wish', channel: 'Email', color: 'indigo' },
-            { title: 'Festive Greeting', channel: 'SMS', color: 'amber' }
+        const esc = v => String(v ?? '').replace(/</g, '&lt;');
+        const clients = this.getClientsData();
+
+        // Helper to build a full HTML email string
+        const html = (headerBg, headerIcon, accentColor, title, greeting, body, closing) => `<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;padding:0;background:#f8fafc;font-family:Arial,Helvetica,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0"><tr><td align="center" style="padding:32px 16px;">
+<table width="600" cellpadding="0" cellspacing="0" style="border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,.10);">
+<tr><td style="background:${headerBg};padding:40px 40px 32px;text-align:center;">
+<div style="width:64px;height:64px;background:rgba(255,255,255,0.18);border-radius:50%;display:inline-flex;align-items:center;justify-content:center;margin-bottom:16px;">${headerIcon}</div>
+<h1 style="margin:0;color:#fff;font-size:26px;font-weight:800;letter-spacing:.5px;">${title}</h1>
+</td></tr>
+<tr><td style="background:#fff;padding:40px;">
+<p style="margin:0 0 20px;font-size:16px;color:#334155;">${greeting}</p>
+<div style="background:${accentColor};border-radius:12px;padding:24px;margin:24px 0;">
+<p style="margin:0;font-size:15px;color:#1e293b;line-height:1.7;">${body}</p>
+</div>
+<p style="margin:20px 0 0;font-size:15px;color:#334155;">${closing}<br><br>Warm regards,<br><strong style="color:#7c3aed;">Team APJ 3D Solutions</strong></p>
+</td></tr>
+<tr><td style="background:#1e1b4b;padding:24px 40px;text-align:center;">
+<p style="margin:0;color:#a5b4fc;font-size:13px;font-weight:600;">APJ 3D Solutions Pvt Ltd</p>
+<p style="margin:4px 0 0;color:#6366f1;font-size:12px;">www.apj3dsolutions.com &nbsp;|&nbsp; hello@apj3dsolutions.com</p>
+</td></tr>
+</table></td></tr></table></body></html>`;
+
+        const OCCASIONS = [
+            {
+                id: 'birthday', title: 'Birthday Wishes', color: 'pink',
+                icon: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M20 7H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>`,
+                cards: [
+                    {
+                        variant: 'Warm & Personal', subject: 'Happy Birthday, {{name}}!',
+                        htmlBody: html('linear-gradient(135deg,#ec4899,#f43f5e)', '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" style="display:block"><path d="M20 7H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>', '#fdf2f8', 'Happy Birthday, {{name}}!', 'Dear {{name}},', 'Wishing you a very Happy Birthday! Today is all about you — may it be filled with laughter, love, and everything that makes you smile. It has been a true pleasure working with you, and we hope this year brings you incredible joy, great health, and outstanding success.', 'Thank you for being such a wonderful part of our journey.')
+                    },
+                    {
+                        variant: 'Professional', subject: 'Many Happy Returns, {{name}}!',
+                        htmlBody: html('linear-gradient(135deg,#7c3aed,#a855f7)', '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" style="display:block"><path d="M20 7H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>', '#f5f3ff', 'Many Happy Returns of the Day!', 'Dear {{name}},', 'On behalf of everyone at APJ 3D Solutions, we want to wish you a very Happy Birthday! Your trust, collaboration, and partnership means a great deal to us. May this special day mark the beginning of a fantastic year ahead — full of achievements, milestones, and wonderful memories.', 'Here\'s to celebrating you today and every day!')
+                    },
+                    {
+                        variant: 'Festive & Fun', subject: 'It\'s your special day, {{name}}!',
+                        htmlBody: html('linear-gradient(135deg,#f97316,#ec4899)', '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" style="display:block"><path d="M20 7H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>', '#fff7ed', 'Your Special Day Has Arrived!', 'Hey {{name}},', 'The APJ 3D Solutions team is sending you big birthday cheers today! You deserve all the good things coming your way — big wins, happy moments, and a year that exceeds every expectation. We\'re grateful to have you with us and look forward to many more successful years together.', 'Go celebrate — you\'ve earned it!')
+                    }
+                ]
+            },
+            {
+                id: 'diwali', title: 'Diwali Greetings', color: 'amber',
+                icon: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M12 2v8"/><path d="M4.93 10.93l5.66 5.66"/><path d="M2 18h20"/><path d="M19.07 10.93l-5.66 5.66"/><circle cx="12" cy="18" r="2"/></svg>`,
+                cards: [
+                    {
+                        variant: 'Traditional', subject: 'Happy Diwali from APJ 3D Solutions!',
+                        htmlBody: html('linear-gradient(135deg,#d97706,#f59e0b)', '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" style="display:block"><path d="M12 2v8"/><path d="M4.93 10.93l5.66 5.66"/><path d="M2 18h20"/><path d="M19.07 10.93l-5.66 5.66"/><circle cx="12" cy="18" r="2" fill="white"/></svg>', '#fffbeb', 'Wishing You a Radiant Diwali!', 'Dear {{name}},', 'May the glow of diyas illuminate your home, heart, and path ahead. On this auspicious festival of lights, Team APJ 3D Solutions extends our warmest wishes to you and your family. May prosperity, happiness, and success light up every corner of your life this Diwali and always.', 'From all of us at APJ 3D Solutions — Happy Diwali!')
+                    },
+                    {
+                        variant: 'Modern & Vibrant', subject: 'Light, Joy & Prosperity this Diwali!',
+                        htmlBody: html('linear-gradient(135deg,#7c3aed,#d97706)', '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" style="display:block"><path d="M12 2v8"/><path d="M4.93 10.93l5.66 5.66"/><path d="M2 18h20"/><path d="M19.07 10.93l-5.66 5.66"/><circle cx="12" cy="18" r="2" fill="white"/></svg>', '#faf5ff', 'A Festival Full of Light & Joy', 'Dear {{name}},', 'Diwali is a celebration of light over darkness, knowledge over ignorance, and hope over despair. As we celebrate together, Team APJ 3D Solutions wishes you and your loved ones a joyful, safe, and prosperous Diwali. May this festive season bring new opportunities and brighter beginnings.', 'Wishing you peace, love, and abundance!')
+                    },
+                    {
+                        variant: 'Corporate', subject: 'Season\'s Greetings — Happy Diwali!',
+                        htmlBody: html('linear-gradient(135deg,#92400e,#d97706)', '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" style="display:block"><path d="M12 2v8"/><path d="M4.93 10.93l5.66 5.66"/><path d="M2 18h20"/><path d="M19.07 10.93l-5.66 5.66"/><circle cx="12" cy="18" r="2" fill="white"/></svg>', '#fef3c7', 'Happy Diwali — Season\'s Greetings', 'Dear {{name}},', 'At APJ 3D Solutions, we believe that the spirit of Diwali — unity, light, and new beginnings — reflects the very values we share with our clients and partners. This Diwali, we express our deep gratitude for your continued trust and wish you a season filled with joy, health, and business success.', 'Thank you for being our most valued partner.')
+                    }
+                ]
+            },
+            {
+                id: 'newyear', title: 'New Year Greetings', color: 'indigo',
+                icon: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>`,
+                cards: [
+                    {
+                        variant: 'Inspirational', subject: 'Happy New Year from APJ 3D Solutions!',
+                        htmlBody: html('linear-gradient(135deg,#3730a3,#6366f1)', '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" style="display:block"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>', '#eef2ff', 'Welcome to a Brand New Year!', 'Dear {{name}},', 'As we step into the new year, we reflect on the incredible journey we\'ve shared — the challenges we overcame, the milestones we celebrated, and the trust that has grown between us. Team APJ 3D Solutions wishes you a year overflowing with health, happiness, and extraordinary success.', 'Here\'s to an amazing year ahead — together!')
+                    },
+                    {
+                        variant: 'Gratitude Focus', subject: 'Grateful for you — Happy New Year!',
+                        htmlBody: html('linear-gradient(135deg,#7c3aed,#3730a3)', '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" style="display:block"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>', '#f5f3ff', 'Thank You & Happy New Year!', 'Dear {{name}},', 'Before we dive into the new year, we want to pause and express our heartfelt gratitude for your partnership. Your trust in APJ 3D Solutions means everything to us. As the calendar turns, we commit to continue delivering excellence and growing together. Wishing you and your team a prosperous, healthy, and fulfilling new year.', 'Thank you for your continued support!')
+                    },
+                    {
+                        variant: 'Forward-Looking', subject: 'New Year, New Possibilities — {{name}}!',
+                        htmlBody: html('linear-gradient(135deg,#0f172a,#3730a3)', '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" style="display:block"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>', '#e0e7ff', 'A Bright New Chapter Begins', 'Dear {{name}},', 'Every new year brings a blank canvas and infinite possibilities. At APJ 3D Solutions, we\'re excited about what we can build together in the year ahead. From automation to growth strategies, we\'re here every step of the way. Wishing you bold ambitions, smart decisions, and outstanding results this year.', 'Let\'s make it the best year yet!')
+                    }
+                ]
+            },
+            {
+                id: 'anniversary', title: 'Work Anniversary', color: 'emerald',
+                icon: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"/></svg>`,
+                cards: [
+                    {
+                        variant: 'Celebratory', subject: 'Happy Work Anniversary, {{name}}!',
+                        htmlBody: html('linear-gradient(135deg,#059669,#10b981)', '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" style="display:block"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"/></svg>', '#ecfdf5', 'Celebrating Our Journey Together!', 'Dear {{name}},', 'Time really flies when you\'re building great things together! Today marks a special milestone in our partnership with you. It has been an absolute honour to be part of your business journey. Your trust, feedback, and collaboration have been our greatest motivation. Here\'s to celebrating this anniversary with gratitude.', 'Many more years of success together!')
+                    },
+                    {
+                        variant: 'Milestone', subject: 'Marking a Special Milestone — {{name}}!',
+                        htmlBody: html('linear-gradient(135deg,#7c3aed,#059669)', '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" style="display:block"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"/></svg>', '#f0fdf4', 'A Milestone Worth Celebrating!', 'Dear {{name}},', 'We believe every milestone deserves to be celebrated — and your work anniversary with APJ 3D Solutions is no exception. You\'ve been a cornerstone of our growth and an inspiration to our team. We look back with pride at everything we\'ve achieved together and look forward to even greater things ahead.', 'Thank you for every step of this journey.')
+                    },
+                    {
+                        variant: 'Formal', subject: 'Commemorating Our Partnership — {{name}}',
+                        htmlBody: html('linear-gradient(135deg,#064e3b,#059669)', '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" style="display:block"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"/></svg>', '#d1fae5', 'Honouring Our Valued Partnership', 'Dear {{name}},', 'On this special occasion, Team APJ 3D Solutions would like to formally recognise and celebrate the anniversary of our partnership. Your commitment and trust have been invaluable to us. We remain deeply committed to supporting your business goals and delivering the highest quality of service in the years to come.', 'With sincere appreciation and best wishes.')
+                    }
+                ]
+            },
+            {
+                id: 'project_complete', title: 'Project Completion', color: 'blue',
+                icon: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>`,
+                cards: [
+                    {
+                        variant: 'Achievement', subject: 'Project Complete — Great Work, {{name}}!',
+                        htmlBody: html('linear-gradient(135deg,#1d4ed8,#3b82f6)', '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" style="display:block"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>', '#eff6ff', 'Project Successfully Delivered!', 'Dear {{name}},', 'We are thrilled to announce that your project has been successfully completed! From the initial brief to the final delivery, it has been a fantastic collaboration. We are incredibly proud of what we built together. The results speak for themselves and we hope they exceed your expectations.', 'Let\'s celebrate this win — you deserve it!')
+                    },
+                    {
+                        variant: 'What\'s Next', subject: 'Done & Delivered — What\'s next, {{name}}?',
+                        htmlBody: html('linear-gradient(135deg,#7c3aed,#1d4ed8)', '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" style="display:block"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>', '#f5f3ff', 'Great Finish — Bigger Future Ahead!', 'Dear {{name}},', 'Your project is now complete and live! But the best part? This is just the beginning. Every successful project opens the door to new possibilities. The APJ 3D Solutions team would love to explore what we can tackle next together — whether it\'s scaling what we built, optimising for more growth, or launching something entirely new.', 'Ready when you are — let\'s keep the momentum going!')
+                    },
+                    {
+                        variant: 'Formal Delivery', subject: 'Official Project Completion — {{name}}',
+                        htmlBody: html('linear-gradient(135deg,#0f172a,#1d4ed8)', '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" style="display:block"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>', '#dbeafe', 'Formal Project Completion Notice', 'Dear {{name}},', 'We are pleased to formally notify you that all deliverables for your project have been completed, reviewed, and handed over as per the agreed scope and timelines. This marks the successful closure of the project. We look forward to your review and feedback. Thank you for choosing APJ 3D Solutions as your trusted technology partner.', 'Please do not hesitate to reach out for any support.')
+                    }
+                ]
+            },
+            {
+                id: 'thankyou', title: 'Thank You', color: 'purple',
+                icon: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>`,
+                cards: [
+                    {
+                        variant: 'Heartfelt', subject: 'Thank you, {{name}} — you mean a lot to us!',
+                        htmlBody: html('linear-gradient(135deg,#7c3aed,#a855f7)', '<svg width="28" height="28" viewBox="0 0 24 24" fill="rgba(255,255,255,0.9)" stroke="white" stroke-width="1.5" style="display:block"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>', '#faf5ff', 'From the Bottom of Our Hearts — Thank You!', 'Dear {{name}},', 'Some words never get old — thank you. Working with you has been one of the most rewarding experiences for our team at APJ 3D Solutions. Your trust, your patience, and your vision push us to be better every day. We are truly grateful to have you as a client, and we hope to continue growing together for many years.', 'You make the work meaningful — truly, thank you.')
+                    },
+                    {
+                        variant: 'Business Appreciation', subject: 'Grateful for your trust, {{name}}!',
+                        htmlBody: html('linear-gradient(135deg,#6d28d9,#7c3aed)', '<svg width="28" height="28" viewBox="0 0 24 24" fill="rgba(255,255,255,0.9)" stroke="white" stroke-width="1.5" style="display:block"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>', '#ede9fe', 'We Appreciate You More Than Words Can Say', 'Dear {{name}},', 'At APJ 3D Solutions, we never take for granted the trust our clients place in us. Your decision to work with us, your referrals, and your continued partnership have been fundamental to our success. We want to take a moment to sincerely say — thank you. We are committed to repaying your trust with excellent work every single time.', 'We\'re in your corner, always.')
+                    },
+                    {
+                        variant: 'Referral Thanks', subject: 'Thank you for spreading the word, {{name}}!',
+                        htmlBody: html('linear-gradient(135deg,#a855f7,#ec4899)', '<svg width="28" height="28" viewBox="0 0 24 24" fill="rgba(255,255,255,0.9)" stroke="white" stroke-width="1.5" style="display:block"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>', '#fdf4ff', 'Thank You for Recommending APJ 3D Solutions!', 'Dear {{name}},', 'We recently learned that you took the time to recommend APJ 3D Solutions to someone in your network — and it means more than you know. Referrals are the highest form of trust, and we are deeply honoured by yours. We will make sure your recommendation reflects well on you by delivering exceptional value to your referred contact.', 'You are a true APJ champion — thank you!')
+                    }
+                ]
+            }
         ];
 
+        const allCardData = [];
+        OCCASIONS.forEach(occ => {
+            occ.cards.forEach((card, idx) => {
+                allCardData.push({ id: `${occ.id}_${idx}`, occId: occ.id, variant: card.variant, subject: card.subject, htmlBody: card.htmlBody, title: `${occ.title} — ${card.variant}` });
+            });
+        });
+        const cardJson = esc(JSON.stringify(allCardData));
+
         return `
-            <div class="space-y-6 fade-in">
+            <div class="space-y-5 fade-in">
                 <div class="flex items-center justify-between">
                     <div>
-                        <h2 class="text-2xl font-semibold text-slate-900">Greetings & Wishes</h2>
-                        <p class="text-sm text-slate-500">Personalized templates and scheduling</p>
+                        <h2 class="text-2xl font-bold text-slate-900">Personalized Wishes</h2>
+                        <p class="text-sm text-slate-500 mt-0.5">Choose occasion → pick card style → select recipients → send via GMass</p>
                     </div>
-                    <button data-action="toast" class="px-4 py-2 text-sm font-medium bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">Create Template</button>
+                    <div class="hidden" id="wishesStep2Back">
+                        <button id="wishesBackBtn" class="flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg> Back to Occasions
+                        </button>
+                    </div>
                 </div>
 
-                <div class="grid grid-cols-3 gap-6">
-                    ${templates.map(t => `
-                        <div class="bg-white rounded-lg border border-slate-200 p-6 shadow-lg">
-                            <div class="w-12 h-12 rounded-lg bg-${t.color}-50 flex items-center justify-center">
-                                <i data-lucide="sparkles" class="w-6 h-6 text-${t.color}-700"></i>
-                            </div>
-                            <div class="mt-4 text-sm font-semibold text-slate-900">${t.title}</div>
-                            <div class="text-xs text-slate-500">Channel: ${t.channel}</div>
-                            <div class="mt-4 p-3 bg-slate-50 rounded-lg text-xs text-slate-600">"Hi {{name}}, wishing you a wonderful day..."</div>
-                            <div class="mt-4 flex gap-2">
-                                <button data-action="toast" class="px-3 py-2 text-sm font-medium bg-purple-50 text-purple-700 rounded-lg hover:bg-purple-100 transition-colors">Edit</button>
-                                <button data-action="toast" class="px-3 py-2 text-sm font-medium bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">Schedule</button>
+                <!-- Step indicator -->
+                <div class="flex items-center gap-2 text-xs text-slate-400" id="wishesStepBar">
+                    <span id="step1dot" class="w-2 h-2 rounded-full bg-purple-500"></span><span id="step1lbl" class="font-semibold text-purple-600">Choose Occasion</span>
+                    <span class="text-slate-300">→</span>
+                    <span id="step2dot" class="w-2 h-2 rounded-full bg-slate-200"></span><span id="step2lbl" class="text-slate-400">Pick Card Style</span>
+                    <span class="text-slate-300">→</span>
+                    <span id="step3dot" class="w-2 h-2 rounded-full bg-slate-200"></span><span id="step3lbl" class="text-slate-400">Send</span>
+                </div>
+
+                <!-- STEP 1: Occasion grid -->
+                <div id="wishesStep1">
+                    <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+                        ${OCCASIONS.map(occ => `
+                            <button class="wishes-occ-btn text-left bg-white border-2 border-slate-200 rounded-2xl p-5 hover:border-${occ.color}-400 hover:bg-${occ.color}-50 transition-all group" data-occ-id="${occ.id}">
+                                <div class="w-10 h-10 rounded-xl bg-${occ.color}-100 text-${occ.color}-600 flex items-center justify-center mb-3">${occ.icon}</div>
+                                <div class="text-sm font-bold text-slate-900 group-hover:text-${occ.color}-700">${occ.title}</div>
+                                <div class="text-xs text-slate-400 mt-1">3 card styles</div>
+                            </button>
+                        `).join('')}
+                    </div>
+                </div>
+
+                <!-- STEP 2: Card variant picker + preview (hidden initially) -->
+                <div id="wishesStep2" class="hidden">
+                    <div class="grid grid-cols-1 lg:grid-cols-5 gap-5">
+                        <!-- Card variant list -->
+                        <div class="lg:col-span-2 space-y-2">
+                            <div class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Choose Card Style</div>
+                            <div id="wishesCardList" class="space-y-2"></div>
+                        </div>
+                        <!-- Card preview iframe -->
+                        <div class="lg:col-span-3" id="wishesCardPreview">
+                            <div class="bg-slate-50 border border-dashed border-slate-300 rounded-2xl p-8 text-center text-slate-400">
+                                <svg class="w-8 h-8 mx-auto mb-3 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/></svg>
+                                <div class="text-sm font-semibold">Select a card style to preview</div>
                             </div>
                         </div>
-                    `).join('')}
+                    </div>
+
+                    <!-- Client table (shown after card selected) -->
+                    <div id="wishesClientSection" class="hidden mt-5 bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                        <div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
+                            <div class="text-sm font-bold text-slate-900">Select Recipients</div>
+                            <div class="flex items-center gap-3">
+                                <button id="wishesSelectAll" class="text-xs font-semibold text-purple-600 hover:text-purple-700">Select All</button>
+                                <button id="wishesSendGmass" class="px-4 py-2 text-sm font-bold bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors flex items-center gap-1.5 disabled:opacity-40 disabled:cursor-not-allowed" disabled>
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0 1.1.9 2-2 2z"/><polyline points="22,6 12,12 2,6"/></svg>
+                                    Send via GMass (<span id="wishesSelCount">0</span>)
+                                </button>
+                            </div>
+                        </div>
+                        <div class="overflow-x-auto max-h-64 overflow-y-auto">
+                            <table class="w-full text-sm">
+                                <thead class="bg-slate-50 sticky top-0"><tr>
+                                    <th class="px-4 py-2 w-8"></th>
+                                    <th class="px-4 py-2 text-left text-xs font-bold text-slate-500 uppercase">Name</th>
+                                    <th class="px-4 py-2 text-left text-xs font-bold text-slate-500 uppercase">Email</th>
+                                    <th class="px-4 py-2 text-left text-xs font-bold text-slate-500 uppercase">Stage</th>
+                                </tr></thead>
+                                <tbody class="divide-y divide-slate-100">
+                                    ${clients.map(c => `
+                                        <tr class="hover:bg-purple-50/30 transition-colors">
+                                            <td class="px-4 py-2.5"><input type="checkbox" class="wishes-client-check rounded border-slate-300" data-name="${esc(c.name)}" data-email="${esc(c.email || '')}"/></td>
+                                            <td class="px-4 py-2.5 font-semibold text-slate-900">${esc(c.name)}</td>
+                                            <td class="px-4 py-2.5 text-slate-500 font-mono text-xs">${esc(c.email || '— no email —')}</td>
+                                            <td class="px-4 py-2.5"><span class="px-2 py-0.5 text-[10px] font-bold rounded-full ${c.stage === 'Active' ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'}">${esc(c.stage || '—')}</span></td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
                 </div>
+
+                <span id="wishesAllCards" class="hidden">${cardJson}</span>
             </div>
         `;
     }
+
 
     getReengagementCampaigns() {
-        const actions = [
-            { title: 'Clients inactive 30+ days', count: 18, action: 'Send re-activation offer', color: 'indigo' },
-            { title: 'Projects completed 60+ days', count: 9, action: 'Suggest next service', color: 'emerald' },
-            { title: 'Low engagement on last campaign', count: 24, action: 'Resend with new subject', color: 'amber' }
+        const esc = v => String(v ?? '').replace(/</g, '&lt;');
+        const clients = this.getClientsData();
+        const leads = this.getLeadsData();
+
+        // SVG icons keyed by segment id
+        const SEG_ICONS = {
+            inactive_30: `<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>`,
+            post_project: `<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>`,
+            upsell: `<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>`,
+            warm_leads: `<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M8.56 2.75c4.37 6.03 6.02 9.42 8.03 17.72m2.54-15.38c-3.72 4.35-8.94 5.66-16.88 5.85m19.5 1.9c-3.5-.93-6.63-.82-8.94 0-2.58.92-5.01 2.86-7.44 6.32"/></svg>`
+        };
+
+        const SEGMENTS = [
+            {
+                id: 'inactive_30', title: 'Inactive Clients (30+ days)', color: 'indigo',
+                subject: 'We miss you — let\'s reconnect!',
+                preview: 'It\'s been a while since we connected. We\'d love to catch up and explore how we can support your business today.',
+                body: `Hi {{name}},\n\nWe noticed it's been a while since we last connected, and we wanted to check in.\n\nAt APJ 3D Solutions, we're always looking for ways to add value. We'd love to hear how your business is progressing and explore if there's anything new we can work on together.\n\nWould you be open to a quick 15-minute catch-up call this week?\n\nWarm Regards,\nTeam APJ 3D Solutions`
+            },
+            {
+                id: 'post_project', title: 'Post-Project Follow-up', color: 'emerald',
+                subject: 'What\'s next for your business?',
+                preview: 'Your project was a success! Let\'s talk about what we can build together next.',
+                body: `Hi {{name}},\n\nWe hope you're enjoying the results from our recent project!\n\nWe'd love to explore what's next. Whether it's scaling up, adding new features, or a completely new initiative — we're here.\n\nWould you like to schedule a strategy session?\n\nBest,\nTeam APJ 3D Solutions`
+            },
+            {
+                id: 'upsell', title: 'Upsell / New Service Offer', color: 'amber',
+                subject: 'An exclusive offer for valued clients',
+                preview: 'We have an exclusive offer tailored just for clients like you. Don\'t miss out!',
+                body: `Hi {{name}},\n\nAs one of our valued clients, we'd like to extend an exclusive offer for our new service.\n\nThis is designed specifically for businesses at your stage of growth and we believe it can deliver significant ROI.\n\nReply to this email to learn more!\n\nTeam APJ 3D Solutions`
+            },
+            {
+                id: 'warm_leads', title: 'Lead Nurture (Warm Leads)', color: 'rose',
+                subject: 'Still thinking? We\'re here whenever you\'re ready!',
+                preview: 'We know decisions take time. We\'re here whenever you\'re ready — and we have something new to share.',
+                body: `Hi {{name}},\n\nWe reached out a while ago about how APJ 3D Solutions can help your business, and we completely understand that timing is everything.\n\nWe wanted to let you know that we now have some exciting updates that might be exactly what you were looking for.\n\nNo pressure — just here to help when you're ready.\n\nCheers,\nTeam APJ 3D Solutions`
+            }
         ];
 
+        // Build set of client names that have at least one active/ongoing project
+        const activeProjectClients = new Set();
+        try {
+            const storedProjects = this.getStoredProjects();
+            const ACTIVE_STATUSES = new Set(['in progress', 'active', 'ongoing', 'not started', 'pending']);
+            storedProjects.forEach(p => {
+                const clientName = String(p?.client || '').trim().toLowerCase();
+                const overallStatus = String(p?.monitoring?.overallStatus || p?.status || '').trim().toLowerCase();
+                // A client is "active" if they have any project that's not completed/delivered
+                const isActive = !overallStatus || ACTIVE_STATUSES.has(overallStatus) ||
+                    overallStatus.includes('progress') || overallStatus.includes('active');
+                if (clientName && isActive) activeProjectClients.add(clientName);
+            });
+        } catch (_) { }
+
+        // Also mark clients whose stage is 'Active' or 'Onboarding' with active projects as ineligible
+        const allContacts = [
+            ...clients
+                .filter(c => {
+                    const nameKey = String(c?.name || '').trim().toLowerCase();
+                    const stage = String(c?.stage || '').trim().toLowerCase();
+                    // Exclude if they have an ongoing project
+                    if (activeProjectClients.has(nameKey)) return false;
+                    // Keep if stage is explicitly inactive/dormant/at risk — or if no active project
+                    return true;
+                })
+                .map(c => ({
+                    name: c.name,
+                    email: c.email || '',
+                    type: 'Client',
+                    stage: c.stage || '—',
+                    hasEmail: !!(c.email || '').trim()
+                })),
+            ...leads.map(l => ({
+                name: l.company || l.contact || '—',
+                email: '',
+                type: 'Lead',
+                stage: l.stage || '—',
+                hasEmail: false
+            }))
+        ].filter(x => x.name);
+
+        const segJson = JSON.stringify(SEGMENTS.map(s => ({ id: s.id, title: s.title, subject: s.subject, preview: s.preview, body: s.body, color: s.color })));
+
         return `
-            <div class="space-y-6 fade-in">
+            <div class="space-y-5 fade-in">
                 <div class="flex items-center justify-between">
                     <div>
-                        <h2 class="text-2xl font-semibold text-slate-900">Re-engagement</h2>
-                        <p class="text-sm text-slate-500">Win-back sequences and nurture actions</p>
+                        <h2 class="text-2xl font-bold text-slate-900">Re-engagement</h2>
+                        <p class="text-sm text-slate-500 mt-0.5">Clients without active projects · pick a segment · preview · send via GMass</p>
+                        <div class="flex items-center gap-2 mt-1.5">
+                            <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-amber-50 border border-amber-200 text-xs font-bold text-amber-700">
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+                                ${allContacts.filter(x => x.type === 'Client').length} dormant client${allContacts.filter(x => x.type === 'Client').length !== 1 ? 's' : ''} eligible
+                            </span>
+                            <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-indigo-50 border border-indigo-200 text-xs font-bold text-indigo-700">
+                                ${allContacts.filter(x => x.type === 'Lead').length} warm lead${allContacts.filter(x => x.type === 'Lead').length !== 1 ? 's' : ''}
+                            </span>
+                        </div>
                     </div>
-                    <button data-action="toast" class="px-4 py-2 text-sm font-medium bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">Create Sequence</button>
                 </div>
 
-                <div class="grid grid-cols-3 gap-6">
-                    ${actions.map(a => `
-                        <div class="bg-white rounded-lg border border-slate-200 p-6 shadow-lg">
-                            <div class="flex items-center justify-between">
-                                <div>
-                                    <div class="text-sm font-semibold text-slate-900">${a.title}</div>
-                                    <div class="text-xs text-slate-500">${a.count} clients</div>
-                                </div>
-                                <span class="px-2 py-1 text-xs font-medium bg-${a.color}-50 text-${a.color}-700 rounded-full">${a.action}</span>
-                            </div>
-                            <div class="mt-4 p-3 bg-${a.color}-50 border border-${a.color}-100 rounded-lg">
-                                <div class="text-xs text-slate-500">Suggested Action</div>
-                                <div class="text-sm font-medium text-slate-900">${a.action}</div>
-                            </div>
-                            <button data-action="toast" class="mt-4 w-full px-4 py-2 text-sm font-medium bg-purple-50 text-purple-700 rounded-lg hover:bg-purple-100 transition-colors">Run Now</button>
-                        </div>
+                <!-- Segment selector -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    ${SEGMENTS.map(s => `
+                        <button class="reeng-seg-btn text-left bg-white border-2 border-slate-200 rounded-2xl p-4 hover:border-${s.color}-400 hover:bg-${s.color}-50 transition-all group" data-seg-id="${s.id}">
+                            <div class="w-10 h-10 rounded-xl bg-${s.color}-50 text-${s.color}-600 flex items-center justify-center mb-3">${SEG_ICONS[s.id]}</div>
+                            <div class="text-xs font-bold text-slate-700 group-hover:text-${s.color}-700 leading-snug">${s.title}</div>
+                        </button>
                     `).join('')}
                 </div>
+
+                <!-- Preview panel -->
+                <div id="reengPanelWrap">
+                    <div class="bg-slate-50 border border-dashed border-slate-300 rounded-2xl p-8 text-center text-slate-400">
+                        <div class="w-12 h-12 mx-auto mb-3 rounded-full bg-slate-200 flex items-center justify-center">
+                            <svg class="w-6 h-6 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+                        </div>
+                        <div class="text-sm font-semibold">Select a segment above to preview the email template</div>
+                    </div>
+                </div>
+
+                <!-- Contact table -->
+                <div id="reengContactSection" class="hidden bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                    <div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
+                        <div>
+                            <div class="text-sm font-bold text-slate-900">Select Recipients</div>
+                            <div class="text-xs text-slate-400 mt-0.5">Only clients with no current projects are shown</div>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <button id="reengSelectAll" class="text-xs font-semibold text-purple-600 hover:text-purple-700">Select All</button>
+                            <button id="reengSendGmass" class="px-4 py-2 text-sm font-bold bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors flex items-center gap-1.5" disabled>
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0 1.1.9 2-2 2z"/><polyline points="22,6 12,12 2,6"/></svg>
+                                Send via GMass (<span id="reengSelCount">0</span>)
+                            </button>
+                        </div>
+                    </div>
+                    <div class="overflow-x-auto max-h-72 overflow-y-auto">
+                        <table class="w-full text-sm">
+                            <thead class="bg-slate-50 sticky top-0"><tr>
+                                <th class="px-4 py-2 w-8"></th>
+                                <th class="px-4 py-2 text-left text-xs font-bold text-slate-500 uppercase">Name</th>
+                                <th class="px-4 py-2 text-left text-xs font-bold text-slate-500 uppercase">Email</th>
+                                <th class="px-4 py-2 text-left text-xs font-bold text-slate-500 uppercase">Type</th>
+                                <th class="px-4 py-2 text-left text-xs font-bold text-slate-500 uppercase">Stage</th>
+                            </tr></thead>
+                            <tbody class="divide-y divide-slate-100">
+                                ${allContacts.map(c => `
+                                    <tr class="hover:bg-purple-50/30 transition-colors">
+                                        <td class="px-4 py-2.5"><input type="checkbox" class="reeng-contact-check rounded border-slate-300" data-name="${esc(c.name)}" data-email="${esc(c.email)}"/></td>
+                                        <td class="px-4 py-2.5 font-semibold text-slate-900">${esc(c.name)}</td>
+                                        <td class="px-4 py-2.5 text-slate-500 font-mono text-xs">${esc(c.email || '— no email —')}</td>
+                                        <td class="px-4 py-2.5"><span class="px-2 py-0.5 text-[10px] font-bold rounded-full ${c.type === 'Client' ? 'bg-emerald-50 text-emerald-700' : 'bg-indigo-50 text-indigo-700'}">${c.type}</span></td>
+                                        <td class="px-4 py-2.5 text-slate-500 text-xs">${esc(c.stage)}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <span id="reengSegData" class="hidden">${esc(segJson)}</span>
             </div>
         `;
     }
+
 
     renderBillingContent(container) {
         switch (this.currentSubSection) {
@@ -8351,7 +9821,7 @@ class MarketFlowCRM {
                     `).join('')}
                 </div>
             </div>
-        `;
+    `;
     }
 
     getBillingInvoices() {
@@ -8392,20 +9862,21 @@ class MarketFlowCRM {
 
         return `
             <div class="space-y-6 fade-in">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <h2 class="text-2xl font-semibold text-slate-900">Invoices</h2>
-                        <p class="text-sm text-slate-500">Track paid, pending, and overdue invoices</p>
-                    </div>
-                    <button data-action="invoice:create" class="px-4 py-2 text-sm font-medium bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">+ Create Invoice</button>
-                </div>
+        <div class="flex items-center justify-between">
+            <div>
+                <h2 class="text-2xl font-semibold text-slate-900">Invoices</h2>
+                <p class="text-sm text-slate-500">Track paid, pending, and overdue invoices</p>
+            </div>
+            <button data-action="invoice:create" class="px-4 py-2 text-sm font-medium bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">+ Create Invoice</button>
+        </div>
 
                 ${filter ? `
                     <div class="flex items-center justify-between p-3 bg-slate-50 border border-slate-200 rounded-lg">
                         <div class="text-sm text-slate-700">Filtered by client: <span class="font-semibold text-slate-900">${filter.replace(/</g, '&lt;')}</span></div>
                         <button data-action="billing:clearInvoiceFilter" class="px-3 py-2 text-xs font-medium bg-white border border-slate-200 text-slate-700 rounded-lg hover:bg-slate-50 transition-colors">Clear filter</button>
                     </div>
-                ` : ``}
+                ` : ``
+            }
 
                 <div class="grid grid-cols-4 gap-4">
                     <div class="bg-white rounded-lg border border-slate-200 p-5 shadow-lg">
@@ -8514,7 +9985,7 @@ class MarketFlowCRM {
                     </div>
                 </div>
             </div>
-        `;
+    `;
     }
 
     getBillingPayments() {
@@ -8578,7 +10049,7 @@ class MarketFlowCRM {
                     </div>
                 </div>
             </div>
-        `;
+    `;
     }
 
     renderEngagementContent(container) {
@@ -8678,7 +10149,7 @@ class MarketFlowCRM {
                     </div>
                 </div>
             </div>
-        `;
+    `;
     }
 
     getEngagementSurveys() {
@@ -8763,7 +10234,7 @@ class MarketFlowCRM {
                     </div>
                 </div>
             </div>
-        `;
+    `;
     }
 
     getEngagementHealth() {
@@ -8816,7 +10287,7 @@ class MarketFlowCRM {
                     `).join('')}
                 </div>
             </div>
-        `;
+    `;
     }
 
     getEngagementNextProjects() {
@@ -8862,7 +10333,7 @@ class MarketFlowCRM {
                     `).join('')}
                 </div>
             </div>
-        `;
+    `;
     }
 
     renderReportsContent(container) {
@@ -8993,7 +10464,7 @@ class MarketFlowCRM {
                     </div>
                 </div>
             </div>
-        `;
+    `;
     }
 
     getReportsFunnel() {
@@ -9055,7 +10526,7 @@ class MarketFlowCRM {
                     </div>
                 </div>
             </div>
-        `;
+    `;
     }
 
     getReportsRoi() {
@@ -9104,7 +10575,7 @@ class MarketFlowCRM {
                     </div>
                 </div>
             </div>
-        `;
+    `;
     }
 
     getReportsLtv() {
@@ -9161,7 +10632,7 @@ class MarketFlowCRM {
                     </div>
                 </div>
             </div>
-        `;
+    `;
     }
 
     initializeRevenueReportChart() {
@@ -9279,7 +10750,7 @@ class MarketFlowCRM {
                     </div>
                 </div>
             </div>
-        `;
+    `;
     }
 
     getAIWorkflows() {
@@ -9321,7 +10792,7 @@ class MarketFlowCRM {
                     </div>
                 </div>
             </div>
-        `;
+    `;
     }
 
     getAISmartAlerts() {
@@ -9362,7 +10833,7 @@ class MarketFlowCRM {
                     `).join('')}
                 </div>
             </div>
-        `;
+    `;
     }
 
     getAIPredictions() {
@@ -9413,7 +10884,7 @@ class MarketFlowCRM {
                     </div>
                 </div>
             </div>
-        `;
+    `;
     }
 
     initializeLucideIcons() {
@@ -9474,28 +10945,39 @@ class MarketFlowCRM {
             resultsEl.classList.remove('hidden');
         };
 
-        const render = (query) => {
+        const typeColors = {
+            Client: 'bg-emerald-50 text-emerald-700',
+            Project: 'bg-blue-50 text-blue-700',
+            Invoice: 'bg-amber-50 text-amber-700',
+            Campaign: 'bg-purple-50 text-purple-700',
+            Lead: 'bg-rose-50 text-rose-700'
+        };
+
+        const renderResults = (query) => {
             if (!resultsEl) return;
             const q = (query || '').trim().toLowerCase();
             const matches = (q ? index.filter(item => item.search.includes(q)) : index).slice(0, 8);
             lastMatches = matches;
-            activeIndex = matches.length ? 0 : -1;
+            if (activeIndex >= matches.length) activeIndex = matches.length ? 0 : -1;
 
-            if (matches.length === 0) {
-                resultsEl.innerHTML = '<div class="p-3 text-sm text-slate-600">No results found</div>';
+            if (matches.length === 0 && q) {
+                resultsEl.innerHTML = `
+                    <div class="p-4 text-center">
+                        <svg class="w-8 h-8 mx-auto text-slate-300 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+                        <div class="text-sm font-semibold text-slate-500">No results for &ldquo;${q}&rdquo;</div>
+                        <div class="text-xs text-slate-400 mt-0.5">Try a client name, invoice number, or project</div>
+                    </div>`;
                 showResults();
                 return;
             }
 
-            resultsEl.innerHTML = matches.map((m, i) => `
-                <button class="w-full text-left px-3 py-2 transition-colors ${i === activeIndex ? 'bg-slate-50' : 'hover:bg-slate-50'}" data-target-section="${m.section}" data-target-subsection="${m.subsection}">
-                    <div class="flex items-center justify-between">
-                        <div class="text-sm font-medium text-slate-900">${m.title}</div>
-                        <div class="text-[11px] text-slate-500">${m.type}</div>
-                    </div>
-                    <div class="text-xs text-slate-600 mt-0.5">${m.subtitle}</div>
-                </button>
-            `).join('');
+            if (!q) {
+                resultsEl.innerHTML = `<div class="px-3 pt-3 pb-1 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Recent / Quick Access</div>` +
+                    matches.map((m, i) => buildRow(m, i)).join('');
+            } else {
+                resultsEl.innerHTML = `<div class="px-3 pt-3 pb-1 text-[10px] font-bold text-slate-400 uppercase tracking-widest">${matches.length} result${matches.length !== 1 ? 's' : ''}</div>` +
+                    matches.map((m, i) => buildRow(m, i)).join('');
+            }
             showResults();
 
             resultsEl.querySelectorAll('button[data-target-section]').forEach(btn => {
@@ -9509,6 +10991,23 @@ class MarketFlowCRM {
                 });
             });
         };
+
+        const buildRow = (m, i) => {
+            const badge = typeColors[m.type] || 'bg-slate-100 text-slate-600';
+            const isActive = i === activeIndex;
+            return `<button class="w-full text-left px-3 py-2.5 flex items-center gap-3 transition-colors ${isActive ? 'bg-purple-50' : 'hover:bg-slate-50'}" data-target-section="${m.section}" data-target-subsection="${m.subsection}">
+                <div class="flex-1 min-w-0">
+                    <div class="flex items-center gap-2">
+                        <span class="text-sm font-semibold text-slate-900 truncate">${m.title}</span>
+                        <span class="px-1.5 py-0.5 text-[10px] font-bold rounded-full flex-shrink-0 ${badge}">${m.type}</span>
+                    </div>
+                    <div class="text-xs text-slate-500 truncate mt-0.5">${m.subtitle}</div>
+                </div>
+                <svg class="w-3.5 h-3.5 text-slate-300 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+            </button>`;
+        };
+
+        const render = (query) => renderResults(query);
 
         if (searchInput) {
             searchInput.addEventListener('input', (e) => render(e.target.value));
@@ -9663,20 +11162,19 @@ class MarketFlowCRM {
             list.innerHTML = items.map(n => {
                 const meta = sectionLabel(n.type);
                 return `
-                    <button data-notification-id="${n.id}" class="w-full text-left p-4 border-b border-slate-100 hover:bg-slate-50 transition">
-                        <div class="flex items-start justify-between gap-3">
-                            <div class="min-w-0">
+                    <button data-notification-id="${n.id}" class="w-full text-left p-4 border-b border-slate-100 hover:bg-slate-50 transition-colors">
+                        <div class="flex items-start gap-3">
+                            <div class="min-w-0 flex-1">
                                 <div class="flex items-center gap-2">
                                     <span class="px-2 py-0.5 text-[11px] font-medium bg-${meta.color}-50 text-${meta.color}-700 rounded-full">${meta.label}</span>
-                                    ${n.unread ? '<span class="w-2 h-2 rounded-full bg-red-500"></span>' : ''}
+                                    ${n.unread ? '<span class="w-2 h-2 rounded-full bg-red-500 flex-shrink-0"></span>' : ''}
                                 </div>
-                                <div class="mt-2 text-sm font-semibold text-slate-900 truncate">${n.title}</div>
-                                <div class="text-xs text-slate-600 mt-1">${n.message}</div>
-                                <div class="text-[11px] text-slate-500 mt-2">${n.time}</div>
+                                <div class="mt-1.5 text-sm font-semibold text-slate-900 truncate">${n.title}</div>
+                                <div class="text-xs text-slate-500 mt-0.5 line-clamp-2">${n.message}</div>
+                                <div class="text-[11px] text-slate-400 mt-1.5">${n.time}</div>
                             </div>
                         </div>
-                    </button>
-                `;
+                    </button>`;
             }).join('');
 
             updateBadge();
@@ -9748,7 +11246,7 @@ class MarketFlowCRM {
 
         if (logout) {
             logout.addEventListener('click', () => {
-                try { localStorage.removeItem('bezent_user_email'); } catch (_) { }
+                try { localStorage.removeItem('APJ 3D Solutions_user_email'); } catch (_) { }
                 window.location.href = 'index.html';
             });
         }
@@ -9810,34 +11308,34 @@ class MarketFlowCRM {
         try {
             this.getStoredClients().forEach(c => {
                 if (!c?.name) return;
-                dynamic.push({ type: 'Client', title: c.name, subtitle: `Owner: ${c.owner || '—'}`, section: 'leads', subsection: 'clients' });
+                dynamic.push({ type: 'Client', title: c.name, subtitle: `Owner: ${c.owner || '—'} `, section: 'leads', subsection: 'clients' });
             });
         } catch (_) { }
 
         try {
             this.getStoredProjects().forEach(p => {
                 if (!p?.name) return;
-                dynamic.push({ type: 'Project', title: p.name, subtitle: `Client: ${p.client || '—'}`, section: 'projects', subsection: 'active' });
+                dynamic.push({ type: 'Project', title: p.name, subtitle: `Client: ${p.client || '—'} `, section: 'projects', subsection: 'active' });
             });
         } catch (_) { }
 
         try {
             this.getStoredInvoices().forEach(i => {
                 if (!i?.no) return;
-                dynamic.push({ type: 'Invoice', title: i.no, subtitle: `${i.client || '—'} • ${i.amount || ''} • ${i.status || ''}`, section: 'billing', subsection: 'invoices' });
+                dynamic.push({ type: 'Invoice', title: i.no, subtitle: `${i.client || '—'} • ${i.amount || ''} • ${i.status || ''} `, section: 'billing', subsection: 'invoices' });
             });
         } catch (_) { }
 
         try {
             this.getStoredCampaigns().forEach(c => {
                 if (!c?.name) return;
-                dynamic.push({ type: 'Campaign', title: c.name, subtitle: `Status: ${c.status || 'Draft'}`, section: 'campaigns', subsection: 'email' });
+                dynamic.push({ type: 'Campaign', title: c.name, subtitle: `Status: ${c.status || 'Draft'} `, section: 'campaigns', subsection: 'email' });
             });
         } catch (_) { }
 
         return [...dynamic, ...items].map(i => ({
             ...i,
-            search: `${i.type} ${i.title} ${i.subtitle}`.toLowerCase()
+            search: `${i.type} ${i.title} ${i.subtitle} `.toLowerCase()
         }));
     }
 
@@ -9888,7 +11386,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div style="font-weight:800;">MarketFlow failed to start</div>
                 <pre style="margin-top:10px;white-space:pre-wrap;font-size:12px;line-height:1.4;color:#9f1239;">${String(msg).replace(/</g, '&lt;')}</pre>
             </div>
-        `;
+    `;
     };
 
     window.addEventListener('error', (e) => {

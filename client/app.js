@@ -5432,6 +5432,7 @@ class MarketFlowCRM {
                                     <th class="text-left px-4 py-3 font-medium">Email</th>
                                     <th class="text-left px-4 py-3 font-medium">Owner</th>
                                     <th class="text-left px-4 py-3 font-medium">Source</th>
+                                    <th class="text-left px-4 py-3 font-medium">Actions</th>
                                 </tr>
                                 <tr class="bg-white">
                                     <th class="px-4 py-3">
@@ -5462,6 +5463,7 @@ class MarketFlowCRM {
                                             ${sources.map(s => `<option>${s}</option>`).join('')}
                                         </select>
                                     </th>
+                                    <th class="px-4 py-3"></th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-slate-200">
@@ -5480,6 +5482,12 @@ class MarketFlowCRM {
                                             <td class="px-4 py-3 text-slate-700">${esc(c.email) || '—'}</td>
                                             <td class="px-4 py-3 text-slate-700">${esc(c.owner) || '—'}</td>
                                             <td class="px-4 py-3 text-slate-700">${esc(c.source) || '—'}</td>
+                                            <td class="px-4 py-3">
+                                                <div class="flex items-center gap-2">
+                                                    ${c.phone ? `<a href="tel:${esc(c.phone)}" title="Call ${esc(c.phone)}" style="display:inline-flex;align-items:center;gap:4px;padding:5px 11px;font-size:12px;font-weight:700;background:#15803d;color:#fff;border-radius:8px;text-decoration:none;white-space:nowrap;transition:background 150ms;" onmouseover="this.style.background='#166534'" onmouseout="this.style.background='#15803d'"><i data-lucide="phone" style="width:12px;height:12px;"></i>Call</a>` : '<span style="color:#cbd5e1;font-size:12px;">—</span>'}
+                                                    ${c.email ? `<a href="mailto:${esc(c.email)}" title="Email ${esc(c.email)}" style="display:inline-flex;align-items:center;gap:4px;padding:5px 11px;font-size:12px;font-weight:700;background:#7c3aed;color:#fff;border-radius:8px;text-decoration:none;white-space:nowrap;transition:background 150ms;" onmouseover="this.style.background='#6d28d9'" onmouseout="this.style.background='#7c3aed'"><i data-lucide="mail" style="width:12px;height:12px;"></i>Email</a>` : ''}
+                                                </div>
+                                            </td>
                                         </tr>
                                     `;
         }).join('')}

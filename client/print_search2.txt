@@ -1,0 +1,2 @@
+﻿6112:     renderQuotationDocumentHTML(q) {
+6245:         const html = this.renderQuotationDocumentHTML(q);

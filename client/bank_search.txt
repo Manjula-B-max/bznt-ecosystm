@@ -1,0 +1,22 @@
+﻿254:                                     <input data-rfp-field="bank.beneficiary" value="${esc(bank.beneficiary)}" class="mt-1 w-full b
+258:                                     <input data-rfp-field="bank.bankName" value="${esc(bank.bankName)}" class="mt-1 w-full border 
+262:                                     <input data-rfp-field="bank.accountNo" value="${esc(bank.accountNo)}" class="mt-1 w-full borde
+265:                                     <label class="text-xs font-medium text-slate-600">IFSC Code</label>
+266:                                     <input data-rfp-field="bank.ifsc" value="${esc(bank.ifsc)}" class="mt-1 w-full border border-s
+5514:                                     <input data-quote-field="bank.bankName" value="${esc(bank.bankName)}" class="mt-1 w-full borde
+5518:                                     <input data-quote-field="bank.accountNo" value="${esc(bank.accountNo)}" class="mt-1 w-full bor
+5521:                                     <label class="text-xs font-medium text-slate-600">IFSC</label>
+5522:                                     <input data-quote-field="bank.ifsc" value="${esc(bank.ifsc)}" class="mt-1 w-full border border
+5580:                 bankName: 'Punjab National Bank',
+5581:                 accountNo: '4962002100007908',
+5582:                 ifsc: 'PUNB0496200'
+5822:                     <div class="muted">Beneficiary name: ${esc(bank.beneficiary)}</div>
+5823:                     <div class="muted">Bank Name: ${esc(bank.bankName)}</div>
+5824:                     <div class="muted">Account Number: ${esc(bank.accountNo)}</div>
+5825:                     <div class="muted">IFSC Code: ${esc(bank.ifsc)}</div>
+5956:                 bankName: 'Punjab National Bank',
+5957:                 accountNo: '49620021000079',
+5958:                 ifsc: 'PUNB0496200'
+6232:                         <div class="muted">Bank Name: ${esc(bank.bankName)}</div>
+6233:                         <div class="muted">A/c No.: ${esc(bank.accountNo)}</div>
+6234:                         <div class="muted">Branch & IFSC Code: ${esc(bank.ifsc)}</div>

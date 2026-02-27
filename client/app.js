@@ -1,4 +1,4 @@
-﻿// MarketFlow CRM Dashboard Application
+// MarketFlow CRM Dashboard Application
 class MarketFlowCRM {
     constructor() {
         this.currentSection = 'dashboard';
@@ -27,7 +27,7 @@ class MarketFlowCRM {
 
         return `
             <div class="mt-2">
-                <div class="flex items-center justify-between">
+                <div class="flex flex-wrap items-start justify-between gap-3">
                     ${stages.map((s, i) => {
             const done = i <= currentIdx;
             const isLast = i === stages.length - 1;
@@ -66,9 +66,9 @@ class MarketFlowCRM {
 
         return `
             <div class="space-y-6 fade-in">
-                <div class="flex items-center justify-between">
+                <div class="flex flex-wrap items-start justify-between gap-3">
                     <div>
-                        <h2 class="text-2xl font-semibold text-slate-900">RFP Templates</h2>
+                        <h2 class="text-xl sm:text-2xl font-semibold text-slate-900">RFP Templates</h2>
                         <p class="text-sm text-slate-500">Fill RFP sections, reuse line-items quotation, then print</p>
                     </div>
                     <div class="flex gap-2">
@@ -181,7 +181,7 @@ class MarketFlowCRM {
                     </div>
 
                     <div>
-                        <div class="flex items-center justify-between">
+                        <div class="flex flex-wrap items-start justify-between gap-3">
                             <div class="text-sm font-semibold text-slate-900">11. Service Cost / Quotation</div>
                             <div class="flex items-center gap-3">
                                 <div class="text-xs text-slate-500">Tax: <span class="font-semibold text-slate-900">IGST</span> @ <span class="font-semibold text-slate-900">18%</span></div>
@@ -196,8 +196,8 @@ class MarketFlowCRM {
                             </div>
                         </div>
 
-                        <div class="mt-3 overflow-x-auto">
-                            <table class="w-full text-sm">
+                        <div class="mt-3 overflow-x-auto -mx-2 sm:mx-0">
+                            <table class="w-full text-sm" style="min-width: 800px;">
                                 <thead class="bg-slate-50 border-b border-slate-200">
                                     <tr>
                                         <th class="text-left px-3 py-2 font-medium text-slate-700">Sl</th>
@@ -317,7 +317,7 @@ class MarketFlowCRM {
                 <label style="display:block;font-size:12px;font-weight:700;color:#475569;">Client Name</label>
                 <input name="name" required style="margin-top:6px;width:100%;border:1px solid #e2e8f0;border-radius:12px;padding:10px 12px;font-size:14px;" value="${esc(name)}" />
             </div>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+            <div style="display:grid;grid-template-columns:1fr;gap:10px;" class="sm-grid-2col">
                 <div>
                     <label style="display:block;font-size:12px;font-weight:700;color:#475569;">Owner</label>
                     <input name="owner" style="margin-top:6px;width:100%;border:1px solid #e2e8f0;border-radius:12px;padding:10px 12px;font-size:14px;" value="${esc(c.owner || '')}" />
@@ -327,7 +327,7 @@ class MarketFlowCRM {
                     <input name="industry" style="margin-top:6px;width:100%;border:1px solid #e2e8f0;border-radius:12px;padding:10px 12px;font-size:14px;" value="${esc(c.industry || '')}" />
                 </div>
             </div>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+            <div style="display:grid;grid-template-columns:1fr;gap:10px;" class="sm-grid-2col">
                 <div>
                     <label style="display:block;font-size:12px;font-weight:700;color:#475569;">Email</label>
                     <input name="email" style="margin-top:6px;width:100%;border:1px solid #e2e8f0;border-radius:12px;padding:10px 12px;font-size:14px;" value="${esc(c.email || '')}" />
@@ -885,7 +885,7 @@ class MarketFlowCRM {
         const esc = (v) => String(v ?? '').replace(/</g, '&lt;');
         this.openModal(`Campaign: ${esc(c.name || '')}`, `
             <div style="display:grid;gap:10px;">
-                <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+                <div style="display:grid;grid-template-columns:1fr;gap:10px;" class="sm-grid-2col">
                     <div>
                         <div style="font-size:12px;font-weight:700;color:#64748b;">Status</div>
                         <div style="margin-top:4px;font-weight:800;color:#0f172a;">${esc(c.status || 'Draft')}</div>
@@ -895,7 +895,7 @@ class MarketFlowCRM {
                         <div style="margin-top:4px;font-weight:800;color:#0f172a;">${Number(c.audience || 0)}</div>
                     </div>
                 </div>
-                <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+                <div style="display:grid;grid-template-columns:1fr;gap:10px;" class="sm-grid-2col">
                     <div>
                         <div style="font-size:12px;font-weight:700;color:#64748b;">Open rate</div>
                         <div style="margin-top:4px;font-weight:800;color:#0f172a;">${Number(c.open || 0)}%</div>
@@ -1404,7 +1404,7 @@ class MarketFlowCRM {
         const i = invoice || {};
         this.openModal(`Invoice ${String(i.no || '').replace(/</g, '&lt;')}`, `
             <div class="text-sm" style="display:grid;gap:10px;">
-                <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+                <div style="display:grid;grid-template-columns:1fr;gap:10px;" class="sm-grid-2col">
                     <div>
                         <div style="font-size:12px;font-weight:700;color:#64748b;">Client</div>
                         <div style="margin-top:4px;font-weight:800;color:#0f172a;">${String(i.client || '—').replace(/</g, '&lt;')}</div>
@@ -1414,7 +1414,7 @@ class MarketFlowCRM {
                         <div style="margin-top:4px;font-weight:800;color:#0f172a;">${String(i.amount || '—').replace(/</g, '&lt;')}</div>
                     </div>
                 </div>
-                <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+                <div style="display:grid;grid-template-columns:1fr;gap:10px;" class="sm-grid-2col">
                     <div>
                         <div style="font-size:12px;font-weight:700;color:#64748b;">Status</div>
                         <div style="margin-top:4px;font-weight:800;color:#0f172a;">${String(i.status || '—').replace(/</g, '&lt;')}</div>
@@ -1582,6 +1582,359 @@ class MarketFlowCRM {
         this.showToast('Client saved.');
     }
 
+    getTemplateColumns(type) {
+        if (type === 'lead') {
+            return ['Company', 'Contact', 'Lead Source', 'Assigned To', 'Next Action'];
+        }
+        if (type === 'client') {
+            return ['Client Name', 'Email', 'Phone', 'Industry', 'Owner', 'Lead Source', 'City', 'Notes'];
+        }
+        return [
+            'Client', 'Project Name', 'Start Date', 'Duration', 'Budget', 'Assigned Team',
+            'Project Code', 'Service Code', 'Vendor Code', 'Company Name', 'Location', 'Quantity',
+            'Project Lead', 'Assigned By', 'Assigned To', 'Project Description', 'Part Description',
+            '2D Model Status', '3D Model Status', '3D Scan Status', 'FEA Status',
+            'QC Inspection Status', 'Approval Status', 'GL Approval Status',
+            'Revision Status', 'Delivery Report Status', 'SOP Daily Report Status',
+            'Project Roadmap Submitted', 'Dashboard Updated', 'Daily Report Updated',
+            'Photo Attached', 'Overall Project Status', 'Post Completion Status', 'Physical Part Status',
+            'DC Date', 'DC Number', 'Delivery Status', 'Delivery Date', 'Delivery Confirmation',
+            'Quotation Date', 'Quotation Number', 'PO Date', 'PO Number', 'PO Value',
+            'Converted By', 'Visit Conducted',
+            'Invoice Date', 'Invoice Number', 'Invoice Amount', 'Past Invoice Amount',
+            'Payment Terms', 'Payment Type', 'Payment Due Date',
+            'Payment Received Date', 'Payment Received Amount',
+            'Balance Payment Due Date', 'Balance Payment Amount',
+            'Client Rating', 'Job Rating', 'Quality Rating', 'Service Rating',
+            'Performance Rating', 'Feedback Comments', 'Additional Notes'
+        ];
+    }
+
+    downloadTemplate(type) {
+        if (typeof XLSX === 'undefined') { this.showToast('Excel library not loaded. Please refresh.'); return; }
+        const cols = this.getTemplateColumns(type);
+        const ws = XLSX.utils.aoa_to_sheet([cols]);
+        // Set column widths
+        ws['!cols'] = cols.map(c => ({ wch: Math.max(c.length + 4, 16) }));
+        const wb = XLSX.utils.book_new();
+        const sheetName = type === 'client' ? 'Clients' : type === 'lead' ? 'Leads' : 'Projects';
+        const fileName = type === 'client' ? 'Client_Upload_Template.xlsx' : type === 'lead' ? 'Lead_Upload_Template.xlsx' : 'Project_Upload_Template.xlsx';
+        XLSX.utils.book_append_sheet(wb, ws, sheetName);
+        XLSX.writeFile(wb, fileName);
+        this.showToast('Template downloaded.');
+    }
+
+    showUploadModal(type) {
+        const cols = this.getTemplateColumns(type);
+        const title = type === 'client' ? 'Bulk Upload Clients' : type === 'lead' ? 'Bulk Upload Leads' : 'Bulk Upload Projects';
+        const fileInputId = type === 'client' ? 'clientExcelUpload' : type === 'lead' ? 'leadExcelUpload' : 'projectExcelUpload';
+
+        // Remove any existing upload modal
+        const existingModal = document.getElementById('bulkUploadModal');
+        if (existingModal) existingModal.remove();
+
+        const overlay = document.createElement('div');
+        overlay.id = 'bulkUploadModal';
+        overlay.style.cssText = 'position:fixed;inset:0;z-index:9998;display:flex;align-items:center;justify-content:center;background:rgba(15,23,42,0.5);animation:fadeIn 0.2s ease;';
+        overlay.innerHTML = `
+            <div style="background:#fff;border-radius:16px;box-shadow:0 25px 60px rgba(0,0,0,0.2);max-width:560px;width:92%;max-height:85vh;overflow-y:auto;padding:28px 32px;">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;">
+                    <div>
+                        <div style="font-size:18px;font-weight:700;color:#0f172a;">${title}</div>
+                        <div style="font-size:13px;color:#64748b;margin-top:2px;">Download the template, fill your data, then upload</div>
+                    </div>
+                    <button id="bulkUploadModalClose" style="width:32px;height:32px;border-radius:8px;border:1px solid #e2e8f0;background:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:18px;color:#64748b;transition:background 150ms;" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='#fff'">&times;</button>
+                </div>
+
+                <div style="background:#fefce8;border:1px solid #fde68a;border-radius:12px;padding:12px 16px;margin-bottom:20px;display:flex;align-items:flex-start;gap:10px;">
+                    <span style="font-size:16px;flex-shrink:0;margin-top:1px;">💡</span>
+                    <div style="font-size:12px;color:#92400e;line-height:1.5;">
+                        <strong>Tip:</strong> Download the template first, fill in your data keeping the header row intact, then upload the file. Column names are matched flexibly — minor spelling variations are handled automatically.
+                    </div>
+                </div>
+
+                <div style="display:flex;gap:12px;">
+                    <button id="bulkUploadDownloadBtn" style="flex:1;padding:12px 16px;font-size:14px;font-weight:700;background:#059669;color:#fff;border:none;border-radius:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;transition:background 150ms;" onmouseover="this.style.background='#047857'" onmouseout="this.style.background='#059669'">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                        Download Template
+                    </button>
+                    <button id="bulkUploadUploadBtn" style="flex:1;padding:12px 16px;font-size:14px;font-weight:700;background:#9333ea;color:#fff;border:none;border-radius:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;transition:background 150ms;" onmouseover="this.style.background='#7c3aed'" onmouseout="this.style.background='#9333ea'">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                        Upload Excel
+                    </button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(overlay);
+
+        // Close handlers
+        const closeModal = () => { overlay.remove(); };
+        document.getElementById('bulkUploadModalClose').addEventListener('click', closeModal);
+        overlay.addEventListener('click', (e) => { if (e.target === overlay) closeModal(); });
+
+        // Download template
+        document.getElementById('bulkUploadDownloadBtn').addEventListener('click', () => {
+            this.downloadTemplate(type);
+        });
+
+        // Upload file
+        document.getElementById('bulkUploadUploadBtn').addEventListener('click', () => {
+            const fileInput = document.getElementById(fileInputId);
+            if (fileInput) {
+                fileInput.value = '';
+                fileInput.onchange = (ev) => {
+                    closeModal();
+                    if (type === 'client') this.handleClientExcelUpload(ev);
+                    else if (type === 'lead') this.handleLeadExcelUpload(ev);
+                    else this.handleProjectExcelUpload(ev);
+                };
+                fileInput.click();
+            }
+        });
+    }
+
+    handleClientExcelUpload(event) {
+        const file = event?.target?.files?.[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            try {
+                if (typeof XLSX === 'undefined') { this.showToast('Excel library not loaded. Please refresh.'); return; }
+                const wb = XLSX.read(e.target.result, { type: 'array' });
+                const ws = wb.Sheets[wb.SheetNames[0]];
+                const rows = XLSX.utils.sheet_to_json(ws, { defval: '' });
+                if (!rows.length) { this.showToast('No data found in the file.'); return; }
+
+                const normalize = (s) => String(s || '').trim().toLowerCase().replace(/[^a-z0-9]/g, '');
+                const find = (row, ...candidates) => {
+                    for (const key of Object.keys(row)) {
+                        const nk = normalize(key);
+                        for (const c of candidates) {
+                            if (nk === normalize(c) || nk.includes(normalize(c))) return String(row[key] ?? '').trim();
+                        }
+                    }
+                    return '';
+                };
+
+                let saved = 0, failed = 0;
+                for (const row of rows) {
+                    const name = find(row, 'Client Name', 'Name', 'Company', 'Company Name');
+                    if (!name) { failed++; continue; }
+                    const res = this.saveClient({
+                        name,
+                        owner: find(row, 'Owner', 'Account Owner', 'Sales Owner') || '',
+                        email: find(row, 'Email', 'Email ID', 'E-mail', 'Mail') || '',
+                        phone: find(row, 'Phone', 'Phone Number', 'Mobile', 'Contact', 'Contact Number') || '',
+                        industry: find(row, 'Industry', 'Sector') || '',
+                        leadSource: find(row, 'Lead Source', 'Source') || '',
+                        notes: find(row, 'Notes', 'Remarks', 'Comments') || '',
+                        stage: 'Active',
+                        city: find(row, 'City', 'Location') || '—'
+                    });
+                    if (res.ok) saved++; else failed++;
+                }
+                this.showToast(`Uploaded: ${saved} clients saved${failed ? `, ${failed} skipped` : ''}.`);
+                this.switchSection('leads');
+                this.switchSubSection('client_directory');
+                this.renderContent();
+                this.initializeLucideIcons();
+            } catch (err) {
+                console.error('Client Excel upload error:', err);
+                this.showToast('Error reading file. Please use .xlsx or .csv format.');
+            }
+        };
+        reader.readAsArrayBuffer(file);
+    }
+
+    handleLeadExcelUpload(event) {
+        const file = event?.target?.files?.[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            try {
+                if (typeof XLSX === 'undefined') { this.showToast('Excel library not loaded. Please refresh.'); return; }
+                const wb = XLSX.read(e.target.result, { type: 'array' });
+                const ws = wb.Sheets[wb.SheetNames[0]];
+                const rows = XLSX.utils.sheet_to_json(ws, { defval: '' });
+                if (!rows.length) { this.showToast('No data found in the file.'); return; }
+
+                const normalize = (s) => String(s || '').trim().toLowerCase().replace(/[^a-z0-9]/g, '');
+                const find = (row, ...candidates) => {
+                    for (const key of Object.keys(row)) {
+                        const nk = normalize(key);
+                        for (const c of candidates) {
+                            if (nk === normalize(c) || nk.includes(normalize(c))) return String(row[key] ?? '').trim();
+                        }
+                    }
+                    return '';
+                };
+
+                let saved = 0, failed = 0;
+                for (const row of rows) {
+                    const company = find(row, 'Company', 'Company Name', 'Name');
+                    if (!company) { failed++; continue; }
+                    const res = this.saveLead({
+                        company,
+                        contact: find(row, 'Contact', 'Phone', 'Email', 'Contact Number') || '',
+                        source: find(row, 'Lead Source', 'Source') || 'LinkedIn',
+                        assignedTo: find(row, 'Assigned To', 'Assigned', 'Owner') || '',
+                        nextAction: find(row, 'Next Action', 'Action') || 'Follow-up',
+                        stage: 'New Lead',
+                        feedbackStatus: 'Pending'
+                    });
+                    if (res.ok) saved++; else failed++;
+                }
+                this.showToast(`Uploaded: ${saved} leads saved${failed ? `, ${failed} skipped` : ''}.`);
+                this.switchSection('leads');
+                this.switchSubSection('lead_directory');
+                this.renderContent();
+                this.initializeLucideIcons();
+            } catch (err) {
+                console.error('Lead Excel upload error:', err);
+                this.showToast('Error reading file. Please use .xlsx or .csv format.');
+            }
+        };
+        reader.readAsArrayBuffer(file);
+    }
+
+    handleProjectExcelUpload(event) {
+        const file = event?.target?.files?.[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            try {
+                if (typeof XLSX === 'undefined') { this.showToast('Excel library not loaded. Please refresh.'); return; }
+                const wb = XLSX.read(e.target.result, { type: 'array' });
+                const ws = wb.Sheets[wb.SheetNames[0]];
+                const rows = XLSX.utils.sheet_to_json(ws, { defval: '' });
+                if (!rows.length) { this.showToast('No data found in the file.'); return; }
+
+                const normalize = (s) => String(s || '').trim().toLowerCase().replace(/[^a-z0-9]/g, '');
+                const find = (row, ...candidates) => {
+                    for (const key of Object.keys(row)) {
+                        const nk = normalize(key);
+                        for (const c of candidates) {
+                            if (nk === normalize(c) || nk.includes(normalize(c))) return String(row[key] ?? '').trim();
+                        }
+                    }
+                    return '';
+                };
+
+                let saved = 0, failed = 0;
+                for (const row of rows) {
+                    const name = find(row, 'Project Name', 'Name', 'Project');
+                    if (!name) { failed++; continue; }
+
+                    const tracking = {
+                        model2dStatus: find(row, '2D Model Status') || 'Pending',
+                        model3dStatus: find(row, '3D Model Status') || 'Pending',
+                        scan3dStatus: find(row, '3D Scan Status') || 'Pending',
+                        feaStatus: find(row, 'FEA Status') || 'Pending',
+                        qcInspectionStatus: find(row, 'QC Inspection Status', 'QC / Inspection Status') || 'Pending',
+                        approvalStatus: find(row, 'Approval Status') || 'Pending',
+                        glApprovalStatus: find(row, 'GL Approval Status') || 'Pending',
+                        revisionStatus: find(row, 'Revision Status', 'Correction / Revision Status') || 'Pending',
+                        deliveryReportStatus: find(row, 'Delivery Report Status') || 'Pending',
+                        sopDailyReportStatus: find(row, 'SOP Daily Report Status', 'SOP-Based Daily Report Status') || 'Pending'
+                    };
+
+                    const monitoring = {
+                        roadmapSubmitted: find(row, 'Roadmap Submitted', 'Project Roadmap Submitted') || 'No',
+                        dashboardUpdated: find(row, 'Dashboard Updated') || 'No',
+                        dailyReportUpdated: find(row, 'Daily Report Updated') || 'No',
+                        photoAttached: find(row, 'Photo Attached') || 'No',
+                        overallProjectStatus: find(row, 'Overall Project Status') || 'Pending / Delayed',
+                        postCompletionStatus: find(row, 'Post Completion Status') || '',
+                        physicalPartStatus: find(row, 'Physical Part Status') || ''
+                    };
+
+                    const dispatch = {
+                        dcDate: find(row, 'DC Date') || '',
+                        dcNumber: find(row, 'DC Number') || '',
+                        deliveryStatus: find(row, 'Delivery Status') || 'Pending',
+                        deliveryDate: find(row, 'Delivery Date') || '',
+                        deliveryConfirmation: find(row, 'Delivery Confirmation') || 'No'
+                    };
+
+                    const purchase = {
+                        quotationDate: find(row, 'Quotation Date') || '',
+                        quotationNumber: find(row, 'Quotation Number') || '',
+                        poDate: find(row, 'PO Date') || '',
+                        poNumber: find(row, 'PO Number') || '',
+                        poValue: find(row, 'PO Value') || '',
+                        convertedBy: find(row, 'Converted By') || '',
+                        visitConducted: find(row, 'Visit Conducted') || 'No'
+                    };
+
+                    const payment = {
+                        invoiceDate: find(row, 'Invoice Date') || '',
+                        invoiceNumber: find(row, 'Invoice Number') || '',
+                        invoiceAmount: find(row, 'Invoice Amount') || '',
+                        pastInvoiceAmount: find(row, 'Past Invoice Amount') || '',
+                        paymentTerms: find(row, 'Payment Terms') || '',
+                        paymentType: find(row, 'Payment Type') || '',
+                        paymentDueDate: find(row, 'Payment Due Date') || '',
+                        paymentReceivedDate: find(row, 'Payment Received Date') || '',
+                        paymentReceivedAmount: find(row, 'Payment Received Amount') || '',
+                        balancePaymentDueDate: find(row, 'Balance Payment Due Date') || '',
+                        balancePaymentAmount: find(row, 'Balance Payment Amount') || ''
+                    };
+
+                    const ratings = {
+                        clientRating: find(row, 'Client Rating') || '',
+                        jobRating: find(row, 'Job Rating') || '',
+                        qualityRating: find(row, 'Quality Rating') || '',
+                        serviceRating: find(row, 'Service Rating') || '',
+                        performanceRating: find(row, 'Performance Rating') || '',
+                        feedbackComments: find(row, 'Feedback', 'Feedback Comments') || '',
+                        additionalNotes: find(row, 'Additional Notes') || ''
+                    };
+
+                    const res = this.saveProject({
+                        client: find(row, 'Client', 'Client Name', 'Company') || '',
+                        name,
+                        startDate: find(row, 'Start Date') || '',
+                        duration: find(row, 'Duration') || '',
+                        budget: find(row, 'Budget') || '',
+                        team: find(row, 'Team', 'Assigned Team') || '',
+                        progress: 0,
+                        status: 'On Track',
+                        statusColor: 'emerald',
+                        identification: {
+                            projectCode: find(row, 'Project Code') || '',
+                            serviceCode: find(row, 'Service Code') || '',
+                            vendorCode: find(row, 'Vendor Code') || '',
+                            companyName: find(row, 'Company Name', 'Company') || '',
+                            projectDescription: find(row, 'Project Description', 'Description') || '',
+                            partDescription: find(row, 'Part Description') || '',
+                            location: find(row, 'Location') || '',
+                            qty: find(row, 'Quantity', 'QTY', 'Qty') || '',
+                            projectLead: find(row, 'Project Lead') || '',
+                            assignedBy: find(row, 'Assigned By') || '',
+                            assignedTo: find(row, 'Assigned To', 'Assigned To Employee') || ''
+                        },
+                        tracking,
+                        monitoring,
+                        dispatch,
+                        purchase,
+                        payment,
+                        ratings
+                    });
+                    if (res.ok) saved++; else failed++;
+                }
+                this.showToast(`Uploaded: ${saved} projects created${failed ? `, ${failed} skipped` : ''}.`);
+                this.switchSection('projects');
+                this.switchSubSection('active');
+                this.renderContent();
+                this.initializeLucideIcons();
+            } catch (err) {
+                console.error('Project Excel upload error:', err);
+                this.showToast('Error reading file. Please use .xlsx or .csv format.');
+            }
+        };
+        reader.readAsArrayBuffer(file);
+    }
+
     saveProjectFromCurrentForm() {
         const client = document.getElementById('projectClient')?.value || '';
         const name = document.getElementById('projectName')?.value || '';
@@ -1620,7 +1973,7 @@ class MarketFlowCRM {
                 <label style="display:block;font-size:12px;font-weight:700;color:#475569;">Campaign Name</label>
                 <input name="name" required style="margin-top:6px;width:100%;border:1px solid #e2e8f0;border-radius:12px;padding:10px 12px;font-size:14px;" placeholder="e.g., New Service Launch" />
             </div>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+            <div style="display:grid;grid-template-columns:1fr;gap:10px;" class="sm-grid-2col">
                 <div>
                     <label style="display:block;font-size:12px;font-weight:700;color:#475569;">Audience</label>
                     <input name="audience" type="number" min="0" style="margin-top:6px;width:100%;border:1px solid #e2e8f0;border-radius:12px;padding:10px 12px;font-size:14px;" placeholder="0" />
@@ -1665,7 +2018,7 @@ class MarketFlowCRM {
     createInvoiceViaModal(prefillClient) {
         const client = String(prefillClient || '').trim();
         this.openModal('Create Invoice', `
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+            <div style="display:grid;grid-template-columns:1fr;gap:10px;" class="sm-grid-2col">
                 <div>
                     <label style="display:block;font-size:12px;font-weight:700;color:#475569;">Invoice No</label>
                     <input name="no" required style="margin-top:6px;width:100%;border:1px solid #e2e8f0;border-radius:12px;padding:10px 12px;font-size:14px;" placeholder="INV-125" />
@@ -1679,7 +2032,7 @@ class MarketFlowCRM {
                 <label style="display:block;font-size:12px;font-weight:700;color:#475569;">Client</label>
                 <input name="client" required style="margin-top:6px;width:100%;border:1px solid #e2e8f0;border-radius:12px;padding:10px 12px;font-size:14px;" placeholder="Client name" value="${client.replace(/</g, '&lt;')}" />
             </div>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+            <div style="display:grid;grid-template-columns:1fr;gap:10px;" class="sm-grid-2col">
                 <div>
                     <label style="display:block;font-size:12px;font-weight:700;color:#475569;">Status</label>
                     <select name="status" style="margin-top:6px;width:100%;border:1px solid #e2e8f0;border-radius:12px;padding:10px 12px;font-size:14px;">
@@ -2008,6 +2361,21 @@ class MarketFlowCRM {
                 } else {
                     this.showToast(result.message || 'Unable to save client.');
                 }
+                return true;
+            }
+
+            if (a === 'client:upload:trigger') {
+                this.showUploadModal('client');
+                return true;
+            }
+
+            if (a === 'project:upload:trigger') {
+                this.showUploadModal('project');
+                return true;
+            }
+
+            if (a === 'lead:upload:trigger') {
+                this.showUploadModal('lead');
                 return true;
             }
 
@@ -3246,15 +3614,14 @@ class MarketFlowCRM {
 
         // Update active tab
         document.querySelectorAll('.nav-tab').forEach(tab => {
-            tab.classList.remove('bg-purple-50', 'text-purple-700');
+            tab.classList.remove('active', 'bg-purple-50', 'text-purple-700');
             tab.classList.add('text-slate-600', 'hover:text-slate-900', 'hover:bg-slate-50');
         });
 
-        const activeTab = document.querySelector(`[data-section="${section}"]`);
-        if (activeTab) {
-            activeTab.classList.remove('text-slate-600', 'hover:text-slate-900', 'hover:bg-slate-50');
-            activeTab.classList.add('bg-purple-50', 'text-purple-700');
-        }
+        document.querySelectorAll(`[data-section="${section}"]`).forEach(tab => {
+            tab.classList.add('active');
+            tab.classList.remove('text-slate-600', 'hover:text-slate-900', 'hover:bg-slate-50');
+        });
 
         // Reset sub-section to default for each section
         this.currentSubSection = this.getDefaultSubSection(section);
@@ -3792,14 +4159,14 @@ class MarketFlowCRM {
     getPlaceholderScreen(title, subtitle) {
         return `
             <div class="space-y-6 fade-in">
-                <div class="flex items-center justify-between">
+                <div class="flex flex-wrap items-start justify-between gap-3">
                     <div>
-                        <h2 class="text-2xl font-semibold text-slate-900">${title}</h2>
+                        <h2 class="text-xl sm:text-2xl font-semibold text-slate-900">${title}</h2>
                         <p class="text-sm text-slate-500">${subtitle || ''}</p>
                     </div>
                     <button data-action="toast" class="px-4 py-2 text-sm font-medium bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">Action</button>
                 </div>
-                <div class="bg-white rounded-lg border border-slate-200 p-6 shadow-lg">
+                <div class="bg-white rounded-lg border border-slate-200 p-4 sm:p-6 shadow-lg">
                     <div class="text-sm text-slate-700">Coming soon.</div>
                 </div>
             </div>
@@ -3809,9 +4176,9 @@ class MarketFlowCRM {
     getLeadsRegistrationHub() {
         return `
             <div class="space-y-6 fade-in">
-                <div class="flex items-center justify-between">
+                <div class="flex flex-wrap items-start justify-between gap-3">
                     <div>
-                        <h2 class="text-2xl font-semibold text-slate-900">Registration</h2>
+                        <h2 class="text-xl sm:text-2xl font-semibold text-slate-900">Registration</h2>
                         <p class="text-sm text-slate-500">Choose what you want to register</p>
                     </div>
                 </div>
@@ -3867,17 +4234,17 @@ class MarketFlowCRM {
 
         return `
             <div class="space-y-6 fade-in">
-                <div class="flex items-center justify-between">
+                <div class="flex flex-wrap items-start justify-between gap-3">
                     <div>
-                        <h2 class="text-2xl font-semibold text-slate-900">SOP Daily Checklist</h2>
+                        <h2 class="text-xl sm:text-2xl font-semibold text-slate-900">SOP Daily Checklist</h2>
                         <p class="text-sm text-slate-500">Complete SOP and submit daily report</p>
                     </div>
                     <button data-action="toast" class="px-4 py-2 text-sm font-medium bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">Submit Daily Report</button>
                 </div>
 
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <div class="bg-white rounded-lg border border-slate-200 p-6 shadow-lg">
-                        <div class="flex items-center justify-between">
+                    <div class="bg-white rounded-lg border border-slate-200 p-4 sm:p-6 shadow-lg">
+                        <div class="flex flex-wrap items-start justify-between gap-3">
                             <h3 class="text-lg font-semibold text-slate-900">Checklist</h3>
                             <span class="px-2 py-1 text-xs font-medium bg-purple-50 text-purple-700 rounded-full">${pct}%</span>
                         </div>
@@ -3894,9 +4261,9 @@ class MarketFlowCRM {
                         </div>
                     </div>
 
-                    <div class="bg-white rounded-lg border border-slate-200 p-6 shadow-lg">
+                    <div class="bg-white rounded-lg border border-slate-200 p-4 sm:p-6 shadow-lg">
                         <h3 class="text-lg font-semibold text-slate-900">Daily Output Summary</h3>
-                        <div class="mt-4 grid grid-cols-2 gap-4">
+                        <div class="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
                             ${cards.map(c => `
                                 <div class="p-4 bg-slate-50 rounded-lg">
                                     <div class="text-xs text-slate-500">${c.label}</div>
@@ -3922,9 +4289,9 @@ class MarketFlowCRM {
         ];
         return `
             <div class="space-y-6 fade-in">
-                <div class="flex items-center justify-between">
+                <div class="flex flex-wrap items-start justify-between gap-3">
                     <div>
-                        <h2 class="text-2xl font-semibold text-slate-900">Delivery Tracker</h2>
+                        <h2 class="text-xl sm:text-2xl font-semibold text-slate-900">Delivery Tracker</h2>
                         <p class="text-sm text-slate-500">Timeline + delay tracker</p>
                     </div>
                     <button data-action="toast" class="px-4 py-2 text-sm font-medium bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">Export</button>
@@ -3932,7 +4299,7 @@ class MarketFlowCRM {
 
                 <div class="bg-white rounded-lg border border-slate-200 overflow-hidden">
                     <div class="overflow-x-auto">
-                        <table class="w-full text-sm">
+                        <table class="w-full text-sm" style="min-width: 800px;">
                             <thead class="bg-slate-50 text-slate-600">
                                 <tr>
                                     <th class="text-left px-4 py-3 font-medium">Project Name</th>
@@ -3966,9 +4333,9 @@ class MarketFlowCRM {
         return `
             <div class="space-y-6 fade-in">
                 <!-- KPI Cards -->
-                <div class="grid grid-cols-5 gap-4">
-                    <div class="bg-white rounded-lg border border-slate-200 p-6 shadow-lg">
-                        <div class="flex items-center justify-between mb-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
+                    <div class="bg-white rounded-lg border border-slate-200 p-4 sm:p-6 shadow-lg">
+                        <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
                             <i data-lucide="users" class="w-8 h-8 text-sky-600"></i>
                             <span class="text-xs font-medium text-green-600 bg-green-50 px-2 py-1 rounded-full">12%</span>
                         </div>
@@ -3977,8 +4344,8 @@ class MarketFlowCRM {
                         <div class="text-xs text-slate-500 mt-2">vs yesterday</div>
                     </div>
                     
-                    <div class="bg-white rounded-lg border border-slate-200 p-6 shadow-lg">
-                        <div class="flex items-center justify-between mb-4">
+                    <div class="bg-white rounded-lg border border-slate-200 p-4 sm:p-6 shadow-lg">
+                        <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
                             <i data-lucide="briefcase" class="w-8 h-8 text-indigo-600"></i>
                             <span class="text-xs font-medium text-green-600 bg-green-50 px-2 py-1 rounded-full">3 new</span>
                         </div>
@@ -3987,8 +4354,8 @@ class MarketFlowCRM {
                         <div class="text-xs text-slate-500 mt-2">this week</div>
                     </div>
                     
-                    <div class="bg-white rounded-lg border border-slate-200 p-6 shadow-lg">
-                        <div class="flex items-center justify-between mb-4">
+                    <div class="bg-white rounded-lg border border-slate-200 p-4 sm:p-6 shadow-lg">
+                        <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
                             <i data-lucide="indian-rupee" class="w-8 h-8 text-emerald-600"></i>
                             <span class="text-xs font-medium text-green-600 bg-green-50 px-2 py-1 rounded-full">27%</span>
                         </div>
@@ -3997,8 +4364,8 @@ class MarketFlowCRM {
                         <div class="text-xs text-slate-500 mt-2">vs last month</div>
                     </div>
                     
-                    <div class="bg-white rounded-lg border border-slate-200 p-6 shadow-lg">
-                        <div class="flex items-center justify-between mb-4">
+                    <div class="bg-white rounded-lg border border-slate-200 p-4 sm:p-6 shadow-lg">
+                        <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
                             <i data-lucide="credit-card" class="w-8 h-8 text-amber-600"></i>
                             <span class="text-xs font-medium text-orange-600 bg-orange-50 px-2 py-1 rounded-full">4 overdue</span>
                         </div>
@@ -4007,8 +4374,8 @@ class MarketFlowCRM {
                         <div class="text-xs text-slate-500 mt-2">invoices</div>
                     </div>
                     
-                    <div class="bg-white rounded-lg border border-slate-200 p-6 shadow-lg">
-                        <div class="flex items-center justify-between mb-4">
+                    <div class="bg-white rounded-lg border border-slate-200 p-4 sm:p-6 shadow-lg">
+                        <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
                             <i data-lucide="target" class="w-8 h-8 text-rose-600"></i>
                             <span class="text-xs font-medium text-red-600 bg-red-50 px-2 py-1 rounded-full">-5%</span>
                         </div>
@@ -4019,10 +4386,10 @@ class MarketFlowCRM {
                 </div>
 
                 <!-- Charts Section -->
-                <div class="grid grid-cols-3 gap-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     <!-- Revenue Trend Chart -->
-                    <div class="col-span-2 bg-white rounded-lg border border-slate-200 p-6 shadow-lg">
-                        <div class="flex items-center justify-between mb-6">
+                    <div class="col-span-1 lg:col-span-2 bg-white rounded-lg border border-slate-200 p-4 sm:p-6 shadow-lg">
+                        <div class="flex flex-wrap items-center justify-between gap-3 mb-4 sm:mb-6">
                             <div>
                                 <h3 class="text-lg font-semibold text-slate-900">Revenue Trend</h3>
                                 <p class="text-sm text-slate-500">Monthly revenue vs target</p>
@@ -4039,7 +4406,7 @@ class MarketFlowCRM {
                     </div>
 
                     <!-- Recent Activity -->
-                    <div class="bg-white rounded-lg border border-slate-200 p-6 shadow-lg">
+                    <div class="bg-white rounded-lg border border-slate-200 p-4 sm:p-6 shadow-lg">
                         <h3 class="text-lg font-semibold text-slate-900 mb-4">Recent Activity</h3>
                         <div class="space-y-3 max-h-80 overflow-y-auto">
                             ${this.getRecentActivityItems()}
@@ -4048,12 +4415,12 @@ class MarketFlowCRM {
                 </div>
 
                 <!-- Sales Funnel -->
-                <div class="bg-white rounded-lg border border-slate-200 p-6 shadow-lg">
+                <div class="bg-white rounded-lg border border-slate-200 p-4 sm:p-6 shadow-lg">
                     <div class="mb-6">
                         <h3 class="text-lg font-semibold text-slate-900">Sales Funnel</h3>
                         <p class="text-sm text-slate-500">Lead conversion through pipeline stages</p>
                     </div>
-                    <div class="grid grid-cols-5 gap-4">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
                         ${this.getSalesFunnelStages()}
                     </div>
                 </div>
@@ -4115,9 +4482,9 @@ class MarketFlowCRM {
     getDashboardDaily() {
         return `
             <div class="space-y-6 fade-in">
-                <div class="flex items-center justify-between">
+                <div class="flex flex-wrap items-start justify-between gap-3">
                     <div>
-                        <h2 class="text-2xl font-semibold text-slate-900">Daily View</h2>
+                        <h2 class="text-xl sm:text-2xl font-semibold text-slate-900">Daily View</h2>
                         <p class="text-sm text-slate-500">Today’s schedule, quick actions, and daily summary</p>
                     </div>
                     <div class="flex gap-2">
@@ -4127,35 +4494,35 @@ class MarketFlowCRM {
                 </div>
 
                 <!-- Summary Cards -->
-                <div class="grid grid-cols-4 gap-4">
-                    <div class="bg-gradient-to-br from-sky-500 to-sky-600 rounded-lg p-6 text-white">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div class="bg-gradient-to-br from-sky-500 to-sky-600 rounded-lg p-4 sm:p-6 text-white">
                         <i data-lucide="phone" class="w-8 h-8 mb-3 opacity-80"></i>
-                        <div class="text-3xl font-semibold mb-1">4</div>
+                        <div class="text-2xl sm:text-3xl font-semibold mb-1">4</div>
                         <div class="text-sm opacity-90">Calls Scheduled</div>
                     </div>
                     
-                    <div class="bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-lg p-6 text-white">
+                    <div class="bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-lg p-4 sm:p-6 text-white">
                         <i data-lucide="calendar" class="w-8 h-8 mb-3 opacity-80"></i>
-                        <div class="text-3xl font-semibold mb-1">3</div>
+                        <div class="text-2xl sm:text-3xl font-semibold mb-1">3</div>
                         <div class="text-sm opacity-90">Meetings Today</div>
                     </div>
                     
-                    <div class="bg-gradient-to-br from-amber-500 to-amber-600 rounded-lg p-6 text-white">
+                    <div class="bg-gradient-to-br from-amber-500 to-amber-600 rounded-lg p-4 sm:p-6 text-white">
                         <i data-lucide="check-square" class="w-8 h-8 mb-3 opacity-80"></i>
-                        <div class="text-3xl font-semibold mb-1">6</div>
+                        <div class="text-2xl sm:text-3xl font-semibold mb-1">6</div>
                         <div class="text-sm opacity-90">Tasks Due Today</div>
                     </div>
                     
-                    <div class="bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-lg p-6 text-white">
+                    <div class="bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-lg p-4 sm:p-6 text-white">
                         <i data-lucide="indian-rupee" class="w-8 h-8 mb-3 opacity-80"></i>
-                        <div class="text-3xl font-semibold mb-1">₹45,000</div>
+                        <div class="text-2xl sm:text-3xl font-semibold mb-1">₹45,000</div>
                         <div class="text-sm opacity-90">Payments Expected</div>
                     </div>
                 </div>
 
                 <!-- Today's Schedule -->
-                <div class="bg-white rounded-lg border border-slate-200 p-6 shadow-lg">
-                    <div class="flex items-center justify-between mb-6">
+                <div class="bg-white rounded-lg border border-slate-200 p-4 sm:p-6 shadow-lg">
+                    <div class="flex flex-wrap items-center justify-between gap-3 mb-4 sm:mb-6">
                         <h3 class="text-lg font-semibold text-slate-900">Today's Schedule</h3>
                         <span class="px-3 py-1 text-xs font-medium bg-purple-50 text-purple-700 rounded-full">Upcoming</span>
                     </div>
@@ -4170,8 +4537,8 @@ class MarketFlowCRM {
                 </div>
 
                 <!-- Quick Actions -->
-                <div class="grid grid-cols-3 gap-4">
-                    <div data-action="dashboard:scheduleCall" class="bg-white rounded-lg border border-slate-200 p-6 shadow-lg hover:bg-slate-50 transition-colors cursor-pointer">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div data-action="dashboard:scheduleCall" class="bg-white rounded-lg border border-slate-200 p-4 sm:p-6 shadow-lg hover:bg-slate-50 transition-colors cursor-pointer">
                         <div class="w-12 h-12 bg-purple-50 rounded-lg flex items-center justify-center mb-4">
                             <i data-lucide="phone" class="w-6 h-6 text-purple-600"></i>
                         </div>
@@ -4179,7 +4546,7 @@ class MarketFlowCRM {
                         <p class="text-sm text-slate-600">Add new call to calendar</p>
                     </div>
                     
-                    <div data-action="task:create" class="bg-white rounded-lg border border-slate-200 p-6 shadow-lg hover:bg-slate-50 transition-colors cursor-pointer">
+                    <div data-action="task:create" class="bg-white rounded-lg border border-slate-200 p-4 sm:p-6 shadow-lg hover:bg-slate-50 transition-colors cursor-pointer">
                         <div class="w-12 h-12 bg-purple-50 rounded-lg flex items-center justify-center mb-4">
                             <i data-lucide="plus" class="w-6 h-6 text-purple-600"></i>
                         </div>
@@ -4187,7 +4554,7 @@ class MarketFlowCRM {
                         <p class="text-sm text-slate-600">Add task to today's list</p>
                     </div>
                     
-                    <div data-action="lead:add" class="bg-white rounded-lg border border-slate-200 p-6 shadow-lg hover:bg-slate-50 transition-colors cursor-pointer">
+                    <div data-action="lead:add" class="bg-white rounded-lg border border-slate-200 p-4 sm:p-6 shadow-lg hover:bg-slate-50 transition-colors cursor-pointer">
                         <div class="w-12 h-12 bg-purple-50 rounded-lg flex items-center justify-center mb-4">
                             <i data-lucide="user-plus" class="w-6 h-6 text-purple-600"></i>
                         </div>
@@ -4226,9 +4593,9 @@ class MarketFlowCRM {
     getDashboardWeekly() {
         return `
             <div class="space-y-6 fade-in">
-                <div class="flex items-center justify-between">
+                <div class="flex flex-wrap items-start justify-between gap-3">
                     <div>
-                        <h2 class="text-2xl font-semibold text-slate-900">Weekly View</h2>
+                        <h2 class="text-xl sm:text-2xl font-semibold text-slate-900">Weekly View</h2>
                         <p class="text-sm text-slate-500">Weekly metrics and performance highlights</p>
                     </div>
                     <div class="flex gap-2">
@@ -4238,9 +4605,9 @@ class MarketFlowCRM {
                 </div>
 
                 <!-- Weekly Metrics -->
-                <div class="grid grid-cols-4 gap-4">
-                    <div class="bg-white rounded-lg border border-slate-200 p-6 shadow-lg">
-                        <div class="flex items-center justify-between mb-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div class="bg-white rounded-lg border border-slate-200 p-4 sm:p-6 shadow-lg">
+                        <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
                             <i data-lucide="users" class="w-8 h-8 text-sky-600"></i>
                             <span class="text-xs font-medium text-green-600 bg-green-50 px-2 py-1 rounded-full">↑ 18%</span>
                         </div>
@@ -4249,8 +4616,8 @@ class MarketFlowCRM {
                         <div class="text-xs text-slate-500 mt-2">vs last week</div>
                     </div>
                     
-                    <div class="bg-white rounded-lg border border-slate-200 p-6 shadow-lg">
-                        <div class="flex items-center justify-between mb-4">
+                    <div class="bg-white rounded-lg border border-slate-200 p-4 sm:p-6 shadow-lg">
+                        <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
                             <i data-lucide="briefcase" class="w-8 h-8 text-indigo-600"></i>
                             <span class="text-xs font-medium text-green-600 bg-green-50 px-2 py-1 rounded-full">↑ 50%</span>
                         </div>
@@ -4259,8 +4626,8 @@ class MarketFlowCRM {
                         <div class="text-xs text-slate-500 mt-2">vs last week</div>
                     </div>
                     
-                    <div class="bg-white rounded-lg border border-slate-200 p-6 shadow-lg">
-                        <div class="flex items-center justify-between mb-4">
+                    <div class="bg-white rounded-lg border border-slate-200 p-4 sm:p-6 shadow-lg">
+                        <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
                             <i data-lucide="indian-rupee" class="w-8 h-8 text-emerald-600"></i>
                             <span class="text-xs font-medium text-green-600 bg-green-50 px-2 py-1 rounded-full">↑ 24%</span>
                         </div>
@@ -4269,8 +4636,8 @@ class MarketFlowCRM {
                         <div class="text-xs text-slate-500 mt-2">vs last week</div>
                     </div>
                     
-                    <div class="bg-white rounded-lg border border-slate-200 p-6 shadow-lg">
-                        <div class="flex items-center justify-between mb-4">
+                    <div class="bg-white rounded-lg border border-slate-200 p-4 sm:p-6 shadow-lg">
+                        <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
                             <i data-lucide="send" class="w-8 h-8 text-amber-600"></i>
                             <span class="text-xs font-medium text-amber-700 bg-amber-50 px-2 py-1 rounded-full">3</span>
                         </div>
@@ -4281,7 +4648,7 @@ class MarketFlowCRM {
                 </div>
 
                 <!-- Weekly Chart -->
-                <div class="bg-white rounded-lg border border-slate-200 p-6 shadow-lg">
+                <div class="bg-white rounded-lg border border-slate-200 p-4 sm:p-6 shadow-lg">
                     <div class="mb-6">
                         <h3 class="text-lg font-semibold text-slate-900">Leads vs Deals - This Week</h3>
                         <p class="text-sm text-slate-500">Daily comparison of leads generated and deals closed</p>
@@ -4292,8 +4659,8 @@ class MarketFlowCRM {
                 </div>
 
                 <!-- Top Performing Days & Highlights -->
-                <div class="grid grid-cols-2 gap-6">
-                    <div class="bg-white rounded-lg border border-slate-200 p-6 shadow-lg">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="bg-white rounded-lg border border-slate-200 p-4 sm:p-6 shadow-lg">
                         <h3 class="text-lg font-semibold text-slate-900 mb-4">Top Performing Days</h3>
                         <div class="space-y-3">
                             <div class="flex items-center justify-between p-3 bg-purple-50 rounded-lg">
@@ -4320,7 +4687,7 @@ class MarketFlowCRM {
                         </div>
                     </div>
 
-                    <div class="bg-white rounded-lg border border-slate-200 p-6 shadow-lg">
+                    <div class="bg-white rounded-lg border border-slate-200 p-4 sm:p-6 shadow-lg">
                         <h3 class="text-lg font-semibold text-slate-900 mb-4">Weekly Highlights</h3>
                         <div class="space-y-3">
                             <div class="flex items-center gap-3">
@@ -4350,9 +4717,9 @@ class MarketFlowCRM {
         return `
             <div class="space-y-6 fade-in">
                 <!-- Long-term KPIs -->
-                <div class="grid grid-cols-4 gap-4">
-                    <div class="bg-white rounded-lg border border-slate-200 p-6 shadow-lg">
-                        <div class="flex items-center justify-between mb-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div class="bg-white rounded-lg border border-slate-200 p-4 sm:p-6 shadow-lg">
+                        <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
                             <i data-lucide="users" class="w-8 h-8 text-purple-500"></i>
                             <span class="text-xs font-medium text-slate-600 bg-slate-100 px-2 py-1 rounded-full">All-time</span>
                         </div>
@@ -4361,8 +4728,8 @@ class MarketFlowCRM {
                         <div class="text-xs text-slate-500 mt-2">active</div>
                     </div>
                     
-                    <div class="bg-white rounded-lg border border-slate-200 p-6 shadow-lg">
-                        <div class="flex items-center justify-between mb-4">
+                    <div class="bg-white rounded-lg border border-slate-200 p-4 sm:p-6 shadow-lg">
+                        <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
                             <i data-lucide="check-square" class="w-8 h-8 text-purple-500"></i>
                             <span class="text-xs font-medium text-slate-600 bg-slate-100 px-2 py-1 rounded-full">Since inception</span>
                         </div>
@@ -4371,8 +4738,8 @@ class MarketFlowCRM {
                         <div class="text-xs text-slate-500 mt-2">delivered</div>
                     </div>
                     
-                    <div class="bg-white rounded-lg border border-slate-200 p-6 shadow-lg">
-                        <div class="flex items-center justify-between mb-4">
+                    <div class="bg-white rounded-lg border border-slate-200 p-4 sm:p-6 shadow-lg">
+                        <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
                             <i data-lucide="indian-rupee" class="w-8 h-8 text-purple-500"></i>
                             <span class="text-xs font-medium text-slate-600 bg-slate-100 px-2 py-1 rounded-full">Lifetime</span>
                         </div>
@@ -4381,8 +4748,8 @@ class MarketFlowCRM {
                         <div class="text-xs text-slate-500 mt-2">earned</div>
                     </div>
                     
-                    <div class="bg-white rounded-lg border border-slate-200 p-6 shadow-lg">
-                        <div class="flex items-center justify-between mb-4">
+                    <div class="bg-white rounded-lg border border-slate-200 p-4 sm:p-6 shadow-lg">
+                        <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
                             <i data-lucide="trending-up" class="w-8 h-8 text-purple-500"></i>
                             <span class="text-xs font-medium text-slate-600 bg-slate-100 px-2 py-1 rounded-full">Average</span>
                         </div>
@@ -4393,8 +4760,8 @@ class MarketFlowCRM {
                 </div>
 
                 <!-- Revenue by Service Type -->
-                <div class="grid grid-cols-2 gap-6">
-                    <div class="bg-white rounded-lg border border-slate-200 p-6 shadow-lg">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="bg-white rounded-lg border border-slate-200 p-4 sm:p-6 shadow-lg">
                         <div class="mb-6">
                             <h3 class="text-lg font-semibold text-slate-900">Revenue by Service Type</h3>
                             <p class="text-sm text-slate-500">Breakdown of revenue sources</p>
@@ -4404,7 +4771,7 @@ class MarketFlowCRM {
                         </div>
                     </div>
 
-                    <div class="bg-white rounded-lg border border-slate-200 p-6 shadow-lg">
+                    <div class="bg-white rounded-lg border border-slate-200 p-4 sm:p-6 shadow-lg">
                         <div class="mb-6">
                             <h3 class="text-lg font-semibold text-slate-900">Service Breakdown</h3>
                             <p class="text-sm text-slate-500">Revenue by service category</p>
@@ -4416,32 +4783,32 @@ class MarketFlowCRM {
                 </div>
 
                 <!-- Additional Analytics -->
-                <div class="grid grid-cols-3 gap-6">
-                    <div class="bg-white rounded-lg border border-slate-200 p-6 shadow-lg">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div class="bg-white rounded-lg border border-slate-200 p-4 sm:p-6 shadow-lg">
                         <h3 class="text-lg font-semibold text-slate-900 mb-4">Client Acquisition</h3>
                         <div class="space-y-3">
-                            <div class="flex items-center justify-between">
+                            <div class="flex flex-wrap items-start justify-between gap-3">
                                 <span class="text-sm text-slate-600">Referrals</span>
                                 <span class="text-sm font-medium text-slate-900">48%</span>
                             </div>
                             <div class="w-full bg-slate-100 rounded-full h-2">
                                 <div class="bg-purple-600 h-2 rounded-full" style="width: 48%"></div>
                             </div>
-                            <div class="flex items-center justify-between">
+                            <div class="flex flex-wrap items-start justify-between gap-3">
                                 <span class="text-sm text-slate-600">Direct Marketing</span>
                                 <span class="text-sm font-medium text-slate-900">32%</span>
                             </div>
                             <div class="w-full bg-slate-100 rounded-full h-2">
                                 <div class="bg-purple-500 h-2 rounded-full" style="width: 32%"></div>
                             </div>
-                            <div class="flex items-center justify-between">
+                            <div class="flex flex-wrap items-start justify-between gap-3">
                                 <span class="text-sm text-slate-600">Social Media</span>
                                 <span class="text-sm font-medium text-slate-900">15%</span>
                             </div>
                             <div class="w-full bg-slate-100 rounded-full h-2">
                                 <div class="bg-purple-400 h-2 rounded-full" style="width: 15%"></div>
                             </div>
-                            <div class="flex items-center justify-between">
+                            <div class="flex flex-wrap items-start justify-between gap-3">
                                 <span class="text-sm text-slate-600">Other</span>
                                 <span class="text-sm font-medium text-slate-900">5%</span>
                             </div>
@@ -4451,31 +4818,31 @@ class MarketFlowCRM {
                         </div>
                     </div>
 
-                    <div class="bg-white rounded-lg border border-slate-200 p-6 shadow-lg">
+                    <div class="bg-white rounded-lg border border-slate-200 p-4 sm:p-6 shadow-lg">
                         <h3 class="text-lg font-semibold text-slate-900 mb-4">Project Duration</h3>
                         <div class="space-y-3">
-                            <div class="flex items-center justify-between">
+                            <div class="flex flex-wrap items-start justify-between gap-3">
                                 <span class="text-sm text-slate-600">1-3 months</span>
                                 <span class="text-sm font-medium text-slate-900">42%</span>
                             </div>
                             <div class="w-full bg-slate-100 rounded-full h-2">
                                 <div class="bg-purple-600 h-2 rounded-full" style="width: 42%"></div>
                             </div>
-                            <div class="flex items-center justify-between">
+                            <div class="flex flex-wrap items-start justify-between gap-3">
                                 <span class="text-sm text-slate-600">3-6 months</span>
                                 <span class="text-sm font-medium text-slate-900">38%</span>
                             </div>
                             <div class="w-full bg-slate-100 rounded-full h-2">
                                 <div class="bg-purple-500 h-2 rounded-full" style="width: 38%"></div>
                             </div>
-                            <div class="flex items-center justify-between">
+                            <div class="flex flex-wrap items-start justify-between gap-3">
                                 <span class="text-sm text-slate-600">6-12 months</span>
                                 <span class="text-sm font-medium text-slate-900">15%</span>
                             </div>
                             <div class="w-full bg-slate-100 rounded-full h-2">
                                 <div class="bg-purple-400 h-2 rounded-full" style="width: 15%"></div>
                             </div>
-                            <div class="flex items-center justify-between">
+                            <div class="flex flex-wrap items-start justify-between gap-3">
                                 <span class="text-sm text-slate-600">12+ months</span>
                                 <span class="text-sm font-medium text-slate-900">5%</span>
                             </div>
@@ -4485,31 +4852,31 @@ class MarketFlowCRM {
                         </div>
                     </div>
 
-                    <div class="bg-white rounded-lg border border-slate-200 p-6 shadow-lg">
+                    <div class="bg-white rounded-lg border border-slate-200 p-4 sm:p-6 shadow-lg">
                         <h3 class="text-lg font-semibold text-slate-900 mb-4">Client Satisfaction</h3>
                         <div class="space-y-3">
-                            <div class="flex items-center justify-between">
+                            <div class="flex flex-wrap items-start justify-between gap-3">
                                 <span class="text-sm text-slate-600">Excellent (5★)</span>
                                 <span class="text-sm font-medium text-slate-900">64%</span>
                             </div>
                             <div class="w-full bg-slate-100 rounded-full h-2">
                                 <div class="bg-green-600 h-2 rounded-full" style="width: 64%"></div>
                             </div>
-                            <div class="flex items-center justify-between">
+                            <div class="flex flex-wrap items-start justify-between gap-3">
                                 <span class="text-sm text-slate-600">Good (4★)</span>
                                 <span class="text-sm font-medium text-slate-900">28%</span>
                             </div>
                             <div class="w-full bg-slate-100 rounded-full h-2">
                                 <div class="bg-green-500 h-2 rounded-full" style="width: 28%"></div>
                             </div>
-                            <div class="flex items-center justify-between">
+                            <div class="flex flex-wrap items-start justify-between gap-3">
                                 <span class="text-sm text-slate-600">Average (3★)</span>
                                 <span class="text-sm font-medium text-slate-900">6%</span>
                             </div>
                             <div class="w-full bg-slate-100 rounded-full h-2">
                                 <div class="bg-yellow-500 h-2 rounded-full" style="width: 6%"></div>
                             </div>
-                            <div class="flex items-center justify-between">
+                            <div class="flex flex-wrap items-start justify-between gap-3">
                                 <span class="text-sm text-slate-600">Below Avg (≤2★)</span>
                                 <span class="text-sm font-medium text-slate-900">2%</span>
                             </div>
@@ -4526,9 +4893,9 @@ class MarketFlowCRM {
     getDashboardWork() {
         return `
             <div class="space-y-6 fade-in">
-                <div class="flex items-center justify-between">
+                <div class="flex flex-wrap items-start justify-between gap-3">
                     <div>
-                        <h2 class="text-2xl font-semibold text-slate-900">Today's Work</h2>
+                        <h2 class="text-xl sm:text-2xl font-semibold text-slate-900">Today's Work</h2>
                         <p class="text-sm text-slate-500">Tasks, meetings, reminders</p>
                     </div>
                     <div class="flex gap-2">
@@ -4537,8 +4904,8 @@ class MarketFlowCRM {
                 </div>
 
                 <!-- Tasks for Today -->
-                <div class="bg-white rounded-lg border border-slate-200 p-6 shadow-lg">
-                    <div class="flex items-center justify-between mb-6">
+                <div class="bg-white rounded-lg border border-slate-200 p-4 sm:p-6 shadow-lg">
+                    <div class="flex flex-wrap items-center justify-between gap-3 mb-4 sm:mb-6">
                         <h3 class="text-lg font-semibold text-slate-900">Tasks for Today</h3>
                         <button class="px-4 py-2 text-sm font-medium bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">
                             + Add Task
@@ -4551,7 +4918,7 @@ class MarketFlowCRM {
                 </div>
 
                 <!-- Meetings -->
-                <div class="bg-white rounded-lg border border-slate-200 p-6 shadow-lg">
+                <div class="bg-white rounded-lg border border-slate-200 p-4 sm:p-6 shadow-lg">
                     <div class="mb-6">
                         <h3 class="text-lg font-semibold text-slate-900">Meetings</h3>
                     </div>
@@ -4562,7 +4929,7 @@ class MarketFlowCRM {
                 </div>
 
                 <!-- Reminders & Alerts -->
-                <div class="bg-white rounded-lg border border-slate-200 p-6 shadow-lg">
+                <div class="bg-white rounded-lg border border-slate-200 p-4 sm:p-6 shadow-lg">
                     <div class="mb-6">
                         <h3 class="text-lg font-semibold text-slate-900">Reminders & Alerts</h3>
                     </div>
@@ -4585,7 +4952,7 @@ class MarketFlowCRM {
         ];
 
         return services.map(service => `
-            <div class="flex items-center justify-between">
+            <div class="flex flex-wrap items-start justify-between gap-3">
                 <div class="flex-1">
                     <div class="flex items-center justify-between mb-1">
                         <span class="text-sm font-medium text-slate-900">${service.name}</span>
@@ -4724,9 +5091,9 @@ class MarketFlowCRM {
     getLeadsDirectoryHub() {
         return `
             <div class="space-y-6 fade-in">
-                <div class="flex items-center justify-between">
+                <div class="flex flex-wrap items-start justify-between gap-3">
                     <div>
-                        <h2 class="text-2xl font-semibold text-slate-900">Directory</h2>
+                        <h2 class="text-xl sm:text-2xl font-semibold text-slate-900">Directory</h2>
                         <p class="text-sm text-slate-500">Open Client Directory or Lead Directory</p>
                     </div>
                 </div>
@@ -4763,16 +5130,20 @@ class MarketFlowCRM {
     getLeadRegistration() {
         return `
             <div class="space-y-6 fade-in">
-                <div class="flex items-center justify-between">
+                <div class="flex flex-wrap items-start justify-between gap-3">
                     <div>
-                        <h2 class="text-2xl font-semibold text-slate-900">Lead Registration</h2>
+                        <h2 class="text-xl sm:text-2xl font-semibold text-slate-900">Lead Registration</h2>
                         <p class="text-sm text-slate-500">Capture lead source and details</p>
                     </div>
-                    <button data-action="lead:register" class="px-4 py-2 text-sm font-medium bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">Save Lead</button>
+                    <div class="flex items-center gap-2">
+                        <button data-action="lead:register" class="px-4 py-2 text-sm font-medium bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">Save Lead</button>
+                        <button data-action="lead:upload:trigger" class="px-4 py-2 text-sm font-medium bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors flex items-center gap-1"><i data-lucide="upload" style="width:14px;height:14px;"></i>Upload Excel</button>
+                        <input type="file" id="leadExcelUpload" accept=".xlsx,.xls,.csv" style="display:none;" />
+                    </div>
                 </div>
 
-                <div class="bg-white rounded-lg border border-slate-200 p-6 shadow-lg">
-                    <div class="grid grid-cols-2 gap-6">
+                <div class="bg-white rounded-lg border border-slate-200 p-4 sm:p-6 shadow-lg">
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                         <div>
                             <label class="block text-sm font-medium text-slate-700">Lead Source</label>
                             <select id="leadSource" class="mt-2 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500">
@@ -4795,7 +5166,7 @@ class MarketFlowCRM {
                             <label class="block text-sm font-medium text-slate-700">Contact</label>
                             <input id="leadContact" type="text" class="mt-2 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="Phone / Email" />
                         </div>
-                        <div class="col-span-2">
+                        <div class="col-span-1 sm:col-span-2">
                             <label class="block text-sm font-medium text-slate-700">Next Action</label>
                             <input id="leadNextAction" type="text" class="mt-2 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="e.g., Demo with Technical Team" />
                         </div>
@@ -4849,9 +5220,9 @@ class MarketFlowCRM {
             : null;
         return `
             <div class="space-y-6 fade-in">
-                <div class="flex items-center justify-between">
+                <div class="flex flex-wrap items-start justify-between gap-3">
                     <div>
-                        <h2 class="text-2xl font-semibold text-slate-900">Lead Directory</h2>
+                        <h2 class="text-xl sm:text-2xl font-semibold text-slate-900">Lead Directory</h2>
                         <p class="text-sm text-slate-500">15 dummy leads with conversion</p>
                     </div>
                     <button data-action="nav:leads/lead_registration" class="px-4 py-2 text-sm font-medium bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">+ New Lead</button>
@@ -4864,7 +5235,7 @@ class MarketFlowCRM {
                             <div class="text-xs text-slate-500">Showing ${leads.length}</div>
                         </div>
                         <div class="overflow-x-auto">
-                            <table class="w-full text-sm">
+                            <table class="w-full text-sm" style="min-width: 800px;">
                                 <thead class="bg-slate-50 text-slate-600">
                                     <tr>
                                         <th class="text-left px-4 py-3 font-medium">Lead ID</th>
@@ -4904,7 +5275,7 @@ class MarketFlowCRM {
 
                     ${selected ? `
                         <div class="bg-white rounded-lg border border-slate-200 p-6 shadow-lg lg:sticky lg:top-6 h-fit">
-                            <div class="flex items-center justify-between">
+                            <div class="flex flex-wrap items-start justify-between gap-3">
                                 <div>
                                     <h3 class="text-lg font-semibold text-slate-900">Selected Lead</h3>
                                     <div class="text-xs text-slate-500 mt-1">${selected.id}</div>
@@ -4917,7 +5288,7 @@ class MarketFlowCRM {
                                 <div class="text-xs text-slate-500">${selected.contact || '—'}</div>
                             </div>
 
-                            <div class="mt-5 grid grid-cols-2 gap-3">
+                            <div class="mt-5 grid grid-cols-1 sm:grid-cols-2 gap-3">
                                 <div>
                                     <div class="text-[11px] font-semibold text-slate-500">Source</div>
                                     <div class="text-sm font-medium text-slate-900 mt-1">${selected.source || '—'}</div>
@@ -4961,7 +5332,7 @@ class MarketFlowCRM {
                                     <textarea id="leadDetailNote" rows="2" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="What changed? (optional)"></textarea>
                                 </div>
 
-                                <div class="grid grid-cols-2 gap-2">
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
                                     <button data-action="lead:update" class="px-3 py-2 text-sm font-medium bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">Save</button>
                                     ${String(selected.status || '').toLowerCase() === 'converted'
                     ? `<button data-action="nav:leads/client_directory" class="px-3 py-2 text-sm font-medium bg-emerald-50 text-emerald-700 rounded-lg hover:bg-emerald-100 transition-colors">Open Client</button>`
@@ -4974,7 +5345,7 @@ class MarketFlowCRM {
                                     <div class="space-y-2">
                                         ${(Array.isArray(selected.history) ? selected.history.slice().reverse() : []).slice(0, 6).map(h => `
                                             <div class="p-3 bg-slate-50 rounded-lg">
-                                                <div class="flex items-center justify-between">
+                                                <div class="flex flex-wrap items-start justify-between gap-3">
                                                     <div class="text-xs font-semibold text-slate-700">${String(h?.type || 'update')}</div>
                                                     <div class="text-[11px] text-slate-500">${h?.at ? new Date(h.at).toLocaleString() : '—'}</div>
                                                 </div>
@@ -5003,16 +5374,16 @@ class MarketFlowCRM {
 
     getClientsData() {
         const defaults = [
-            { name: 'TechNova Solutions', city: 'Bengaluru', industry: 'IT Services', owner: 'Sarah', stage: 'Active', openInvoices: 2, dueAmount: '₹42,000', location: 'KAK', vendorCode: 'KAK001' },
-            { name: 'GreenLeaf Industries', city: 'Pune', industry: 'Manufacturing', owner: 'Rohan', stage: 'Onboarding', openInvoices: 1, dueAmount: '₹58,000', location: 'OST', vendorCode: 'OST001' },
-            { name: 'EduSpark', city: 'Hyderabad', industry: 'Education', owner: 'Meera', stage: 'Active', openInvoices: 0, dueAmount: '₹0', location: 'OTN', vendorCode: 'OTN001' },
-            { name: 'Mumbai Retail Chain', city: 'Mumbai', industry: 'Retail', owner: 'Amit', stage: 'At Risk', openInvoices: 3, dueAmount: '₹1,25,000', location: 'CHN', vendorCode: 'CHN001' },
-            { name: 'BrightFin', city: 'Delhi', industry: 'Finance', owner: 'Sarah', stage: 'Active', openInvoices: 0, dueAmount: '₹0', location: 'OST', vendorCode: 'OST002' },
-            { name: 'Digital Dreams', city: 'Chennai', industry: 'Media', owner: 'Rohan', stage: 'Active', openInvoices: 1, dueAmount: '₹25,000', location: 'CHN', vendorCode: 'CHN002' },
-            { name: 'UrbanCafe', city: 'Kolkata', industry: 'Hospitality', owner: 'Meera', stage: 'Onboarding', openInvoices: 0, dueAmount: '₹0', location: 'OTN', vendorCode: 'OTN003' },
-            { name: 'CarePlus Clinics', city: 'Ahmedabad', industry: 'Healthcare', owner: 'Amit', stage: 'At Risk', openInvoices: 1, dueAmount: '₹18,000', location: 'OST', vendorCode: 'OST003' },
-            { name: 'Zenith Logistics', city: 'Jaipur', industry: 'Logistics', owner: 'Sarah', stage: 'Active', openInvoices: 0, dueAmount: '₹0', location: 'KAK', vendorCode: 'KAK002' },
-            { name: 'GreenBite Foods', city: 'Surat', industry: 'FMCG', owner: 'Rohan', stage: 'Active', openInvoices: 0, dueAmount: '₹0', location: 'HSR', vendorCode: 'HSR001' }
+            { name: 'TechNova Solutions', city: 'Bengaluru', industry: 'IT Services', owner: 'Sarah', stage: 'Active', openInvoices: 2, dueAmount: '₹42,000', location: 'KAK', vendorCode: 'KAK001', email: 'contact@technova.com', phone: '+91 9800000001' },
+            { name: 'GreenLeaf Industries', city: 'Pune', industry: 'Manufacturing', owner: 'Rohan', stage: 'Onboarding', openInvoices: 1, dueAmount: '₹58,000', location: 'OST', vendorCode: 'OST001', email: 'info@greenleaf.in', phone: '+91 9800000002' },
+            { name: 'EduSpark', city: 'Hyderabad', industry: 'Education', owner: 'Meera', stage: 'Active', openInvoices: 0, dueAmount: '₹0', location: 'OTN', vendorCode: 'OTN001', email: 'hello@eduspark.org', phone: '+91 9800000003' },
+            { name: 'Mumbai Retail Chain', city: 'Mumbai', industry: 'Retail', owner: 'Amit', stage: 'At Risk', openInvoices: 3, dueAmount: '₹1,25,000', location: 'CHN', vendorCode: 'CHN001', email: 'ops@mumbairetail.com', phone: '+91 9800000004' },
+            { name: 'BrightFin', city: 'Delhi', industry: 'Finance', owner: 'Sarah', stage: 'Active', openInvoices: 0, dueAmount: '₹0', location: 'OST', vendorCode: 'OST002', email: 'admin@brightfin.co.in', phone: '+91 9800000005' },
+            { name: 'Digital Dreams', city: 'Chennai', industry: 'Media', owner: 'Rohan', stage: 'Active', openInvoices: 1, dueAmount: '₹25,000', location: 'CHN', vendorCode: 'CHN002', email: 'studio@digitaldreams.in', phone: '+91 9800000006' },
+            { name: 'UrbanCafe', city: 'Kolkata', industry: 'Hospitality', owner: 'Meera', stage: 'Onboarding', openInvoices: 0, dueAmount: '₹0', location: 'OTN', vendorCode: 'OTN003', email: 'care@urbancafe.co', phone: '+91 9800000007' },
+            { name: 'CarePlus Clinics', city: 'Ahmedabad', industry: 'Healthcare', owner: 'Amit', stage: 'At Risk', openInvoices: 1, dueAmount: '₹18,000', location: 'OST', vendorCode: 'OST003', email: 'appointments@careplus.in', phone: '+91 9800000008' },
+            { name: 'Zenith Logistics', city: 'Jaipur', industry: 'Logistics', owner: 'Sarah', stage: 'Active', openInvoices: 0, dueAmount: '₹0', location: 'KAK', vendorCode: 'KAK002', email: 'dispatch@zenithlogistics.com', phone: '+91 9800000009' },
+            { name: 'GreenBite Foods', city: 'Surat', industry: 'FMCG', owner: 'Rohan', stage: 'Active', openInvoices: 0, dueAmount: '₹0', location: 'HSR', vendorCode: 'HSR001', email: 'sales@greenbitefood.com', phone: '+91 9800000010' }
         ];
 
         const stored = this.getStoredClients();
@@ -5116,16 +5487,20 @@ class MarketFlowCRM {
     getLeadsRegistration() {
         return `
             <div class="space-y-6 fade-in">
-                <div class="flex items-center justify-between">
+                <div class="flex flex-wrap items-start justify-between gap-3">
                     <div>
-                        <h2 class="text-2xl font-semibold text-slate-900">Client Registration</h2>
+                        <h2 class="text-xl sm:text-2xl font-semibold text-slate-900">Client Registration</h2>
                         <p class="text-sm text-slate-500">Create a client profile and capture requirements</p>
                     </div>
-                    <button data-action="client:register" class="px-4 py-2 text-sm font-medium bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">Save Client</button>
+                    <div class="flex items-center gap-2">
+                        <button data-action="client:register" class="px-4 py-2 text-sm font-medium bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">Save Client</button>
+                        <button data-action="client:upload:trigger" class="px-4 py-2 text-sm font-medium bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors flex items-center gap-1"><i data-lucide="upload" style="width:14px;height:14px;"></i>Upload Excel</button>
+                        <input type="file" id="clientExcelUpload" accept=".xlsx,.xls,.csv" style="display:none;" />
+                    </div>
                 </div>
 
-                <div class="bg-white rounded-lg border border-slate-200 p-6 shadow-lg">
-                        <div class="grid grid-cols-2 gap-4">
+                <div class="bg-white rounded-lg border border-slate-200 p-4 sm:p-6 shadow-lg">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <input type="hidden" id="registerMode" value="client" />
                             <div>
                                 <label class="text-xs font-medium text-slate-600">Client Name</label>
@@ -5181,7 +5556,7 @@ class MarketFlowCRM {
                                 <label class="text-xs font-medium text-slate-600">Vendor Code</label>
                                 <input id="clientVendorCode" type="text" readonly class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm bg-slate-50 text-slate-700" placeholder="Auto-generated based on location" />
                             </div>
-                            <div class="col-span-2">
+                            <div class="col-span-1 sm:col-span-2">
                                 <label class="text-xs font-medium text-slate-600">Notes</label>
                                 <textarea id="clientNotes" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" rows="3" placeholder="Requirements, expectations, and next steps..."></textarea>
                             </div>
@@ -5202,9 +5577,9 @@ class MarketFlowCRM {
         const latestInvoices = selectedInvoices.slice(0, 3);
         return `
             <div class="space-y-6 fade-in">
-                <div class="flex items-center justify-between">
+                <div class="flex flex-wrap items-start justify-between gap-3">
                     <div>
-                        <h2 class="text-2xl font-semibold text-slate-900">Client Directory</h2>
+                        <h2 class="text-xl sm:text-2xl font-semibold text-slate-900">Client Directory</h2>
                         <p class="text-sm text-slate-500">${clients.length} clients with status badges and quick insights</p>
                     </div>
                     <button data-action="nav:leads/client_registration" class="px-4 py-2 text-sm font-medium bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">+ New Client</button>
@@ -5217,7 +5592,7 @@ class MarketFlowCRM {
                             <div class="text-xs text-slate-500">Showing ${clients.length}</div>
                         </div>
                         <div class="overflow-x-auto">
-                            <table class="w-full text-sm">
+                            <table class="w-full text-sm" style="min-width: 800px;">
                                 <thead class="bg-slate-50 text-slate-600">
                                     <tr>
                                         <th class="text-left px-4 py-3 font-medium">Client</th>
@@ -5248,7 +5623,7 @@ class MarketFlowCRM {
 
                     ${selected ? `
                         <div class="bg-white rounded-lg border border-slate-200 p-6 shadow-lg lg:sticky lg:top-6 h-fit">
-                            <div class="flex items-center justify-between">
+                            <div class="flex flex-wrap items-start justify-between gap-3">
                                 <div>
                                     <h3 class="text-lg font-semibold text-slate-900">Selected Client</h3>
                                     <p class="text-sm text-slate-500">${selected.name}</p>
@@ -5256,18 +5631,18 @@ class MarketFlowCRM {
                                 <span class="px-2 py-1 text-xs font-medium bg-slate-100 text-slate-700 rounded-full">${selected.stage}</span>
                             </div>
 
-                            <div class="mt-4 grid grid-cols-2 gap-2">
+                            <div class="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-2">
                                 <button data-action="client:edit" data-client-name="${selected.name}" class="px-3 py-2 text-sm font-medium bg-purple-50 text-purple-700 rounded-lg hover:bg-purple-100 transition-colors">Edit</button>
                                 <button data-action="client:delete" data-client-name="${selected.name}" class="px-3 py-2 text-sm font-medium bg-rose-50 text-rose-700 rounded-lg hover:bg-rose-100 transition-colors">Delete</button>
                             </div>
 
-                            <div class="mt-2 grid grid-cols-2 gap-2">
+                            <div class="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-2">
                                 <button data-action="client:createInvoice" data-client-name="${selected.name}" class="px-3 py-2 text-sm font-medium bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">Create Invoice</button>
                                 <button data-action="task:create" class="px-3 py-2 text-sm font-medium bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 transition-colors">Create Task</button>
                             </div>
 
                             <div class="mt-4 p-3 bg-slate-50 rounded-lg">
-                                <div class="flex items-center justify-between">
+                                <div class="flex flex-wrap items-start justify-between gap-3">
                                     <div>
                                         <div class="text-xs text-slate-500">Latest invoices</div>
                                         <div class="text-sm font-medium text-slate-900">${latestInvoices.length ? `${latestInvoices.length} shown • ${selectedInvoices.length} total` : 'No invoices yet'}</div>
@@ -5408,9 +5783,9 @@ class MarketFlowCRM {
         const sources = uniq(contacts.map(c => c.source));
         return `
             <div class="space-y-6 fade-in">
-                <div class="flex items-center justify-between">
+                <div class="flex flex-wrap items-start justify-between gap-3">
                     <div>
-                        <h2 class="text-2xl font-semibold text-slate-900">Contacts</h2>
+                        <h2 class="text-xl sm:text-2xl font-semibold text-slate-900">Contacts</h2>
                         <p class="text-sm text-slate-500">All leads and clients contacts in one place</p>
                     </div>
                     <button class="px-4 py-2 text-sm font-medium bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">+ Add Contact</button>
@@ -5423,7 +5798,7 @@ class MarketFlowCRM {
                     </div>
 
                     <div class="overflow-x-auto">
-                        <table class="w-full text-sm">
+                        <table class="w-full text-sm" style="min-width: 1050px;">
                             <thead class="bg-slate-50 text-slate-600">
                                 <tr>
                                     <th class="text-left px-4 py-3 font-medium">Type</th>
@@ -5513,17 +5888,17 @@ class MarketFlowCRM {
 
         return `
             <div class="space-y-6 fade-in">
-                <div class="flex items-center justify-between">
+                <div class="flex flex-wrap items-start justify-between gap-3">
                     <div>
-                        <h2 class="text-2xl font-semibold text-slate-900">Onboarding Status</h2>
+                        <h2 class="text-xl sm:text-2xl font-semibold text-slate-900">Onboarding Status</h2>
                         <p class="text-sm text-slate-500">Master flow checklist for GreenLeaf Industries</p>
                     </div>
                     <button class="px-4 py-2 text-sm font-medium bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">Update Status</button>
                 </div>
 
-                <div class="grid grid-cols-3 gap-6">
-                    <div class="col-span-2 bg-white rounded-lg border border-slate-200 p-6 shadow-lg">
-                        <div class="flex items-center justify-between">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div class="col-span-1 lg:col-span-2 bg-white rounded-lg border border-slate-200 p-4 sm:p-6 shadow-lg">
+                        <div class="flex flex-wrap items-start justify-between gap-3">
                             <div>
                                 <div class="text-sm font-medium text-slate-900">GreenLeaf Industries</div>
                                 <div class="text-xs text-slate-500">Onboarding • Owner: Sarah Kumar</div>
@@ -5531,7 +5906,7 @@ class MarketFlowCRM {
                             <span class="px-2 py-1 text-xs font-medium bg-amber-50 text-amber-700 rounded-full">Onboarding</span>
                         </div>
 
-                        <div class="mt-5 grid grid-cols-2 gap-3">
+                        <div class="mt-5 grid grid-cols-1 sm:grid-cols-2 gap-3">
                             ${steps.map(s => `
                                 <div class="flex items-center gap-3 p-3 rounded-lg border ${s.done ? 'border-emerald-200 bg-emerald-50' : 'border-slate-200 bg-white'}">
                                     <i data-lucide="${s.done ? 'check-circle' : 'circle'}" class="w-4 h-4 ${s.done ? 'text-emerald-700' : 'text-slate-400'}"></i>
@@ -5541,7 +5916,7 @@ class MarketFlowCRM {
                         </div>
                     </div>
 
-                    <div class="bg-white rounded-lg border border-slate-200 p-6 shadow-lg">
+                    <div class="bg-white rounded-lg border border-slate-200 p-4 sm:p-6 shadow-lg">
                         <h3 class="text-lg font-semibold text-slate-900">Next Best Actions</h3>
                         <div class="mt-4 space-y-3">
                             <div class="p-3 bg-amber-50 rounded-lg border border-amber-100">
@@ -5606,9 +5981,9 @@ class MarketFlowCRM {
 
         return `
             <div class="space-y-6 fade-in">
-                <div class="flex items-center justify-between">
+                <div class="flex flex-wrap items-start justify-between gap-3">
                     <div>
-                        <h2 class="text-2xl font-semibold text-slate-900">Quotation Templates</h2>
+                        <h2 class="text-xl sm:text-2xl font-semibold text-slate-900">Quotation Templates</h2>
                         <p class="text-sm text-slate-500">Fill details, auto-calculate GST, then print</p>
                     </div>
                     <div class="flex gap-2">
@@ -5617,7 +5992,7 @@ class MarketFlowCRM {
                     </div>
                 </div>
 
-                <div class="bg-white rounded-lg border border-slate-200 p-6 shadow-lg">
+                <div class="bg-white rounded-lg border border-slate-200 p-4 sm:p-6 shadow-lg">
                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                         <div>
                             <div class="text-sm font-semibold text-slate-900">Company Details</div>
@@ -5723,12 +6098,12 @@ class MarketFlowCRM {
                     </div>
 
                     <div class="mt-6">
-                        <div class="flex items-center justify-between">
+                        <div class="flex flex-wrap items-start justify-between gap-3">
                             <div class="text-sm font-semibold text-slate-900">Service Lines</div>
                             <div class="text-xs text-slate-500">Tax: <span id="quoteTaxType" class="font-semibold text-slate-900">${esc(tax.type)}</span> @ <span class="font-semibold text-slate-900">${Number(tax.rate || 0).toFixed(0)}%</span></div>
                         </div>
-                        <div class="mt-3 overflow-x-auto">
-                            <table class="w-full text-sm">
+                        <div class="mt-3 overflow-x-auto -mx-2 sm:mx-0">
+                            <table class="w-full text-sm" style="min-width: 800px;">
                                 <thead class="bg-slate-50 border-b border-slate-200">
                                     <tr>
                                         <th class="text-left px-3 py-2 font-medium text-slate-700">Sl</th>
@@ -6765,17 +7140,21 @@ class MarketFlowCRM {
     getProjectRegistration() {
         return `
             <div class="space-y-6 fade-in">
-                <div class="flex items-center justify-between">
+                <div class="flex flex-wrap items-start justify-between gap-3">
                     <div>
-                        <h2 class="text-2xl font-semibold text-slate-900">Project Registration</h2>
+                        <h2 class="text-xl sm:text-2xl font-semibold text-slate-900">Project Registration</h2>
                         <p class="text-sm text-slate-500">Create a project linked to pipeline + billing</p>
                     </div>
-                    <button data-action="project:register" class="px-4 py-2 text-sm font-medium bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">Create Project</button>
+                    <div class="flex items-center gap-2">
+                        <button data-action="project:register" class="px-4 py-2 text-sm font-medium bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">Create Project</button>
+                        <button data-action="project:upload:trigger" class="px-4 py-2 text-sm font-medium bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors flex items-center gap-1"><i data-lucide="upload" style="width:14px;height:14px;"></i>Upload Excel</button>
+                        <input type="file" id="projectExcelUpload" accept=".xlsx,.xls,.csv" style="display:none;" />
+                    </div>
                 </div>
 
                 <div class="flex justify-center">
                     <div class="w-full max-w-4xl bg-white rounded-lg border border-slate-200 p-6 shadow-lg">
-                        <div class="grid grid-cols-2 gap-4">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div>
                                 <label class="text-xs font-medium text-slate-600">Client</label>
                                 <select id="projectClient" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500">
@@ -6809,9 +7188,9 @@ class MarketFlowCRM {
                                 <label class="text-xs font-medium text-slate-600">Assigned Team</label>
                                 <input id="projectTeam" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="SEO + Content + Ads" />
                             </div>
-                            <div class="col-span-2">
+                            <div class="col-span-1 sm:col-span-2">
                                 <label class="text-xs font-medium text-slate-600">Milestones</label>
-                                <div class="mt-2 grid grid-cols-3 gap-3">
+                                <div class="mt-2 grid grid-cols-1 sm:grid-cols-3 gap-3">
                                     <div class="p-3 bg-slate-50 rounded-lg">
                                         <div class="text-sm font-medium text-slate-900">Discovery</div>
                                         <div class="text-xs text-slate-500">Week 1</div>
@@ -6827,10 +7206,10 @@ class MarketFlowCRM {
                                 </div>
                             </div>
 
-                            <div class="col-span-2 mt-4 space-y-4">
+                            <div class="col-span-1 sm:col-span-2 mt-4 space-y-4">
                                 <details open class="group">
                                     <summary class="cursor-pointer select-none text-sm font-semibold text-slate-900">Project Identification Details</summary>
-                                    <div class="mt-3 grid grid-cols-2 gap-3">
+                                    <div class="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-3">
                                         <div>
                                             <label class="text-xs font-medium text-slate-600">Project Code</label>
                                             <input id="projectCode" readonly class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm bg-slate-50 text-slate-700" placeholder="Auto-generated based on Service Code" />
@@ -6879,11 +7258,11 @@ class MarketFlowCRM {
                                             <label class="text-xs font-medium text-slate-600">Assigned To (Employee)</label>
                                             <input id="assignedTo" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" />
                                         </div>
-                                        <div class="col-span-2">
+                                        <div class="col-span-1 sm:col-span-2">
                                             <label class="text-xs font-medium text-slate-600">Project Description</label>
                                             <textarea id="projectDescription" rows="2" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"></textarea>
                                         </div>
-                                        <div class="col-span-2">
+                                        <div class="col-span-1 sm:col-span-2">
                                             <label class="text-xs font-medium text-slate-600">Part Description</label>
                                             <textarea id="partDescription" rows="2" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"></textarea>
                                         </div>
@@ -6892,7 +7271,7 @@ class MarketFlowCRM {
 
                                 <details class="group">
                                     <summary class="cursor-pointer select-none text-sm font-semibold text-slate-900">Technical Scope / Stage Tracking</summary>
-                                    <div class="mt-3 grid grid-cols-2 gap-3">
+                                    <div class="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-3">
                                         ${[
                 ['model2dStatus', '2D Model Status'],
                 ['model3dStatus', '3D Model Status'],
@@ -6917,7 +7296,7 @@ class MarketFlowCRM {
 
                                 <details class="group">
                                     <summary class="cursor-pointer select-none text-sm font-semibold text-slate-900">Project Roadmap & Progress Monitoring</summary>
-                                    <div class="mt-3 grid grid-cols-2 gap-3">
+                                    <div class="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-3">
                                         ${[
                 ['reg_monitoring_roadmapSubmitted', 'Project Roadmap Submitted'],
                 ['reg_monitoring_dashboardUpdated', 'Dashboard Updated'],
@@ -6932,7 +7311,7 @@ class MarketFlowCRM {
                                                 </select>
                                             </div>
                                         `).join('')}
-                                        <div class="col-span-2">
+                                        <div class="col-span-1 sm:col-span-2">
                                             <label class="text-xs font-medium text-slate-600">Overall Project Status</label>
                                             <select id="reg_monitoring_overallProjectStatus" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500">
                                                 ${['Completed', 'Partially Completed', 'Pending / Delayed'].map(opt => `<option ${opt === 'Pending / Delayed' ? 'selected' : ''}>${opt}</option>`).join('')}
@@ -6951,7 +7330,7 @@ class MarketFlowCRM {
 
                                 <details class="group">
                                     <summary class="cursor-pointer select-none text-sm font-semibold text-slate-900">Dispatch & Delivery Details</summary>
-                                    <div class="mt-3 grid grid-cols-2 gap-3">
+                                    <div class="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-3">
                                         <div>
                                             <label class="text-xs font-medium text-slate-600">DC Date</label>
                                             <input id="reg_dispatch_dcDate" type="date" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" />
@@ -6982,7 +7361,7 @@ class MarketFlowCRM {
 
                                 <details class="group">
                                     <summary class="cursor-pointer select-none text-sm font-semibold text-slate-900">Quotation & Purchase Details</summary>
-                                    <div class="mt-3 grid grid-cols-2 gap-3">
+                                    <div class="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-3">
                                         <div>
                                             <label class="text-xs font-medium text-slate-600">Quotation Date</label>
                                             <input id="reg_purchase_quotationDate" type="date" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" />
@@ -7019,7 +7398,7 @@ class MarketFlowCRM {
 
                                 <details class="group">
                                     <summary class="cursor-pointer select-none text-sm font-semibold text-slate-900">Invoice & Payment Tracking</summary>
-                                    <div class="mt-3 grid grid-cols-2 gap-3">
+                                    <div class="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-3">
                                         <div>
                                             <label class="text-xs font-medium text-slate-600">Invoice Date</label>
                                             <input id="reg_payment_invoiceDate" type="date" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" />
@@ -7069,7 +7448,7 @@ class MarketFlowCRM {
 
                                 <details class="group">
                                     <summary class="cursor-pointer select-none text-sm font-semibold text-slate-900">Performance & Rating</summary>
-                                    <div class="mt-3 grid grid-cols-2 gap-3">
+                                    <div class="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-3">
                                         ${[
                 ['reg_ratings_clientRating', 'Client Rating'],
                 ['reg_ratings_jobRating', 'Job Rating'],
@@ -7082,11 +7461,11 @@ class MarketFlowCRM {
                                                 <input id="${id}" type="number" min="0" max="10" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" />
                                             </div>
                                         `).join('')}
-                                        <div class="col-span-2">
+                                        <div class="col-span-1 sm:col-span-2">
                                             <label class="text-xs font-medium text-slate-600">Feedback / Comments</label>
                                             <textarea id="reg_ratings_feedbackComments" rows="2" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"></textarea>
                                         </div>
-                                        <div class="col-span-2">
+                                        <div class="col-span-1 sm:col-span-2">
                                             <label class="text-xs font-medium text-slate-600">Additional Notes</label>
                                             <textarea id="reg_ratings_additionalNotes" rows="2" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"></textarea>
                                         </div>
@@ -7479,7 +7858,7 @@ class MarketFlowCRM {
             }
             const key = this.getProjectKey(p);
             return `
-                <div class="bg-white rounded-lg border border-slate-200 p-6 shadow-lg">
+                <div class="bg-white rounded-lg border border-slate-200 p-4 sm:p-6 shadow-lg">
                     <div class="flex items-start justify-between gap-3">
                         <div>
                             <h3 class="text-lg font-semibold text-slate-900">${esc(p.name)}</h3>
@@ -7491,7 +7870,7 @@ class MarketFlowCRM {
                     <div class="mt-5 space-y-4">
                         <details open class="group">
                             <summary class="cursor-pointer select-none text-sm font-semibold text-slate-900">Project Identification Details</summary>
-                            <div class="mt-3 grid grid-cols-2 gap-3">
+                            <div class="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-3">
                                 <div>
                                     <label class="text-xs font-medium text-slate-600">Project Code</label>
                                     <input data-project-key="${key}" data-project-field="identification.projectCode" value="${esc(p.identification?.projectCode || '')}" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" />
@@ -7540,11 +7919,11 @@ class MarketFlowCRM {
                                     <label class="text-xs font-medium text-slate-600">Assigned To (Employee)</label>
                                     <input data-project-key="${key}" data-project-field="identification.assignedTo" value="${esc(p.identification?.assignedTo || '')}" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" />
                                 </div>
-                                <div class="col-span-2">
+                                <div class="col-span-1 sm:col-span-2">
                                     <label class="text-xs font-medium text-slate-600">Project Description</label>
                                     <textarea data-project-key="${key}" data-project-field="identification.projectDescription" rows="2" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500">${String(p.identification?.projectDescription || '').replace(/</g, '&lt;')}</textarea>
                                 </div>
-                                <div class="col-span-2">
+                                <div class="col-span-1 sm:col-span-2">
                                     <label class="text-xs font-medium text-slate-600">Part Description</label>
                                     <textarea data-project-key="${key}" data-project-field="identification.partDescription" rows="2" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500">${String(p.identification?.partDescription || '').replace(/</g, '&lt;')}</textarea>
                                 </div>
@@ -7553,7 +7932,7 @@ class MarketFlowCRM {
 
                         <details class="group">
                             <summary class="cursor-pointer select-none text-sm font-semibold text-slate-900">Technical Scope / Stage Tracking</summary>
-                            <div class="mt-3 grid grid-cols-2 gap-3">
+                            <div class="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-3">
                                 ${[
                     ['model2dStatus', '2D Model Status'],
                     ['model3dStatus', '3D Model Status'],
@@ -7576,7 +7955,7 @@ class MarketFlowCRM {
 
                         <details class="group">
                             <summary class="cursor-pointer select-none text-sm font-semibold text-slate-900">Project Roadmap & Progress Monitoring</summary>
-                            <div class="mt-3 grid grid-cols-2 gap-3">
+                            <div class="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-3">
                                 ${[
                     ['monitoring.roadmapSubmitted', 'Project Roadmap Submitted'],
                     ['monitoring.dashboardUpdated', 'Dashboard Updated'],
@@ -7594,7 +7973,7 @@ class MarketFlowCRM {
                                         </div>
                                     `;
                 }).join('')}
-                                <div class="col-span-2">
+                                <div class="col-span-1 sm:col-span-2">
                                     <label class="text-xs font-medium text-slate-600">Overall Project Status</label>
                                     <select data-project-key="${key}" data-project-field="monitoring.overallProjectStatus" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500">
                                         ${['Completed', 'Partially Completed', 'Pending / Delayed'].map(opt => `<option ${opt === (p.monitoring?.overallProjectStatus || 'Pending / Delayed') ? 'selected' : ''}>${opt}</option>`).join('')}
@@ -7613,7 +7992,7 @@ class MarketFlowCRM {
 
                         <details class="group">
                             <summary class="cursor-pointer select-none text-sm font-semibold text-slate-900">Dispatch & Delivery Details</summary>
-                            <div class="mt-3 grid grid-cols-2 gap-3">
+                            <div class="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-3">
                                 <div>
                                     <label class="text-xs font-medium text-slate-600">DC Date</label>
                                     <input data-project-key="${key}" data-project-field="dispatch.dcDate" type="date" value="${esc(p.dispatch?.dcDate || '')}" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" />
@@ -7642,7 +8021,7 @@ class MarketFlowCRM {
 
                         <details class="group">
                             <summary class="cursor-pointer select-none text-sm font-semibold text-slate-900">Quotation & Purchase Details</summary>
-                            <div class="mt-3 grid grid-cols-2 gap-3">
+                            <div class="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-3">
                                 <div>
                                     <label class="text-xs font-medium text-slate-600">Quotation Date</label>
                                     <input data-project-key="${key}" data-project-field="purchase.quotationDate" type="date" value="${esc(p.purchase?.quotationDate || '')}" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" />
@@ -7679,7 +8058,7 @@ class MarketFlowCRM {
 
                         <details class="group">
                             <summary class="cursor-pointer select-none text-sm font-semibold text-slate-900">Invoice & Payment Tracking</summary>
-                            <div class="mt-3 grid grid-cols-2 gap-3">
+                            <div class="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-3">
                                 ${[
                     ['payment.invoiceDate', 'Invoice Date', 'date'],
                     ['payment.invoiceNumber', 'Invoice Number', 'text'],
@@ -7701,7 +8080,7 @@ class MarketFlowCRM {
                                         </div>
                                     `;
                 }).join('')}
-                                <div class="col-span-2">
+                                <div class="col-span-1 sm:col-span-2">
                                     <label class="text-xs font-medium text-slate-600">Overdue Status (auto)</label>
                                     <input value="${esc(p.payment?.overdueStatus || '')}" disabled class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm bg-slate-50 text-slate-700" />
                                 </div>
@@ -7710,7 +8089,7 @@ class MarketFlowCRM {
 
                         <details class="group">
                             <summary class="cursor-pointer select-none text-sm font-semibold text-slate-900">Performance & Rating</summary>
-                            <div class="mt-3 grid grid-cols-2 gap-3">
+                            <div class="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-3">
                                 ${[
                     ['ratings.clientRating', 'Client Rating'],
                     ['ratings.jobRating', 'Job Rating'],
@@ -7726,11 +8105,11 @@ class MarketFlowCRM {
                                         </div>
                                     `;
                 }).join('')}
-                                <div class="col-span-2">
+                                <div class="col-span-1 sm:col-span-2">
                                     <label class="text-xs font-medium text-slate-600">Feedback / Comments</label>
                                     <textarea data-project-key="${key}" data-project-field="ratings.feedbackComments" rows="2" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500">${String(p.ratings?.feedbackComments || '').replace(/</g, '&lt;')}</textarea>
                                 </div>
-                                <div class="col-span-2">
+                                <div class="col-span-1 sm:col-span-2">
                                     <label class="text-xs font-medium text-slate-600">Additional Notes</label>
                                     <textarea data-project-key="${key}" data-project-field="ratings.additionalNotes" rows="2" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500">${String(p.ratings?.additionalNotes || '').replace(/</g, '&lt;')}</textarea>
                                 </div>
@@ -7748,22 +8127,22 @@ class MarketFlowCRM {
 
         return `
             <div class="space-y-6 fade-in">
-                <div class="flex items-center justify-between">
+                <div class="flex flex-wrap items-start justify-between gap-3">
                     <div>
-                        <h2 class="text-2xl font-semibold text-slate-900">Project Directory</h2>
+                        <h2 class="text-xl sm:text-2xl font-semibold text-slate-900">Project Directory</h2>
                         <p class="text-sm text-slate-500">All projects with full profile details</p>
                     </div>
                 </div>
 
                 ${selected ? `
-                    <div class="grid grid-cols-3 gap-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         <div class="col-span-1 bg-white rounded-lg border border-slate-200 overflow-hidden">
                             <div class="p-4 border-b border-slate-200 flex items-center justify-between">
                                 <div class="text-sm font-medium text-slate-900">Projects</div>
                                 <div class="text-xs text-slate-500">${projects.length}</div>
                             </div>
                             <div class="overflow-x-auto">
-                                <table class="w-full text-sm">
+                                <table class="w-full text-sm" style="min-width: 800px;">
                                     <thead class="bg-slate-50 border-b border-slate-200">
                                         <tr>
                                             <th class="text-left px-4 py-3 font-medium text-slate-700">Project Code</th>
@@ -7794,7 +8173,7 @@ class MarketFlowCRM {
                             </div>
                         </div>
 
-                        <div class="col-span-2">
+                        <div class="col-span-1 sm:col-span-2">
                             ${renderProfile(selected)}
                         </div>
                     </div>
@@ -7805,7 +8184,7 @@ class MarketFlowCRM {
                             <div class="text-xs text-slate-500">${projects.length}</div>
                         </div>
                         <div class="overflow-x-auto">
-                            <table class="w-full text-sm">
+                            <table class="w-full text-sm" style="min-width: 800px;">
                                 <thead class="bg-slate-50 border-b border-slate-200">
                                     <tr>
                                         <th class="text-left px-4 py-3 font-medium text-slate-700">Project Code</th>
@@ -7907,15 +8286,15 @@ class MarketFlowCRM {
 
         return `
             <div class="space-y-6 fade-in">
-                <div class="flex items-center justify-between">
+                <div class="flex flex-wrap items-start justify-between gap-3">
                     <div>
-                        <h2 class="text-2xl font-semibold text-slate-900">Sales Pipeline</h2>
+                        <h2 class="text-xl sm:text-2xl font-semibold text-slate-900">Sales Pipeline</h2>
                         <p class="text-sm text-slate-500">Kanban: Lead → Deal → Project → Payment</p>
                     </div>
                     <button class="px-4 py-2 text-sm font-medium bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">+ Add Deal</button>
                 </div>
 
-                <div class="grid grid-cols-4 gap-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                     ${columns.map(col => `
                         <div class="bg-white rounded-lg border border-slate-200 overflow-hidden">
                             <div class="p-4 border-b border-slate-200 flex items-center justify-between">
@@ -8023,16 +8402,16 @@ class MarketFlowCRM {
 
         return `
             <div class="space-y-6 fade-in">
-                <div class="flex items-center justify-between">
+                <div class="flex flex-wrap items-start justify-between gap-3">
                     <div>
-                        <h2 class="text-2xl font-semibold text-slate-900">Active Projects</h2>
+                        <h2 class="text-xl sm:text-2xl font-semibold text-slate-900">Active Projects</h2>
                         <p class="text-sm text-slate-500">Progress, team members, and budget health</p>
                     </div>
                     <button class="px-4 py-2 text-sm font-medium bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">+ Add Project</button>
                 </div>
 
-                <div class="grid grid-cols-3 gap-6">
-                    <div class="${isSplit ? 'col-span-2' : 'col-span-3'} bg-white rounded-lg border border-slate-200 overflow-hidden">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div class="${isSplit ? 'col-span-2' : 'col-span-1 lg:col-span-3'} bg-white rounded-lg border border-slate-200 overflow-hidden">
                         <div class="p-4 border-b border-slate-200 flex items-center justify-between">
                             <div class="text-sm font-medium text-slate-900">Project List</div>
                             <div class="text-xs text-slate-500">${projects.length} active</div>
@@ -8055,7 +8434,7 @@ class MarketFlowCRM {
                                             <div>
                                                 ${renderHorizontalStageProgress(p)}
                                             </div>
-                                            <div class="grid grid-cols-3 gap-3">
+                                            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                                                 <div class="p-3 bg-slate-50 rounded-lg">
                                                     <div class="text-xs text-slate-500">Budget</div>
                                                     <div class="text-sm font-semibold text-slate-900">${p.budget}</div>
@@ -8093,7 +8472,7 @@ class MarketFlowCRM {
                                 <div class="text-xs text-slate-600">Progress: <span class="font-semibold text-slate-900">${selected.progress}%</span></div>
                             </div>
 
-                            <div class="mt-4 grid grid-cols-2 gap-3">
+                            <div class="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
                                 <div class="p-3 bg-slate-50 rounded-lg">
                                     <div class="text-xs text-slate-500">Owner</div>
                                     <div class="text-sm font-semibold text-slate-900">${selected.owner || '—'}</div>
@@ -8130,9 +8509,9 @@ class MarketFlowCRM {
         ];
         return `
             <div class="space-y-6 fade-in">
-                <div class="flex items-center justify-between">
+                <div class="flex flex-wrap items-start justify-between gap-3">
                     <div>
-                        <h2 class="text-2xl font-semibold text-slate-900">Completed Projects</h2>
+                        <h2 class="text-xl sm:text-2xl font-semibold text-slate-900">Completed Projects</h2>
                         <p class="text-sm text-slate-500">Delivery, feedback, and next-project signals</p>
                     </div>
                     <button class="px-4 py-2 text-sm font-medium bg-purple-50 text-purple-700 rounded-lg hover:bg-purple-100 transition-colors">Download Summary</button>
@@ -8140,7 +8519,7 @@ class MarketFlowCRM {
 
                 <div class="bg-white rounded-lg border border-slate-200 overflow-hidden">
                     <div class="overflow-x-auto">
-                        <table class="w-full text-sm">
+                        <table class="w-full text-sm" style="min-width: 800px;">
                             <thead class="bg-slate-50 text-slate-600">
                                 <tr>
                                     <th class="text-left px-4 py-3 font-medium">Project</th>
@@ -8281,7 +8660,7 @@ class MarketFlowCRM {
             <div class="space-y-6 fade-in">
 
                 <!-- Header -->
-                <div class="flex items-center justify-between">
+                <div class="flex flex-wrap items-start justify-between gap-3">
                     <div>
                         <h2 class="text-2xl font-bold text-slate-900">Campaign Hub</h2>
                         <p class="text-sm text-slate-500 mt-0.5">Live overview of your contacts &amp; alert triggers</p>
@@ -8327,7 +8706,7 @@ class MarketFlowCRM {
                                 </div>
                             </div>
                         </div>
-                        <div class="mt-5 grid grid-cols-2 gap-3">
+                        <div class="mt-5 grid grid-cols-1 sm:grid-cols-2 gap-3">
                             <div class="bg-white/8 rounded-xl p-3">
                                 <div class="text-xs text-slate-400">With Email</div>
                                 <div class="text-lg font-bold text-white mt-0.5">${withEmail}</div>
@@ -8377,7 +8756,7 @@ class MarketFlowCRM {
                                 </div>
                             </div>
                         </div>
-                        <div class="mt-5 grid grid-cols-2 gap-3">
+                        <div class="mt-5 grid grid-cols-1 sm:grid-cols-2 gap-3">
                             <div class="bg-white/10 rounded-xl p-3">
                                 <div class="text-xs text-amber-200">Completed Projects</div>
                                 <div class="text-lg font-bold text-white mt-0.5">${trigCompleted} <span class="text-xs font-normal text-amber-200">need follow-up</span></div>
@@ -8558,9 +8937,9 @@ class MarketFlowCRM {
             <div class="space-y-4 fade-in">
 
                 <!-- Header -->
-                <div class="flex items-center justify-between">
+                <div class="flex flex-wrap items-start justify-between gap-3">
                     <div>
-                        <h2 class="text-2xl font-semibold text-slate-900">Contacts Directory</h2>
+                        <h2 class="text-xl sm:text-2xl font-semibold text-slate-900">Contacts Directory</h2>
                         <p class="text-sm text-slate-500" id="cdCount">${all.length} contacts — Clients &amp; Leads</p>
                     </div>
                     <div class="flex gap-2">
@@ -8574,7 +8953,7 @@ class MarketFlowCRM {
                 <!-- Table with inline column filters -->
                 <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
                     <div class="overflow-x-auto">
-                        <table class="w-full text-sm border-collapse">
+                        <table class="w-full text-sm border-collapse" style="min-width: 800px;">
                             <thead class="bg-slate-50 border-b-2 border-slate-200 sticky top-0 z-10">
                                 <!-- Column labels row -->
                                 <tr>
@@ -8977,9 +9356,9 @@ class MarketFlowCRM {
 
         return `
             <div class="space-y-5 fade-in">
-                <div class="flex items-center justify-between">
+                <div class="flex flex-wrap items-start justify-between gap-3">
                     <div>
-                        <h2 class="text-2xl font-semibold text-slate-900">Alerts &amp; GMass</h2>
+                        <h2 class="text-xl sm:text-2xl font-semibold text-slate-900">Alerts &amp; GMass</h2>
                         <p class="text-sm text-slate-500">${alerts.length} active triggers — auto-generate emails &amp; send via GMass</p>
                     </div>
                     <div class="flex gap-2">
@@ -9218,7 +9597,7 @@ class MarketFlowCRM {
 
         return `
             <div class="space-y-5 fade-in">
-                <div class="flex items-center justify-between">
+                <div class="flex flex-wrap items-start justify-between gap-3">
                     <div>
                         <h2 class="text-2xl font-bold text-slate-900">SMS Alerts</h2>
                         <p class="text-sm text-slate-500 mt-0.5">${alerts.length} urgent alert${alerts.length !== 1 ? 's' : ''} — trigger SMS or WhatsApp directly</p>
@@ -9425,7 +9804,7 @@ class MarketFlowCRM {
 
         return `
             <div class="space-y-5 fade-in">
-                <div class="flex items-center justify-between">
+                <div class="flex flex-wrap items-start justify-between gap-3">
                     <div>
                         <h2 class="text-2xl font-bold text-slate-900">Personalized Wishes</h2>
                         <p class="text-sm text-slate-500 mt-0.5">Choose occasion → pick card style → select recipients → send via GMass</p>
@@ -9489,7 +9868,7 @@ class MarketFlowCRM {
                             </div>
                         </div>
                         <div class="overflow-x-auto max-h-64 overflow-y-auto">
-                            <table class="w-full text-sm">
+                            <table class="w-full text-sm" style="min-width: 800px;">
                                 <thead class="bg-slate-50 sticky top-0"><tr>
                                     <th class="px-4 py-2 w-8"></th>
                                     <th class="px-4 py-2 text-left text-xs font-bold text-slate-500 uppercase">Name</th>
@@ -9603,7 +9982,7 @@ class MarketFlowCRM {
 
         return `
             <div class="space-y-5 fade-in">
-                <div class="flex items-center justify-between">
+                <div class="flex flex-wrap items-start justify-between gap-3">
                     <div>
                         <h2 class="text-2xl font-bold text-slate-900">Re-engagement</h2>
                         <p class="text-sm text-slate-500 mt-0.5">Clients without active projects · pick a segment · preview · send via GMass</p>
@@ -9655,7 +10034,7 @@ class MarketFlowCRM {
                         </div>
                     </div>
                     <div class="overflow-x-auto max-h-72 overflow-y-auto">
-                        <table class="w-full text-sm">
+                        <table class="w-full text-sm" style="min-width: 800px;">
                             <thead class="bg-slate-50 sticky top-0"><tr>
                                 <th class="px-4 py-2 w-8"></th>
                                 <th class="px-4 py-2 text-left text-xs font-bold text-slate-500 uppercase">Name</th>
@@ -9713,15 +10092,15 @@ class MarketFlowCRM {
 
         return `
             <div class="space-y-6 fade-in">
-                <div class="flex items-center justify-between">
+                <div class="flex flex-wrap items-start justify-between gap-3">
                     <div>
-                        <h2 class="text-2xl font-semibold text-slate-900">Quotations</h2>
+                        <h2 class="text-xl sm:text-2xl font-semibold text-slate-900">Quotations</h2>
                         <p class="text-sm text-slate-500">Quotes drive invoices and payment collection</p>
                     </div>
                     <button data-action="toast" class="px-4 py-2 text-sm font-medium bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">+ New Quote</button>
                 </div>
 
-                <div class="grid grid-cols-4 gap-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                     <div class="bg-white rounded-lg border border-slate-200 p-5 shadow-lg">
                         <div class="text-xs text-slate-500">Quotes this month</div>
                         <div class="text-2xl font-semibold text-slate-900 mt-1">18</div>
@@ -9750,7 +10129,7 @@ class MarketFlowCRM {
                         <button data-action="toast" class="px-3 py-2 text-sm font-medium bg-purple-50 text-purple-700 rounded-lg hover:bg-purple-100 transition-colors">Export</button>
                     </div>
                     <div class="overflow-x-auto">
-                        <table class="w-full text-sm">
+                        <table class="w-full text-sm" style="min-width: 800px;">
                             <thead class="bg-slate-50 text-slate-600">
                                 <tr>
                                     <th class="text-left px-4 py-3 font-medium">Quote</th>
@@ -9789,17 +10168,17 @@ class MarketFlowCRM {
 
         return `
             <div class="space-y-6 fade-in">
-                <div class="flex items-center justify-between">
+                <div class="flex flex-wrap items-start justify-between gap-3">
                     <div>
-                        <h2 class="text-2xl font-semibold text-slate-900">Contracts</h2>
+                        <h2 class="text-xl sm:text-2xl font-semibold text-slate-900">Contracts</h2>
                         <p class="text-sm text-slate-500">Active coverage, renewals, and terms</p>
                     </div>
                     <button data-action="toast" class="px-4 py-2 text-sm font-medium bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">+ New Contract</button>
                 </div>
 
-                <div class="grid grid-cols-3 gap-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     ${contracts.map(c => `
-                        <div class="bg-white rounded-lg border border-slate-200 p-6 shadow-lg">
+                        <div class="bg-white rounded-lg border border-slate-200 p-4 sm:p-6 shadow-lg">
                             <div class="flex items-start justify-between">
                                 <div>
                                     <div class="text-sm font-semibold text-slate-900">${c.no}</div>
@@ -9807,7 +10186,7 @@ class MarketFlowCRM {
                                 </div>
                                 <span class="px-2 py-1 text-xs font-medium bg-${c.color}-50 text-${c.color}-700 rounded-full">${c.status}</span>
                             </div>
-                            <div class="mt-4 grid grid-cols-2 gap-3">
+                            <div class="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
                                 <div class="p-3 bg-slate-50 rounded-lg">
                                     <div class="text-xs text-slate-500">Type</div>
                                     <div class="text-sm font-medium text-slate-900">${c.type}</div>
@@ -9870,9 +10249,9 @@ class MarketFlowCRM {
 
         return `
             <div class="space-y-6 fade-in">
-        <div class="flex items-center justify-between">
+        <div class="flex flex-wrap items-start justify-between gap-3">
             <div>
-                <h2 class="text-2xl font-semibold text-slate-900">Invoices</h2>
+                <h2 class="text-xl sm:text-2xl font-semibold text-slate-900">Invoices</h2>
                 <p class="text-sm text-slate-500">Track paid, pending, and overdue invoices</p>
             </div>
             <button data-action="invoice:create" class="px-4 py-2 text-sm font-medium bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">+ Create Invoice</button>
@@ -9886,7 +10265,7 @@ class MarketFlowCRM {
                 ` : ``
             }
 
-                <div class="grid grid-cols-4 gap-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                     <div class="bg-white rounded-lg border border-slate-200 p-5 shadow-lg">
                         <div class="text-xs text-slate-500">Pending Payments</div>
                         <div class="text-2xl font-semibold text-slate-900 mt-1">${this.formatINR(pendingAmount)}</div>
@@ -9909,14 +10288,14 @@ class MarketFlowCRM {
                     </div>
                 </div>
 
-                <div class="grid grid-cols-3 gap-6">
-                    <div class="col-span-2 bg-white rounded-lg border border-slate-200 overflow-hidden">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div class="col-span-1 lg:col-span-2 bg-white rounded-lg border border-slate-200 overflow-hidden">
                         <div class="p-4 border-b border-slate-200 flex items-center justify-between">
                             <div class="text-sm font-medium text-slate-900">Invoice Table</div>
                             <button data-action="invoice:export" data-invoices-json="${exportJson}" class="px-3 py-2 text-sm font-medium bg-purple-50 text-purple-700 rounded-lg hover:bg-purple-100 transition-colors">Download</button>
                         </div>
                         <div class="overflow-x-auto">
-                            <table class="w-full text-sm">
+                            <table class="w-full text-sm" style="min-width: 800px;">
                                 <thead class="bg-slate-50 text-slate-600">
                                     <tr>
                                         <th class="text-left px-4 py-3 font-medium">Invoice</th>
@@ -9979,7 +10358,7 @@ class MarketFlowCRM {
                         </div>
                     </div>
 
-                    <div class="bg-white rounded-lg border border-slate-200 p-6 shadow-lg">
+                    <div class="bg-white rounded-lg border border-slate-200 p-4 sm:p-6 shadow-lg">
                         <h3 class="text-lg font-semibold text-slate-900">Status Split</h3>
                         <p class="text-sm text-slate-500">Paid vs overdue vs pending</p>
                         <div class="mt-4 h-56 bg-slate-50 rounded-lg p-3">
@@ -10006,17 +10385,17 @@ class MarketFlowCRM {
 
         return `
             <div class="space-y-6 fade-in">
-                <div class="flex items-center justify-between">
+                <div class="flex flex-wrap items-start justify-between gap-3">
                     <div>
-                        <h2 class="text-2xl font-semibold text-slate-900">Payment Status</h2>
+                        <h2 class="text-xl sm:text-2xl font-semibold text-slate-900">Payment Status</h2>
                         <p class="text-sm text-slate-500">Collections pipeline and overdue risk</p>
                     </div>
                     <button class="px-4 py-2 text-sm font-medium bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">Record Payment</button>
                 </div>
 
-                <div class="grid grid-cols-3 gap-6">
-                    <div class="col-span-2 bg-white rounded-lg border border-slate-200 p-6 shadow-lg">
-                        <div class="flex items-center justify-between">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div class="col-span-1 lg:col-span-2 bg-white rounded-lg border border-slate-200 p-4 sm:p-6 shadow-lg">
+                        <div class="flex flex-wrap items-start justify-between gap-3">
                             <h3 class="text-lg font-semibold text-slate-900">Expected Payments</h3>
                             <span class="px-2 py-1 text-xs font-medium bg-slate-100 text-slate-700 rounded-full">This week</span>
                         </div>
@@ -10037,7 +10416,7 @@ class MarketFlowCRM {
                         </div>
                     </div>
 
-                    <div class="bg-white rounded-lg border border-slate-200 p-6 shadow-lg">
+                    <div class="bg-white rounded-lg border border-slate-200 p-4 sm:p-6 shadow-lg">
                         <h3 class="text-lg font-semibold text-slate-900">Collections Summary</h3>
                         <div class="mt-4 space-y-3">
                             <div class="p-3 bg-emerald-50 border border-emerald-100 rounded-lg">
@@ -10098,17 +10477,17 @@ class MarketFlowCRM {
 
         return `
             <div class="space-y-6 fade-in">
-                <div class="flex items-center justify-between">
+                <div class="flex flex-wrap items-start justify-between gap-3">
                     <div>
-                        <h2 class="text-2xl font-semibold text-slate-900">Follow-ups</h2>
+                        <h2 class="text-xl sm:text-2xl font-semibold text-slate-900">Follow-ups</h2>
                         <p class="text-sm text-slate-500">Daily follow-up calendar and priorities</p>
                     </div>
                     <button data-action="toast" class="px-4 py-2 text-sm font-medium bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">+ New Follow-up</button>
                 </div>
 
-                <div class="grid grid-cols-3 gap-6">
-                    <div class="col-span-2 bg-white rounded-lg border border-slate-200 p-6 shadow-lg">
-                        <div class="flex items-center justify-between">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div class="col-span-1 lg:col-span-2 bg-white rounded-lg border border-slate-200 p-4 sm:p-6 shadow-lg">
+                        <div class="flex flex-wrap items-start justify-between gap-3">
                             <h3 class="text-lg font-semibold text-slate-900">Today</h3>
                             <span class="px-2 py-1 text-xs font-medium bg-slate-100 text-slate-700 rounded-full">${followups.length} scheduled</span>
                         </div>
@@ -10133,13 +10512,13 @@ class MarketFlowCRM {
                         </div>
                     </div>
 
-                    <div class="bg-white rounded-lg border border-slate-200 p-6 shadow-lg">
+                    <div class="bg-white rounded-lg border border-slate-200 p-4 sm:p-6 shadow-lg">
                         <h3 class="text-lg font-semibold text-slate-900">This Week</h3>
                         <p class="text-sm text-slate-500">Load by day</p>
                         <div class="mt-4 space-y-3">
                             ${week.map(d => `
                                 <div class="p-3 bg-slate-50 rounded-lg">
-                                    <div class="flex items-center justify-between">
+                                    <div class="flex flex-wrap items-start justify-between gap-3">
                                         <div class="text-sm font-medium text-slate-900">${d.day}</div>
                                         <div class="text-sm font-semibold text-slate-900">${d.count}</div>
                                     </div>
@@ -10177,22 +10556,22 @@ class MarketFlowCRM {
 
         return `
             <div class="space-y-6 fade-in">
-                <div class="flex items-center justify-between">
+                <div class="flex flex-wrap items-start justify-between gap-3">
                     <div>
-                        <h2 class="text-2xl font-semibold text-slate-900">Feedback & Surveys</h2>
+                        <h2 class="text-xl sm:text-2xl font-semibold text-slate-900">Feedback & Surveys</h2>
                         <p class="text-sm text-slate-500">Ratings, trends, and follow-up actions</p>
                     </div>
                     <button data-action="toast" class="px-4 py-2 text-sm font-medium bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">Send Survey</button>
                 </div>
 
-                <div class="grid grid-cols-3 gap-6">
-                    <div class="col-span-2 bg-white rounded-lg border border-slate-200 overflow-hidden">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div class="col-span-1 lg:col-span-2 bg-white rounded-lg border border-slate-200 overflow-hidden">
                         <div class="p-4 border-b border-slate-200 flex items-center justify-between">
                             <div class="text-sm font-medium text-slate-900">Client Survey Status</div>
                             <span class="text-xs text-slate-500">Last 30 days</span>
                         </div>
                         <div class="overflow-x-auto">
-                            <table class="w-full text-sm">
+                            <table class="w-full text-sm" style="min-width: 800px;">
                                 <thead class="bg-slate-50 text-slate-600">
                                     <tr>
                                         <th class="text-left px-4 py-3 font-medium">Client</th>
@@ -10219,7 +10598,7 @@ class MarketFlowCRM {
                         </div>
                     </div>
 
-                    <div class="bg-white rounded-lg border border-slate-200 p-6 shadow-lg">
+                    <div class="bg-white rounded-lg border border-slate-200 p-4 sm:p-6 shadow-lg">
                         <h3 class="text-lg font-semibold text-slate-900">Question Breakdown</h3>
                         <p class="text-sm text-slate-500">Average scores</p>
                         <div class="mt-4 space-y-4">
@@ -10255,17 +10634,17 @@ class MarketFlowCRM {
 
         return `
             <div class="space-y-6 fade-in">
-                <div class="flex items-center justify-between">
+                <div class="flex flex-wrap items-start justify-between gap-3">
                     <div>
-                        <h2 class="text-2xl font-semibold text-slate-900">Client Health</h2>
+                        <h2 class="text-xl sm:text-2xl font-semibold text-slate-900">Client Health</h2>
                         <p class="text-sm text-slate-500">Health scores and early warning signals</p>
                     </div>
                     <button data-action="toast" class="px-4 py-2 text-sm font-medium bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">Create Playbook</button>
                 </div>
 
-                <div class="grid grid-cols-2 gap-6">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     ${health.map(h => `
-                        <div class="bg-white rounded-lg border border-slate-200 p-6 shadow-lg">
+                        <div class="bg-white rounded-lg border border-slate-200 p-4 sm:p-6 shadow-lg">
                             <div class="flex items-start justify-between">
                                 <div>
                                     <div class="text-sm font-semibold text-slate-900">${h.client}</div>
@@ -10282,7 +10661,7 @@ class MarketFlowCRM {
                                     <div class="bg-${h.color}-600 h-2 rounded-full" style="width: ${h.score}%"></div>
                                 </div>
                             </div>
-                            <div class="mt-4 grid grid-cols-3 gap-2">
+                            <div class="mt-4 grid grid-cols-2 sm:grid-cols-3 gap-2">
                                 ${h.signals.map(s => `
                                     <div class="p-2 bg-slate-50 rounded-lg text-xs text-slate-700">${s}</div>
                                 `).join('')}
@@ -10307,17 +10686,17 @@ class MarketFlowCRM {
 
         return `
             <div class="space-y-6 fade-in">
-                <div class="flex items-center justify-between">
+                <div class="flex flex-wrap items-start justify-between gap-3">
                     <div>
-                        <h2 class="text-2xl font-semibold text-slate-900">Next Projects</h2>
+                        <h2 class="text-xl sm:text-2xl font-semibold text-slate-900">Next Projects</h2>
                         <p class="text-sm text-slate-500">Suggested next services to improve retention</p>
                     </div>
                     <button data-action="toast" class="px-4 py-2 text-sm font-medium bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">Create Proposal</button>
                 </div>
 
-                <div class="grid grid-cols-3 gap-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     ${suggestions.map(s => `
-                        <div class="bg-white rounded-lg border border-slate-200 p-6 shadow-lg">
+                        <div class="bg-white rounded-lg border border-slate-200 p-4 sm:p-6 shadow-lg">
                             <div class="flex items-start justify-between">
                                 <div>
                                     <div class="text-sm font-semibold text-slate-900">${s.client}</div>
@@ -10375,15 +10754,15 @@ class MarketFlowCRM {
 
         return `
             <div class="space-y-6 fade-in">
-                <div class="flex items-center justify-between">
+                <div class="flex flex-wrap items-start justify-between gap-3">
                     <div>
-                        <h2 class="text-2xl font-semibold text-slate-900">Revenue Reports</h2>
+                        <h2 class="text-xl sm:text-2xl font-semibold text-slate-900">Revenue Reports</h2>
                         <p class="text-sm text-slate-500">Filters, comparisons, and downloadable charts</p>
                     </div>
                     <button data-action="toast" class="px-4 py-2 text-sm font-medium bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">Download CSV</button>
                 </div>
 
-                <div class="bg-white rounded-lg border border-slate-200 p-4 shadow-lg grid grid-cols-5 gap-3">
+                <div class="bg-white rounded-lg border border-slate-200 p-4 shadow-lg grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
                     <select class="border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500">
                         <option>Last 6 months</option>
                         <option>Last 12 months</option>
@@ -10405,7 +10784,7 @@ class MarketFlowCRM {
                     <button data-action="toast" class="px-4 py-2 text-sm font-medium bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 transition-colors">Reset</button>
                 </div>
 
-                <div class="grid grid-cols-4 gap-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                     <div class="bg-white rounded-lg border border-slate-200 p-5 shadow-lg">
                         <div class="text-xs text-slate-500">Total revenue</div>
                         <div class="text-2xl font-semibold text-slate-900 mt-1">₹22.0 L</div>
@@ -10428,8 +10807,8 @@ class MarketFlowCRM {
                     </div>
                 </div>
 
-                <div class="bg-white rounded-lg border border-slate-200 p-6 shadow-lg">
-                    <div class="flex items-center justify-between">
+                <div class="bg-white rounded-lg border border-slate-200 p-4 sm:p-6 shadow-lg">
+                    <div class="flex flex-wrap items-start justify-between gap-3">
                         <div>
                             <h3 class="text-lg font-semibold text-slate-900">Revenue vs Collection</h3>
                             <p class="text-sm text-slate-500">Monthly trend</p>
@@ -10447,7 +10826,7 @@ class MarketFlowCRM {
                         <div class="text-xs text-slate-500">6 rows</div>
                     </div>
                     <div class="overflow-x-auto">
-                        <table class="w-full text-sm">
+                        <table class="w-full text-sm" style="min-width: 800px;">
                             <thead class="bg-slate-50 text-slate-600">
                                 <tr>
                                     <th class="text-left px-4 py-3 font-medium">Month</th>
@@ -10487,16 +10866,16 @@ class MarketFlowCRM {
 
         return `
             <div class="space-y-6 fade-in">
-                <div class="flex items-center justify-between">
+                <div class="flex flex-wrap items-start justify-between gap-3">
                     <div>
-                        <h2 class="text-2xl font-semibold text-slate-900">Funnel Reports</h2>
+                        <h2 class="text-xl sm:text-2xl font-semibold text-slate-900">Funnel Reports</h2>
                         <p class="text-sm text-slate-500">Lead → deal → project conversion visibility</p>
                     </div>
                     <button data-action="toast" class="px-4 py-2 text-sm font-medium bg-purple-50 text-purple-700 rounded-lg hover:bg-purple-100 transition-colors">Download PDF</button>
                 </div>
 
-                <div class="grid grid-cols-3 gap-6">
-                    <div class="col-span-2 bg-white rounded-lg border border-slate-200 p-6 shadow-lg">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div class="col-span-1 lg:col-span-2 bg-white rounded-lg border border-slate-200 p-4 sm:p-6 shadow-lg">
                         <h3 class="text-lg font-semibold text-slate-900">Conversion Funnel</h3>
                         <p class="text-sm text-slate-500">Last 30 days</p>
                         <div class="mt-5 space-y-3">
@@ -10514,7 +10893,7 @@ class MarketFlowCRM {
                         </div>
                     </div>
 
-                    <div class="bg-white rounded-lg border border-slate-200 p-6 shadow-lg">
+                    <div class="bg-white rounded-lg border border-slate-200 p-4 sm:p-6 shadow-lg">
                         <h3 class="text-lg font-semibold text-slate-900">Insights</h3>
                         <div class="mt-4 space-y-3">
                             <div class="p-3 bg-emerald-50 border border-emerald-100 rounded-lg">
@@ -10546,22 +10925,22 @@ class MarketFlowCRM {
 
         return `
             <div class="space-y-6 fade-in">
-                <div class="flex items-center justify-between">
+                <div class="flex flex-wrap items-start justify-between gap-3">
                     <div>
-                        <h2 class="text-2xl font-semibold text-slate-900">Campaign ROI</h2>
+                        <h2 class="text-xl sm:text-2xl font-semibold text-slate-900">Campaign ROI</h2>
                         <p class="text-sm text-slate-500">Spend vs revenue by campaign</p>
                     </div>
                     <button data-action="toast" class="px-4 py-2 text-sm font-medium bg-purple-50 text-purple-700 rounded-lg hover:bg-purple-100 transition-colors">Download</button>
                 </div>
 
-                <div class="grid grid-cols-3 gap-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     ${campaigns.map(c => `
-                        <div class="bg-white rounded-lg border border-slate-200 p-6 shadow-lg">
+                        <div class="bg-white rounded-lg border border-slate-200 p-4 sm:p-6 shadow-lg">
                             <div class="flex items-start justify-between">
                                 <div class="text-sm font-semibold text-slate-900">${c.name}</div>
                                 <span class="px-2 py-1 text-xs font-medium bg-${c.color}-50 text-${c.color}-700 rounded-full">ROI ${c.roi}</span>
                             </div>
-                            <div class="mt-4 grid grid-cols-2 gap-3">
+                            <div class="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
                                 <div class="p-3 bg-slate-50 rounded-lg">
                                     <div class="text-xs text-slate-500">Spend</div>
                                     <div class="text-sm font-semibold text-slate-900">${c.spend}</div>
@@ -10576,7 +10955,7 @@ class MarketFlowCRM {
                     `).join('')}
                 </div>
 
-                <div class="bg-white rounded-lg border border-slate-200 p-6 shadow-lg">
+                <div class="bg-white rounded-lg border border-slate-200 p-4 sm:p-6 shadow-lg">
                     <h3 class="text-lg font-semibold text-slate-900">Notes</h3>
                     <div class="mt-3 text-sm text-slate-600">
                         CRM Upgrade delivered the highest ROI due to targeted follow-ups and high-fit audience segmentation.
@@ -10596,9 +10975,9 @@ class MarketFlowCRM {
 
         return `
             <div class="space-y-6 fade-in">
-                <div class="flex items-center justify-between">
+                <div class="flex flex-wrap items-start justify-between gap-3">
                     <div>
-                        <h2 class="text-2xl font-semibold text-slate-900">Client Lifetime Value</h2>
+                        <h2 class="text-xl sm:text-2xl font-semibold text-slate-900">Client Lifetime Value</h2>
                         <p class="text-sm text-slate-500">LTV, tenure, and renewal readiness</p>
                     </div>
                     <button data-action="toast" class="px-4 py-2 text-sm font-medium bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">Export</button>
@@ -10606,7 +10985,7 @@ class MarketFlowCRM {
 
                 <div class="bg-white rounded-lg border border-slate-200 overflow-hidden">
                     <div class="overflow-x-auto">
-                        <table class="w-full text-sm">
+                        <table class="w-full text-sm" style="min-width: 800px;">
                             <thead class="bg-slate-50 text-slate-600">
                                 <tr>
                                     <th class="text-left px-4 py-3 font-medium">Client</th>
@@ -10707,17 +11086,17 @@ class MarketFlowCRM {
 
         return `
             <div class="space-y-6 fade-in">
-                <div class="flex items-center justify-between">
+                <div class="flex flex-wrap items-start justify-between gap-3">
                     <div>
-                        <h2 class="text-2xl font-semibold text-slate-900">AI Insights</h2>
+                        <h2 class="text-xl sm:text-2xl font-semibold text-slate-900">AI Insights</h2>
                         <p class="text-sm text-slate-500">Actionable suggestions from engagement, billing, and pipeline</p>
                     </div>
                     <button data-action="toast" class="px-4 py-2 text-sm font-medium bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">Refresh</button>
                 </div>
 
-                <div class="grid grid-cols-2 gap-6">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     ${insights.map(i => `
-                        <div class="bg-white rounded-lg border border-slate-200 p-6 shadow-lg">
+                        <div class="bg-white rounded-lg border border-slate-200 p-4 sm:p-6 shadow-lg">
                             <div class="flex items-start gap-4">
                                 <div class="w-12 h-12 rounded-lg bg-${i.color}-50 flex items-center justify-center">
                                     <i data-lucide="${i.icon}" class="w-6 h-6 text-${i.color}-700"></i>
@@ -10735,8 +11114,8 @@ class MarketFlowCRM {
                     `).join('')}
                 </div>
 
-                <div class="bg-white rounded-lg border border-slate-200 p-6 shadow-lg">
-                    <div class="flex items-center justify-between">
+                <div class="bg-white rounded-lg border border-slate-200 p-4 sm:p-6 shadow-lg">
+                    <div class="flex flex-wrap items-start justify-between gap-3">
                         <div>
                             <h3 class="text-lg font-semibold text-slate-900">Suggested Next Actions</h3>
                             <p class="text-sm text-slate-500">Prioritized task list</p>
@@ -10771,9 +11150,9 @@ class MarketFlowCRM {
 
         return `
             <div class="space-y-6 fade-in">
-                <div class="flex items-center justify-between">
+                <div class="flex flex-wrap items-start justify-between gap-3">
                     <div>
-                        <h2 class="text-2xl font-semibold text-slate-900">Workflow Rules</h2>
+                        <h2 class="text-xl sm:text-2xl font-semibold text-slate-900">Workflow Rules</h2>
                         <p class="text-sm text-slate-500">Automation toggles for master flow</p>
                     </div>
                     <button data-action="toast" class="px-4 py-2 text-sm font-medium bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">+ New Rule</button>
@@ -10813,17 +11192,17 @@ class MarketFlowCRM {
 
         return `
             <div class="space-y-6 fade-in">
-                <div class="flex items-center justify-between">
+                <div class="flex flex-wrap items-start justify-between gap-3">
                     <div>
-                        <h2 class="text-2xl font-semibold text-slate-900">Smart Alerts</h2>
+                        <h2 class="text-xl sm:text-2xl font-semibold text-slate-900">Smart Alerts</h2>
                         <p class="text-sm text-slate-500">Auto-detected risks and opportunities</p>
                     </div>
                     <button class="px-4 py-2 text-sm font-medium bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">Mark all read</button>
                 </div>
 
-                <div class="grid grid-cols-2 gap-6">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     ${alerts.map(a => `
-                        <div class="bg-white rounded-lg border border-slate-200 p-6 shadow-lg">
+                        <div class="bg-white rounded-lg border border-slate-200 p-4 sm:p-6 shadow-lg">
                             <div class="flex items-start gap-4">
                                 <div class="w-12 h-12 rounded-lg bg-${a.color}-50 flex items-center justify-center">
                                     <i data-lucide="${a.icon}" class="w-6 h-6 text-${a.color}-700"></i>
@@ -10853,17 +11232,17 @@ class MarketFlowCRM {
 
         return `
             <div class="space-y-6 fade-in">
-                <div class="flex items-center justify-between">
+                <div class="flex flex-wrap items-start justify-between gap-3">
                     <div>
-                        <h2 class="text-2xl font-semibold text-slate-900">Predictions</h2>
+                        <h2 class="text-xl sm:text-2xl font-semibold text-slate-900">Predictions</h2>
                         <p class="text-sm text-slate-500">Revenue forecast and churn risk</p>
                     </div>
                     <button class="px-4 py-2 text-sm font-medium bg-purple-50 text-purple-700 rounded-lg hover:bg-purple-100 transition-colors">Export</button>
                 </div>
 
-                <div class="grid grid-cols-3 gap-6">
-                    <div class="col-span-2 bg-white rounded-lg border border-slate-200 p-6 shadow-lg">
-                        <div class="flex items-center justify-between">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div class="col-span-1 lg:col-span-2 bg-white rounded-lg border border-slate-200 p-4 sm:p-6 shadow-lg">
+                        <div class="flex flex-wrap items-start justify-between gap-3">
                             <div>
                                 <h3 class="text-lg font-semibold text-slate-900">Revenue Forecast</h3>
                                 <p class="text-sm text-slate-500">Expected vs risk amount</p>
@@ -10875,12 +11254,12 @@ class MarketFlowCRM {
                         </div>
                     </div>
 
-                    <div class="bg-white rounded-lg border border-slate-200 p-6 shadow-lg">
+                    <div class="bg-white rounded-lg border border-slate-200 p-4 sm:p-6 shadow-lg">
                         <h3 class="text-lg font-semibold text-slate-900">Churn Risk</h3>
                         <div class="mt-4 space-y-3">
                             ${risks.map(r => `
                                 <div class="p-4 bg-slate-50 rounded-lg">
-                                    <div class="flex items-center justify-between">
+                                    <div class="flex flex-wrap items-start justify-between gap-3">
                                         <div class="text-sm font-semibold text-slate-900">${r.name}</div>
                                         <span class="px-2 py-1 text-xs font-medium bg-${r.color}-50 text-${r.color}-700 rounded-full">${r.risk}</span>
                                     </div>

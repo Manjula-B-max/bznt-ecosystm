@@ -522,7 +522,7 @@ class MarketFlowCRM {
         const nameEl = document.getElementById('profileName');
 
         let email = '';
-        try { email = localStorage.getItem('APJ 3D Solutions_user_email') || ''; } catch (_) { email = ''; }
+        try { email = localStorage.getItem('bezent_user_email') || ''; } catch (_) { email = ''; }
 
         const cleaned = String(email || '').trim().toLowerCase();
         if (!cleaned) return;
@@ -2280,6 +2280,53 @@ class MarketFlowCRM {
 
             if (a === 'billing:sendBulkReminders') {
                 this.showToast('Bulk reminders queued.');
+                return true;
+            }
+
+            if (a === 'billing:goToClient') {
+                const btn = this._lastActionButton;
+                const clientName = btn?.dataset?.clientName || '';
+                if (clientName) {
+                    this.selectedClientName = clientName;
+                }
+                this.switchSection('leads');
+                this.switchSubSection('clients');
+                this.renderContent();
+                this.initializeLucideIcons();
+                return true;
+            }
+
+            if (a === 'billing:goToInvoices') {
+                const btn = this._lastActionButton;
+                const clientName = btn?.dataset?.clientName || '';
+                if (clientName) {
+                    this.invoiceClientFilter = clientName;
+                }
+                this.switchSection('billing');
+                this.switchSubSection('invoices');
+                this.renderContent();
+                this.initializeLucideIcons();
+                return true;
+            }
+
+            if (a === 'billing:goToFollowupLog') {
+                this.switchSubSection('followup_log');
+                this.renderContent();
+                this.initializeLucideIcons();
+                return true;
+            }
+
+            if (a === 'billing:goToOverdueRisk') {
+                this.switchSubSection('overdue_risk');
+                this.renderContent();
+                this.initializeLucideIcons();
+                return true;
+            }
+
+            if (a === 'billing:goToPayments') {
+                this.switchSubSection('payments');
+                this.renderContent();
+                this.initializeLucideIcons();
                 return true;
             }
 
@@ -10077,6 +10124,12 @@ class MarketFlowCRM {
             case 'payments':
                 container.innerHTML = this.getBillingPayments();
                 break;
+            case 'followup_log':
+                container.innerHTML = this.getBillingFollowupLog();
+                break;
+            case 'overdue_risk':
+                container.innerHTML = this.getBillingOverdueRisk();
+                break;
             default:
                 container.innerHTML = this.getBillingInvoices();
         }
@@ -10390,7 +10443,11 @@ class MarketFlowCRM {
                         <h2 class="text-xl sm:text-2xl font-semibold text-slate-900">Payment Status</h2>
                         <p class="text-sm text-slate-500">Collections pipeline and overdue risk</p>
                     </div>
-                    <button class="px-4 py-2 text-sm font-medium bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">Record Payment</button>
+                    <div class="flex gap-2">
+                        <button data-action="billing:goToFollowupLog" class="px-4 py-2 text-sm font-medium bg-purple-50 text-purple-700 rounded-lg hover:bg-purple-100 transition-colors">Follow-up Log</button>
+                        <button data-action="billing:goToOverdueRisk" class="px-4 py-2 text-sm font-medium bg-rose-50 text-rose-700 rounded-lg hover:bg-rose-100 transition-colors">Overdue Risk</button>
+                        <button class="px-4 py-2 text-sm font-medium bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">Record Payment</button>
+                    </div>
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -10403,12 +10460,13 @@ class MarketFlowCRM {
                             ${expected.map(p => `
                                 <div class="flex items-center justify-between p-4 bg-slate-50 rounded-lg">
                                     <div>
-                                        <div class="text-sm font-medium text-slate-900">${p.client}</div>
+                                        <div class="text-sm font-medium text-purple-700 cursor-pointer hover:underline" data-action="billing:goToClient" data-client-name="${p.client}">${p.client}</div>
                                         <div class="text-xs text-slate-500">${p.when}</div>
                                     </div>
                                     <div class="flex items-center gap-3">
                                         <div class="text-sm font-semibold text-slate-900">${p.amount}</div>
                                         <span class="px-2 py-1 text-xs font-medium bg-${p.color}-50 text-${p.color}-700 rounded-full">${p.status}</span>
+                                        <button data-action="billing:goToInvoices" data-client-name="${p.client}" class="px-3 py-1.5 text-xs font-medium bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 transition-colors">Invoices</button>
                                         <button data-action="toast" class="px-3 py-2 text-sm font-medium bg-purple-50 text-purple-700 rounded-lg hover:bg-purple-100 transition-colors">Notify</button>
                                     </div>
                                 </div>
@@ -10427,16 +10485,354 @@ class MarketFlowCRM {
                                 <div class="text-xs text-slate-500">Pending This Week</div>
                                 <div class="text-lg font-semibold text-slate-900">₹1,25,000</div>
                             </div>
-                            <div class="p-3 bg-rose-50 border border-rose-100 rounded-lg">
+                            <div class="p-3 bg-rose-50 border border-rose-100 rounded-lg cursor-pointer hover:border-rose-200 transition-colors" data-action="billing:goToOverdueRisk">
                                 <div class="text-xs text-slate-500">Overdue Risk</div>
                                 <div class="text-lg font-semibold text-slate-900">₹42,000</div>
+                                <div class="text-xs text-rose-600 mt-1">Click to view dashboard →</div>
                             </div>
                         </div>
-                        <button data-action="toast" class="mt-5 w-full px-4 py-2 text-sm font-medium bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">Open Dunning Rules</button>
+                        <button data-action="billing:goToFollowupLog" class="mt-5 w-full px-4 py-2 text-sm font-medium bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">View Follow-up Log</button>
                     </div>
                 </div>
             </div>
     `;
+    }
+
+    getBillingFollowupLog() {
+        const invoices = this.getAllInvoices();
+        const openInvoices = invoices.filter(i => {
+            const s = String(i.status || '').toLowerCase();
+            return s !== 'paid';
+        });
+
+        const followups = [
+            { date: '27 Feb 2026', invoice: 'INV-102', client: 'TechNova Solutions', type: 'Email', note: 'Payment reminder sent — 3 days overdue', status: 'Sent', color: 'sky' },
+            { date: '26 Feb 2026', invoice: 'INV-102', client: 'TechNova Solutions', type: 'Phone', note: 'Spoke with accounts dept — payment processing', status: 'Responded', color: 'emerald' },
+            { date: '25 Feb 2026', invoice: 'INV-121', client: 'GreenLeaf Industries', type: 'Email', note: 'Advance reminder — due in 5 days', status: 'Sent', color: 'sky' },
+            { date: '24 Feb 2026', invoice: 'INV-123', client: 'Mumbai Retail Chain', type: 'WhatsApp', note: 'Invoice copy shared via WhatsApp', status: 'Delivered', color: 'emerald' },
+            { date: '23 Feb 2026', invoice: 'INV-102', client: 'TechNova Solutions', type: 'Email', note: 'First overdue notice', status: 'Sent', color: 'sky' },
+            { date: '22 Feb 2026', invoice: 'INV-121', client: 'GreenLeaf Industries', type: 'Phone', note: 'Confirmed receipt of invoice', status: 'Responded', color: 'emerald' },
+            { date: '20 Feb 2026', invoice: 'INV-123', client: 'Mumbai Retail Chain', type: 'Email', note: 'Invoice sent with payment link', status: 'Sent', color: 'sky' }
+        ];
+
+        const totalFollowups = followups.length;
+        const responded = followups.filter(f => f.status === 'Responded').length;
+        const pending = openInvoices.length;
+        const overdueFollowups = followups.filter(f => f.invoice === 'INV-102').length;
+
+        return `
+            <div class="space-y-6 fade-in">
+                <div class="flex flex-wrap items-start justify-between gap-3">
+                    <div>
+                        <h2 class="text-xl sm:text-2xl font-semibold text-slate-900">Payment Follow-up Log</h2>
+                        <p class="text-sm text-slate-500">Track all payment collection follow-ups and communication history</p>
+                    </div>
+                    <div class="flex gap-2">
+                        <button data-action="billing:goToPayments" class="px-4 py-2 text-sm font-medium bg-purple-50 text-purple-700 rounded-lg hover:bg-purple-100 transition-colors">← Payment Status</button>
+                        <button data-action="billing:goToOverdueRisk" class="px-4 py-2 text-sm font-medium bg-rose-50 text-rose-700 rounded-lg hover:bg-rose-100 transition-colors">Overdue Risk</button>
+                        <button data-action="toast" class="px-4 py-2 text-sm font-medium bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">+ Log Follow-up</button>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div class="bg-white rounded-lg border border-slate-200 p-5 shadow-lg">
+                        <div class="text-xs text-slate-500">Total Follow-ups</div>
+                        <div class="text-2xl font-semibold text-slate-900 mt-1">${totalFollowups}</div>
+                        <div class="text-xs text-slate-500 mt-1">last 7 days</div>
+                    </div>
+                    <div class="bg-white rounded-lg border border-slate-200 p-5 shadow-lg">
+                        <div class="text-xs text-slate-500">Responses Received</div>
+                        <div class="text-2xl font-semibold text-emerald-700 mt-1">${responded}</div>
+                        <div class="text-xs text-emerald-700 mt-1">${Math.round(responded / totalFollowups * 100)}% response rate</div>
+                    </div>
+                    <div class="bg-white rounded-lg border border-slate-200 p-5 shadow-lg">
+                        <div class="text-xs text-slate-500">Pending Invoices</div>
+                        <div class="text-2xl font-semibold text-amber-700 mt-1">${pending}</div>
+                        <div class="text-xs text-amber-700 mt-1">need follow-up</div>
+                    </div>
+                    <div class="bg-white rounded-lg border border-slate-200 p-5 shadow-lg">
+                        <div class="text-xs text-slate-500">Overdue Follow-ups</div>
+                        <div class="text-2xl font-semibold text-rose-700 mt-1">${overdueFollowups}</div>
+                        <div class="text-xs text-rose-700 mt-1">INV-102 critical</div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div class="col-span-1 lg:col-span-2 bg-white rounded-lg border border-slate-200 overflow-hidden shadow-lg">
+                        <div class="p-4 border-b border-slate-200 flex items-center justify-between">
+                            <div class="text-sm font-medium text-slate-900">Follow-up History</div>
+                            <button data-action="toast" class="px-3 py-2 text-sm font-medium bg-purple-50 text-purple-700 rounded-lg hover:bg-purple-100 transition-colors">Export</button>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-sm" style="min-width: 800px;">
+                                <thead class="bg-slate-50 text-slate-600">
+                                    <tr>
+                                        <th class="text-left px-4 py-3 font-medium">Date</th>
+                                        <th class="text-left px-4 py-3 font-medium">Invoice</th>
+                                        <th class="text-left px-4 py-3 font-medium">Client</th>
+                                        <th class="text-left px-4 py-3 font-medium">Channel</th>
+                                        <th class="text-left px-4 py-3 font-medium">Note</th>
+                                        <th class="text-left px-4 py-3 font-medium">Status</th>
+                                        <th class="text-left px-4 py-3 font-medium">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-slate-200">
+                                    ${followups.map(f => `
+                                        <tr class="hover:bg-slate-50">
+                                            <td class="px-4 py-3 text-slate-700 whitespace-nowrap">${f.date}</td>
+                                            <td class="px-4 py-3 font-medium text-purple-700 cursor-pointer hover:underline" data-action="billing:goToInvoices" data-client-name="${f.client}">${f.invoice}</td>
+                                            <td class="px-4 py-3 text-purple-700 cursor-pointer hover:underline" data-action="billing:goToClient" data-client-name="${f.client}">${f.client}</td>
+                                            <td class="px-4 py-3">
+                                                <span class="px-2 py-1 text-xs font-medium ${f.type === 'Email' ? 'bg-sky-50 text-sky-700' : f.type === 'Phone' ? 'bg-indigo-50 text-indigo-700' : 'bg-emerald-50 text-emerald-700'} rounded-full">${f.type}</span>
+                                            </td>
+                                            <td class="px-4 py-3 text-slate-700 max-w-xs truncate">${f.note}</td>
+                                            <td class="px-4 py-3">
+                                                <span class="px-2 py-1 text-xs font-medium bg-${f.color}-50 text-${f.color}-700 rounded-full">${f.status}</span>
+                                            </td>
+                                            <td class="px-4 py-3">
+                                                <button data-action="toast" class="px-3 py-1.5 text-xs font-medium bg-purple-50 text-purple-700 rounded-lg hover:bg-purple-100 transition-colors">${f.status === 'Responded' ? 'View' : 'Follow-up'}</button>
+                                            </td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="space-y-6">
+                        <div class="bg-white rounded-lg border border-slate-200 p-4 sm:p-6 shadow-lg">
+                            <h3 class="text-lg font-semibold text-slate-900">Quick Actions</h3>
+                            <div class="mt-4 space-y-3">
+                                <button data-action="billing:sendBulkReminders" class="w-full px-4 py-2.5 text-sm font-medium bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors flex items-center gap-2">
+                                    <i data-lucide="mail" class="w-4 h-4"></i>
+                                    Send Bulk Reminders
+                                </button>
+                                <button data-action="billing:goToInvoices" class="w-full px-4 py-2.5 text-sm font-medium bg-purple-50 text-purple-700 rounded-lg hover:bg-purple-100 transition-colors flex items-center gap-2">
+                                    <i data-lucide="file-text" class="w-4 h-4"></i>
+                                    View All Invoices
+                                </button>
+                                <button data-action="billing:goToOverdueRisk" class="w-full px-4 py-2.5 text-sm font-medium bg-rose-50 text-rose-700 rounded-lg hover:bg-rose-100 transition-colors flex items-center gap-2">
+                                    <i data-lucide="alert-triangle" class="w-4 h-4"></i>
+                                    Overdue Risk Dashboard
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="bg-white rounded-lg border border-slate-200 p-4 sm:p-6 shadow-lg">
+                            <h3 class="text-lg font-semibold text-slate-900">Follow-up Schedule</h3>
+                            <p class="text-sm text-slate-500">Upcoming reminders</p>
+                            <div class="mt-4 space-y-3">
+                                ${openInvoices.slice(0, 4).map(inv => `
+                                    <div class="p-3 bg-slate-50 rounded-lg">
+                                        <div class="flex items-center justify-between">
+                                            <div>
+                                                <div class="text-sm font-medium text-slate-900">${inv.no}</div>
+                                                <div class="text-xs text-purple-700 cursor-pointer hover:underline" data-action="billing:goToClient" data-client-name="${inv.client}">${inv.client}</div>
+                                            </div>
+                                            <span class="px-2 py-1 text-xs font-medium bg-${inv.color}-50 text-${inv.color}-700 rounded-full">${inv.status}</span>
+                                        </div>
+                                        <div class="text-xs text-slate-500 mt-1">${inv.amount} — ${inv.due}</div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    getBillingOverdueRisk() {
+        const invoices = this.getAllInvoices();
+        const overdueInvoices = invoices.filter(i => String(i.status || '').toLowerCase() === 'overdue');
+        const pendingInvoices = invoices.filter(i => {
+            const s = String(i.status || '').toLowerCase();
+            return s === 'pending';
+        });
+        const allOpenInvoices = invoices.filter(i => String(i.status || '').toLowerCase() !== 'paid');
+
+        const overdueAmount = overdueInvoices.reduce((sum, x) => sum + this.parseCurrencyToNumber(x.amount), 0);
+        const pendingAmount = pendingInvoices.reduce((sum, x) => sum + this.parseCurrencyToNumber(x.amount), 0);
+        const totalAtRisk = overdueAmount + pendingAmount;
+
+        // Aging buckets
+        const aging = [
+            { bucket: '0–7 days', count: pendingInvoices.length, amount: this.formatINR(pendingAmount), color: 'amber', risk: 'Low' },
+            { bucket: '8–15 days', count: 0, amount: this.formatINR(0), color: 'orange', risk: 'Medium' },
+            { bucket: '16–30 days', count: overdueInvoices.length, amount: this.formatINR(overdueAmount), color: 'rose', risk: 'High' },
+            { bucket: '30+ days', count: 0, amount: this.formatINR(0), color: 'red', risk: 'Critical' }
+        ];
+
+        // Build client-risk map from invoices
+        const clientRiskMap = new Map();
+        allOpenInvoices.forEach(inv => {
+            const client = String(inv.client || '').trim();
+            if (!client) return;
+            const key = client.toLowerCase();
+            const existing = clientRiskMap.get(key) || { client, invoices: [], totalDue: 0 };
+            existing.invoices.push(inv);
+            existing.totalDue += this.parseCurrencyToNumber(inv.amount);
+            clientRiskMap.set(key, existing);
+        });
+        const atRiskClients = Array.from(clientRiskMap.values()).sort((a, b) => b.totalDue - a.totalDue);
+
+        return `
+            <div class="space-y-6 fade-in">
+                <div class="flex flex-wrap items-start justify-between gap-3">
+                    <div>
+                        <h2 class="text-xl sm:text-2xl font-semibold text-slate-900">Overdue Risk Dashboard</h2>
+                        <p class="text-sm text-slate-500">Monitor payment risks, aging buckets, and at-risk clients</p>
+                    </div>
+                    <div class="flex gap-2">
+                        <button data-action="billing:goToPayments" class="px-4 py-2 text-sm font-medium bg-purple-50 text-purple-700 rounded-lg hover:bg-purple-100 transition-colors">← Payment Status</button>
+                        <button data-action="billing:goToFollowupLog" class="px-4 py-2 text-sm font-medium bg-purple-50 text-purple-700 rounded-lg hover:bg-purple-100 transition-colors">Follow-up Log</button>
+                        <button data-action="billing:sendBulkReminders" class="px-4 py-2 text-sm font-medium bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">Send Bulk Reminders</button>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div class="bg-white rounded-lg border border-rose-200 p-5 shadow-lg">
+                        <div class="text-xs text-slate-500">Total At-Risk Amount</div>
+                        <div class="text-2xl font-semibold text-rose-700 mt-1">${this.formatINR(totalAtRisk)}</div>
+                        <div class="text-xs text-rose-700 mt-1">${allOpenInvoices.length} open invoices</div>
+                    </div>
+                    <div class="bg-white rounded-lg border border-rose-200 p-5 shadow-lg">
+                        <div class="text-xs text-slate-500">Overdue Amount</div>
+                        <div class="text-2xl font-semibold text-rose-700 mt-1">${this.formatINR(overdueAmount)}</div>
+                        <div class="text-xs text-rose-700 mt-1">${overdueInvoices.length} overdue</div>
+                    </div>
+                    <div class="bg-white rounded-lg border border-amber-200 p-5 shadow-lg">
+                        <div class="text-xs text-slate-500">Pending Amount</div>
+                        <div class="text-2xl font-semibold text-amber-700 mt-1">${this.formatINR(pendingAmount)}</div>
+                        <div class="text-xs text-amber-700 mt-1">${pendingInvoices.length} approaching due</div>
+                    </div>
+                    <div class="bg-white rounded-lg border border-slate-200 p-5 shadow-lg">
+                        <div class="text-xs text-slate-500">At-Risk Clients</div>
+                        <div class="text-2xl font-semibold text-slate-900 mt-1">${atRiskClients.length}</div>
+                        <div class="text-xs text-slate-500 mt-1">need attention</div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div class="col-span-1 lg:col-span-2 space-y-6">
+                        <div class="bg-white rounded-lg border border-slate-200 p-4 sm:p-6 shadow-lg">
+                            <h3 class="text-lg font-semibold text-slate-900">Aging Buckets</h3>
+                            <p class="text-sm text-slate-500">Invoice distribution by overdue days</p>
+                            <div class="mt-4 space-y-3">
+                                ${aging.map(a => `
+                                    <div class="p-4 bg-slate-50 rounded-lg">
+                                        <div class="flex items-center justify-between">
+                                            <div class="flex items-center gap-3">
+                                                <div class="w-3 h-3 rounded-full bg-${a.color}-500"></div>
+                                                <div>
+                                                    <div class="text-sm font-medium text-slate-900">${a.bucket}</div>
+                                                    <div class="text-xs text-slate-500">${a.count} invoice${a.count !== 1 ? 's' : ''}</div>
+                                                </div>
+                                            </div>
+                                            <div class="flex items-center gap-3">
+                                                <div class="text-sm font-semibold text-slate-900">${a.amount}</div>
+                                                <span class="px-2 py-1 text-xs font-medium bg-${a.color}-50 text-${a.color}-700 rounded-full">${a.risk}</span>
+                                            </div>
+                                        </div>
+                                        ${a.count > 0 ? `<div class="mt-2 w-full bg-slate-200 rounded-full h-1.5"><div class="bg-${a.color}-500 h-1.5 rounded-full" style="width: ${Math.min(a.count / Math.max(allOpenInvoices.length, 1) * 100, 100)}%"></div></div>` : ''}
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+
+                        <div class="bg-white rounded-lg border border-slate-200 overflow-hidden shadow-lg">
+                            <div class="p-4 border-b border-slate-200 flex items-center justify-between">
+                                <div class="text-sm font-medium text-slate-900">Overdue Invoices</div>
+                                <button data-action="billing:goToInvoices" class="px-3 py-2 text-sm font-medium bg-purple-50 text-purple-700 rounded-lg hover:bg-purple-100 transition-colors">View All Invoices</button>
+                            </div>
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-sm" style="min-width: 600px;">
+                                    <thead class="bg-slate-50 text-slate-600">
+                                        <tr>
+                                            <th class="text-left px-4 py-3 font-medium">Invoice</th>
+                                            <th class="text-left px-4 py-3 font-medium">Client</th>
+                                            <th class="text-right px-4 py-3 font-medium">Amount</th>
+                                            <th class="text-left px-4 py-3 font-medium">Status</th>
+                                            <th class="text-left px-4 py-3 font-medium">Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-slate-200">
+                                        ${allOpenInvoices.map(i => `
+                                            <tr class="hover:bg-slate-50">
+                                                <td class="px-4 py-3 font-medium text-slate-900">${i.no}</td>
+                                                <td class="px-4 py-3 text-purple-700 cursor-pointer hover:underline" data-action="billing:goToClient" data-client-name="${i.client}">${i.client}</td>
+                                                <td class="px-4 py-3 text-right font-medium text-slate-900">${i.amount}</td>
+                                                <td class="px-4 py-3">
+                                                    <span class="px-2 py-1 text-xs font-medium bg-${i.color}-50 text-${i.color}-700 rounded-full">${i.status}</span>
+                                                </td>
+                                                <td class="px-4 py-3">
+                                                    <div class="flex items-center gap-2">
+                                                        <button data-action="billing:goToFollowupLog" class="px-3 py-1.5 text-xs font-medium bg-purple-50 text-purple-700 rounded-lg hover:bg-purple-100 transition-colors">Follow-up</button>
+                                                        <button data-action="toast" class="px-3 py-1.5 text-xs font-medium bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 transition-colors">Remind</button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        `).join('')}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="space-y-6">
+                        <div class="bg-white rounded-lg border border-slate-200 p-4 sm:p-6 shadow-lg">
+                            <h3 class="text-lg font-semibold text-slate-900">At-Risk Clients</h3>
+                            <p class="text-sm text-slate-500">Clients with outstanding payments</p>
+                            <div class="mt-4 space-y-3">
+                                ${atRiskClients.map(rc => {
+            const hasOverdue = rc.invoices.some(i => String(i.status || '').toLowerCase() === 'overdue');
+            const riskColor = hasOverdue ? 'rose' : 'amber';
+            const riskLabel = hasOverdue ? 'High Risk' : 'Medium Risk';
+            return `
+                                        <div class="p-4 bg-slate-50 rounded-lg border-l-4 border-${riskColor}-500">
+                                            <div class="flex items-start justify-between">
+                                                <div>
+                                                    <div class="text-sm font-medium text-purple-700 cursor-pointer hover:underline" data-action="billing:goToClient" data-client-name="${rc.client}">${rc.client}</div>
+                                                    <div class="text-xs text-slate-500 mt-1">${rc.invoices.length} open invoice${rc.invoices.length !== 1 ? 's' : ''}</div>
+                                                </div>
+                                                <span class="px-2 py-1 text-xs font-medium bg-${riskColor}-50 text-${riskColor}-700 rounded-full">${riskLabel}</span>
+                                            </div>
+                                            <div class="mt-2 text-sm font-semibold text-slate-900">${this.formatINR(rc.totalDue)}</div>
+                                            <div class="mt-2 flex gap-2">
+                                                <button data-action="billing:goToInvoices" data-client-name="${rc.client}" class="flex-1 px-3 py-1.5 text-xs font-medium bg-purple-50 text-purple-700 rounded-lg hover:bg-purple-100 transition-colors">Invoices</button>
+                                                <button data-action="billing:goToClient" data-client-name="${rc.client}" class="flex-1 px-3 py-1.5 text-xs font-medium bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 transition-colors">Client</button>
+                                            </div>
+                                        </div>
+                                    `;
+        }).join('')}
+                            </div>
+                        </div>
+
+                        <div class="bg-white rounded-lg border border-slate-200 p-4 sm:p-6 shadow-lg">
+                            <h3 class="text-lg font-semibold text-slate-900">Risk Summary</h3>
+                            <div class="mt-4 space-y-3">
+                                <div class="p-3 bg-rose-50 border border-rose-100 rounded-lg">
+                                    <div class="text-xs text-slate-500">Immediate Action</div>
+                                    <div class="text-sm font-medium text-rose-900">${overdueInvoices.length} overdue invoice${overdueInvoices.length !== 1 ? 's' : ''}</div>
+                                    <div class="text-xs text-rose-700 mt-1">Escalation recommended</div>
+                                </div>
+                                <div class="p-3 bg-amber-50 border border-amber-100 rounded-lg">
+                                    <div class="text-xs text-slate-500">Watch List</div>
+                                    <div class="text-sm font-medium text-amber-900">${pendingInvoices.length} invoice${pendingInvoices.length !== 1 ? 's' : ''} approaching due</div>
+                                    <div class="text-xs text-amber-700 mt-1">Send pre-due reminders</div>
+                                </div>
+                                <div class="p-3 bg-emerald-50 border border-emerald-100 rounded-lg">
+                                    <div class="text-xs text-slate-500">Collection Health</div>
+                                    <div class="text-sm font-medium text-emerald-900">${invoices.filter(i => String(i.status || '').toLowerCase() === 'paid').length} paid this period</div>
+                                    <div class="text-xs text-emerald-700 mt-1">Collection rate on track</div>
+                                </div>
+                            </div>
+                            <button data-action="billing:goToFollowupLog" class="mt-5 w-full px-4 py-2 text-sm font-medium bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">Open Follow-up Log</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
     }
 
     renderEngagementContent(container) {
@@ -11633,7 +12029,7 @@ class MarketFlowCRM {
 
         if (logout) {
             logout.addEventListener('click', () => {
-                try { localStorage.removeItem('APJ 3D Solutions_user_email'); } catch (_) { }
+                try { localStorage.removeItem('bezent_user_email'); } catch (_) { }
                 window.location.href = 'index.html';
             });
         }

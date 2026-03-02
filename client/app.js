@@ -11592,6 +11592,9 @@ class MarketFlowCRM {
 
         const dotClass = (s) => s === 'start' ? 'bg-emerald-500' : s === 'end' ? 'bg-rose-400' : 'bg-purple-500';
 
+        const totalStops = routes.reduce((a, r) => a + r.stops.length, 0);
+        const totalRoutes = routes.length;
+
         return `
             <div class="space-y-6 fade-in">
 
@@ -11599,11 +11602,51 @@ class MarketFlowCRM {
                 <div class="flex flex-wrap items-start justify-between gap-3">
                     <div>
                         <h2 class="text-xl sm:text-2xl font-semibold text-slate-900">Visit Route Map</h2>
-                        <p class="text-sm text-slate-500">Live field-engineer routes plotted on OpenStreetMap</p>
+                        <p class="text-sm text-slate-500 mt-0.5">Live field-engineer routes plotted on OpenStreetMap</p>
                     </div>
                     <div class="flex items-center gap-2">
                         <button data-action="toast" class="px-4 py-2 text-sm font-medium bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 transition-colors">Export KML</button>
                         <button data-action="toast" class="px-4 py-2 text-sm font-medium bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">Optimise Routes</button>
+                    </div>
+                </div>
+
+                <!-- KPI strip -->
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                    <div class="bg-white rounded-xl border border-slate-200 p-4 shadow-sm flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-purple-50 flex items-center justify-center flex-shrink-0">
+                            <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+                        </div>
+                        <div>
+                            <div class="text-xl font-bold text-slate-900">${totalRoutes}</div>
+                            <div class="text-xs text-slate-500">Engineers Active</div>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-xl border border-slate-200 p-4 shadow-sm flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-sky-50 flex items-center justify-center flex-shrink-0">
+                            <svg class="w-5 h-5 text-sky-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                        </div>
+                        <div>
+                            <div class="text-xl font-bold text-slate-900">${totalStops}</div>
+                            <div class="text-xs text-slate-500">Total Stops</div>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-xl border border-slate-200 p-4 shadow-sm flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center flex-shrink-0">
+                            <svg class="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
+                        </div>
+                        <div>
+                            <div class="text-xl font-bold text-slate-900">~68 km</div>
+                            <div class="text-xs text-slate-500">Est. Distance</div>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-xl border border-slate-200 p-4 shadow-sm flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center flex-shrink-0">
+                            <svg class="w-5 h-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><circle cx="12" cy="12" r="10"/><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6l4 2"/></svg>
+                        </div>
+                        <div>
+                            <div class="text-xl font-bold text-slate-900">~6.5 hrs</div>
+                            <div class="text-xs text-slate-500">Est. Field Time</div>
+                        </div>
                     </div>
                 </div>
 
@@ -11627,43 +11670,117 @@ class MarketFlowCRM {
                         <div id="routeLeafletMap" style="height:calc(460px - 53px); width:100%;"></div>
                     </div>
 
-                    <!-- Route cards -->
+                    <!-- Route cards (enhanced) -->
                     <div class="space-y-4 overflow-y-auto" style="max-height:460px;">
-                        ${routes.map(r => `
-                        <div class="bg-white rounded-xl border border-slate-200 p-4 shadow-sm cursor-pointer hover:border-purple-300 transition-colors" onclick="window._rmShowRoute('${r.id}')">
-                            <div class="flex items-center justify-between mb-3">
+                        ${routes.map((r, ri) => {
+            const completedStops = ri === 0 ? 2 : 0; // Karthik: 2 done, Priya: not started
+            const pct = Math.round((completedStops / r.stops.length) * 100);
+            const statusLabel = ri === 0 ? 'In Progress' : 'Upcoming';
+            const statusClass = ri === 0 ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700';
+            return `
+                        <div class="bg-white rounded-xl border border-slate-200 p-4 shadow-sm cursor-pointer hover:border-purple-300 hover:shadow-md transition-all" onclick="window._rmShowRoute('${r.id}')">
+                            <!-- Card header -->
+                            <div class="flex items-start justify-between mb-3">
                                 <div>
                                     <div class="flex items-center gap-2">
-                                        <span class="w-2.5 h-2.5 rounded-full inline-block" style="background:${r.color}"></span>
-                                        <span class="text-sm font-semibold text-slate-900">${r.engineer}</span>
+                                        <span class="w-2.5 h-2.5 rounded-full inline-block flex-shrink-0" style="background:${r.color}"></span>
+                                        <span class="text-sm font-bold text-slate-900">${r.engineer}</span>
+                                        <span class="px-2 py-0.5 text-[10px] font-semibold ${statusClass} rounded-full">${statusLabel}</span>
                                     </div>
-                                    <div class="text-xs text-slate-500 mt-0.5 ml-4.5">${r.date} &middot; ${r.stops.length} stops</div>
+                                    <div class="text-xs text-slate-500 mt-1 pl-4">${r.date} &middot; ${r.stops.length} stops</div>
                                 </div>
-                                <button data-action="toast" class="px-2 py-1 text-xs font-semibold bg-purple-50 text-purple-700 rounded-lg">Directions</button>
+                                <button data-action="toast" class="flex-shrink-0 px-2 py-1 text-xs font-semibold bg-purple-50 text-purple-700 rounded-lg hover:bg-purple-100">Directions</button>
                             </div>
-                            <div>
-                                ${r.stops.map((stop, idx) => `
-                                <div class="flex gap-3 ${idx < r.stops.length - 1 ? 'mb-3' : ''}">
+                            <!-- Progress bar -->
+                            <div class="mb-3">
+                                <div class="flex items-center justify-between text-xs text-slate-500 mb-1">
+                                    <span>${completedStops} of ${r.stops.length} stops done</span>
+                                    <span class="font-semibold text-slate-700">${pct}%</span>
+                                </div>
+                                <div class="w-full bg-slate-100 rounded-full h-1.5">
+                                    <div class="h-1.5 rounded-full transition-all" style="width:${pct}%;background:${r.color}"></div>
+                                </div>
+                            </div>
+                            <!-- Stop list -->
+                            <div class="space-y-0">
+                                ${r.stops.map((stop, idx) => {
+                const isDone = idx < completedStops;
+                return `
+                                <div class="flex gap-3 ${idx < r.stops.length - 1 ? 'mb-2.5' : ''}">
                                     <div class="flex flex-col items-center flex-shrink-0">
-                                        <div class="w-3 h-3 rounded-full ${dotClass(stop.status)} mt-0.5"></div>
-                                        ${idx < r.stops.length - 1 ? '<div class="w-px flex-1 bg-slate-200 mt-1" style="min-height:14px;"></div>' : ''}
+                                        <div class="w-3 h-3 rounded-full mt-0.5 ${isDone ? 'bg-emerald-500' : dotClass(stop.status)} ${isDone ? 'ring-2 ring-emerald-200' : ''}"></div>
+                                        ${idx < r.stops.length - 1 ? `<div class="w-px flex-1 mt-1 ${isDone ? 'bg-emerald-300' : 'bg-slate-200'}" style="min-height:14px;"></div>` : ''}
                                     </div>
-                                    <div class="pb-1 min-w-0">
-                                        <div class="text-xs font-semibold text-slate-900 truncate">${stop.seq}. ${stop.client}</div>
+                                    <div class="pb-1 min-w-0 flex-1">
+                                        <div class="flex items-center gap-1.5">
+                                            <span class="text-xs font-semibold text-slate-900 truncate ${isDone ? 'line-through text-slate-400' : ''}">${stop.seq}. ${stop.client}</span>
+                                            ${isDone ? '<svg class="w-3 h-3 text-emerald-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>' : ''}
+                                        </div>
                                         <div class="text-xs text-slate-500">${stop.time} &middot; ${stop.type}</div>
                                         <div class="text-xs text-slate-400 truncate">${stop.address}</div>
                                     </div>
-                                </div>
-                                `).join('')}
+                                </div>`;
+            }).join('')}
                             </div>
+                        </div>`;
+        }).join('')}
+                    </div>
+                </div>
+
+                <!-- Today's dispatch summary -->
+                <div class="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">
+                    <div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
+                        <div>
+                            <div class="text-sm font-semibold text-slate-900">Today's Dispatch Summary</div>
+                            <div class="text-xs text-slate-400 mt-0.5">All stops scheduled across engineers</div>
                         </div>
-                        `).join('')}
+                        <span class="px-2.5 py-1 text-xs font-semibold bg-purple-50 text-purple-700 rounded-full">${totalStops} stops · ${totalRoutes} engineers</span>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm" style="min-width:560px;">
+                            <thead class="bg-slate-50 text-xs text-slate-500 font-semibold uppercase tracking-wide">
+                                <tr>
+                                    <th class="text-left px-5 py-3">#</th>
+                                    <th class="text-left px-4 py-3">Engineer</th>
+                                    <th class="text-left px-4 py-3">Client</th>
+                                    <th class="text-left px-4 py-3">Address</th>
+                                    <th class="text-left px-4 py-3">Time</th>
+                                    <th class="text-left px-4 py-3">Type</th>
+                                    <th class="text-left px-4 py-3">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-100">
+                                ${routes.flatMap((r, ri) => r.stops.map((s, si) => {
+            const done = ri === 0 && si < 2;
+            const label = done ? 'Completed' : ri === 0 && si === 2 ? 'Next Up' : 'Scheduled';
+            const cls = done ? 'bg-emerald-50 text-emerald-700' : label === 'Next Up' ? 'bg-purple-50 text-purple-700' : 'bg-slate-100 text-slate-500';
+            return `
+                                <tr class="hover:bg-slate-50 transition-colors">
+                                    <td class="px-5 py-3 text-xs text-slate-400 font-medium">${s.seq}</td>
+                                    <td class="px-4 py-3">
+                                        <span class="flex items-center gap-1.5 text-xs font-semibold text-slate-700">
+                                            <span class="w-2 h-2 rounded-full inline-block flex-shrink-0" style="background:${r.color}"></span>
+                                            ${r.engineer}
+                                        </span>
+                                    </td>
+                                    <td class="px-4 py-3 text-xs font-medium text-slate-900">${s.client}</td>
+                                    <td class="px-4 py-3 text-xs text-slate-500">${s.address}</td>
+                                    <td class="px-4 py-3 text-xs text-slate-600 font-medium">${s.time}</td>
+                                    <td class="px-4 py-3 text-xs text-slate-500">${s.type}</td>
+                                    <td class="px-4 py-3">
+                                        <span class="px-2 py-1 text-xs font-semibold rounded-full ${cls}">${label}</span>
+                                    </td>
+                                </tr>`;
+        })).join('')}
+                            </tbody>
+                        </table>
                     </div>
                 </div>
 
             </div>
         `;
     }
+
 
     _initRouteMap() {
         // Avoid double-init

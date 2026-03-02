@@ -3806,8 +3806,7 @@ class MarketFlowCRM {
                 { id: 'reengagement', label: 'Next Projects' },
                 { id: 'field_visits', label: 'Field Visits Planner' },
                 { id: 'route_map', label: 'Visit Route Map' },
-                { id: 'mobile_sync', label: 'Mobile Sync Visits' },
-                { id: 'followup_sla', label: 'Follow-up Tracker (SLA)' }
+                { id: 'mobile_sync', label: 'Mobile Sync Visits' }
             ],
             reports: [
                 { id: 'revenue', label: 'Revenue Reports' },
@@ -10842,6 +10841,7 @@ class MarketFlowCRM {
                 break;
             case 'surveys':
                 container.innerHTML = this.getEngagementSurveys();
+                this._setupSurveyInteractions();
                 break;
             case 'health':
                 container.innerHTML = this.getEngagementHealth();
@@ -10849,90 +10849,331 @@ class MarketFlowCRM {
             case 'reengagement':
                 container.innerHTML = this.getEngagementNextProjects();
                 break;
+            case 'field_visits':
+                container.innerHTML = this.getEngagementFieldVisits();
+                break;
+            case 'route_map':
+                container.innerHTML = this.getEngagementRouteMap();
+                setTimeout(() => this._initRouteMap(), 50);
+                break;
+            case 'mobile_sync':
+                container.innerHTML = this.getEngagementMobileSync();
+                break;
             default:
                 container.innerHTML = this.getEngagementFollowups();
         }
     }
 
+    _setupSurveyInteractions() {
+        const copyBtn = document.getElementById('surveyLinkCopyBtn');
+        const linkInput = document.getElementById('surveyLinkInput');
+        if (copyBtn && linkInput) {
+            copyBtn.addEventListener('click', () => {
+                const url = linkInput.value;
+                try { navigator.clipboard.writeText(url); } catch (_) { linkInput.select(); document.execCommand('copy'); }
+                copyBtn.textContent = '✓ Copied!';
+                setTimeout(() => { copyBtn.textContent = 'Copy'; }, 2000);
+                this.showToast('Feedback link copied to clipboard!');
+            });
+        }
+        const form = document.getElementById('surveySubmitForm');
+        if (form) {
+            form.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const data = new FormData(form);
+                const entry = {
+                    name: (data.get('clientName') || '').trim() || 'Anonymous',
+                    client: (data.get('clientName') || '').trim() || 'Anonymous',
+                    email: (data.get('clientEmail') || '').trim(),
+                    quality: parseInt(data.get('quality') || '5'),
+                    communication: parseInt(data.get('communication') || '5'),
+                    timelines: parseInt(data.get('timeline') || '5'),
+                    value: parseInt(data.get('value') || '5'),
+                    comments: (data.get('comments') || '').trim(),
+                    submittedAt: new Date().toISOString(),
+                    id: Date.now()
+                };
+                entry.avg = ((entry.quality + entry.communication + entry.timelines + entry.value) / 4).toFixed(1);
+                const stored = this.readStore('bezent_feedback_submissions', []);
+                stored.unshift(entry);
+                this.writeStore('bezent_feedback_submissions', stored);
+                form.reset();
+                this.showToast('\u2705 Feedback submitted successfully!');
+                const tbody = document.getElementById('feedbackSubmissionsTbody');
+                if (tbody) tbody.innerHTML = this._buildFeedbackRows(stored);
+                const avgEl = document.getElementById('feedbackAvgScore');
+                if (avgEl && stored.length) {
+                    const tot = stored.reduce((s, r) => s + parseFloat(r.avg), 0);
+                    avgEl.textContent = (tot / stored.length).toFixed(1);
+                }
+            });
+        }
+    }
+
+    _buildFeedbackRows(submissions) {
+        const esc = (v) => String(v ?? '').replace(/</g, '&lt;');
+        if (!submissions.length) return `<tr><td colspan="9" class="px-4 py-6 text-center text-slate-400 text-sm">No feedback received yet. Share the link with your clients to collect responses.</td></tr>`;
+        return submissions.map(s => {
+            const avg = parseFloat(s.avg);
+            const color = avg >= 4.5 ? 'emerald' : avg >= 3.5 ? 'sky' : avg >= 2.5 ? 'amber' : 'rose';
+            // Support both field naming conventions (CRM mini-form vs standalone feedback.html)
+            const comm = s.communication ?? s.comm ?? '—';
+            const timeline = s.timelines ?? s.timeline ?? '—';
+            const clientName = s.name || s.client || 'Anonymous';
+            const ts = s.submittedAt ? new Date(s.submittedAt) : new Date(s.id || Date.now());
+            const dateStr = ts.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+            const stars = '&#9733;'.repeat(Math.round(avg)) + '&#9734;'.repeat(5 - Math.round(avg));
+            return `
+                <tr class="hover:bg-slate-50">
+                    <td class="px-4 py-3 font-medium text-slate-900">${esc(clientName)}</td>
+                    <td class="px-4 py-3 text-slate-500 text-xs">${esc(s.email || '—')}</td>
+                    <td class="px-4 py-3 text-center">${s.quality ?? '—'}</td>
+                    <td class="px-4 py-3 text-center">${comm}</td>
+                    <td class="px-4 py-3 text-center">${timeline}</td>
+                    <td class="px-4 py-3 text-center">${s.value ?? '—'}</td>
+                    <td class="px-4 py-3">
+                        <span class="inline-flex items-center gap-1 px-2 py-1 text-xs font-bold bg-${color}-50 text-${color}-700 rounded-full">${avg} <span>${stars}</span></span>
+                    </td>
+                    <td class="px-4 py-3 text-xs text-slate-400">${dateStr}</td>
+                    <td class="px-4 py-3 text-xs text-slate-600 max-w-xs truncate">${esc(s.comments || '—')}</td>
+                </tr>`;
+        }).join('');
+    }
+
     getEngagementFollowups() {
         const followups = [
-            { time: '10:30 AM', client: 'TechNova Solutions', topic: 'Overdue invoice INV-102', priority: 'High', color: 'rose' },
-            { time: '12:00 PM', client: 'GreenLeaf Industries', topic: 'Proposal approval check-in', priority: 'High', color: 'amber' },
-            { time: '3:15 PM', client: 'EduSpark', topic: 'Feedback survey reminder', priority: 'Medium', color: 'indigo' },
-            { time: '5:00 PM', client: 'Mumbai Retail Chain', topic: 'Pipeline stage update', priority: 'Medium', color: 'sky' }
+            { time: '10:30 AM', client: 'TechNova Solutions', topic: 'Overdue invoice INV-102', priority: 'High', color: 'rose', type: 'billing', done: false, avatar: 'TN' },
+            { time: '12:00 PM', client: 'GreenLeaf Industries', topic: 'Proposal approval check-in', priority: 'High', color: 'amber', type: 'proposal', done: false, avatar: 'GL' },
+            { time: '3:15 PM', client: 'EduSpark', topic: 'Feedback survey reminder', priority: 'Medium', color: 'indigo', type: 'survey', done: true, avatar: 'ES' },
+            { time: '5:00 PM', client: 'Mumbai Retail Chain', topic: 'Pipeline stage update', priority: 'Medium', color: 'sky', type: 'pipeline', done: false, avatar: 'MR' },
+            { time: '6:00 PM', client: 'UrbanCafe', topic: 'Contract renewal discussion', priority: 'Low', color: 'emerald', type: 'contract', done: false, avatar: 'UC' }
         ];
 
         const week = [
-            { day: 'Mon', count: 6 },
-            { day: 'Tue', count: 4 },
-            { day: 'Wed', count: 7 },
-            { day: 'Thu', count: 3 },
-            { day: 'Fri', count: 5 }
+            { day: 'Mon', count: 6, done: 4 },
+            { day: 'Tue', count: 4, done: 4 },
+            { day: 'Wed', count: 7, done: 2 },
+            { day: 'Thu', count: 3, done: 0 },
+            { day: 'Fri', count: 5, done: 0 }
         ];
         const max = Math.max(...week.map(d => d.count));
 
+        const clientSummary = [
+            { name: 'TechNova Solutions', last: '2 days ago', open: 3, type: 'Invoice', urgency: 'Overdue', color: 'rose', avatar: 'TN' },
+            { name: 'GreenLeaf Industries', last: 'Today', open: 2, type: 'Proposal', urgency: 'Pending', color: 'amber', avatar: 'GL' },
+            { name: 'EduSpark', last: '1 week ago', open: 1, type: 'Survey', urgency: 'On Track', color: 'emerald', avatar: 'ES' },
+            { name: 'Mumbai Retail Chain', last: '3 days ago', open: 2, type: 'Pipeline', urgency: 'At Risk', color: 'sky', avatar: 'MR' },
+            { name: 'UrbanCafe', last: '5 days ago', open: 1, type: 'Renewal', urgency: 'Upcoming', color: 'violet', avatar: 'UC' }
+        ];
+
+        const typeIcon = (t) => ({
+            billing: '<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>',
+            proposal: '<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>',
+            survey: '<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 12l2 2 4-4"/></svg>',
+            pipeline: '<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M3 3h18M3 9h18M3 15h18M3 21h18"/></svg>',
+            contract: '<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>'
+        }[t] || '');
+
+        const total = followups.length;
+        const done = followups.filter(f => f.done).length;
+        const high = followups.filter(f => f.priority === 'High' && !f.done).length;
+        const overdue = followups.filter(f => f.color === 'rose' && !f.done).length;
+
         return `
             <div class="space-y-6 fade-in">
+
+                <!-- Header -->
                 <div class="flex flex-wrap items-start justify-between gap-3">
                     <div>
                         <h2 class="text-xl sm:text-2xl font-semibold text-slate-900">Follow-ups</h2>
-                        <p class="text-sm text-slate-500">Daily follow-up calendar and priorities</p>
+                        <p class="text-sm text-slate-500 mt-0.5">Daily follow-up calendar, priorities &amp; client summary</p>
                     </div>
-                    <button data-action="toast" class="px-4 py-2 text-sm font-medium bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">+ New Follow-up</button>
+                    <div class="flex items-center gap-2">
+                        <button data-action="toast" class="px-4 py-2 text-sm font-medium bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 transition-colors">Auto-Schedule</button>
+                        <button data-action="toast" class="px-4 py-2 text-sm font-medium bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">+ New Follow-up</button>
+                    </div>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    <div class="col-span-1 lg:col-span-2 bg-white rounded-lg border border-slate-200 p-4 sm:p-6 shadow-lg">
-                        <div class="flex flex-wrap items-start justify-between gap-3">
-                            <h3 class="text-lg font-semibold text-slate-900">Today</h3>
-                            <span class="px-2 py-1 text-xs font-medium bg-slate-100 text-slate-700 rounded-full">${followups.length} scheduled</span>
+                <!-- KPI strip -->
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                    <div class="bg-white rounded-xl border border-slate-200 p-4 shadow-sm">
+                        <div class="text-xs font-semibold text-slate-500 uppercase tracking-wide">Today&apos;s Total</div>
+                        <div class="text-2xl font-bold text-slate-900 mt-1">${total}</div>
+                        <div class="text-xs text-slate-400 mt-1">follow-ups scheduled</div>
+                    </div>
+                    <div class="bg-white rounded-xl border border-slate-200 p-4 shadow-sm">
+                        <div class="text-xs font-semibold text-slate-500 uppercase tracking-wide">Completed</div>
+                        <div class="text-2xl font-bold text-emerald-600 mt-1">${done}</div>
+                        <div class="text-xs text-slate-400 mt-1">of ${total} done today</div>
+                    </div>
+                    <div class="bg-white rounded-xl border border-rose-100 p-4 shadow-sm">
+                        <div class="text-xs font-semibold text-slate-500 uppercase tracking-wide">High Priority</div>
+                        <div class="text-2xl font-bold text-rose-600 mt-1">${high}</div>
+                        <div class="text-xs text-slate-400 mt-1">still pending</div>
+                    </div>
+                    <div class="bg-white rounded-xl border border-amber-100 p-4 shadow-sm">
+                        <div class="text-xs font-semibold text-slate-500 uppercase tracking-wide">Overdue</div>
+                        <div class="text-2xl font-bold text-amber-600 mt-1">${overdue}</div>
+                        <div class="text-xs text-slate-400 mt-1">need immediate action</div>
+                    </div>
+                </div>
+
+                <!-- Overdue alert banner -->
+                <div class="flex items-start gap-3 p-4 bg-rose-50 border border-rose-200 rounded-xl">
+                    <svg class="w-5 h-5 text-rose-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                    <div class="flex-1 min-w-0">
+                        <div class="text-sm font-semibold text-rose-800">Action Required — TechNova Solutions</div>
+                        <div class="text-xs text-rose-700 mt-0.5">INV-102 is 3 days overdue (₹42,000). Send a payment reminder today to avoid further delay.</div>
+                    </div>
+                    <button data-action="toast" class="flex-shrink-0 px-3 py-1.5 text-xs font-semibold bg-rose-600 text-white rounded-lg hover:bg-rose-700 transition-colors">Send Reminder</button>
+                </div>
+
+                <!-- Main layout -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+                    <!-- Today's timeline (2 cols) -->
+                    <div class="lg:col-span-2 bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                        <div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
+                            <div>
+                                <div class="text-sm font-semibold text-slate-900">Today&apos;s Timeline</div>
+                                <div class="text-xs text-slate-400 mt-0.5">Mon, 02 Mar 2026</div>
+                            </div>
+                            <span class="px-2.5 py-1 text-xs font-semibold bg-purple-50 text-purple-700 rounded-full">${total - done} remaining</span>
                         </div>
-                        <div class="mt-4 space-y-3">
+                        <div class="divide-y divide-slate-100">
                             ${followups.map(f => `
-                                <div class="flex items-center justify-between p-4 bg-slate-50 rounded-lg">
-                                    <div class="flex items-start gap-4">
-                                        <div class="w-12">
-                                            <div class="text-sm font-semibold text-slate-900">${f.time}</div>
-                                        </div>
-                                        <div>
-                                            <div class="text-sm font-medium text-slate-900">${f.client}</div>
-                                            <div class="text-xs text-slate-500 mt-1">${f.topic}</div>
-                                        </div>
+                                <div class="flex items-center gap-4 px-5 py-4 hover:bg-slate-50 transition-colors ${f.done ? 'opacity-60' : ''}">
+                                    <div class="w-14 flex-shrink-0 text-center">
+                                        <div class="text-xs font-bold text-slate-900">${f.time.split(' ')[0]}</div>
+                                        <div class="text-[10px] text-slate-400">${f.time.split(' ')[1]}</div>
                                     </div>
-                                    <div class="flex items-center gap-2">
-                                        <span class="px-2 py-1 text-xs font-medium bg-${f.color}-50 text-${f.color}-700 rounded-full">${f.priority}</span>
-                                        <button data-action="toast" class="px-3 py-2 text-sm font-medium bg-purple-50 text-purple-700 rounded-lg hover:bg-purple-100 transition-colors">Mark done</button>
+                                    <div class="flex-shrink-0">
+                                        <div class="w-3 h-3 rounded-full border-2 ${f.done ? 'bg-emerald-500 border-emerald-500' : 'bg-white border-' + f.color + '-400'}"></div>
+                                    </div>
+                                    <div class="w-8 h-8 rounded-full bg-${f.color}-100 flex items-center justify-center flex-shrink-0">
+                                        <span class="text-[10px] font-bold text-${f.color}-700">${f.avatar}</span>
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <div class="flex items-center gap-2 flex-wrap">
+                                            <span class="text-sm font-semibold text-slate-900 ${f.done ? 'line-through' : ''}">${f.client}</span>
+                                            <span class="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-medium bg-${f.color}-50 text-${f.color}-700 rounded-full">
+                                                ${typeIcon(f.type)} ${f.type.charAt(0).toUpperCase() + f.type.slice(1)}
+                                            </span>
+                                        </div>
+                                        <div class="text-xs text-slate-500 mt-0.5 truncate">${f.topic}</div>
+                                    </div>
+                                    <div class="flex items-center gap-2 flex-shrink-0">
+                                        <span class="hidden sm:inline px-2 py-1 text-xs font-medium ${f.priority === 'High' ? 'bg-rose-50 text-rose-700' : f.priority === 'Medium' ? 'bg-amber-50 text-amber-700' : 'bg-slate-100 text-slate-500'} rounded-full">${f.priority}</span>
+                                        ${f.done
+                ? '<span class="px-3 py-1.5 text-xs font-semibold bg-emerald-50 text-emerald-700 rounded-lg">&#10003; Done</span>'
+                : '<button data-action="toast" class="px-3 py-1.5 text-xs font-semibold bg-purple-50 text-purple-700 rounded-lg hover:bg-purple-100 transition-colors">Mark Done</button>'
+            }
                                     </div>
                                 </div>
                             `).join('')}
                         </div>
                     </div>
 
-                    <div class="bg-white rounded-lg border border-slate-200 p-4 sm:p-6 shadow-lg">
-                        <h3 class="text-lg font-semibold text-slate-900">This Week</h3>
-                        <p class="text-sm text-slate-500">Load by day</p>
-                        <div class="mt-4 space-y-3">
-                            ${week.map(d => `
-                                <div class="p-3 bg-slate-50 rounded-lg">
-                                    <div class="flex flex-wrap items-start justify-between gap-3">
-                                        <div class="text-sm font-medium text-slate-900">${d.day}</div>
-                                        <div class="text-sm font-semibold text-slate-900">${d.count}</div>
+                    <!-- Right panel -->
+                    <div class="space-y-5">
+
+                        <!-- Weekly load -->
+                        <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
+                            <div class="text-sm font-semibold text-slate-900 mb-1">This Week</div>
+                            <div class="text-xs text-slate-400 mb-4">Follow-ups by day</div>
+                            <div class="space-y-3">
+                                ${week.map(d => `
+                                    <div>
+                                        <div class="flex items-center justify-between text-xs mb-1.5">
+                                            <span class="font-medium text-slate-700">${d.day}</span>
+                                            <span class="text-slate-400">${d.done}/${d.count}</span>
+                                        </div>
+                                        <div class="w-full bg-slate-100 rounded-full h-2.5 relative overflow-hidden">
+                                            <div class="bg-indigo-400 h-2.5 rounded-full absolute top-0 left-0" style="width:${(d.count / max) * 100}%"></div>
+                                            <div class="bg-emerald-400 h-2.5 rounded-full absolute top-0 left-0" style="width:${(d.done / max) * 100}%"></div>
+                                        </div>
                                     </div>
-                                    <div class="mt-2 w-full bg-slate-200 rounded-full h-2">
-                                        <div class="bg-indigo-600 h-2 rounded-full" style="width: ${(d.count / max) * 100}%"></div>
-                                    </div>
+                                `).join('')}
+                                <div class="flex items-center gap-4 pt-2 text-[10px] font-medium text-slate-500">
+                                    <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-indigo-400 inline-block"></span>Scheduled</span>
+                                    <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-emerald-400 inline-block"></span>Completed</span>
                                 </div>
-                            `).join('')}
+                            </div>
                         </div>
-                        <div class="mt-5 p-3 bg-amber-50 border border-amber-100 rounded-lg">
-                            <div class="text-sm font-medium text-amber-900">Reminder</div>
-                            <div class="text-xs text-amber-800">3 follow-ups are tied to pending invoices</div>
+
+                        <!-- Pending alerts -->
+                        <div class="bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-200 rounded-xl p-5">
+                            <div class="text-sm font-semibold text-amber-900 mb-3">&#9888; Pending Alerts</div>
+                            <ul class="space-y-2.5">
+                                <li class="flex items-start gap-2 text-xs text-amber-800"><span class="w-1.5 h-1.5 rounded-full bg-rose-500 flex-shrink-0 mt-1"></span>3 follow-ups tied to overdue invoices</li>
+                                <li class="flex items-start gap-2 text-xs text-amber-800"><span class="w-1.5 h-1.5 rounded-full bg-amber-500 flex-shrink-0 mt-1"></span>GreenLeaf proposal unanswered for 7 days</li>
+                                <li class="flex items-start gap-2 text-xs text-amber-800"><span class="w-1.5 h-1.5 rounded-full bg-sky-500 flex-shrink-0 mt-1"></span>UrbanCafe contract renewal due in 14 days</li>
+                            </ul>
+                            <button data-action="toast" class="mt-4 w-full px-4 py-2 text-xs font-semibold bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition-colors">Resolve All Alerts</button>
                         </div>
-                        <button data-action="toast" class="mt-5 w-full px-4 py-2 text-sm font-medium bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">Auto-schedule reminders</button>
+
                     </div>
                 </div>
+
+                <!-- Client follow-up summary table -->
+                <div class="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">
+                    <div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
+                        <div>
+                            <div class="text-sm font-semibold text-slate-900">Client Follow-up Summary</div>
+                            <div class="text-xs text-slate-400 mt-0.5">Last contact, open items &amp; urgency per client</div>
+                        </div>
+                        <button data-action="toast" class="px-3 py-1.5 text-xs font-semibold bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 transition-colors">Export</button>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm" style="min-width:640px;">
+                            <thead class="bg-slate-50 text-xs text-slate-500 font-semibold uppercase tracking-wide">
+                                <tr>
+                                    <th class="text-left px-5 py-3">Client</th>
+                                    <th class="text-left px-4 py-3">Last Contact</th>
+                                    <th class="text-center px-4 py-3">Open</th>
+                                    <th class="text-left px-4 py-3">Focus Area</th>
+                                    <th class="text-left px-4 py-3">Urgency</th>
+                                    <th class="text-left px-4 py-3">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-100">
+                                ${clientSummary.map(c => `
+                                    <tr class="hover:bg-slate-50 transition-colors">
+                                        <td class="px-5 py-3">
+                                            <div class="flex items-center gap-3">
+                                                <div class="w-8 h-8 rounded-full bg-${c.color}-100 flex items-center justify-center flex-shrink-0">
+                                                    <span class="text-[10px] font-bold text-${c.color}-700">${c.avatar}</span>
+                                                </div>
+                                                <span class="font-semibold text-slate-900">${c.name}</span>
+                                            </div>
+                                        </td>
+                                        <td class="px-4 py-3 text-xs text-slate-500">${c.last}</td>
+                                        <td class="px-4 py-3 text-center">
+                                            <span class="inline-flex items-center justify-center w-6 h-6 text-xs font-bold bg-${c.color}-50 text-${c.color}-700 rounded-full">${c.open}</span>
+                                        </td>
+                                        <td class="px-4 py-3 text-xs text-slate-600">${c.type}</td>
+                                        <td class="px-4 py-3">
+                                            <span class="px-2 py-1 text-xs font-semibold rounded-full
+                                                ${c.urgency === 'Overdue' ? 'bg-rose-50 text-rose-700' :
+                    c.urgency === 'At Risk' ? 'bg-amber-50 text-amber-700' :
+                        c.urgency === 'Pending' ? 'bg-sky-50 text-sky-700' :
+                            c.urgency === 'Upcoming' ? 'bg-violet-50 text-violet-700' :
+                                'bg-emerald-50 text-emerald-700'}">
+                                                ${c.urgency}
+                                            </span>
+                                        </td>
+                                        <td class="px-4 py-3">
+                                            <button data-action="toast" class="px-3 py-1.5 text-xs font-semibold bg-purple-50 text-purple-700 rounded-lg hover:bg-purple-100 transition-colors">Follow up</button>
+                                        </td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
             </div>
-    `;
+        `;
     }
 
     getEngagementSurveys() {
@@ -10942,82 +11183,207 @@ class MarketFlowCRM {
             { client: 'Mumbai Retail Chain', score: 3.6, status: 'Needs Attention', color: 'amber', last: 'Today' },
             { client: 'UrbanCafe', score: 0.0, status: 'Pending', color: 'slate', last: '—' }
         ];
-
         const questions = [
-            { q: 'Delivery quality', avg: 4.6, color: 'emerald' },
+            { q: 'Delivery Quality', avg: 4.6, color: 'emerald' },
             { q: 'Communication', avg: 4.1, color: 'indigo' },
             { q: 'Timelines', avg: 3.8, color: 'amber' },
-            { q: 'Value for money', avg: 4.2, color: 'sky' }
+            { q: 'Value for Money', avg: 4.2, color: 'sky' }
         ];
+
+        const storedFeedback = this.readStore('bezent_feedback_submissions', []);
+        const avgAll = storedFeedback.length ? (storedFeedback.reduce((s, r) => s + parseFloat(r.avg || 0), 0) / storedFeedback.length).toFixed(1) : '4.2';
+        const shareUrl = (window.location.origin || '') + window.location.pathname.replace(/[^/]*$/, '') + 'feedback.html';
 
         return `
             <div class="space-y-6 fade-in">
                 <div class="flex flex-wrap items-start justify-between gap-3">
                     <div>
-                        <h2 class="text-xl sm:text-2xl font-semibold text-slate-900">Feedback & Surveys</h2>
-                        <p class="text-sm text-slate-500">Ratings, trends, and follow-up actions</p>
+                        <h2 class="text-xl sm:text-2xl font-semibold text-slate-900">Feedback &amp; Surveys</h2>
+                        <p class="text-sm text-slate-500">Collect client feedback, share the survey link, and view all responses</p>
                     </div>
-                    <button data-action="toast" class="px-4 py-2 text-sm font-medium bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">Send Survey</button>
+                    <button data-action="toast" class="px-4 py-2 text-sm font-medium bg-purple-50 text-purple-700 border border-purple-200 rounded-lg hover:bg-purple-100 transition-colors">Export CSV</button>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    <div class="col-span-1 lg:col-span-2 bg-white rounded-lg border border-slate-200 overflow-hidden">
-                        <div class="p-4 border-b border-slate-200 flex items-center justify-between">
-                            <div class="text-sm font-medium text-slate-900">Client Survey Status</div>
-                            <span class="text-xs text-slate-500">Last 30 days</span>
+                <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div class="bg-white rounded-xl border border-slate-200 p-4 shadow-sm">
+                        <div class="text-xs font-semibold text-slate-500 uppercase tracking-wide">Total Responses</div>
+                        <div class="text-2xl font-bold text-slate-900 mt-1">${storedFeedback.length + 3}</div>
+                        <div class="text-xs text-emerald-600 mt-1">&#x2191; 2 this week</div>
+                    </div>
+                    <div class="bg-white rounded-xl border border-slate-200 p-4 shadow-sm">
+                        <div class="text-xs font-semibold text-slate-500 uppercase tracking-wide">Avg Score</div>
+                        <div class="text-2xl font-bold text-slate-900 mt-1" id="feedbackAvgScore">${avgAll}</div>
+                        <div class="text-xs text-slate-500 mt-1">out of 5.0</div>
+                    </div>
+                    <div class="bg-white rounded-xl border border-slate-200 p-4 shadow-sm">
+                        <div class="text-xs font-semibold text-slate-500 uppercase tracking-wide">Pending</div>
+                        <div class="text-2xl font-bold text-amber-600 mt-1">1</div>
+                        <div class="text-xs text-slate-500 mt-1">awaiting response</div>
+                    </div>
+                    <div class="bg-white rounded-xl border border-slate-200 p-4 shadow-sm">
+                        <div class="text-xs font-semibold text-slate-500 uppercase tracking-wide">NPS Score</div>
+                        <div class="text-2xl font-bold text-purple-600 mt-1">72</div>
+                        <div class="text-xs text-emerald-600 mt-1">&#x2191; 8 pts from last month</div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- Left: Shareable link + Form -->
+                    <div class="bg-white rounded-xl border border-purple-200 p-5 shadow-sm">
+                        <div class="flex items-center gap-2 mb-4">
+                            <div class="w-8 h-8 rounded-lg bg-purple-100 flex items-center justify-center flex-shrink-0">
+                                <svg class="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M13.828 10.172a4 4 0 0 0-5.656 0l-4 4a4 4 0 0 0 5.656 5.656l1.102-1.101m-.758-4.899a4 4 0 0 0 5.656 0l4-4a4 4 0 0 0-5.656-5.656l-1.1 1.1"/></svg>
+                            </div>
+                            <div>
+                                <div class="text-sm font-semibold text-slate-900">Shareable Survey Link</div>
+                                <div class="text-xs text-slate-500">Send to clients to collect feedback</div>
+                            </div>
                         </div>
-                        <div class="overflow-x-auto">
-                            <table class="w-full text-sm" style="min-width: 800px;">
-                                <thead class="bg-slate-50 text-slate-600">
-                                    <tr>
-                                        <th class="text-left px-4 py-3 font-medium">Client</th>
-                                        <th class="text-left px-4 py-3 font-medium">Score</th>
-                                        <th class="text-left px-4 py-3 font-medium">Status</th>
-                                        <th class="text-left px-4 py-3 font-medium">Last Updated</th>
-                                        <th class="text-left px-4 py-3 font-medium">Action</th>
-                                    </tr>
-                                </thead>
-                                <tbody class="divide-y divide-slate-200">
-                                    ${surveys.map(s => `
-                                        <tr class="hover:bg-slate-50">
-                                            <td class="px-4 py-3 font-medium text-slate-900">${s.client}</td>
-                                            <td class="px-4 py-3 text-slate-700">${s.score ? s.score.toFixed(1) : '—'}</td>
-                                            <td class="px-4 py-3"><span class="px-2 py-1 text-xs font-medium bg-${s.color}-50 text-${s.color}-700 rounded-full">${s.status}</span></td>
-                                            <td class="px-4 py-3 text-slate-700">${s.last}</td>
-                                            <td class="px-4 py-3">
-                                                <button data-action="toast" class="px-3 py-1.5 text-xs font-medium bg-purple-50 text-purple-700 rounded-lg hover:bg-purple-100 transition-colors">${s.status === 'Pending' ? 'Remind' : 'View'}</button>
-                                            </td>
-                                        </tr>
-                                    `).join('')}
-                                </tbody>
-                            </table>
+                        <div class="flex gap-2">
+                             <input id="surveyLinkInput" readonly value="${shareUrl}" class="flex-1 text-xs border border-slate-200 rounded-lg px-3 py-2 bg-slate-50 text-slate-600 min-w-0" />
+                             <button id="surveyLinkCopyBtn" class="px-3 py-2 text-xs font-semibold bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 transition-colors flex-shrink-0">Copy</button>
+                             <a id="surveyLinkOpenBtn" href="${shareUrl}" target="_blank" rel="noopener noreferrer" class="px-3 py-2 text-xs font-semibold bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors flex-shrink-0 inline-flex items-center gap-1">
+                                 <svg width="11" height="11" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                                 Open
+                             </a>
+                         </div>
+                         <p class="text-xs text-slate-400 mt-2">Copy this link and share it with clients — they'll see a clean Google-Forms-style page with no CRM navigation.</p>
+
+                        <div class="mt-5 border-t border-slate-100 pt-5">
+                            <div class="text-sm font-semibold text-slate-800 mb-3">Submit Client Feedback</div>
+                            <form id="surveySubmitForm" class="space-y-3">
+                                <div>
+                                    <label class="text-xs font-medium text-slate-600">Client / Company Name *</label>
+                                    <input name="clientName" required placeholder="e.g. TechNova Solutions" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-300" />
+                                </div>
+                                <div>
+                                    <label class="text-xs font-medium text-slate-600">Email (optional)</label>
+                                    <input name="clientEmail" type="email" placeholder="client@company.com" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-300" />
+                                </div>
+                                <div class="grid grid-cols-2 gap-2">
+                                    <div>
+                                        <label class="text-xs font-medium text-slate-600">Delivery Quality</label>
+                                        <select name="quality" class="mt-1 w-full border border-slate-200 rounded-lg px-2 py-2 text-sm focus:outline-none">
+                                            <option value="5">5 — Excellent</option><option value="4">4 — Good</option><option value="3">3 — Average</option><option value="2">2 — Poor</option><option value="1">1 — Very Poor</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="text-xs font-medium text-slate-600">Communication</label>
+                                        <select name="communication" class="mt-1 w-full border border-slate-200 rounded-lg px-2 py-2 text-sm focus:outline-none">
+                                            <option value="5">5 — Excellent</option><option value="4">4 — Good</option><option value="3">3 — Average</option><option value="2">2 — Poor</option><option value="1">1 — Very Poor</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="text-xs font-medium text-slate-600">Timelines</label>
+                                        <select name="timeline" class="mt-1 w-full border border-slate-200 rounded-lg px-2 py-2 text-sm focus:outline-none">
+                                            <option value="5">5 — Excellent</option><option value="4">4 — Good</option><option value="3">3 — Average</option><option value="2">2 — Poor</option><option value="1">1 — Very Poor</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="text-xs font-medium text-slate-600">Value for Money</label>
+                                        <select name="value" class="mt-1 w-full border border-slate-200 rounded-lg px-2 py-2 text-sm focus:outline-none">
+                                            <option value="5">5 — Excellent</option><option value="4">4 — Good</option><option value="3">3 — Average</option><option value="2">2 — Poor</option><option value="1">1 — Very Poor</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="text-xs font-medium text-slate-600">Comments / Additional Feedback</label>
+                                    <textarea name="comments" rows="3" placeholder="Share your experience with us..." class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-300"></textarea>
+                                </div>
+                                <button type="submit" class="w-full px-4 py-2.5 text-sm font-semibold bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">Submit Feedback</button>
+                            </form>
                         </div>
                     </div>
 
-                    <div class="bg-white rounded-lg border border-slate-200 p-4 sm:p-6 shadow-lg">
-                        <h3 class="text-lg font-semibold text-slate-900">Question Breakdown</h3>
-                        <p class="text-sm text-slate-500">Average scores</p>
-                        <div class="mt-4 space-y-4">
-                            ${questions.map(q => `
-                                <div>
-                                    <div class="flex items-center justify-between text-sm">
-                                        <span class="text-slate-700">${q.q}</span>
-                                        <span class="font-semibold text-slate-900">${q.avg.toFixed(1)}</span>
-                                    </div>
-                                    <div class="mt-2 w-full bg-slate-200 rounded-full h-2">
-                                        <div class="bg-${q.color}-600 h-2 rounded-full" style="width: ${(q.avg / 5) * 100}%"></div>
-                                    </div>
-                                </div>
-                            `).join('')}
+                    <!-- Right: Status table + Question breakdown -->
+                    <div class="lg:col-span-2 space-y-5">
+                        <div class="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">
+                            <div class="p-4 border-b border-slate-200 flex items-center justify-between">
+                                <div class="text-sm font-semibold text-slate-900">Client Survey Status</div>
+                                <span class="text-xs text-slate-500">Last 30 days</span>
+                            </div>
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-sm" style="min-width:500px;">
+                                    <thead class="bg-slate-50 text-slate-600">
+                                        <tr>
+                                            <th class="text-left px-4 py-3 font-medium">Client</th>
+                                            <th class="text-left px-4 py-3 font-medium">Score</th>
+                                            <th class="text-left px-4 py-3 font-medium">Status</th>
+                                            <th class="text-left px-4 py-3 font-medium">Last Updated</th>
+                                            <th class="text-left px-4 py-3 font-medium">Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-slate-200">
+                                        ${surveys.map(s => `
+                                            <tr class="hover:bg-slate-50">
+                                                <td class="px-4 py-3 font-medium text-slate-900">${s.client}</td>
+                                                <td class="px-4 py-3 text-slate-700">${s.score ? s.score.toFixed(1) : '—'}</td>
+                                                <td class="px-4 py-3"><span class="px-2 py-1 text-xs font-medium bg-${s.color}-50 text-${s.color}-700 rounded-full">${s.status}</span></td>
+                                                <td class="px-4 py-3 text-slate-500">${s.last}</td>
+                                                <td class="px-4 py-3">
+                                                    <button data-action="toast" class="px-3 py-1.5 text-xs font-medium bg-purple-50 text-purple-700 rounded-lg hover:bg-purple-100">${s.status === 'Pending' ? 'Remind' : 'View'}</button>
+                                                </td>
+                                            </tr>
+                                        `).join('')}
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
-                        <div class="mt-5 p-3 bg-rose-50 border border-rose-100 rounded-lg">
-                            <div class="text-sm font-medium text-rose-900">Attention</div>
-                            <div class="text-xs text-rose-800">Mumbai Retail is below 4.0 on timelines</div>
+
+                        <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
+                            <h3 class="text-sm font-semibold text-slate-900 mb-4">Average Score by Category</h3>
+                            <div class="grid grid-cols-2 gap-4">
+                                ${questions.map(q => `
+                                    <div class="p-3 bg-slate-50 rounded-lg">
+                                        <div class="flex items-center justify-between text-sm mb-2">
+                                            <span class="text-slate-700 font-medium">${q.q}</span>
+                                            <span class="font-bold text-${q.color}-700">${q.avg.toFixed(1)}/5</span>
+                                        </div>
+                                        <div class="w-full bg-slate-200 rounded-full h-2">
+                                            <div class="bg-${q.color}-500 h-2 rounded-full" style="width:${(q.avg / 5) * 100}%"></div>
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                            <div class="mt-3 p-3 bg-rose-50 border border-rose-100 rounded-lg text-xs font-medium text-rose-800">
+                                &#9888; Attention: Mumbai Retail Chain scored below 4.0 on Timelines — follow up recommended.
+                            </div>
                         </div>
+                    </div>
+                </div>
+
+                <!-- Submitted Feedback Table -->
+                <div class="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">
+                    <div class="p-4 border-b border-slate-200 flex items-center justify-between">
+                        <div>
+                            <div class="text-sm font-semibold text-slate-900">Submitted Feedback</div>
+                            <div class="text-xs text-slate-500 mt-0.5">All responses collected via your survey link</div>
+                        </div>
+                        <span class="px-2 py-1 text-xs font-medium bg-purple-50 text-purple-700 rounded-full">${storedFeedback.length} form response${storedFeedback.length !== 1 ? 's' : ''}</span>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm" style="min-width:900px;">
+                            <thead class="bg-slate-50 text-slate-600">
+                                <tr>
+                                    <th class="text-left px-4 py-3 font-medium">Client</th>
+                                    <th class="text-left px-4 py-3 font-medium">Email</th>
+                                    <th class="text-center px-3 py-3 font-medium">Quality</th>
+                                    <th class="text-center px-3 py-3 font-medium">Comm.</th>
+                                    <th class="text-center px-3 py-3 font-medium">Timeline</th>
+                                    <th class="text-center px-3 py-3 font-medium">Value</th>
+                                    <th class="text-center px-3 py-3 font-medium">Avg</th>
+                                    <th class="text-left px-4 py-3 font-medium">Date</th>
+                                    <th class="text-left px-4 py-3 font-medium">Comments</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-200" id="feedbackSubmissionsTbody">
+                                ${this._buildFeedbackRows(storedFeedback)}
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>
-    `;
+        `;
     }
 
     getEngagementHealth() {
@@ -11070,7 +11436,7 @@ class MarketFlowCRM {
                     `).join('')}
                 </div>
             </div>
-    `;
+        `;
     }
 
     getEngagementNextProjects() {
@@ -11116,7 +11482,409 @@ class MarketFlowCRM {
                     `).join('')}
                 </div>
             </div>
-    `;
+        `;
+    }
+
+    getEngagementFieldVisits() {
+        const visits = [
+            { client: 'TechNova Solutions', engineer: 'Karthik S.', date: '2026-03-05', time: '10:00 AM', location: 'Bengaluru, HSR Layout', type: 'Site Inspection', status: 'Confirmed', color: 'emerald' },
+            { client: 'GreenLeaf Industries', engineer: 'Priya M.', date: '2026-03-06', time: '2:00 PM', location: 'Chennai, Ambattur', type: 'Client Meeting', status: 'Pending', color: 'amber' },
+            { client: 'Mumbai Retail Chain', engineer: 'Ravi D.', date: '2026-03-07', time: '11:30 AM', location: 'Mumbai, BKC', type: 'Project Demo', status: 'Confirmed', color: 'sky' },
+            { client: 'EduSpark', engineer: 'Anjali R.', date: '2026-03-10', time: '9:00 AM', location: 'Pune, Hinjewadi', type: 'Delivery Handover', status: 'Tentative', color: 'purple' },
+            { client: 'UrbanCafe', engineer: 'Karthik S.', date: '2026-03-12', time: '3:30 PM', location: 'Hyderabad, Madhapur', type: 'Follow-up Visit', status: 'Pending', color: 'amber' }
+        ];
+        const engineers = ['All', 'Karthik S.', 'Priya M.', 'Ravi D.', 'Anjali R.'];
+        return `
+            <div class="space-y-6 fade-in">
+                <div class="flex flex-wrap items-start justify-between gap-3">
+                    <div>
+                        <h2 class="text-xl sm:text-2xl font-semibold text-slate-900">Field Visits Planner</h2>
+                        <p class="text-sm text-slate-500">Schedule and manage on-site client visits by engineer</p>
+                    </div>
+                    <button data-action="toast" class="px-4 py-2 text-sm font-medium bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">+ Schedule Visit</button>
+                </div>
+
+                <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div class="bg-white rounded-xl border border-slate-200 p-4 shadow-sm">
+                        <div class="text-xs font-semibold text-slate-500 uppercase tracking-wide">This Week</div>
+                        <div class="text-2xl font-bold text-slate-900 mt-1">3</div>
+                        <div class="text-xs text-emerald-600 mt-1">Confirmed visits</div>
+                    </div>
+                    <div class="bg-white rounded-xl border border-slate-200 p-4 shadow-sm">
+                        <div class="text-xs font-semibold text-slate-500 uppercase tracking-wide">Pending</div>
+                        <div class="text-2xl font-bold text-amber-600 mt-1">2</div>
+                        <div class="text-xs text-slate-500 mt-1">Awaiting confirmation</div>
+                    </div>
+                    <div class="bg-white rounded-xl border border-slate-200 p-4 shadow-sm">
+                        <div class="text-xs font-semibold text-slate-500 uppercase tracking-wide">Engineers</div>
+                        <div class="text-2xl font-bold text-purple-600 mt-1">4</div>
+                        <div class="text-xs text-slate-500 mt-1">Field team members</div>
+                    </div>
+                    <div class="bg-white rounded-xl border border-slate-200 p-4 shadow-sm">
+                        <div class="text-xs font-semibold text-slate-500 uppercase tracking-wide">Cities Covered</div>
+                        <div class="text-2xl font-bold text-sky-600 mt-1">5</div>
+                        <div class="text-xs text-slate-500 mt-1">This month</div>
+                    </div>
+                </div>
+
+                <div class="flex flex-wrap gap-2">
+                    ${engineers.map((e, i) => `<button class="px-3 py-1.5 text-xs font-medium ${i === 0 ? 'bg-purple-600 text-white' : 'bg-white border border-slate-200 text-slate-600 hover:bg-purple-50 hover:text-purple-700'} rounded-lg transition-colors" data-action="toast">${e}</button>`).join('')}
+                </div>
+
+                <div class="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm" style="min-width:800px;">
+                            <thead class="bg-slate-50 text-slate-600">
+                                <tr>
+                                    <th class="text-left px-4 py-3 font-medium">Client</th>
+                                    <th class="text-left px-4 py-3 font-medium">Engineer</th>
+                                    <th class="text-left px-4 py-3 font-medium">Date &amp; Time</th>
+                                    <th class="text-left px-4 py-3 font-medium">Location</th>
+                                    <th class="text-left px-4 py-3 font-medium">Visit Type</th>
+                                    <th class="text-left px-4 py-3 font-medium">Status</th>
+                                    <th class="text-left px-4 py-3 font-medium">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-200">
+                                ${visits.map(v => `
+                                    <tr class="hover:bg-slate-50">
+                                        <td class="px-4 py-3 font-medium text-slate-900">${v.client}</td>
+                                        <td class="px-4 py-3 text-slate-700">${v.engineer}</td>
+                                        <td class="px-4 py-3 text-slate-700">${v.date}<br><span class="text-xs text-slate-400">${v.time}</span></td>
+                                        <td class="px-4 py-3 text-slate-600 text-xs">${v.location}</td>
+                                        <td class="px-4 py-3 text-slate-700">${v.type}</td>
+                                        <td class="px-4 py-3"><span class="px-2 py-1 text-xs font-medium bg-${v.color}-50 text-${v.color}-700 rounded-full">${v.status}</span></td>
+                                        <td class="px-4 py-3">
+                                            <div class="flex gap-2">
+                                                <button data-action="toast" class="px-2 py-1 text-xs font-medium bg-purple-50 text-purple-700 rounded-md hover:bg-purple-100">Edit</button>
+                                                <button data-action="toast" class="px-2 py-1 text-xs font-medium bg-slate-100 text-slate-700 rounded-md hover:bg-slate-200">Directions</button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    getEngagementRouteMap() {
+        // Route data with real Bengaluru / Chennai lat-lng coordinates
+        const routes = [
+            {
+                id: 'karthik', engineer: 'Karthik S.', color: '#7c3aed', date: '02 Mar 2026',
+                stops: [
+                    { seq: 1, client: 'TechNova Solutions', address: 'HSR Layout, Bengaluru', time: '10:00 AM', type: 'Site Inspection', status: 'start', lat: 12.9116, lng: 77.6389 },
+                    { seq: 2, client: 'EduSpark', address: 'Koramangala, Bengaluru', time: '1:30 PM', type: 'Documentation', status: 'mid', lat: 12.9352, lng: 77.6245 },
+                    { seq: 3, client: 'BrightFin', address: 'MG Road, Bengaluru', time: '4:00 PM', type: 'Delivery', status: 'end', lat: 12.9756, lng: 77.6069 }
+                ]
+            },
+            {
+                id: 'priya', engineer: 'Priya M.', color: '#0ea5e9', date: '03 Mar 2026',
+                stops: [
+                    { seq: 1, client: 'GreenLeaf Industries', address: 'Ambattur, Chennai', time: '2:00 PM', type: 'Client Meeting', status: 'start', lat: 13.1143, lng: 80.1548 },
+                    { seq: 2, client: 'Prestige Corp', address: 'T. Nagar, Chennai', time: '4:30 PM', type: 'Proposal Review', status: 'end', lat: 13.0395, lng: 80.2340 }
+                ]
+            }
+        ];
+
+        const dotClass = (s) => s === 'start' ? 'bg-emerald-500' : s === 'end' ? 'bg-rose-400' : 'bg-purple-500';
+
+        return `
+            <div class="space-y-6 fade-in">
+
+                <!-- Header -->
+                <div class="flex flex-wrap items-start justify-between gap-3">
+                    <div>
+                        <h2 class="text-xl sm:text-2xl font-semibold text-slate-900">Visit Route Map</h2>
+                        <p class="text-sm text-slate-500">Live field-engineer routes plotted on OpenStreetMap</p>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button data-action="toast" class="px-4 py-2 text-sm font-medium bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 transition-colors">Export KML</button>
+                        <button data-action="toast" class="px-4 py-2 text-sm font-medium bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">Optimise Routes</button>
+                    </div>
+                </div>
+
+                <!-- Map + sidebar -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+                    <!-- Leaflet map (spans 2 cols) -->
+                    <div class="lg:col-span-2 bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm" style="height:460px;">
+                        <!-- Route filter tabs -->
+                        <div class="px-4 py-3 border-b border-slate-100 flex items-center gap-2 flex-wrap">
+                            <button id="rmTab_all" onclick="window._rmShowRoute('all')" class="px-3 py-1.5 text-xs font-semibold bg-purple-600 text-white rounded-full transition-colors">All Routes</button>
+                            ${routes.map(r => `
+                            <button id="rmTab_${r.id}" onclick="window._rmShowRoute('${r.id}')" class="px-3 py-1.5 text-xs font-semibold bg-slate-100 text-slate-700 rounded-full hover:bg-slate-200 transition-colors">${r.engineer}</button>
+                            `).join('')}
+                            <div class="ml-auto flex items-center gap-3 text-xs text-slate-500">
+                                <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block"></span>Start</span>
+                                <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-purple-500 inline-block"></span>Stop</span>
+                                <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-rose-400 inline-block"></span>End</span>
+                            </div>
+                        </div>
+                        <div id="routeLeafletMap" style="height:calc(460px - 53px); width:100%;"></div>
+                    </div>
+
+                    <!-- Route cards -->
+                    <div class="space-y-4 overflow-y-auto" style="max-height:460px;">
+                        ${routes.map(r => `
+                        <div class="bg-white rounded-xl border border-slate-200 p-4 shadow-sm cursor-pointer hover:border-purple-300 transition-colors" onclick="window._rmShowRoute('${r.id}')">
+                            <div class="flex items-center justify-between mb-3">
+                                <div>
+                                    <div class="flex items-center gap-2">
+                                        <span class="w-2.5 h-2.5 rounded-full inline-block" style="background:${r.color}"></span>
+                                        <span class="text-sm font-semibold text-slate-900">${r.engineer}</span>
+                                    </div>
+                                    <div class="text-xs text-slate-500 mt-0.5 ml-4.5">${r.date} &middot; ${r.stops.length} stops</div>
+                                </div>
+                                <button data-action="toast" class="px-2 py-1 text-xs font-semibold bg-purple-50 text-purple-700 rounded-lg">Directions</button>
+                            </div>
+                            <div>
+                                ${r.stops.map((stop, idx) => `
+                                <div class="flex gap-3 ${idx < r.stops.length - 1 ? 'mb-3' : ''}">
+                                    <div class="flex flex-col items-center flex-shrink-0">
+                                        <div class="w-3 h-3 rounded-full ${dotClass(stop.status)} mt-0.5"></div>
+                                        ${idx < r.stops.length - 1 ? '<div class="w-px flex-1 bg-slate-200 mt-1" style="min-height:14px;"></div>' : ''}
+                                    </div>
+                                    <div class="pb-1 min-w-0">
+                                        <div class="text-xs font-semibold text-slate-900 truncate">${stop.seq}. ${stop.client}</div>
+                                        <div class="text-xs text-slate-500">${stop.time} &middot; ${stop.type}</div>
+                                        <div class="text-xs text-slate-400 truncate">${stop.address}</div>
+                                    </div>
+                                </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                        `).join('')}
+                    </div>
+                </div>
+
+            </div>
+        `;
+    }
+
+    _initRouteMap() {
+        // Avoid double-init
+        if (document.getElementById('routeLeafletMap')?._leaflet_id) return;
+
+        const routes = [
+            {
+                id: 'karthik', color: '#7c3aed',
+                stops: [
+                    { seq: 1, client: 'TechNova Solutions', address: 'HSR Layout, Bengaluru', time: '10:00 AM', type: 'Site Inspection', status: 'start', lat: 12.9116, lng: 77.6389 },
+                    { seq: 2, client: 'EduSpark', address: 'Koramangala, Bengaluru', time: '1:30 PM', type: 'Documentation', status: 'mid', lat: 12.9352, lng: 77.6245 },
+                    { seq: 3, client: 'BrightFin', address: 'MG Road, Bengaluru', time: '4:00 PM', type: 'Delivery', status: 'end', lat: 12.9756, lng: 77.6069 }
+                ]
+            },
+            {
+                id: 'priya', color: '#0ea5e9',
+                stops: [
+                    { seq: 1, client: 'GreenLeaf Industries', address: 'Ambattur, Chennai', time: '2:00 PM', type: 'Client Meeting', status: 'start', lat: 13.1143, lng: 80.1548 },
+                    { seq: 2, client: 'Prestige Corp', address: 'T. Nagar, Chennai', time: '4:30 PM', type: 'Proposal Review', status: 'end', lat: 13.0395, lng: 80.2340 }
+                ]
+            }
+        ];
+
+        const load = (cb) => {
+            if (window.L) { cb(); return; }
+            // Load Leaflet CSS
+            if (!document.getElementById('leaflet-css')) {
+                const link = document.createElement('link');
+                link.id = 'leaflet-css';
+                link.rel = 'stylesheet';
+                link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+                document.head.appendChild(link);
+            }
+            // Load Leaflet JS
+            const script = document.createElement('script');
+            script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+            script.onload = cb;
+            document.head.appendChild(script);
+        };
+
+        load(() => {
+            const mapEl = document.getElementById('routeLeafletMap');
+            if (!mapEl || mapEl._leaflet_id) return;
+
+            // Init map centred on India
+            const map = window.L.map(mapEl, { zoomControl: true }).setView([13.0, 77.6], 7);
+            window.L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+                maxZoom: 18
+            }).addTo(map);
+
+            const pinColor = (status) => status === 'start' ? '#10b981' : status === 'end' ? '#f43f5e' : '#7c3aed';
+
+            const makeIcon = (status, seq) => window.L.divIcon({
+                className: '',
+                html: `<div style="
+                    width:28px;height:28px;border-radius:50%;
+                    background:${pinColor(status)};color:#fff;
+                    display:flex;align-items:center;justify-content:center;
+                    font-size:11px;font-weight:700;
+                    border:2.5px solid #fff;
+                    box-shadow:0 2px 6px rgba(0,0,0,0.25);
+                ">${seq}</div>`,
+                iconSize: [28, 28],
+                iconAnchor: [14, 14]
+            });
+
+            // Build layers per route
+            const layers = {};
+            const allMarkers = [];
+
+            routes.forEach(r => {
+                const group = window.L.layerGroup();
+                const latlngs = r.stops.map(s => [s.lat, s.lng]);
+
+                // Dashed polyline
+                window.L.polyline(latlngs, {
+                    color: r.color, weight: 3, opacity: 0.75, dashArray: '8 6'
+                }).addTo(group);
+
+                r.stops.forEach(s => {
+                    const marker = window.L.marker([s.lat, s.lng], { icon: makeIcon(s.status, s.seq) })
+                        .bindPopup(`
+                            <div style="font-family:Inter,sans-serif;min-width:160px">
+                                <div style="font-weight:700;font-size:13px;margin-bottom:4px">${s.client}</div>
+                                <div style="font-size:11px;color:#64748b">${s.address}</div>
+                                <div style="font-size:11px;margin-top:4px"><b>${s.time}</b> &middot; ${s.type}</div>
+                            </div>
+                        `, { maxWidth: 220 });
+                    marker.addTo(group);
+                    allMarkers.push([s.lat, s.lng]);
+                });
+
+                group.addTo(map);
+                layers[r.id] = { group, bounds: window.L.latLngBounds(latlngs) };
+            });
+
+            // Fit all markers initially
+            if (allMarkers.length) map.fitBounds(window.L.latLngBounds(allMarkers), { padding: [30, 30] });
+
+            // Tab filter handler
+            window._rmShowRoute = (id) => {
+                // Update tab styles
+                document.querySelectorAll('[id^="rmTab_"]').forEach(btn => {
+                    btn.className = 'px-3 py-1.5 text-xs font-semibold bg-slate-100 text-slate-700 rounded-full hover:bg-slate-200 transition-colors';
+                });
+                const activeTab = document.getElementById('rmTab_' + id);
+                if (activeTab) activeTab.className = 'px-3 py-1.5 text-xs font-semibold bg-purple-600 text-white rounded-full transition-colors';
+
+                if (id === 'all') {
+                    Object.values(layers).forEach(l => map.addLayer(l.group));
+                    if (allMarkers.length) map.fitBounds(window.L.latLngBounds(allMarkers), { padding: [30, 30] });
+                } else {
+                    Object.entries(layers).forEach(([key, l]) => {
+                        if (key === id) { map.addLayer(l.group); map.fitBounds(l.bounds, { padding: [40, 40] }); }
+                        else map.removeLayer(l.group);
+                    });
+                }
+            };
+        });
+    }
+
+    getEngagementMobileSync() {
+        const syncs = [
+            { engineer: 'Karthik S.', device: 'Samsung Galaxy S23', lastSync: '2 min ago', visits: 3, checkins: 3, photos: 12, status: 'Online', color: 'emerald' },
+            { engineer: 'Priya M.', device: 'iPhone 15 Pro', lastSync: '18 min ago', visits: 2, checkins: 2, photos: 8, status: 'Online', color: 'emerald' },
+            { engineer: 'Ravi D.', device: 'Realme GT5', lastSync: '2 hrs ago', visits: 1, checkins: 0, photos: 5, status: 'Offline', color: 'rose' },
+            { engineer: 'Anjali R.', device: 'OnePlus 12', lastSync: '45 min ago', visits: 2, checkins: 2, photos: 9, status: 'Syncing', color: 'amber' }
+        ];
+        const activity = [
+            { time: '11:32 AM', engineer: 'Karthik S.', action: 'Check-in', client: 'TechNova Solutions', note: 'Meeting started on time.' },
+            { time: '10:55 AM', engineer: 'Priya M.', action: 'Photo Upload', client: 'GreenLeaf Industries', note: '4 photos uploaded from site.' },
+            { time: '10:20 AM', engineer: 'Anjali R.', action: 'Visit Complete', client: 'EduSpark', note: 'Delivery confirmed, signature collected.' },
+            { time: '9:45 AM', engineer: 'Karthik S.', action: 'Check-in', client: 'EduSpark (follow-up)', note: 'Documents reviewed.' },
+            { time: '9:00 AM', engineer: 'Priya M.', action: 'Route Start', client: '—', note: "Day's route started from office." }
+        ];
+        const actColor = { 'Check-in': 'purple', 'Photo Upload': 'sky', 'Visit Complete': 'emerald', 'Route Start': 'slate' };
+        return `
+            <div class="space-y-6 fade-in">
+                <div class="flex flex-wrap items-start justify-between gap-3">
+                    <div>
+                        <h2 class="text-xl sm:text-2xl font-semibold text-slate-900">Mobile Sync &amp; Field Activity</h2>
+                        <p class="text-sm text-slate-500">Real-time check-ins, photo uploads, and sync status for field engineers</p>
+                    </div>
+                    <button data-action="toast" class="px-4 py-2 text-sm font-medium bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">Force Sync All</button>
+                </div>
+
+                <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div class="bg-white rounded-xl border border-slate-200 p-4 shadow-sm">
+                        <div class="text-xs font-semibold text-slate-500 uppercase tracking-wide">Online Now</div>
+                        <div class="text-2xl font-bold text-emerald-600 mt-1">2</div>
+                        <div class="text-xs text-slate-500 mt-1">of 4 engineers</div>
+                    </div>
+                    <div class="bg-white rounded-xl border border-slate-200 p-4 shadow-sm">
+                        <div class="text-xs font-semibold text-slate-500 uppercase tracking-wide">Check-ins Today</div>
+                        <div class="text-2xl font-bold text-purple-600 mt-1">7</div>
+                        <div class="text-xs text-slate-500 mt-1">across all engineers</div>
+                    </div>
+                    <div class="bg-white rounded-xl border border-slate-200 p-4 shadow-sm">
+                        <div class="text-xs font-semibold text-slate-500 uppercase tracking-wide">Photos Uploaded</div>
+                        <div class="text-2xl font-bold text-sky-600 mt-1">34</div>
+                        <div class="text-xs text-slate-500 mt-1">site documentation</div>
+                    </div>
+                    <div class="bg-white rounded-xl border border-slate-200 p-4 shadow-sm">
+                        <div class="text-xs font-semibold text-slate-500 uppercase tracking-wide">Pending Sync</div>
+                        <div class="text-2xl font-bold text-amber-600 mt-1">1</div>
+                        <div class="text-xs text-slate-500 mt-1">engineer offline</div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="space-y-3">
+                        <h3 class="text-sm font-semibold text-slate-800">Engineer Device Status</h3>
+                        ${syncs.map(s => `
+                            <div class="bg-white rounded-xl border border-slate-200 p-4 shadow-sm flex items-center gap-4">
+                                <div class="w-10 h-10 rounded-xl bg-purple-100 flex items-center justify-center flex-shrink-0">
+                                    <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <div class="flex items-center justify-between">
+                                        <div class="text-sm font-semibold text-slate-900 truncate">${s.engineer}</div>
+                                        <span class="px-2 py-0.5 text-xs font-medium bg-${s.color}-50 text-${s.color}-700 rounded-full flex-shrink-0 ml-2">${s.status}</span>
+                                    </div>
+                                    <div class="text-xs text-slate-500 truncate">${s.device} · Last sync: ${s.lastSync}</div>
+                                    <div class="flex gap-4 mt-1 text-xs text-slate-600">
+                                        <span><strong>${s.visits}</strong> visits</span>
+                                        <span><strong>${s.checkins}</strong> check-ins</span>
+                                        <span><strong>${s.photos}</strong> photos</span>
+                                    </div>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+
+                    <div class="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">
+                        <div class="p-4 border-b border-slate-100">
+                            <div class="text-sm font-semibold text-slate-900">Live Activity Feed</div>
+                            <div class="text-xs text-slate-500 mt-0.5">Real-time updates from the field</div>
+                        </div>
+                        <div class="divide-y divide-slate-100">
+                            ${activity.map(a => {
+            const c = actColor[a.action] || 'slate';
+            return `
+                                <div class="p-3 flex items-start gap-3">
+                                    <div class="w-7 h-7 rounded-lg bg-${c}-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+                                        <svg class="w-3.5 h-3.5 text-${c}-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 8v4l3 3"/></svg>
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <div class="flex items-center justify-between">
+                                            <span class="text-xs font-semibold text-slate-900">${a.engineer} — ${a.action}</span>
+                                            <span class="text-xs text-slate-400 flex-shrink-0 ml-2">${a.time}</span>
+                                        </div>
+                                        <div class="text-xs text-slate-500 mt-0.5">${a.client !== '—' ? a.client + ' · ' : ''}${a.note}</div>
+                                    </div>
+                                </div>`;
+        }).join('')}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
     }
 
     renderReportsContent(container) {

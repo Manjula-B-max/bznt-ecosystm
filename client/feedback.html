@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Client Feedback — BEZENT</title>
+    <meta name="description" content="Share your experience with us. Takes less than 2 minutes." />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet" />
+    <style>
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            --purple: #7c3aed;
+            --purple-light: #ede9fe;
+            --purple-dark: #5b21b6;
+            --slate-50: #f8fafc;
+            --slate-100: #f1f5f9;
+            --slate-200: #e2e8f0;
+            --slate-400: #94a3b8;
+            --slate-500: #64748b;
+            --slate-600: #475569;
+            --slate-700: #334155;
+            --slate-900: #0f172a;
+            --emerald: #10b981;
+            --rose: #f43f5e;
+        }
+
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
+            background: linear-gradient(135deg, #f0ebff 0%, #e8f4ff 50%, #f0fdf4 100%);
+            min-height: 100vh;
+            padding: 24px 16px 60px;
+            color: var(--slate-900);
+        }
+
+        /* ─── Page wrapper ─── */
+        .page {
+            max-width: 680px;
+            margin: 0 auto;
+        }
+
+        /* ─── Brand header strip ─── */
+        .brand-strip {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 28px;
+        }
+
+        .brand-logo {
+            width: 38px;
+            height: 38px;
+            background: var(--purple);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .brand-logo svg {
+            color: #fff;
+        }
+
+        .brand-name {
+            font-size: 18px;
+            font-weight: 800;
+            color: var(--purple);
+            letter-spacing: -0.3px;
+        }
+
+        /* ─── Card ─── */
+        .card {
+            background: #fff;
+            border-radius: 20px;
+            box-shadow: 0 4px 24px rgba(124, 58, 237, 0.08), 0 1px 4px rgba(0, 0, 0, 0.06);
+            overflow: hidden;
+        }
+
+        /* Top purple accent bar */
+        .card-top-bar {
+            height: 6px;
+            background: linear-gradient(90deg, #7c3aed, #6366f1, #06b6d4);
+        }
+
+        .card-body {
+            padding: 36px 36px 32px;
+        }
+
+        @media (max-width: 480px) {
+            .card-body {
+                padding: 28px 20px 28px;
+            }
+        }
+
+        /* ─── Form header ─── */
+        .form-header {
+            margin-bottom: 32px;
+        }
+
+        .form-title {
+            font-size: 24px;
+            font-weight: 800;
+            color: var(--slate-900);
+            letter-spacing: -0.4px;
+        }
+
+        .form-subtitle {
+            margin-top: 8px;
+            font-size: 14px;
+            color: var(--slate-500);
+            line-height: 1.6;
+        }
+
+        /* ─── Divider ─── */
+        .divider {
+            height: 1px;
+            background: var(--slate-100);
+            margin: 24px 0;
+        }
+
+        /* ─── Form groups ─── */
+        .form-group {
+            margin-bottom: 22px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--slate-700);
+            margin-bottom: 8px;
+        }
+
+        .required-star {
+            color: var(--rose);
+            margin-left: 2px;
+        }
+
+        .form-input,
+        .form-select,
+        .form-textarea {
+            width: 100%;
+            padding: 11px 14px;
+            border: 1.5px solid var(--slate-200);
+            border-radius: 10px;
+            font-size: 14px;
+            font-family: inherit;
+            color: var(--slate-900);
+            background: var(--slate-50);
+            transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
+            outline: none;
+        }
+
+        .form-input:focus,
+        .form-select:focus,
+        .form-textarea:focus {
+            border-color: var(--purple);
+            background: #fff;
+            box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.12);
+        }
+
+        .form-textarea {
+            resize: vertical;
+            min-height: 100px;
+            line-height: 1.6;
+        }
+
+        .form-select {
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            padding-right: 40px;
+        }
+
+        /* ─── Two-column grid (contact fields only) ─── */
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        @media (max-width: 480px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* ─── Rating stack (single column) ─── */
+        .rating-stack {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        /* ─── Star rating row ─── */
+        .rating-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            padding: 14px 16px;
+            background: var(--slate-50);
+            border: 1.5px solid var(--slate-200);
+            border-radius: 12px;
+            transition: border-color 0.15s, background 0.15s;
+        }
+
+        .rating-row:focus-within {
+            border-color: var(--purple);
+            background: #fff;
+        }
+
+        .rating-row-label {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--slate-700);
+            white-space: nowrap;
+        }
+
+        .star-group {
+            display: flex;
+            gap: 4px;
+            flex-direction: row;
+        }
+
+        .star-group .star {
+            font-size: 26px;
+            cursor: pointer;
+            color: var(--slate-200);
+            transition: color 0.1s, transform 0.1s;
+            line-height: 1;
+            user-select: none;
+        }
+
+        .star-group .star:hover,
+        .star-group .star.active {
+            color: #f59e0b;
+        }
+
+        .star-group .star:active {
+            transform: scale(1.25);
+        }
+
+        /* hidden real inputs for form data */
+        .star-group input[type="radio"] {
+            display: none;
+        }
+
+        /* ─── Section heading ─── */
+        .section-heading {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--purple);
+            margin-bottom: 16px;
+        }
+
+        /* ─── Submit button ─── */
+        .submit-btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #7c3aed, #6d28d9);
+            color: #fff;
+            font-size: 15px;
+            font-weight: 700;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: transform 0.12s, box-shadow 0.12s;
+            margin-top: 8px;
+            letter-spacing: 0.01em;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 8px 20px rgba(124, 58, 237, 0.32);
+        }
+
+        .submit-btn:active {
+            transform: translateY(0);
+        }
+
+        .submit-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        /* ─── Error / helper text ─── */
+        .field-error {
+            font-size: 12px;
+            color: var(--rose);
+            margin-top: 5px;
+            display: none;
+        }
+
+        .field-error.show {
+            display: block;
+        }
+
+        /* ─── Success screen ─── */
+        #successScreen {
+            display: none;
+            text-align: center;
+            padding: 48px 32px;
+        }
+
+        .success-icon {
+            width: 72px;
+            height: 72px;
+            background: #dcfce7;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 24px;
+        }
+
+        .success-icon svg {
+            color: var(--emerald);
+        }
+
+        .success-title {
+            font-size: 22px;
+            font-weight: 800;
+            color: var(--slate-900);
+        }
+
+        .success-subtitle {
+            margin-top: 10px;
+            font-size: 14px;
+            color: var(--slate-500);
+            line-height: 1.6;
+        }
+
+        .success-badge {
+            display: inline-block;
+            margin-top: 24px;
+            padding: 8px 20px;
+            background: var(--purple-light);
+            color: var(--purple);
+            border-radius: 999px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        /* ─── Footer ─── */
+        .form-footer {
+            margin-top: 20px;
+            text-align: center;
+            font-size: 12px;
+            color: var(--slate-400);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="page">
+
+        <!-- Brand -->
+        <div class="brand-strip">
+            <div class="brand-logo">
+                <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.2">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                </svg>
+            </div>
+            <span class="brand-name">BEZENT</span>
+        </div>
+
+        <!-- Card -->
+        <div class="card">
+            <div class="card-top-bar"></div>
+            <div class="card-body">
+
+                <!-- Form header -->
+                <div class="form-header">
+                    <div class="form-title">Client Feedback Form</div>
+                    <div class="form-subtitle">
+                        We value your experience. Your honest feedback helps us serve you better.<br>
+                        This takes less than 2 minutes. All fields marked <span style="color:#f43f5e">*</span> are
+                        required.
+                    </div>
+                </div>
+
+                <!-- ─── Form ─── -->
+                <form id="feedbackForm" novalidate>
+
+                    <!-- Contact details -->
+                    <div class="section-heading">Your Details</div>
+
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label" for="fbName">Client / Company Name <span
+                                    class="required-star">*</span></label>
+                            <input type="text" id="fbName" class="form-input" placeholder="e.g. TechNova Solutions"
+                                autocomplete="organization" />
+                            <div class="field-error" id="errName">Please enter your name or company.</div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="fbEmail">Email Address</label>
+                            <input type="email" id="fbEmail" class="form-input" placeholder="you@company.com"
+                                autocomplete="email" />
+                            <div class="field-error" id="errEmail">Please enter a valid email address.</div>
+                        </div>
+                    </div>
+
+                    <div class="divider"></div>
+
+                    <!-- Ratings -->
+                    <div class="section-heading">Rate Your Experience</div>
+
+                    <div class="rating-stack">
+
+                        <!-- Delivery Quality -->
+                        <div>
+                            <div class="rating-row" id="rowQuality">
+                                <span class="rating-row-label">Delivery Quality <span
+                                        class="required-star">*</span></span>
+                                <div class="star-group" data-name="quality">
+                                    <input type="radio" name="quality" value="1"><input type="radio" name="quality"
+                                        value="2"><input type="radio" name="quality" value="3"><input type="radio"
+                                        name="quality" value="4"><input type="radio" name="quality" value="5">
+                                    <span class="star" data-val="1">★</span>
+                                    <span class="star" data-val="2">★</span>
+                                    <span class="star" data-val="3">★</span>
+                                    <span class="star" data-val="4">★</span>
+                                    <span class="star" data-val="5">★</span>
+                                </div>
+                            </div>
+                            <div class="field-error" id="errQuality">Please rate Delivery Quality.</div>
+                        </div>
+
+                        <!-- Communication -->
+                        <div>
+                            <div class="rating-row" id="rowComm">
+                                <span class="rating-row-label">Communication <span class="required-star">*</span></span>
+                                <div class="star-group" data-name="communication">
+                                    <input type="radio" name="communication" value="1"><input type="radio"
+                                        name="communication" value="2"><input type="radio" name="communication"
+                                        value="3"><input type="radio" name="communication" value="4"><input type="radio"
+                                        name="communication" value="5">
+                                    <span class="star" data-val="1">★</span>
+                                    <span class="star" data-val="2">★</span>
+                                    <span class="star" data-val="3">★</span>
+                                    <span class="star" data-val="4">★</span>
+                                    <span class="star" data-val="5">★</span>
+                                </div>
+                            </div>
+                            <div class="field-error" id="errComm">Please rate Communication.</div>
+                        </div>
+
+                        <!-- Timelines -->
+                        <div>
+                            <div class="rating-row" id="rowTime">
+                                <span class="rating-row-label">Timelines <span class="required-star">*</span></span>
+                                <div class="star-group" data-name="timelines">
+                                    <input type="radio" name="timelines" value="1"><input type="radio" name="timelines"
+                                        value="2"><input type="radio" name="timelines" value="3"><input type="radio"
+                                        name="timelines" value="4"><input type="radio" name="timelines" value="5">
+                                    <span class="star" data-val="1">★</span>
+                                    <span class="star" data-val="2">★</span>
+                                    <span class="star" data-val="3">★</span>
+                                    <span class="star" data-val="4">★</span>
+                                    <span class="star" data-val="5">★</span>
+                                </div>
+                            </div>
+                            <div class="field-error" id="errTime">Please rate Timelines.</div>
+                        </div>
+
+                        <!-- Value for Money -->
+                        <div>
+                            <div class="rating-row" id="rowValue">
+                                <span class="rating-row-label">Value for Money <span
+                                        class="required-star">*</span></span>
+                                <div class="star-group" data-name="value">
+                                    <input type="radio" name="value" value="1"><input type="radio" name="value"
+                                        value="2"><input type="radio" name="value" value="3"><input type="radio"
+                                        name="value" value="4"><input type="radio" name="value" value="5">
+                                    <span class="star" data-val="1">★</span>
+                                    <span class="star" data-val="2">★</span>
+                                    <span class="star" data-val="3">★</span>
+                                    <span class="star" data-val="4">★</span>
+                                    <span class="star" data-val="5">★</span>
+                                </div>
+                            </div>
+                            <div class="field-error" id="errValue">Please rate Value for Money.</div>
+                        </div>
+
+                    </div>
+
+                    <div class="divider"></div>
+
+                    <!-- Overall -->
+                    <div class="section-heading">Overall Summary</div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="fbOverall">How likely are you to recommend us? <span
+                                class="required-star">*</span></label>
+                        <select id="fbOverall" class="form-select">
+                            <option value="">— Select —</option>
+                            <option value="10">10 — Definitely will recommend</option>
+                            <option value="9">9 — Very likely</option>
+                            <option value="8">8 — Likely</option>
+                            <option value="7">7 — Possibly</option>
+                            <option value="6">6 — Unlikely</option>
+                            <option value="5">5 — Would not recommend</option>
+                            <option value="1">Below 5 — Unsatisfied</option>
+                        </select>
+                        <div class="field-error" id="errOverall">Please select a recommendation score.</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="fbComments">Additional Comments</label>
+                        <textarea id="fbComments" class="form-textarea"
+                            placeholder="Tell us what we did well, or how we can improve…"></textarea>
+                    </div>
+
+                    <button type="submit" class="submit-btn" id="submitBtn">Submit Feedback</button>
+
+                </form>
+
+                <!-- ─── Success screen (hidden by default) ─── -->
+                <div id="successScreen">
+                    <div class="success-icon">
+                        <svg width="36" height="36" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                            stroke-width="2.5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                        </svg>
+                    </div>
+                    <div class="success-title">Thank you for your feedback! 🙏</div>
+                    <div class="success-subtitle">
+                        Your response has been recorded successfully.<br>
+                        We truly appreciate the time you took to help us improve.
+                    </div>
+                    <div class="success-badge">Response saved</div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="form-footer">Powered by BEZENT · APJ 3D Solutions India Pvt Ltd · Your data is kept private.</div>
+
+    </div>
+
+    <script>
+        (function () {
+            const STORE_KEY = 'bezent_feedback_submissions';
+
+            function readStore() {
+                try { return JSON.parse(localStorage.getItem(STORE_KEY) || '[]'); } catch (_) { return []; }
+            }
+            function writeStore(data) {
+                try { localStorage.setItem(STORE_KEY, JSON.stringify(data)); } catch (_) { }
+            }
+
+            function getRadioValue(name) {
+                const el = document.querySelector(`input[name="${name}"]:checked`);
+                return el ? parseInt(el.value, 10) : null;
+            }
+
+            function showError(id, show) {
+                const el = document.getElementById(id);
+                if (el) el.classList.toggle('show', show);
+            }
+
+            function clearErrors() {
+                document.querySelectorAll('.field-error').forEach(e => e.classList.remove('show'));
+            }
+
+            function validate() {
+                let ok = true;
+                const name = document.getElementById('fbName').value.trim();
+                if (!name) { showError('errName', true); ok = false; }
+
+                const email = document.getElementById('fbEmail').value.trim();
+                if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                    showError('errEmail', true); ok = false;
+                }
+
+                if (!getRadioValue('quality')) { showError('errQuality', true); ok = false; }
+                if (!getRadioValue('communication')) { showError('errComm', true); ok = false; }
+                if (!getRadioValue('timelines')) { showError('errTime', true); ok = false; }
+                if (!getRadioValue('value')) { showError('errValue', true); ok = false; }
+
+                const overall = document.getElementById('fbOverall').value;
+                if (!overall) { showError('errOverall', true); ok = false; }
+
+                return ok;
+            }
+
+            document.getElementById('feedbackForm').addEventListener('submit', function (e) {
+                e.preventDefault();
+                clearErrors();
+                if (!validate()) return;
+
+                const btn = document.getElementById('submitBtn');
+                btn.disabled = true;
+                btn.textContent = 'Submitting…';
+
+                const submission = {
+                    id: Date.now(),
+                    submittedAt: new Date().toISOString(),
+                    name: document.getElementById('fbName').value.trim(),
+                    email: document.getElementById('fbEmail').value.trim() || '—',
+                    quality: getRadioValue('quality'),
+                    communication: getRadioValue('communication'),
+                    timelines: getRadioValue('timelines'),
+                    value: getRadioValue('value'),
+                    overall: parseInt(document.getElementById('fbOverall').value, 10),
+                    comments: document.getElementById('fbComments').value.trim() || '—',
+                    avg: parseFloat(((
+                        getRadioValue('quality') +
+                        getRadioValue('communication') +
+                        getRadioValue('timelines') +
+                        getRadioValue('value')
+                    ) / 4).toFixed(1))
+                };
+
+                const existing = readStore();
+                existing.push(submission);
+                writeStore(existing);
+
+                // Small delay for UX feel
+                setTimeout(() => {
+                    document.getElementById('feedbackForm').style.display = 'none';
+                    document.getElementById('successScreen').style.display = 'block';
+                }, 500);
+            });
+
+            // ─── JS star widget (left→right, 1 to 5) ───
+            const errMap = { quality: 'errQuality', communication: 'errComm', timelines: 'errTime', value: 'errValue' };
+            document.querySelectorAll('.star-group').forEach(group => {
+                const name = group.dataset.name;
+                const stars = [...group.querySelectorAll('.star')];
+                const inputs = [...group.querySelectorAll('input[type="radio"]')];
+                let selected = 0;
+
+                const paint = (hoverVal) => {
+                    stars.forEach(s => {
+                        const v = parseInt(s.dataset.val);
+                        s.classList.toggle('active', v <= (hoverVal || selected));
+                    });
+                };
+
+                stars.forEach(star => {
+                    star.addEventListener('mouseenter', () => paint(parseInt(star.dataset.val)));
+                    star.addEventListener('mouseleave', () => paint(0));
+                    star.addEventListener('click', () => {
+                        selected = parseInt(star.dataset.val);
+                        // sync hidden radio
+                        inputs.forEach(r => { r.checked = parseInt(r.value) === selected; });
+                        paint(0);
+                        if (errMap[name]) showError(errMap[name], false);
+                    });
+                });
+            });
+
+            // Live validation clear on other inputs
+            document.getElementById('fbName').addEventListener('input', () => showError('errName', false));
+            document.getElementById('fbEmail').addEventListener('input', () => showError('errEmail', false));
+            document.getElementById('fbOverall').addEventListener('change', () => showError('errOverall', false));
+        })();
+    </script>
+</body>
+
+</html>

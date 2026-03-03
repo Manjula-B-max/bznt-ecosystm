@@ -427,10 +427,29 @@
 
                     <div class="rating-stack">
 
-                        <!-- Delivery Quality -->
+                        <!-- Overall Experience -->
+                        <div>
+                            <div class="rating-row" id="rowOverall">
+                                <span class="rating-row-label">Overall Experience <span
+                                        class="required-star">*</span></span>
+                                <div class="star-group" data-name="overall">
+                                    <input type="radio" name="overall" value="1"><input type="radio" name="overall"
+                                        value="2"><input type="radio" name="overall" value="3"><input type="radio"
+                                        name="overall" value="4"><input type="radio" name="overall" value="5">
+                                    <span class="star" data-val="1">★</span>
+                                    <span class="star" data-val="2">★</span>
+                                    <span class="star" data-val="3">★</span>
+                                    <span class="star" data-val="4">★</span>
+                                    <span class="star" data-val="5">★</span>
+                                </div>
+                            </div>
+                            <div class="field-error" id="errOverall">Please rate your Overall Experience.</div>
+                        </div>
+
+                        <!-- Quality of Work -->
                         <div>
                             <div class="rating-row" id="rowQuality">
-                                <span class="rating-row-label">Delivery Quality <span
+                                <span class="rating-row-label">Quality of Work <span
                                         class="required-star">*</span></span>
                                 <div class="star-group" data-name="quality">
                                     <input type="radio" name="quality" value="1"><input type="radio" name="quality"
@@ -443,13 +462,14 @@
                                     <span class="star" data-val="5">★</span>
                                 </div>
                             </div>
-                            <div class="field-error" id="errQuality">Please rate Delivery Quality.</div>
+                            <div class="field-error" id="errQuality">Please rate Quality of Work.</div>
                         </div>
 
-                        <!-- Communication -->
+                        <!-- Communication / Response -->
                         <div>
                             <div class="rating-row" id="rowComm">
-                                <span class="rating-row-label">Communication <span class="required-star">*</span></span>
+                                <span class="rating-row-label">Communication / Response <span
+                                        class="required-star">*</span></span>
                                 <div class="star-group" data-name="communication">
                                     <input type="radio" name="communication" value="1"><input type="radio"
                                         name="communication" value="2"><input type="radio" name="communication"
@@ -462,17 +482,18 @@
                                     <span class="star" data-val="5">★</span>
                                 </div>
                             </div>
-                            <div class="field-error" id="errComm">Please rate Communication.</div>
+                            <div class="field-error" id="errComm">Please rate Communication / Response.</div>
                         </div>
 
-                        <!-- Timelines -->
+                        <!-- Timeliness -->
                         <div>
                             <div class="rating-row" id="rowTime">
-                                <span class="rating-row-label">Timelines <span class="required-star">*</span></span>
-                                <div class="star-group" data-name="timelines">
-                                    <input type="radio" name="timelines" value="1"><input type="radio" name="timelines"
-                                        value="2"><input type="radio" name="timelines" value="3"><input type="radio"
-                                        name="timelines" value="4"><input type="radio" name="timelines" value="5">
+                                <span class="rating-row-label">Timeliness <span class="required-star">*</span></span>
+                                <div class="star-group" data-name="timeliness">
+                                    <input type="radio" name="timeliness" value="1"><input type="radio"
+                                        name="timeliness" value="2"><input type="radio" name="timeliness"
+                                        value="3"><input type="radio" name="timeliness" value="4"><input type="radio"
+                                        name="timeliness" value="5">
                                     <span class="star" data-val="1">★</span>
                                     <span class="star" data-val="2">★</span>
                                     <span class="star" data-val="3">★</span>
@@ -480,55 +501,33 @@
                                     <span class="star" data-val="5">★</span>
                                 </div>
                             </div>
-                            <div class="field-error" id="errTime">Please rate Timelines.</div>
-                        </div>
-
-                        <!-- Value for Money -->
-                        <div>
-                            <div class="rating-row" id="rowValue">
-                                <span class="rating-row-label">Value for Money <span
-                                        class="required-star">*</span></span>
-                                <div class="star-group" data-name="value">
-                                    <input type="radio" name="value" value="1"><input type="radio" name="value"
-                                        value="2"><input type="radio" name="value" value="3"><input type="radio"
-                                        name="value" value="4"><input type="radio" name="value" value="5">
-                                    <span class="star" data-val="1">★</span>
-                                    <span class="star" data-val="2">★</span>
-                                    <span class="star" data-val="3">★</span>
-                                    <span class="star" data-val="4">★</span>
-                                    <span class="star" data-val="5">★</span>
-                                </div>
-                            </div>
-                            <div class="field-error" id="errValue">Please rate Value for Money.</div>
+                            <div class="field-error" id="errTime">Please rate Timeliness.</div>
                         </div>
 
                     </div>
 
                     <div class="divider"></div>
 
-                    <!-- Overall -->
-                    <div class="section-heading">Overall Summary</div>
+                    <!-- Open-text questions -->
+                    <div class="section-heading">Your Thoughts</div>
 
                     <div class="form-group">
-                        <label class="form-label" for="fbOverall">How likely are you to recommend us? <span
-                                class="required-star">*</span></label>
-                        <select id="fbOverall" class="form-select">
-                            <option value="">— Select —</option>
-                            <option value="10">10 — Definitely will recommend</option>
-                            <option value="9">9 — Very likely</option>
-                            <option value="8">8 — Likely</option>
-                            <option value="7">7 — Possibly</option>
-                            <option value="6">6 — Unlikely</option>
-                            <option value="5">5 — Would not recommend</option>
-                            <option value="1">Below 5 — Unsatisfied</option>
-                        </select>
-                        <div class="field-error" id="errOverall">Please select a recommendation score.</div>
+                        <label class="form-label" for="fbLiked">What did you like most about our service /
+                            project?</label>
+                        <textarea id="fbLiked" class="form-textarea" rows="3"
+                            placeholder="e.g. Prompt delivery, attention to detail, great communication…"></textarea>
                     </div>
 
                     <div class="form-group">
-                        <label class="form-label" for="fbComments">Additional Comments</label>
-                        <textarea id="fbComments" class="form-textarea"
-                            placeholder="Tell us what we did well, or how we can improve…"></textarea>
+                        <label class="form-label" for="fbImprove">What can we improve?</label>
+                        <textarea id="fbImprove" class="form-textarea" rows="3"
+                            placeholder="e.g. Faster turnaround, more updates during the project…"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="fbComments">Additional comments or suggestions</label>
+                        <textarea id="fbComments" class="form-textarea" rows="3"
+                            placeholder="Any other thoughts or suggestions for our team…"></textarea>
                     </div>
 
                     <button type="submit" class="submit-btn" id="submitBtn">Submit Feedback</button>
@@ -594,13 +593,10 @@
                     showError('errEmail', true); ok = false;
                 }
 
+                if (!getRadioValue('overall')) { showError('errOverall', true); ok = false; }
                 if (!getRadioValue('quality')) { showError('errQuality', true); ok = false; }
                 if (!getRadioValue('communication')) { showError('errComm', true); ok = false; }
-                if (!getRadioValue('timelines')) { showError('errTime', true); ok = false; }
-                if (!getRadioValue('value')) { showError('errValue', true); ok = false; }
-
-                const overall = document.getElementById('fbOverall').value;
-                if (!overall) { showError('errOverall', true); ok = false; }
+                if (!getRadioValue('timeliness')) { showError('errTime', true); ok = false; }
 
                 return ok;
             }
@@ -614,30 +610,26 @@
                 btn.disabled = true;
                 btn.textContent = 'Submitting…';
 
+                const r = (n) => getRadioValue(n);
                 const submission = {
                     id: Date.now(),
                     submittedAt: new Date().toISOString(),
                     name: document.getElementById('fbName').value.trim(),
                     email: document.getElementById('fbEmail').value.trim() || '—',
-                    quality: getRadioValue('quality'),
-                    communication: getRadioValue('communication'),
-                    timelines: getRadioValue('timelines'),
-                    value: getRadioValue('value'),
-                    overall: parseInt(document.getElementById('fbOverall').value, 10),
+                    overall: r('overall'),
+                    quality: r('quality'),
+                    communication: r('communication'),
+                    timeliness: r('timeliness'),
+                    liked: document.getElementById('fbLiked').value.trim() || '—',
+                    improve: document.getElementById('fbImprove').value.trim() || '—',
                     comments: document.getElementById('fbComments').value.trim() || '—',
-                    avg: parseFloat(((
-                        getRadioValue('quality') +
-                        getRadioValue('communication') +
-                        getRadioValue('timelines') +
-                        getRadioValue('value')
-                    ) / 4).toFixed(1))
+                    avg: parseFloat(((r('overall') + r('quality') + r('communication') + r('timeliness')) / 4).toFixed(1))
                 };
 
                 const existing = readStore();
                 existing.push(submission);
                 writeStore(existing);
 
-                // Small delay for UX feel
                 setTimeout(() => {
                     document.getElementById('feedbackForm').style.display = 'none';
                     document.getElementById('successScreen').style.display = 'block';
@@ -645,7 +637,7 @@
             });
 
             // ─── JS star widget (left→right, 1 to 5) ───
-            const errMap = { quality: 'errQuality', communication: 'errComm', timelines: 'errTime', value: 'errValue' };
+            const errMap = { overall: 'errOverall', quality: 'errQuality', communication: 'errComm', timeliness: 'errTime' };
             document.querySelectorAll('.star-group').forEach(group => {
                 const name = group.dataset.name;
                 const stars = [...group.querySelectorAll('.star')];

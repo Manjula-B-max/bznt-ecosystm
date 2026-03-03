@@ -3711,7 +3711,7 @@ class MarketFlowCRM {
             campaigns: 'email',
             billing: 'invoices',
             engagement: 'followups',
-            reports: 'revenue',
+            reports: 'funnel',
             ai: 'insights'
         };
         return defaults[section] || 'overview';
@@ -3728,7 +3728,7 @@ class MarketFlowCRM {
             campaigns: { email: 'mail', sms: 'message-square', wishes: 'calendar-heart', reengagement: 'refresh-cw', marketing_hub: 'globe', seo: 'search', content_library: 'library', maps_reviews: 'map-pin', linkedin_leads: 'linkedin' },
             billing: { invoices: 'file-text', quotations: 'file-text', contracts: 'file-signature', payments: 'credit-card', followup_log: 'clipboard-list', overdue_risk: 'alert-triangle' },
             engagement: { followups: 'phone-call', surveys: 'clipboard-check', health: 'heart-pulse', reengagement: 'sparkles', field_visits: 'map', route_map: 'route', mobile_sync: 'smartphone', followup_sla: 'timer' },
-            reports: { revenue: 'bar-chart', funnel: 'filter', roi: 'line-chart', ltv: 'badge-dollar-sign', sop_monthly: 'calendar', kpi_target: 'target', kri_risk: 'shield-alert', team_scorecard: 'users', project_roadmap: 'milestone' },
+            reports: { funnel: 'filter', roi: 'line-chart', ltv: 'badge-dollar-sign', sop_monthly: 'calendar', kpi_target: 'target', kri_risk: 'shield-alert', project_roadmap: 'milestone' },
             ai: { insights: 'sparkles', workflows: 'workflow', alerts: 'bell-dot', predictions: 'brain', lead_prediction: 'radar', best_email_timing: 'clock', auto_followup: 'calendar-clock', content_generator: 'wand-2' }
         };
         const getIcon = (id) => (icons[this.currentSection] && icons[this.currentSection][id]) ? icons[this.currentSection][id] : 'dot';
@@ -3809,14 +3809,12 @@ class MarketFlowCRM {
                 { id: 'mobile_sync', label: 'Mobile Sync Visits' }
             ],
             reports: [
-                { id: 'revenue', label: 'Revenue Reports' },
                 { id: 'funnel', label: 'Funnel Reports' },
                 { id: 'roi', label: 'Campaign ROI' },
                 { id: 'ltv', label: 'Client Lifetime Value' },
                 { id: 'sop_monthly', label: 'SOP Monthly Report' },
                 { id: 'kpi_target', label: 'KPI vs Target Report' },
                 { id: 'kri_risk', label: 'KRI Risk Monitor' },
-                { id: 'team_scorecard', label: 'Team Performance Scorecard' },
                 { id: 'project_roadmap', label: 'Project Roadmap Report' }
             ],
             ai: [
@@ -4109,12 +4107,34 @@ class MarketFlowCRM {
             });
         }
 
-        if (this.currentSection === 'reports' && this.currentSubSection === 'revenue') {
-            this.initializeRevenueReportChart();
-        }
+
 
         if (this.currentSection === 'ai' && this.currentSubSection === 'predictions') {
             this.initializePredictionsChart();
+        }
+
+        if (this.currentSection === 'reports' && this.currentSubSection === 'funnel') {
+            this.initializeFunnelReportCharts();
+        }
+
+        if (this.currentSection === 'reports' && this.currentSubSection === 'roi') {
+            this.initializeCampaignReportCharts();
+        }
+
+        if (this.currentSection === 'reports' && this.currentSubSection === 'sop_monthly') {
+            this.initializeSopMonthlyCharts();
+        }
+
+        if (this.currentSection === 'reports' && this.currentSubSection === 'project_roadmap') {
+            this.initializeProjectRoadmapCharts();
+        }
+
+        if (this.currentSection === 'reports' && this.currentSubSection === 'kpi_target') {
+            this.initializeKpiTargetCharts();
+        }
+
+        if (this.currentSection === 'reports' && this.currentSubSection === 'kri_risk') {
+            this.initializeKriRiskCharts();
         }
 
         if (this.currentSection === 'leads' && this.currentSubSection === 'clients') {
@@ -6489,7 +6509,7 @@ class MarketFlowCRM {
 
                 <!-- Cover text content -->
                 <div class="cover-content">
-                    <div class="cover-title">BEZENT<br/>Pvt Ltd</div>
+                    <div class="cover-title">APJ 3D Solutions India<br/>Pvt Ltd</div>
                     <div class="cover-divider"></div>
                     <div class="cover-subtitle">REQUEST FOR PROPOSAL</div>
                 </div>
@@ -12006,21 +12026,812 @@ class MarketFlowCRM {
 
     renderReportsContent(container) {
         switch (this.currentSubSection) {
-            case 'revenue':
-                container.innerHTML = this.getReportsRevenue();
-                break;
             case 'funnel':
                 container.innerHTML = this.getReportsFunnel();
                 break;
             case 'roi':
-                container.innerHTML = this.getReportsRoi();
+                container.innerHTML = this.getReportsCampaigns();
                 break;
             case 'ltv':
                 container.innerHTML = this.getReportsLtv();
                 break;
+            case 'sop_monthly':
+                container.innerHTML = this.getReportsSopMonthly();
+                break;
+            case 'kpi_target':
+                container.innerHTML = this.getReportsKpiTarget();
+                break;
+            case 'kri_risk':
+                container.innerHTML = this.getReportsKriRisk();
+                break;
+            case 'project_roadmap':
+                container.innerHTML = this.getReportsProjectRoadmap();
+                break;
             default:
-                container.innerHTML = this.getReportsRevenue();
+                container.innerHTML = this.getReportsFunnel();
         }
+    }
+
+
+    // ─────────────────────────────────────────────────────────────────────────
+    //  KPI vs Target Report
+    // ─────────────────────────────────────────────────────────────────────────
+    getReportsKpiTarget() {
+        const kpis = [
+            { category: 'Sales', kpi: 'Monthly Revenue', target: 500000, actual: 485000, unit: '₹', trend: '+8%', owner: 'Rohan', status: 'On Track' },
+            { category: 'Sales', kpi: 'New Leads Generated', target: 120, actual: 138, unit: '', trend: '+15%', owner: 'Sarah', status: 'Exceeded' },
+            { category: 'Sales', kpi: 'Lead Conversion Rate', target: 35, actual: 28, unit: '%', trend: '-7%', owner: 'Amit', status: 'At Risk' },
+            { category: 'Sales', kpi: 'Avg Deal Size', target: 85000, actual: 91000, unit: '₹', trend: '+7%', owner: 'Rohan', status: 'Exceeded' },
+            { category: 'Projects', kpi: 'Projects Delivered On Time', target: 90, actual: 75, unit: '%', trend: '-15%', owner: 'Meera', status: 'Critical' },
+            { category: 'Projects', kpi: 'Avg Project Completion', target: 85, actual: 80, unit: '%', trend: '-5%', owner: 'Sarah', status: 'At Risk' },
+            { category: 'Projects', kpi: 'Client Satisfaction Score', target: 9, actual: 8.4, unit: '/10', trend: '-6%', owner: 'Rohan', status: 'On Track' },
+            { category: 'Finance', kpi: 'Invoice Collection Rate', target: 95, actual: 88, unit: '%', trend: '-7%', owner: 'Amit', status: 'At Risk' },
+            { category: 'Finance', kpi: 'Overdue Invoices', target: 2, actual: 6, unit: ' no.', trend: '+200%', owner: 'Meera', status: 'Critical' },
+            { category: 'Finance', kpi: 'Budget Utilisation', target: 80, actual: 64, unit: '%', trend: '-16%', owner: 'Sarah', status: 'On Track' },
+            { category: 'Marketing', kpi: 'Email Open Rate', target: 28, actual: 31.4, unit: '%', trend: '+12%', owner: 'Rohan', status: 'Exceeded' },
+            { category: 'Marketing', kpi: 'Campaign ROI', target: 300, actual: 275, unit: '%', trend: '-8%', owner: 'Amit', status: 'On Track' },
+            { category: 'Marketing', kpi: 'Website Leads Captured', target: 40, actual: 52, unit: '', trend: '+30%', owner: 'Sarah', status: 'Exceeded' },
+            { category: 'Team', kpi: 'SOP Daily Report Compliance', target: 100, actual: 82, unit: '%', trend: '-18%', owner: 'Meera', status: 'Critical' },
+            { category: 'Team', kpi: 'Follow-up Response Time', target: 4, actual: 6.5, unit: 'h', trend: '+63%', owner: 'Rohan', status: 'At Risk' }
+        ];
+
+        const exceeded = kpis.filter(k => k.status === 'Exceeded').length;
+        const onTrack = kpis.filter(k => k.status === 'On Track').length;
+        const atRisk = kpis.filter(k => k.status === 'At Risk').length;
+        const critical = kpis.filter(k => k.status === 'Critical').length;
+        const avgAchieve = Math.round(kpis.reduce((s, k) => {
+            const pct = k.unit === '%' || k.unit === 'h' || k.unit === ' no.' ? (k.actual / k.target * 100) : (k.actual / k.target * 100);
+            return s + Math.min(pct, 150);
+        }, 0) / kpis.length);
+
+        const statusBadge = s => {
+            const map = { 'Exceeded': 'bg-emerald-100 text-emerald-700', 'On Track': 'bg-sky-100 text-sky-700', 'At Risk': 'bg-amber-100 text-amber-700', 'Critical': 'bg-rose-100 text-rose-700' };
+            return `<span class="px-2 py-0.5 text-[10px] font-bold rounded-full ${map[s] || 'bg-slate-100 text-slate-600'}">${s}</span>`;
+        };
+        const bar = (target, actual, status) => {
+            const pct = Math.min(Math.round(actual / target * 100), 150);
+            const col = status === 'Exceeded' ? 'bg-emerald-500' : status === 'On Track' ? 'bg-sky-500' : status === 'At Risk' ? 'bg-amber-500' : 'bg-rose-500';
+            return `<div class="flex items-center gap-2"><div class="flex-1 bg-slate-100 rounded-full h-1.5"><div class="${col} h-1.5 rounded-full" style="width:${Math.min(pct, 100)}%"></div></div><span class="text-[10px] text-slate-500 w-8 text-right">${pct}%</span></div>`;
+        };
+
+        const categories = [...new Set(kpis.map(k => k.category))];
+
+        return `<div class="space-y-6 fade-in">
+            <!-- Header -->
+            <div class="flex flex-wrap items-start justify-between gap-3">
+                <div>
+                    <h2 class="text-xl sm:text-2xl font-semibold text-slate-900">KPI vs Target Report</h2>
+                    <p class="text-sm text-slate-500">Performance against defined targets across all business functions — ${kpis.length} KPIs tracked</p>
+                </div>
+                <button id="kpiExportBtn" class="flex items-center gap-2 px-4 py-2 text-sm font-medium bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors">
+                    <i data-lucide="download" class="w-4 h-4"></i> Export CSV
+                </button>
+            </div>
+
+            <!-- KPI Summary Cards -->
+            <div class="grid grid-cols-2 sm:grid-cols-5 gap-3">
+                ${[
+                { label: 'Total KPIs', val: kpis.length, sub: 'Tracked this period', col: 'indigo', icon: 'target' },
+                { label: 'Exceeded', val: exceeded, sub: `${Math.round(exceeded / kpis.length * 100)}% of KPIs`, col: 'emerald', icon: 'trending-up' },
+                { label: 'On Track', val: onTrack, sub: 'Meets target', col: 'sky', icon: 'check-circle' },
+                { label: 'At Risk', val: atRisk, sub: 'Below target', col: 'amber', icon: 'alert-triangle' },
+                { label: 'Critical', val: critical, sub: 'Immediate action', col: 'rose', icon: 'x-circle' }
+            ].map(k => `<div class="bg-white rounded-xl border border-slate-200 p-4 shadow-sm">
+                    <div class="flex items-center gap-2 mb-1">
+                        <i data-lucide="${k.icon}" class="w-4 h-4 text-${k.col}-500"></i>
+                        <div class="text-xs text-slate-500 font-medium">${k.label}</div>
+                    </div>
+                    <div class="text-2xl font-bold text-slate-900">${k.val}</div>
+                    <div class="text-xs text-slate-400 mt-0.5">${k.sub}</div>
+                </div>`).join('')}
+            </div>
+
+            <!-- Charts -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
+                    <h3 class="text-sm font-semibold text-slate-900 mb-1">Achievement Rate by KPI</h3>
+                    <p class="text-xs text-slate-500 mb-3">Actual as % of target (capped at 150%)</p>
+                    <div class="h-64"><canvas id="kpiAchievementChart"></canvas></div>
+                </div>
+                <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
+                    <h3 class="text-sm font-semibold text-slate-900 mb-1">KPI Status Breakdown</h3>
+                    <p class="text-xs text-slate-500 mb-3">Distribution across status categories</p>
+                    <div class="h-64"><canvas id="kpiStatusChart"></canvas></div>
+                </div>
+            </div>
+
+            <!-- KPI Table by Category -->
+            ${categories.map(cat => {
+                const catKpis = kpis.filter(k => k.category === cat);
+                return `<div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                    <div class="p-4 border-b border-slate-100 bg-slate-50 flex items-center justify-between">
+                        <div class="text-sm font-semibold text-slate-800">${cat}</div>
+                        <span class="text-xs text-slate-500">${catKpis.length} KPIs</span>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-xs">
+                            <thead class="bg-slate-50 text-slate-600">
+                                <tr>
+                                    <th class="px-4 py-3 text-left font-semibold whitespace-nowrap">KPI</th>
+                                    <th class="px-4 py-3 text-right font-semibold whitespace-nowrap">Target</th>
+                                    <th class="px-4 py-3 text-right font-semibold whitespace-nowrap">Actual</th>
+                                    <th class="px-4 py-3 text-left font-semibold whitespace-nowrap w-40">Progress</th>
+                                    <th class="px-4 py-3 text-center font-semibold whitespace-nowrap">Trend</th>
+                                    <th class="px-4 py-3 text-left font-semibold whitespace-nowrap">Owner</th>
+                                    <th class="px-4 py-3 text-center font-semibold whitespace-nowrap">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-100">
+                                ${catKpis.map(k => `<tr class="hover:bg-slate-50 transition-colors">
+                                    <td class="px-4 py-3 font-medium text-slate-800">${k.kpi}</td>
+                                    <td class="px-4 py-3 text-right text-slate-600">${k.unit === '₹' ? '₹' + k.target.toLocaleString('en-IN') : k.target + k.unit}</td>
+                                    <td class="px-4 py-3 text-right font-semibold text-slate-800">${k.unit === '₹' ? '₹' + k.actual.toLocaleString('en-IN') : k.actual + k.unit}</td>
+                                    <td class="px-4 py-3">${bar(k.target, k.actual, k.status)}</td>
+                                    <td class="px-4 py-3 text-center font-semibold ${k.trend.startsWith('+') && k.status !== 'Critical' ? 'text-emerald-600' : 'text-rose-500'}">${k.trend}</td>
+                                    <td class="px-4 py-3 text-slate-600">${k.owner}</td>
+                                    <td class="px-4 py-3 text-center">${statusBadge(k.status)}</td>
+                                </tr>`).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>`;
+            }).join('')}
+        </div>`;
+    }
+
+    initializeKpiTargetCharts() {
+        const kpis = [
+            { kpi: 'Monthly Revenue', target: 500000, actual: 485000, status: 'On Track' },
+            { kpi: 'New Leads', target: 120, actual: 138, status: 'Exceeded' },
+            { kpi: 'Conversion Rate', target: 35, actual: 28, status: 'At Risk' },
+            { kpi: 'Avg Deal Size', target: 85000, actual: 91000, status: 'Exceeded' },
+            { kpi: 'On-Time Delivery', target: 90, actual: 75, status: 'Critical' },
+            { kpi: 'Satisfaction', target: 9, actual: 8.4, status: 'On Track' },
+            { kpi: 'Collection Rate', target: 95, actual: 88, status: 'At Risk' },
+            { kpi: 'Email Open Rate', target: 28, actual: 31.4, status: 'Exceeded' },
+            { kpi: 'SOP Compliance', target: 100, actual: 82, status: 'Critical' },
+            { kpi: 'Follow-up Time', target: 4, actual: 6.5, status: 'At Risk' }
+        ];
+        const achievePct = kpis.map(k => Math.min(Math.round(k.actual / k.target * 100), 150));
+        const barColors = kpis.map(k => ({
+            'Exceeded': 'rgba(16,185,129,0.75)', 'On Track': 'rgba(14,165,233,0.75)',
+            'At Risk': 'rgba(245,158,11,0.75)', 'Critical': 'rgba(239,68,68,0.75)'
+        }[k.status]));
+
+        const ctxA = document.getElementById('kpiAchievementChart');
+        if (ctxA) {
+            if (this.charts.kpiAchievementChart) { try { this.charts.kpiAchievementChart.destroy(); } catch (e) { } }
+            this.charts.kpiAchievementChart = new Chart(ctxA, {
+                type: 'bar',
+                data: {
+                    labels: kpis.map(k => k.kpi),
+                    datasets: [{
+                        label: 'Achievement %', data: achievePct, backgroundColor: barColors, borderRadius: 5,
+                        borderSkipped: false
+                    }, {
+                        label: 'Target (100%)', data: Array(kpis.length).fill(100),
+                        type: 'line', borderColor: 'rgba(100,116,139,0.6)', borderDash: [4, 4],
+                        borderWidth: 1.5, pointRadius: 0, fill: false
+                    }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11 } } } },
+                    scales: {
+                        y: { min: 0, max: 150, ticks: { callback: v => v + '%', font: { size: 10 } } },
+                        x: { ticks: { font: { size: 10 } } }
+                    }
+                }
+            });
+        }
+
+        const ctxS = document.getElementById('kpiStatusChart');
+        if (ctxS) {
+            if (this.charts.kpiStatusChart) { try { this.charts.kpiStatusChart.destroy(); } catch (e) { } }
+            this.charts.kpiStatusChart = new Chart(ctxS, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Exceeded', 'On Track', 'At Risk', 'Critical'],
+                    datasets: [{
+                        data: [4, 3, 4, 3],
+                        backgroundColor: ['rgba(16,185,129,0.8)', 'rgba(14,165,233,0.8)', 'rgba(245,158,11,0.8)', 'rgba(239,68,68,0.8)'],
+                        borderWidth: 2, borderColor: '#fff', hoverOffset: 8
+                    }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false, cutout: '68%',
+                    plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11 } } } }
+                }
+            });
+        }
+
+        // Export CSV
+        const btn = document.getElementById('kpiExportBtn');
+        if (btn) btn.onclick = () => {
+            const rows = [['Category', 'KPI', 'Target', 'Actual', 'Trend', 'Owner', 'Status'],
+            ['Sales', 'Monthly Revenue', '500000', '485000', '+8%', 'Rohan', 'On Track'],
+            ['Sales', 'New Leads Generated', '120', '138', '+15%', 'Sarah', 'Exceeded'],
+            ['Sales', 'Lead Conversion Rate', '35%', '28%', '-7%', 'Amit', 'At Risk'],
+            ['Sales', 'Avg Deal Size', '85000', '91000', '+7%', 'Rohan', 'Exceeded'],
+            ['Projects', 'On-Time Delivery', '90%', '75%', '-15%', 'Meera', 'Critical'],
+            ['Projects', 'Avg Completion', '85%', '80%', '-5%', 'Sarah', 'At Risk'],
+            ['Projects', 'Client Satisfaction', '9/10', '8.4/10', '-6%', 'Rohan', 'On Track'],
+            ['Finance', 'Invoice Collection Rate', '95%', '88%', '-7%', 'Amit', 'At Risk'],
+            ['Finance', 'Overdue Invoices', '2', '6', '+200%', 'Meera', 'Critical'],
+            ['Finance', 'Budget Utilisation', '80%', '64%', '-16%', 'Sarah', 'On Track'],
+            ['Marketing', 'Email Open Rate', '28%', '31.4%', '+12%', 'Rohan', 'Exceeded'],
+            ['Marketing', 'Campaign ROI', '300%', '275%', '-8%', 'Amit', 'On Track'],
+            ['Marketing', 'Website Leads', '40', '52', '+30%', 'Sarah', 'Exceeded'],
+            ['Team', 'SOP Compliance', '100%', '82%', '-18%', 'Meera', 'Critical'],
+            ['Team', 'Follow-up Response', '4h', '6.5h', '+63%', 'Rohan', 'At Risk']
+            ];
+            const csv = rows.map(r => r.map(c => `"${c}"`).join(',')).join('\n');
+            const a = document.createElement('a');
+            a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
+            a.download = 'KPI_vs_Target_Report.csv'; a.click();
+        };
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    //  KRI Risk Monitor
+    // ─────────────────────────────────────────────────────────────────────────
+    getReportsKriRisk() {
+        const risks = [
+            { id: 'KRI-001', category: 'Financial', risk: 'Revenue Below Monthly Target', likelihood: 3, impact: 5, threshold: '₹4,00,000', current: '₹4,85,000', status: 'Within', trend: 'Stable', owner: 'Rohan', action: 'Monitor quarterly targets' },
+            { id: 'KRI-002', category: 'Financial', risk: 'Overdue Invoice Accumulation', likelihood: 4, impact: 4, threshold: '3 invoices', current: '6 invoices', status: 'Breached', trend: 'Worsening', owner: 'Amit', action: 'Escalate to collections; send reminders immediately' },
+            { id: 'KRI-003', category: 'Financial', risk: 'Budget Overrun on Projects', likelihood: 2, impact: 4, threshold: '10% overshoot', current: '2% undershoot', status: 'Within', trend: 'Stable', owner: 'Meera', action: 'Continue monthly cost reviews' },
+            { id: 'KRI-004', category: 'Operational', risk: 'Project Delivery Delays', likelihood: 4, impact: 5, threshold: '< 15% delayed', current: '25% delayed', status: 'Breached', trend: 'Worsening', owner: 'Sarah', action: 'Daily standup + escalation process activated' },
+            { id: 'KRI-005', category: 'Operational', risk: 'SOP Non-Compliance', likelihood: 4, impact: 3, threshold: '> 90% compliance', current: '82% compliance', status: 'Breached', trend: 'Worsening', owner: 'Meera', action: 'Mandatory SOP training session this week' },
+            { id: 'KRI-006', category: 'Operational', risk: 'Lead Response Time Breach', likelihood: 3, impact: 3, threshold: '< 4 hours avg', current: '6.5 hours avg', status: 'Breached', trend: 'Worsening', owner: 'Rohan', action: 'Reassign follow-up duties; set automated reminders' },
+            { id: 'KRI-007', category: 'Client', risk: 'Client Satisfaction Drop', likelihood: 2, impact: 5, threshold: '> 8.5 / 10', current: '8.4 / 10', status: 'Warning', trend: 'Declining', owner: 'Rohan', action: 'Conduct satisfaction survey; personal check-in calls' },
+            { id: 'KRI-008', category: 'Client', risk: 'Churn of High-Value Client', likelihood: 2, impact: 5, threshold: '0 churns expected', current: '1 at-risk client', status: 'Warning', trend: 'Stable', owner: 'Sarah', action: 'Executive-level engagement scheduled' },
+            { id: 'KRI-009', category: 'Client', risk: 'Lead Conversion Rate Drop', likelihood: 3, impact: 4, threshold: '> 30% conversion', current: '28% conversion', status: 'Warning', trend: 'Declining', owner: 'Amit', action: 'Review pitch deck; add case studies to proposals' },
+            { id: 'KRI-010', category: 'Marketing', risk: 'Campaign ROI Below Threshold', likelihood: 2, impact: 3, threshold: '> 280% ROI', current: '275% ROI', status: 'Warning', trend: 'Declining', owner: 'Amit', action: 'Review ad spend allocation; A/B test subject lines' },
+            { id: 'KRI-011', category: 'Marketing', risk: 'Lead Pipeline Drying Up', likelihood: 2, impact: 4, threshold: '> 100 leads/mo', current: '138 leads/mo', status: 'Within', trend: 'Improving', owner: 'Sarah', action: 'Maintain current content strategy' },
+            { id: 'KRI-012', category: 'Team', risk: 'Key Person Dependency', likelihood: 3, impact: 5, threshold: 'Cross-training complete', current: '2 roles single-person', status: 'Warning', trend: 'Stable', owner: 'Meera', action: 'Document SOPs; cross-train backup personnel' }
+        ];
+
+        const riskScore = r => r.likelihood * r.impact;
+        const breached = risks.filter(r => r.status === 'Breached').length;
+        const warning = risks.filter(r => r.status === 'Warning').length;
+        const within = risks.filter(r => r.status === 'Within').length;
+        const highRisk = risks.filter(r => riskScore(r) >= 15).length;
+        const worsening = risks.filter(r => r.trend === 'Worsening').length;
+
+        const statusBadge = s => ({
+            'Breached': '<span class="px-2 py-0.5 text-[10px] font-bold rounded-full bg-rose-100 text-rose-700">Breached</span>',
+            'Warning': '<span class="px-2 py-0.5 text-[10px] font-bold rounded-full bg-amber-100 text-amber-700">Warning</span>',
+            'Within': '<span class="px-2 py-0.5 text-[10px] font-bold rounded-full bg-emerald-100 text-emerald-700">Within Limit</span>'
+        }[s] || s);
+
+        const trendIcon = t => ({
+            'Worsening': '<span class="text-rose-500 font-semibold">↑ Worsening</span>',
+            'Declining': '<span class="text-amber-500 font-semibold">↓ Declining</span>',
+            'Stable': '<span class="text-slate-500">→ Stable</span>',
+            'Improving': '<span class="text-emerald-600 font-semibold">↑ Improving</span>'
+        }[t] || t);
+
+        const scoreColor = s => s >= 15 ? 'bg-rose-100 text-rose-800 font-bold' : s >= 9 ? 'bg-amber-100 text-amber-700 font-bold' : 'bg-emerald-100 text-emerald-700';
+        const cats = [...new Set(risks.map(r => r.category))];
+
+        return `<div class="space-y-6 fade-in">
+            <!-- Header -->
+            <div class="flex flex-wrap items-start justify-between gap-3">
+                <div>
+                    <h2 class="text-xl sm:text-2xl font-semibold text-slate-900">KRI Risk Monitor</h2>
+                    <p class="text-sm text-slate-500">Key Risk Indicator tracking — threshold breaches, trend alerts, and mitigation actions</p>
+                </div>
+                <button id="kriExportBtn" class="flex items-center gap-2 px-4 py-2 text-sm font-medium bg-rose-600 text-white rounded-lg hover:bg-rose-700 transition-colors">
+                    <i data-lucide="download" class="w-4 h-4"></i> Export CSV
+                </button>
+            </div>
+
+            <!-- Summary Cards -->
+            <div class="grid grid-cols-2 sm:grid-cols-5 gap-3">
+                ${[
+                { label: 'Total KRIs', val: risks.length, sub: 'Monitored', col: 'indigo', icon: 'shield' },
+                { label: 'Breached', val: breached, sub: 'Immediate action', col: 'rose', icon: 'shield-alert' },
+                { label: 'Warning', val: warning, sub: 'Near threshold', col: 'amber', icon: 'alert-triangle' },
+                { label: 'Within Limit', val: within, sub: 'Acceptable range', col: 'emerald', icon: 'shield-check' },
+                { label: 'Worsening Trend', val: worsening, sub: 'Escalating risks', col: 'orange', icon: 'trending-up' }
+            ].map(k => `<div class="bg-white rounded-xl border border-slate-200 p-4 shadow-sm">
+                    <div class="flex items-center gap-2 mb-1">
+                        <i data-lucide="${k.icon}" class="w-4 h-4 text-${k.col}-500"></i>
+                        <div class="text-xs text-slate-500 font-medium">${k.label}</div>
+                    </div>
+                    <div class="text-2xl font-bold text-slate-900">${k.val}</div>
+                    <div class="text-xs text-slate-400 mt-0.5">${k.sub}</div>
+                </div>`).join('')}
+            </div>
+
+            <!-- Charts -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
+                    <h3 class="text-sm font-semibold text-slate-900 mb-1">Risk Score by KRI</h3>
+                    <p class="text-xs text-slate-500 mb-3">Likelihood × Impact (max 25). Red zone ≥ 15</p>
+                    <div class="h-64"><canvas id="kriScoreChart"></canvas></div>
+                </div>
+                <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
+                    <h3 class="text-sm font-semibold text-slate-900 mb-1">Risk Status by Category</h3>
+                    <p class="text-xs text-slate-500 mb-3">Breached / Warning / Within across categories</p>
+                    <div class="h-64"><canvas id="kriCategoryChart"></canvas></div>
+                </div>
+            </div>
+
+            <!-- Heat Map Legend -->
+            <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-4">
+                <div class="text-sm font-semibold text-slate-800 mb-3">Risk Score Heat Map Legend</div>
+                <div class="flex flex-wrap gap-3 text-xs">
+                    <span class="flex items-center gap-1.5"><span class="w-4 h-4 rounded bg-rose-100 border border-rose-300 inline-block"></span> High Risk (Score 15–25) — Immediate escalation required</span>
+                    <span class="flex items-center gap-1.5"><span class="w-4 h-4 rounded bg-amber-100 border border-amber-300 inline-block"></span> Medium Risk (Score 9–14) — Close monitoring needed</span>
+                    <span class="flex items-center gap-1.5"><span class="w-4 h-4 rounded bg-emerald-100 border border-emerald-300 inline-block"></span> Low Risk (Score 1–8) — Routine review cycle</span>
+                </div>
+            </div>
+
+            <!-- KRI Tables by Category -->
+            ${cats.map(cat => {
+                const catRisks = risks.filter(r => r.category === cat);
+                return `<div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                    <div class="p-4 border-b border-slate-100 bg-slate-50 flex items-center justify-between">
+                        <div class="text-sm font-semibold text-slate-800">${cat} Risks</div>
+                        <div class="flex items-center gap-2 text-xs">
+                            <span class="text-rose-600 font-semibold">${catRisks.filter(r => r.status === 'Breached').length} Breached</span>
+                            <span class="text-slate-300">|</span>
+                            <span class="text-amber-600 font-semibold">${catRisks.filter(r => r.status === 'Warning').length} Warning</span>
+                        </div>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-xs">
+                            <thead class="bg-slate-50 text-slate-600">
+                                <tr>
+                                    <th class="px-4 py-3 text-left font-semibold whitespace-nowrap">ID</th>
+                                    <th class="px-4 py-3 text-left font-semibold whitespace-nowrap">Risk</th>
+                                    <th class="px-4 py-3 text-center font-semibold whitespace-nowrap">L × I</th>
+                                    <th class="px-4 py-3 text-center font-semibold whitespace-nowrap">Score</th>
+                                    <th class="px-4 py-3 text-left font-semibold whitespace-nowrap">Threshold</th>
+                                    <th class="px-4 py-3 text-left font-semibold whitespace-nowrap">Current</th>
+                                    <th class="px-4 py-3 text-center font-semibold whitespace-nowrap">Status</th>
+                                    <th class="px-4 py-3 text-left font-semibold whitespace-nowrap">Trend</th>
+                                    <th class="px-4 py-3 text-left font-semibold whitespace-nowrap">Owner</th>
+                                    <th class="px-4 py-3 text-left font-semibold whitespace-nowrap">Mitigation Action</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-100">
+                                ${catRisks.map(r => `<tr class="hover:bg-slate-50 transition-colors ${r.status === 'Breached' ? 'bg-rose-50/30' : r.status === 'Warning' ? 'bg-amber-50/30' : ''}">
+                                    <td class="px-4 py-3 font-mono text-slate-500">${r.id}</td>
+                                    <td class="px-4 py-3 font-medium text-slate-800">${r.risk}</td>
+                                    <td class="px-4 py-3 text-center text-slate-500">${r.likelihood} × ${r.impact}</td>
+                                    <td class="px-4 py-3 text-center"><span class="px-2 py-0.5 rounded-full text-[10px] ${scoreColor(riskScore(r))}">${riskScore(r)}</span></td>
+                                    <td class="px-4 py-3 text-slate-600">${r.threshold}</td>
+                                    <td class="px-4 py-3 font-semibold text-slate-800">${r.current}</td>
+                                    <td class="px-4 py-3 text-center">${statusBadge(r.status)}</td>
+                                    <td class="px-4 py-3">${trendIcon(r.trend)}</td>
+                                    <td class="px-4 py-3 text-slate-600">${r.owner}</td>
+                                    <td class="px-4 py-3 text-slate-600" style="max-width:220px;white-space:normal">${r.action}</td>
+                                </tr>`).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>`;
+            }).join('')}
+        </div>`;
+    }
+
+    initializeKriRiskCharts() {
+        const risks = [
+            { id: 'KRI-001', label: 'Revenue Target', score: 15, status: 'Within', cat: 'Financial' },
+            { id: 'KRI-002', label: 'Overdue Invoices', score: 16, status: 'Breached', cat: 'Financial' },
+            { id: 'KRI-003', label: 'Budget Overrun', score: 8, status: 'Within', cat: 'Financial' },
+            { id: 'KRI-004', label: 'Delivery Delays', score: 20, status: 'Breached', cat: 'Operational' },
+            { id: 'KRI-005', label: 'SOP Compliance', score: 12, status: 'Breached', cat: 'Operational' },
+            { id: 'KRI-006', label: 'Response Time', score: 9, status: 'Breached', cat: 'Operational' },
+            { id: 'KRI-007', label: 'Client Satisfaction', score: 10, status: 'Warning', cat: 'Client' },
+            { id: 'KRI-008', label: 'Client Churn Risk', score: 10, status: 'Warning', cat: 'Client' },
+            { id: 'KRI-009', label: 'Conversion Rate', score: 12, status: 'Warning', cat: 'Client' },
+            { id: 'KRI-010', label: 'Campaign ROI', score: 6, status: 'Warning', cat: 'Marketing' },
+            { id: 'KRI-011', label: 'Lead Pipeline', score: 8, status: 'Within', cat: 'Marketing' },
+            { id: 'KRI-012', label: 'Key Person Risk', score: 15, status: 'Warning', cat: 'Team' }
+        ];
+        const scoreColors = risks.map(r => r.score >= 15 ? 'rgba(239,68,68,0.75)' : r.score >= 9 ? 'rgba(245,158,11,0.75)' : 'rgba(16,185,129,0.75)');
+
+        const ctxS = document.getElementById('kriScoreChart');
+        if (ctxS) {
+            if (this.charts.kriScoreChart) { try { this.charts.kriScoreChart.destroy(); } catch (e) { } }
+            this.charts.kriScoreChart = new Chart(ctxS, {
+                type: 'bar',
+                data: {
+                    labels: risks.map(r => r.label),
+                    datasets: [{
+                        label: 'Risk Score', data: risks.map(r => r.score),
+                        backgroundColor: scoreColors, borderRadius: 4, borderSkipped: false
+                    }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: {
+                            min: 0, max: 25, ticks: { font: { size: 10 } },
+                            grid: { color: ctx => ctx.tick.value === 15 ? 'rgba(239,68,68,0.4)' : ctx.tick.value === 9 ? 'rgba(245,158,11,0.3)' : 'rgba(226,232,240,0.8)' }
+                        },
+                        x: { ticks: { font: { size: 9 }, maxRotation: 30 } }
+                    }
+                }
+            });
+        }
+
+        const cats = ['Financial', 'Operational', 'Client', 'Marketing', 'Team'];
+        const ctxC = document.getElementById('kriCategoryChart');
+        if (ctxC) {
+            if (this.charts.kriCategoryChart) { try { this.charts.kriCategoryChart.destroy(); } catch (e) { } }
+            this.charts.kriCategoryChart = new Chart(ctxC, {
+                type: 'bar',
+                data: {
+                    labels: cats,
+                    datasets: [
+                        { label: 'Breached', data: cats.map(c => risks.filter(r => r.cat === c && r.status === 'Breached').length), backgroundColor: 'rgba(239,68,68,0.75)', borderRadius: 4 },
+                        { label: 'Warning', data: cats.map(c => risks.filter(r => r.cat === c && r.status === 'Warning').length), backgroundColor: 'rgba(245,158,11,0.75)', borderRadius: 4 },
+                        { label: 'Within', data: cats.map(c => risks.filter(r => r.cat === c && r.status === 'Within').length), backgroundColor: 'rgba(16,185,129,0.75)', borderRadius: 4 }
+                    ]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11 } } } },
+                    scales: { x: { stacked: true }, y: { stacked: true, ticks: { stepSize: 1 } } }
+                }
+            });
+        }
+
+        // Export CSV
+        const btn = document.getElementById('kriExportBtn');
+        if (btn) btn.onclick = () => {
+            const rows = [['ID', 'Category', 'Risk', 'Likelihood', 'Impact', 'Score', 'Threshold', 'Current', 'Status', 'Trend', 'Owner', 'Action'],
+            ['KRI-001', 'Financial', 'Revenue Below Target', '3', '5', '15', '₹4,00,000', '₹4,85,000', 'Within', 'Stable', 'Rohan', 'Monitor quarterly targets'],
+            ['KRI-002', 'Financial', 'Overdue Invoice Accumulation', '4', '4', '16', '3 invoices', '6 invoices', 'Breached', 'Worsening', 'Amit', 'Escalate to collections immediately'],
+            ['KRI-003', 'Financial', 'Budget Overrun', '2', '4', '8', '10% overshoot', '2% undershoot', 'Within', 'Stable', 'Meera', 'Continue monthly cost reviews'],
+            ['KRI-004', 'Operational', 'Project Delivery Delays', '4', '5', '20', '<15% delayed', '25% delayed', 'Breached', 'Worsening', 'Sarah', 'Daily standup + escalation activated'],
+            ['KRI-005', 'Operational', 'SOP Non-Compliance', '4', '3', '12', '>90% compliance', '82% compliance', 'Breached', 'Worsening', 'Meera', 'Mandatory SOP training this week'],
+            ['KRI-006', 'Operational', 'Lead Response Time Breach', '3', '3', '9', '<4h avg', '6.5h avg', 'Breached', 'Worsening', 'Rohan', 'Reassign duties; set automated reminders'],
+            ['KRI-007', 'Client', 'Client Satisfaction Drop', '2', '5', '10', '>8.5/10', '8.4/10', 'Warning', 'Declining', 'Rohan', 'Conduct satisfaction survey; check-in calls'],
+            ['KRI-008', 'Client', 'Churn of High-Value Client', '2', '5', '10', '0 churns', '1 at-risk', 'Warning', 'Stable', 'Sarah', 'Executive-level engagement scheduled'],
+            ['KRI-009', 'Client', 'Lead Conversion Rate Drop', '3', '4', '12', '>30%', '28%', 'Warning', 'Declining', 'Amit', 'Review pitch deck; add case studies'],
+            ['KRI-010', 'Marketing', 'Campaign ROI Below Threshold', '2', '3', '6', '>280% ROI', '275% ROI', 'Warning', 'Declining', 'Amit', 'Review ad spend; A/B test subject lines'],
+            ['KRI-011', 'Marketing', 'Lead Pipeline Drying Up', '2', '4', '8', '>100/mo', '138/mo', 'Within', 'Improving', 'Sarah', 'Maintain current content strategy'],
+            ['KRI-012', 'Team', 'Key Person Dependency', '3', '5', '15', 'Cross-training', '2 single-person roles', 'Warning', 'Stable', 'Meera', 'Document SOPs; cross-train backup']
+            ];
+            const csv = rows.map(r => r.map(c => `"${c}"`).join(',')).join('\n');
+            const a = document.createElement('a');
+            a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
+            a.download = 'KRI_Risk_Monitor_Report.csv'; a.click();
+        };
+    }
+
+    getReportsProjectRoadmap() {
+        const defaults = [
+            {
+                name: 'SEO Revamp', client: 'TechNova Solutions', progress: 62, status: 'On Track', statusColor: 'emerald', owner: 'Rohan', budget: '₹3,20,000', spent: '₹2,10,000',
+                identification: { projectCode: 'APJ26RE001', serviceCode: 'RE', vendorCode: 'KAK001', companyName: 'TechNova Solutions', location: 'Bengaluru', qty: '1', projectLead: 'Rohan', assignedBy: 'Sarah', assignedTo: 'Amit', projectDescription: 'Complete SEO overhaul with focus on technical optimization and content strategy', partDescription: 'Website optimization including meta tags, schema markup, and site speed improvements' },
+                tracking: { model2dStatus: 'Completed', model3dStatus: 'In Progress', scan3dStatus: 'Pending', feaStatus: 'Pending', qcInspectionStatus: 'Pending', approvalStatus: 'Pending', glApprovalStatus: 'Pending', revisionStatus: 'Pending', deliveryReportStatus: 'Pending', sopDailyReportStatus: 'In Progress' },
+                monitoring: { roadmapSubmitted: 'Yes', dashboardUpdated: 'Yes', dailyReportUpdated: 'No', photoAttached: 'Yes', overallProjectStatus: 'Partially Completed', postCompletionStatus: 'Awaiting client feedback', physicalPartStatus: 'In production' },
+                dispatch: { dcDate: '2026-02-15', dcNumber: 'DC/2026/001', deliveryStatus: 'Pending', deliveryDate: '2026-02-20', deliveryConfirmation: 'No' },
+                purchase: { quotationDate: '2026-01-10', quotationNumber: 'QTN-2026-001', poDate: '2026-01-15', poNumber: 'PO-2026-001', poValue: '₹3,20,000', convertedBy: 'Sarah', visitConducted: 'Yes' },
+                payment: { invoiceDate: '2026-01-20', invoiceNumber: 'INV-2026-001', invoiceAmount: '₹1,60,000', pastInvoiceAmount: '₹0', paymentTerms: '50% advance, 50% on delivery', paymentType: 'Bank Transfer', paymentDueDate: '2026-02-20', paymentReceivedDate: '2026-01-25', paymentReceivedAmount: '₹1,60,000', balancePaymentDueDate: '2026-02-20', balancePaymentAmount: '₹1,60,000', overdueStatus: 'On Time' },
+                ratings: { clientRating: '8', jobRating: '7', qualityRating: '8', serviceRating: '9', performanceRating: '8', feedbackComments: 'Good progress so far, looking forward to final delivery', additionalNotes: 'Client very responsive to communications' }
+            },
+            {
+                name: 'CRM Upgrade', client: 'GreenLeaf Industries', progress: 45, status: 'At Risk', statusColor: 'amber', owner: 'Sarah', budget: '₹2,80,000', spent: '₹1,60,000',
+                identification: { projectCode: 'APJ26CAD002', serviceCode: 'CAD', vendorCode: 'OST001', companyName: 'GreenLeaf Industries', location: 'Pune', qty: '1', projectLead: 'Sarah', assignedBy: 'Rohan', assignedTo: 'Meera', projectDescription: 'CRM system upgrade with custom module development', partDescription: 'Custom dashboard and reporting modules for manufacturing workflow' },
+                tracking: { model2dStatus: 'Completed', model3dStatus: 'Completed', scan3dStatus: 'Pending', feaStatus: 'In Progress', qcInspectionStatus: 'Pending', approvalStatus: 'Pending', glApprovalStatus: 'Pending', revisionStatus: 'Pending', deliveryReportStatus: 'Pending', sopDailyReportStatus: 'Yes' },
+                monitoring: { roadmapSubmitted: 'Yes', dashboardUpdated: 'No', dailyReportUpdated: 'Yes', photoAttached: 'No', overallProjectStatus: 'Pending / Delayed', postCompletionStatus: 'Testing phase', physicalPartStatus: 'Assembly required' },
+                dispatch: { dcDate: '', dcNumber: '', deliveryStatus: 'Pending', deliveryDate: '2026-03-01', deliveryConfirmation: 'No' },
+                purchase: { quotationDate: '2026-01-05', quotationNumber: 'QTN-2026-002', poDate: '2026-01-12', poNumber: 'PO-2026-002', poValue: '₹2,80,000', convertedBy: 'Rohan', visitConducted: 'Yes' },
+                payment: { invoiceDate: '2026-01-18', invoiceNumber: 'INV-2026-002', invoiceAmount: '₹1,40,000', pastInvoiceAmount: '₹0', paymentTerms: '50% advance, 50% on delivery', paymentType: 'Bank Transfer', paymentDueDate: '2026-02-18', paymentReceivedDate: '2026-01-22', paymentReceivedAmount: '₹1,40,000', balancePaymentDueDate: '2026-03-01', balancePaymentAmount: '₹1,40,000', overdueStatus: 'On Time' },
+                ratings: { clientRating: '6', jobRating: '7', qualityRating: '6', serviceRating: '7', performanceRating: '6', feedbackComments: 'Some delays in delivery, but quality is good', additionalNotes: 'Scope expansion requested by client' }
+            },
+            {
+                name: 'Re-engagement Funnel', client: 'EduSpark', progress: 28, status: 'On Track', statusColor: 'sky', owner: 'Meera', budget: '₹1,50,000', spent: '₹98,000',
+                identification: { projectCode: 'APJ262D003', serviceCode: '2D', vendorCode: 'OTN001', companyName: 'EduSpark', location: 'Hyderabad', qty: '1', projectLead: 'Meera', assignedBy: 'Amit', assignedTo: 'Rohan', projectDescription: 'Customer re-engagement campaign with multi-channel approach', partDescription: 'Email templates, landing pages, and social media content' },
+                tracking: { model2dStatus: 'In Progress', model3dStatus: 'Pending', scan3dStatus: 'Pending', feaStatus: 'Pending', qcInspectionStatus: 'Pending', approvalStatus: 'Pending', glApprovalStatus: 'Pending', revisionStatus: 'Pending', deliveryReportStatus: 'Pending', sopDailyReportStatus: 'No' },
+                monitoring: { roadmapSubmitted: 'No', dashboardUpdated: 'Yes', dailyReportUpdated: 'No', photoAttached: 'No', overallProjectStatus: 'Pending / Delayed', postCompletionStatus: '', physicalPartStatus: '' },
+                dispatch: { dcDate: '', dcNumber: '', deliveryStatus: 'Pending', deliveryDate: '2026-03-15', deliveryConfirmation: 'No' },
+                purchase: { quotationDate: '2026-01-25', quotationNumber: 'QTN-2026-003', poDate: '2026-02-01', poNumber: 'PO-2026-003', poValue: '₹1,50,000', convertedBy: 'Amit', visitConducted: 'No' },
+                payment: { invoiceDate: '', invoiceNumber: '', invoiceAmount: '', pastInvoiceAmount: '₹0', paymentTerms: '100% on delivery', paymentType: 'Bank Transfer', paymentDueDate: '2026-03-15', paymentReceivedDate: '', paymentReceivedAmount: '', balancePaymentDueDate: '2026-03-15', balancePaymentAmount: '₹1,50,000', overdueStatus: 'Pending' },
+                ratings: { clientRating: '', jobRating: '', qualityRating: '', serviceRating: '', performanceRating: '', feedbackComments: '', additionalNotes: '' }
+            },
+            {
+                name: 'Performance Ads', client: 'Mumbai Retail Chain', progress: 71, status: 'On Track', statusColor: 'emerald', owner: 'Amit', budget: '₹1,80,000', spent: '₹1,23,000',
+                identification: { projectCode: 'APJ262DI004', serviceCode: '2DI', vendorCode: 'CHN001', companyName: 'Mumbai Retail Chain', location: 'Mumbai', qty: '1', projectLead: 'Amit', assignedBy: 'Meera', assignedTo: 'Sarah', projectDescription: 'Performance marketing campaign for festive season', partDescription: 'Google Ads, Facebook Ads, and Instagram campaign setup' },
+                tracking: { model2dStatus: 'Completed', model3dStatus: 'Completed', scan3dStatus: 'Completed', feaStatus: 'Completed', qcInspectionStatus: 'Completed', approvalStatus: 'Completed', glApprovalStatus: 'Completed', revisionStatus: 'Completed', deliveryReportStatus: 'In Progress', sopDailyReportStatus: 'Yes' },
+                monitoring: { roadmapSubmitted: 'Yes', dashboardUpdated: 'Yes', dailyReportUpdated: 'Yes', photoAttached: 'Yes', overallProjectStatus: 'Completed', postCompletionStatus: 'Campaign live and performing well', physicalPartStatus: 'N/A' },
+                dispatch: { dcDate: '2026-02-01', dcNumber: 'DC/2026/002', deliveryStatus: 'Completed', deliveryDate: '2026-02-05', deliveryConfirmation: 'Yes' },
+                purchase: { quotationDate: '2026-01-08', quotationNumber: 'QTN-2026-004', poDate: '2026-01-10', poNumber: 'PO-2026-004', poValue: '₹1,80,000', convertedBy: 'Meera', visitConducted: 'Yes' },
+                payment: { invoiceDate: '2026-02-10', invoiceNumber: 'INV-2026-004', invoiceAmount: '₹90,000', pastInvoiceAmount: '₹0', paymentTerms: '50% advance, 50% on completion', paymentType: 'Bank Transfer', paymentDueDate: '2026-02-25', paymentReceivedDate: '2026-02-12', paymentReceivedAmount: '₹90,000', balancePaymentDueDate: '2026-03-10', balancePaymentAmount: '₹90,000', overdueStatus: 'On Time' },
+                ratings: { clientRating: '9', jobRating: '9', qualityRating: '8', serviceRating: '10', performanceRating: '9', feedbackComments: 'Excellent results! ROI exceeded expectations.', additionalNotes: 'Client wants to continue with monthly retainer' }
+            }
+        ];
+
+        let projects = defaults;
+        try {
+            if (typeof this.getAllProjectsMerged === 'function') {
+                projects = this.getAllProjectsMerged(defaults).map(p => typeof this.ensureProjectModel === 'function' ? this.ensureProjectModel(p) : p);
+            }
+        } catch (e) { }
+
+        const total = projects.length;
+        const onTrack = projects.filter(p => (p.status || '').toLowerCase().includes('on track')).length;
+        const atRisk = projects.filter(p => (p.status || '').toLowerCase().includes('at risk') || (p.monitoring?.overallProjectStatus || '').toLowerCase().includes('delayed')).length;
+        const completed = projects.filter(p => (p.monitoring?.overallProjectStatus || '').toLowerCase() === 'completed').length;
+        const budgetTotal = projects.reduce((s, p) => s + (parseFloat(String(p.budget || '0').replace(/[^0-9.]/g, '')) || 0), 0);
+        const spentTotal = projects.reduce((s, p) => s + (parseFloat(String(p.spent || '0').replace(/[^0-9.]/g, '')) || 0), 0);
+        const avgProgress = total ? Math.round(projects.reduce((s, p) => s + (p.progress || 0), 0) / total) : 0;
+        const deliveredCount = projects.filter(p => (p.dispatch?.deliveryConfirmation || '').toLowerCase() === 'yes').length;
+
+        const fmtAmt = v => { const n = parseFloat(String(v || '0').replace(/[^0-9.]/g, '')); if (!n) return '—'; return n >= 100000 ? '₹' + (n / 100000).toFixed(1) + 'L' : '₹' + n.toLocaleString('en-IN'); };
+        const yesNo = v => v === 'Yes' ? '<span class="text-emerald-600 font-semibold">Yes</span>' : v === 'No' ? '<span class="text-rose-500">No</span>' : `<span class="text-slate-400">${v || '—'}</span>`;
+        const tkBadge = v => {
+            if (!v) return '<span class="text-slate-300">—</span>';
+            const lv = v.toLowerCase();
+            if (lv === 'completed') return '<span class="px-1.5 py-0.5 text-[10px] font-semibold rounded bg-emerald-100 text-emerald-700">✓ Done</span>';
+            if (lv === 'in progress') return '<span class="px-1.5 py-0.5 text-[10px] font-semibold rounded bg-sky-100 text-sky-700">In Prog</span>';
+            if (lv === 'pending') return '<span class="px-1.5 py-0.5 text-[10px] font-semibold rounded bg-slate-100 text-slate-500">Pending</span>';
+            return `<span class="px-1.5 py-0.5 text-[10px] rounded bg-amber-100 text-amber-700">${v}</span>`;
+        };
+        const statusBadge = (s, col) => `<span class="px-2 py-0.5 text-[10px] font-bold rounded-full bg-${col || 'slate'}-100 text-${col || 'slate'}-700">${s || '—'}</span>`;
+        const ratingCell = v => { const n = parseInt(v); if (isNaN(n)) return '<span class="text-slate-300">—</span>'; const col = n >= 8 ? 'emerald' : n >= 6 ? 'amber' : 'rose'; return `<span class="w-6 h-6 inline-flex items-center justify-center rounded-full text-[10px] font-bold bg-${col}-100 text-${col}-700">${n}</span>`; };
+        const overdueBadge = v => { if (!v || v === '—') return '<span class="text-slate-400">—</span>'; const lv = v.toLowerCase(); if (lv === 'on time') return `<span class="px-2 py-0.5 text-[10px] font-bold rounded-full bg-emerald-100 text-emerald-700">${v}</span>`; if (lv === 'overdue') return `<span class="px-2 py-0.5 text-[10px] font-bold rounded-full bg-rose-100 text-rose-700">${v}</span>`; return `<span class="px-2 py-0.5 text-[10px] rounded-full bg-amber-100 text-amber-700">${v}</span>`; };
+        const osBadge = v => { if (!v) return '—'; const lv = v.toLowerCase(); if (lv === 'completed') return `<span class="px-2 py-0.5 text-[10px] font-bold rounded-full bg-emerald-100 text-emerald-700">${v}</span>`; if (lv.includes('delayed') || lv.includes('risk')) return `<span class="px-2 py-0.5 text-[10px] font-bold rounded-full bg-amber-100 text-amber-700">${v}</span>`; return `<span class="px-2 py-0.5 text-[10px] rounded-full bg-slate-100 text-slate-600">${v}</span>`; };
+
+        const kpis = [
+            { label: 'Total Projects', val: total, sub: 'All registered', col: 'indigo', icon: 'folder' },
+            { label: 'On Track', val: onTrack, sub: `${total ? Math.round(onTrack / total * 100) : 0}% of total`, col: 'emerald', icon: 'check-circle' },
+            { label: 'At Risk / Delayed', val: atRisk, sub: 'Needs attention', col: 'amber', icon: 'alert-triangle' },
+            { label: 'Completed', val: completed, sub: 'Fully delivered', col: 'sky', icon: 'badge-check' },
+            { label: 'Avg Progress', val: avgProgress + '%', sub: 'Across all projects', col: 'purple', icon: 'trending-up' },
+            { label: 'Total Budget', val: fmtAmt(budgetTotal), sub: 'All PO values', col: 'slate', icon: 'indian-rupee' },
+            { label: 'Total Spent', val: fmtAmt(spentTotal), sub: `${budgetTotal ? Math.round(spentTotal / budgetTotal * 100) : 0}% utilised`, col: 'rose', icon: 'receipt' },
+            { label: 'Delivered', val: deliveredCount + '/' + total, sub: 'Delivery confirmed', col: 'teal', icon: 'truck' }
+        ];
+
+        // Section header groups for colgroup labels
+        const groups = [
+            { id: 'grp-identification', label: 'Identification', cols: 15, bg: 'bg-indigo-50', text: 'text-indigo-700', border: 'border-indigo-200' },
+            { id: 'grp-tracking', label: 'Technical Tracking', cols: 10, bg: 'bg-violet-50', text: 'text-violet-700', border: 'border-violet-200' },
+            { id: 'grp-monitoring', label: 'Monitoring', cols: 7, bg: 'bg-sky-50', text: 'text-sky-700', border: 'border-sky-200' },
+            { id: 'grp-dispatch', label: 'Dispatch & Delivery', cols: 5, bg: 'bg-amber-50', text: 'text-amber-700', border: 'border-amber-200' },
+            { id: 'grp-purchase', label: 'Quotation & PO', cols: 7, bg: 'bg-orange-50', text: 'text-orange-700', border: 'border-orange-200' },
+            { id: 'grp-payment', label: 'Invoice & Payment', cols: 12, bg: 'bg-emerald-50', text: 'text-emerald-700', border: 'border-emerald-200' },
+            { id: 'grp-ratings', label: 'Ratings', cols: 7, bg: 'bg-yellow-50', text: 'text-yellow-700', border: 'border-yellow-200' }
+        ];
+
+        return `
+            <div class="space-y-6 fade-in">
+                <!-- Header -->
+                <div class="flex flex-wrap items-start justify-between gap-3">
+                    <div>
+                        <h2 class="text-xl sm:text-2xl font-semibold text-slate-900">Project Roadmap Report</h2>
+                        <p class="text-sm text-slate-500">Complete project details — every registration field in one unified table across all ${total} project(s)</p>
+                    </div>
+                    <button id="projectRoadmapExportBtn" class="flex items-center gap-2 px-4 py-2 text-sm font-medium bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors">
+                        <i data-lucide="download" class="w-4 h-4"></i> Export Excel
+                    </button>
+                </div>
+
+                <!-- KPI Cards -->
+                <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3">
+                    ${kpis.map(k => `
+                    <div class="bg-white rounded-xl border border-slate-200 p-3 shadow-sm flex flex-col gap-1">
+                        <div class="flex items-center gap-1.5 mb-0.5">
+                            <i data-lucide="${k.icon}" class="w-3.5 h-3.5 text-${k.col}-500"></i>
+                            <div class="text-[10px] text-slate-500 font-medium leading-tight">${k.label}</div>
+                        </div>
+                        <div class="text-xl font-bold text-slate-900">${k.val}</div>
+                        <div class="text-[10px] text-slate-400">${k.sub}</div>
+                    </div>`).join('')}
+                </div>
+
+                <!-- Charts Row -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
+                        <h3 class="text-sm font-semibold text-slate-900 mb-1">Project Progress Overview</h3>
+                        <p class="text-xs text-slate-500 mb-3">% completion per project</p>
+                        <div class="h-48"><canvas id="projectProgressChart"></canvas></div>
+                    </div>
+                    <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
+                        <h3 class="text-sm font-semibold text-slate-900 mb-1">Budget vs Spent</h3>
+                        <p class="text-xs text-slate-500 mb-3">Per project (₹)</p>
+                        <div class="h-48"><canvas id="projectBudgetChart"></canvas></div>
+                    </div>
+                </div>
+
+                <!-- Single Unified Master Table -->
+                <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                    <div class="p-4 border-b border-slate-100 flex items-center justify-between flex-wrap gap-2">
+                        <div>
+                            <div class="text-sm font-semibold text-slate-900">Complete Project Register — All Fields</div>
+                            <div class="text-xs text-slate-500">Each row = one project · All ${total} projects · Scroll horizontally to view all sections</div>
+                        </div>
+                        <div class="flex gap-2 flex-wrap text-[10px]">
+                            ${groups.map(g => `<button onclick="(function(){const th=document.getElementById('${g.id}');const wrap=document.getElementById('projRoadmapScroll');if(th&&wrap){wrap.scrollLeft=th.offsetLeft-8;}})()" class="px-2 py-1 rounded-full border ${g.bg} ${g.text} ${g.border} font-medium cursor-pointer hover:opacity-80 transition-opacity">${g.label}</button>`).join('')}
+                        </div>
+                    </div>
+                    <div id="projRoadmapScroll" class="overflow-x-auto" style="max-height: 72vh; overflow-y: auto;">
+                        <table id="projRoadmapMasterTable" class="w-full text-xs border-collapse" style="min-width: 4200px;">
+                            <thead style="position: sticky; top: 0; z-index: 10;">
+                                <!-- Group header row -->
+                                <tr>
+                                    <th id="grp-identification" colspan="15" class="px-3 py-2 text-left font-bold border border-indigo-200 bg-indigo-50 text-indigo-800 text-[11px]">Identification</th>
+                                    <th id="grp-tracking"       colspan="10" class="px-3 py-2 text-left font-bold border border-violet-200 bg-violet-50 text-violet-800 text-[11px]">Technical Scope / Stage Tracking</th>
+                                    <th id="grp-monitoring"     colspan="7"  class="px-3 py-2 text-left font-bold border border-sky-200 bg-sky-50 text-sky-800 text-[11px]">Roadmap & Monitoring</th>
+                                    <th id="grp-dispatch"       colspan="5"  class="px-3 py-2 text-left font-bold border border-amber-200 bg-amber-50 text-amber-800 text-[11px]">Dispatch & Delivery</th>
+                                    <th id="grp-purchase"       colspan="7"  class="px-3 py-2 text-left font-bold border border-orange-200 bg-orange-50 text-orange-800 text-[11px]">Quotation & Purchase Order</th>
+                                    <th id="grp-payment"        colspan="12" class="px-3 py-2 text-left font-bold border border-emerald-200 bg-emerald-50 text-emerald-800 text-[11px]">Invoice & Payment Tracking</th>
+                                    <th id="grp-ratings"        colspan="7"  class="px-3 py-2 text-left font-bold border border-yellow-200 bg-yellow-50 text-yellow-800 text-[11px]">Performance & Ratings</th>
+                                </tr>
+                                <!-- Column header row -->
+                                <tr class="bg-slate-100 text-slate-700">
+                                    <!-- Identification (15 cols) -->
+                                    <th class="px-3 py-2.5 text-left font-semibold whitespace-nowrap border border-slate-200 bg-indigo-50/60">#</th>
+                                    <th class="px-3 py-2.5 text-left font-semibold whitespace-nowrap border border-slate-200 bg-indigo-50/60">Project Name</th>
+                                    <th class="px-3 py-2.5 text-left font-semibold whitespace-nowrap border border-slate-200 bg-indigo-50/60">Project Code</th>
+                                    <th class="px-3 py-2.5 text-left font-semibold whitespace-nowrap border border-slate-200 bg-indigo-50/60">Service Code</th>
+                                    <th class="px-3 py-2.5 text-left font-semibold whitespace-nowrap border border-slate-200 bg-indigo-50/60">Vendor Code</th>
+                                    <th class="px-3 py-2.5 text-left font-semibold whitespace-nowrap border border-slate-200 bg-indigo-50/60">Company / Client</th>
+                                    <th class="px-3 py-2.5 text-left font-semibold whitespace-nowrap border border-slate-200 bg-indigo-50/60">Location</th>
+                                    <th class="px-3 py-2.5 text-left font-semibold whitespace-nowrap border border-slate-200 bg-indigo-50/60">QTY</th>
+                                    <th class="px-3 py-2.5 text-left font-semibold whitespace-nowrap border border-slate-200 bg-indigo-50/60">Project Lead</th>
+                                    <th class="px-3 py-2.5 text-left font-semibold whitespace-nowrap border border-slate-200 bg-indigo-50/60">Assigned By</th>
+                                    <th class="px-3 py-2.5 text-left font-semibold whitespace-nowrap border border-slate-200 bg-indigo-50/60">Assigned To</th>
+                                    <th class="px-3 py-2.5 text-left font-semibold whitespace-nowrap border border-slate-200 bg-indigo-50/60">Owner</th>
+                                    <th class="px-3 py-2.5 text-left font-semibold whitespace-nowrap border border-slate-200 bg-indigo-50/60">Budget</th>
+                                    <th class="px-3 py-2.5 text-left font-semibold whitespace-nowrap border border-slate-200 bg-indigo-50/60">Spent</th>
+                                    <th class="px-3 py-2.5 text-left font-semibold whitespace-nowrap border border-slate-200 bg-indigo-50/60">Status / Progress</th>
+                                    <!-- Technical Tracking (10 cols) -->
+                                    <th class="px-3 py-2.5 text-left font-semibold whitespace-nowrap border border-slate-200 bg-violet-50/60">2D Model</th>
+                                    <th class="px-3 py-2.5 text-left font-semibold whitespace-nowrap border border-slate-200 bg-violet-50/60">3D Model</th>
+                                    <th class="px-3 py-2.5 text-left font-semibold whitespace-nowrap border border-slate-200 bg-violet-50/60">3D Scan</th>
+                                    <th class="px-3 py-2.5 text-left font-semibold whitespace-nowrap border border-slate-200 bg-violet-50/60">FEA</th>
+                                    <th class="px-3 py-2.5 text-left font-semibold whitespace-nowrap border border-slate-200 bg-violet-50/60">QC / Inspection</th>
+                                    <th class="px-3 py-2.5 text-left font-semibold whitespace-nowrap border border-slate-200 bg-violet-50/60">Approval</th>
+                                    <th class="px-3 py-2.5 text-left font-semibold whitespace-nowrap border border-slate-200 bg-violet-50/60">GL Approval</th>
+                                    <th class="px-3 py-2.5 text-left font-semibold whitespace-nowrap border border-slate-200 bg-violet-50/60">Revision</th>
+                                    <th class="px-3 py-2.5 text-left font-semibold whitespace-nowrap border border-slate-200 bg-violet-50/60">Delivery Report</th>
+                                    <th class="px-3 py-2.5 text-left font-semibold whitespace-nowrap border border-slate-200 bg-violet-50/60">SOP Daily Report</th>
+                                    <!-- Monitoring (7 cols) -->
+                                    <th class="px-3 py-2.5 text-left font-semibold whitespace-nowrap border border-slate-200 bg-sky-50/60">Roadmap Submitted</th>
+                                    <th class="px-3 py-2.5 text-left font-semibold whitespace-nowrap border border-slate-200 bg-sky-50/60">Dashboard Updated</th>
+                                    <th class="px-3 py-2.5 text-left font-semibold whitespace-nowrap border border-slate-200 bg-sky-50/60">Daily Report Updated</th>
+                                    <th class="px-3 py-2.5 text-left font-semibold whitespace-nowrap border border-slate-200 bg-sky-50/60">Photo Attached</th>
+                                    <th class="px-3 py-2.5 text-left font-semibold whitespace-nowrap border border-slate-200 bg-sky-50/60">Overall Status</th>
+                                    <th class="px-3 py-2.5 text-left font-semibold whitespace-nowrap border border-slate-200 bg-sky-50/60" style="min-width:140px">Post Completion Status</th>
+                                    <th class="px-3 py-2.5 text-left font-semibold whitespace-nowrap border border-slate-200 bg-sky-50/60" style="min-width:130px">Physical Part Status</th>
+                                    <!-- Dispatch (5 cols) -->
+                                    <th class="px-3 py-2.5 text-left font-semibold whitespace-nowrap border border-slate-200 bg-amber-50/60">DC Date</th>
+                                    <th class="px-3 py-2.5 text-left font-semibold whitespace-nowrap border border-slate-200 bg-amber-50/60">DC Number</th>
+                                    <th class="px-3 py-2.5 text-left font-semibold whitespace-nowrap border border-slate-200 bg-amber-50/60">Delivery Status</th>
+                                    <th class="px-3 py-2.5 text-left font-semibold whitespace-nowrap border border-slate-200 bg-amber-50/60">Delivery Date</th>
+                                    <th class="px-3 py-2.5 text-left font-semibold whitespace-nowrap border border-slate-200 bg-amber-50/60">Delivery Confirmed</th>
+                                    <!-- Purchase (7 cols) -->
+                                    <th class="px-3 py-2.5 text-left font-semibold whitespace-nowrap border border-slate-200 bg-orange-50/60">Quotation Date</th>
+                                    <th class="px-3 py-2.5 text-left font-semibold whitespace-nowrap border border-slate-200 bg-orange-50/60">Quotation No.</th>
+                                    <th class="px-3 py-2.5 text-left font-semibold whitespace-nowrap border border-slate-200 bg-orange-50/60">PO Date</th>
+                                    <th class="px-3 py-2.5 text-left font-semibold whitespace-nowrap border border-slate-200 bg-orange-50/60">PO Number</th>
+                                    <th class="px-3 py-2.5 text-left font-semibold whitespace-nowrap border border-slate-200 bg-orange-50/60">PO Value</th>
+                                    <th class="px-3 py-2.5 text-left font-semibold whitespace-nowrap border border-slate-200 bg-orange-50/60">Converted By</th>
+                                    <th class="px-3 py-2.5 text-left font-semibold whitespace-nowrap border border-slate-200 bg-orange-50/60">Visit Conducted</th>
+                                    <!-- Payment (12 cols) -->
+                                    <th class="px-3 py-2.5 text-left font-semibold whitespace-nowrap border border-slate-200 bg-emerald-50/60">Invoice Date</th>
+                                    <th class="px-3 py-2.5 text-left font-semibold whitespace-nowrap border border-slate-200 bg-emerald-50/60">Invoice No.</th>
+                                    <th class="px-3 py-2.5 text-left font-semibold whitespace-nowrap border border-slate-200 bg-emerald-50/60">Invoice Amount</th>
+                                    <th class="px-3 py-2.5 text-left font-semibold whitespace-nowrap border border-slate-200 bg-emerald-50/60">Past Invoice Amt</th>
+                                    <th class="px-3 py-2.5 text-left font-semibold whitespace-nowrap border border-slate-200 bg-emerald-50/60" style="min-width:130px">Payment Terms</th>
+                                    <th class="px-3 py-2.5 text-left font-semibold whitespace-nowrap border border-slate-200 bg-emerald-50/60">Payment Type</th>
+                                    <th class="px-3 py-2.5 text-left font-semibold whitespace-nowrap border border-slate-200 bg-emerald-50/60">Payment Due Date</th>
+                                    <th class="px-3 py-2.5 text-left font-semibold whitespace-nowrap border border-slate-200 bg-emerald-50/60">Received Date</th>
+                                    <th class="px-3 py-2.5 text-left font-semibold whitespace-nowrap border border-slate-200 bg-emerald-50/60">Received Amount</th>
+                                    <th class="px-3 py-2.5 text-left font-semibold whitespace-nowrap border border-slate-200 bg-emerald-50/60">Balance Due Date</th>
+                                    <th class="px-3 py-2.5 text-left font-semibold whitespace-nowrap border border-slate-200 bg-emerald-50/60">Balance Amount</th>
+                                    <th class="px-3 py-2.5 text-left font-semibold whitespace-nowrap border border-slate-200 bg-emerald-50/60">Overdue Status</th>
+                                    <!-- Ratings (7 cols) -->
+                                    <th class="px-3 py-2.5 text-center font-semibold whitespace-nowrap border border-slate-200 bg-yellow-50/60">Client Rating</th>
+                                    <th class="px-3 py-2.5 text-center font-semibold whitespace-nowrap border border-slate-200 bg-yellow-50/60">Job Rating</th>
+                                    <th class="px-3 py-2.5 text-center font-semibold whitespace-nowrap border border-slate-200 bg-yellow-50/60">Quality Rating</th>
+                                    <th class="px-3 py-2.5 text-center font-semibold whitespace-nowrap border border-slate-200 bg-yellow-50/60">Service Rating</th>
+                                    <th class="px-3 py-2.5 text-center font-semibold whitespace-nowrap border border-slate-200 bg-yellow-50/60">Perf. Rating</th>
+                                    <th class="px-3 py-2.5 text-left font-semibold whitespace-nowrap border border-slate-200 bg-yellow-50/60" style="min-width:200px">Feedback / Comments</th>
+                                    <th class="px-3 py-2.5 text-left font-semibold whitespace-nowrap border border-slate-200 bg-yellow-50/60" style="min-width:180px">Additional Notes</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-100">
+                                ${projects.map((p, idx) => {
+            const sCol = p.statusColor || 'slate';
+            return `
+                                <tr class="hover:bg-slate-50/80 transition-colors ${idx % 2 === 1 ? 'bg-slate-50/40' : ''}">
+                                    <!-- Identification -->
+                                    <td class="px-3 py-2.5 text-slate-400 font-medium border border-slate-100 whitespace-nowrap">${idx + 1}</td>
+                                    <td class="px-3 py-2.5 font-bold text-slate-900 border border-slate-100 whitespace-nowrap">${p.name || '—'}</td>
+                                    <td class="px-3 py-2.5 font-mono text-slate-700 border border-slate-100 whitespace-nowrap">${p.identification?.projectCode || '—'}</td>
+                                    <td class="px-3 py-2.5 text-slate-700 border border-slate-100">${p.identification?.serviceCode || '—'}</td>
+                                    <td class="px-3 py-2.5 text-slate-700 border border-slate-100">${p.identification?.vendorCode || '—'}</td>
+                                    <td class="px-3 py-2.5 text-slate-700 border border-slate-100 whitespace-nowrap">${p.identification?.companyName || p.client || '—'}</td>
+                                    <td class="px-3 py-2.5 text-slate-700 border border-slate-100">${p.identification?.location || '—'}</td>
+                                    <td class="px-3 py-2.5 text-slate-700 border border-slate-100 text-center">${p.identification?.qty || '—'}</td>
+                                    <td class="px-3 py-2.5 text-slate-700 border border-slate-100">${p.identification?.projectLead || '—'}</td>
+                                    <td class="px-3 py-2.5 text-slate-700 border border-slate-100">${p.identification?.assignedBy || '—'}</td>
+                                    <td class="px-3 py-2.5 text-slate-700 border border-slate-100">${p.identification?.assignedTo || '—'}</td>
+                                    <td class="px-3 py-2.5 text-slate-700 border border-slate-100">${p.owner || '—'}</td>
+                                    <td class="px-3 py-2.5 font-semibold text-slate-900 border border-slate-100 whitespace-nowrap">${p.budget || '—'}</td>
+                                    <td class="px-3 py-2.5 text-slate-700 border border-slate-100 whitespace-nowrap">${p.spent || '—'}</td>
+                                    <td class="px-3 py-2.5 border border-slate-100" style="min-width:140px">
+                                        <div class="flex flex-col gap-1">
+                                            ${statusBadge(p.status, sCol)}
+                                            <div class="flex items-center gap-1.5 mt-1">
+                                                <div class="w-16 bg-slate-200 rounded-full h-1.5"><div class="bg-${sCol}-500 h-1.5 rounded-full" style="width:${p.progress || 0}%"></div></div>
+                                                <span class="text-slate-600 text-[10px]">${p.progress || 0}%</span>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <!-- Technical Tracking -->
+                                    <td class="px-3 py-2.5 border border-slate-100">${tkBadge(p.tracking?.model2dStatus)}</td>
+                                    <td class="px-3 py-2.5 border border-slate-100">${tkBadge(p.tracking?.model3dStatus)}</td>
+                                    <td class="px-3 py-2.5 border border-slate-100">${tkBadge(p.tracking?.scan3dStatus)}</td>
+                                    <td class="px-3 py-2.5 border border-slate-100">${tkBadge(p.tracking?.feaStatus)}</td>
+                                    <td class="px-3 py-2.5 border border-slate-100">${tkBadge(p.tracking?.qcInspectionStatus)}</td>
+                                    <td class="px-3 py-2.5 border border-slate-100">${tkBadge(p.tracking?.approvalStatus)}</td>
+                                    <td class="px-3 py-2.5 border border-slate-100">${tkBadge(p.tracking?.glApprovalStatus)}</td>
+                                    <td class="px-3 py-2.5 border border-slate-100">${tkBadge(p.tracking?.revisionStatus)}</td>
+                                    <td class="px-3 py-2.5 border border-slate-100">${tkBadge(p.tracking?.deliveryReportStatus)}</td>
+                                    <td class="px-3 py-2.5 border border-slate-100">${tkBadge(p.tracking?.sopDailyReportStatus)}</td>
+                                    <!-- Monitoring -->
+                                    <td class="px-3 py-2.5 border border-slate-100">${yesNo(p.monitoring?.roadmapSubmitted)}</td>
+                                    <td class="px-3 py-2.5 border border-slate-100">${yesNo(p.monitoring?.dashboardUpdated)}</td>
+                                    <td class="px-3 py-2.5 border border-slate-100">${yesNo(p.monitoring?.dailyReportUpdated)}</td>
+                                    <td class="px-3 py-2.5 border border-slate-100">${yesNo(p.monitoring?.photoAttached)}</td>
+                                    <td class="px-3 py-2.5 border border-slate-100">${osBadge(p.monitoring?.overallProjectStatus)}</td>
+                                    <td class="px-3 py-2.5 text-slate-600 border border-slate-100" style="white-space:normal;max-width:160px">${p.monitoring?.postCompletionStatus || '—'}</td>
+                                    <td class="px-3 py-2.5 text-slate-600 border border-slate-100" style="white-space:normal;max-width:150px">${p.monitoring?.physicalPartStatus || '—'}</td>
+                                    <!-- Dispatch -->
+                                    <td class="px-3 py-2.5 text-slate-700 border border-slate-100">${p.dispatch?.dcDate || '—'}</td>
+                                    <td class="px-3 py-2.5 text-slate-700 font-mono border border-slate-100">${p.dispatch?.dcNumber || '—'}</td>
+                                    <td class="px-3 py-2.5 border border-slate-100">${tkBadge(p.dispatch?.deliveryStatus)}</td>
+                                    <td class="px-3 py-2.5 text-slate-700 border border-slate-100">${p.dispatch?.deliveryDate || '—'}</td>
+                                    <td class="px-3 py-2.5 border border-slate-100">${yesNo(p.dispatch?.deliveryConfirmation)}</td>
+                                    <!-- Purchase -->
+                                    <td class="px-3 py-2.5 text-slate-700 border border-slate-100">${p.purchase?.quotationDate || '—'}</td>
+                                    <td class="px-3 py-2.5 text-slate-700 font-mono border border-slate-100">${p.purchase?.quotationNumber || '—'}</td>
+                                    <td class="px-3 py-2.5 text-slate-700 border border-slate-100">${p.purchase?.poDate || '—'}</td>
+                                    <td class="px-3 py-2.5 text-slate-700 font-mono border border-slate-100">${p.purchase?.poNumber || '—'}</td>
+                                    <td class="px-3 py-2.5 font-semibold text-slate-900 border border-slate-100 whitespace-nowrap">${p.purchase?.poValue || '—'}</td>
+                                    <td class="px-3 py-2.5 text-slate-700 border border-slate-100">${p.purchase?.convertedBy || '—'}</td>
+                                    <td class="px-3 py-2.5 border border-slate-100">${yesNo(p.purchase?.visitConducted)}</td>
+                                    <!-- Payment -->
+                                    <td class="px-3 py-2.5 text-slate-700 border border-slate-100">${p.payment?.invoiceDate || '—'}</td>
+                                    <td class="px-3 py-2.5 text-slate-700 font-mono border border-slate-100">${p.payment?.invoiceNumber || '—'}</td>
+                                    <td class="px-3 py-2.5 font-semibold text-slate-900 border border-slate-100 whitespace-nowrap">${p.payment?.invoiceAmount || '—'}</td>
+                                    <td class="px-3 py-2.5 text-slate-700 border border-slate-100">${p.payment?.pastInvoiceAmount || '—'}</td>
+                                    <td class="px-3 py-2.5 text-slate-600 border border-slate-100" style="white-space:normal;max-width:130px">${p.payment?.paymentTerms || '—'}</td>
+                                    <td class="px-3 py-2.5 text-slate-700 border border-slate-100">${p.payment?.paymentType || '—'}</td>
+                                    <td class="px-3 py-2.5 text-slate-700 border border-slate-100">${p.payment?.paymentDueDate || '—'}</td>
+                                    <td class="px-3 py-2.5 text-slate-700 border border-slate-100">${p.payment?.paymentReceivedDate || '—'}</td>
+                                    <td class="px-3 py-2.5 font-semibold text-emerald-700 border border-slate-100 whitespace-nowrap">${p.payment?.paymentReceivedAmount || '—'}</td>
+                                    <td class="px-3 py-2.5 text-slate-700 border border-slate-100">${p.payment?.balancePaymentDueDate || '—'}</td>
+                                    <td class="px-3 py-2.5 font-semibold text-rose-700 border border-slate-100 whitespace-nowrap">${p.payment?.balancePaymentAmount || '—'}</td>
+                                    <td class="px-3 py-2.5 border border-slate-100">${overdueBadge(p.payment?.overdueStatus)}</td>
+                                    <!-- Ratings -->
+                                    <td class="px-3 py-2.5 text-center border border-slate-100">${ratingCell(p.ratings?.clientRating)}</td>
+                                    <td class="px-3 py-2.5 text-center border border-slate-100">${ratingCell(p.ratings?.jobRating)}</td>
+                                    <td class="px-3 py-2.5 text-center border border-slate-100">${ratingCell(p.ratings?.qualityRating)}</td>
+                                    <td class="px-3 py-2.5 text-center border border-slate-100">${ratingCell(p.ratings?.serviceRating)}</td>
+                                    <td class="px-3 py-2.5 text-center border border-slate-100">${ratingCell(p.ratings?.performanceRating)}</td>
+                                    <td class="px-3 py-2.5 text-slate-600 border border-slate-100" style="white-space:normal;max-width:220px">${p.ratings?.feedbackComments || '—'}</td>
+                                    <td class="px-3 py-2.5 text-slate-600 border border-slate-100" style="white-space:normal;max-width:180px">${p.ratings?.additionalNotes || '—'}</td>
+                                </tr>`;
+        }).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        `;
     }
 
     getReportsRevenue() {
@@ -12136,115 +12947,198 @@ class MarketFlowCRM {
     }
 
     getReportsFunnel() {
-        const stages = [
-            { name: 'Leads', count: 450, color: 'sky' },
-            { name: 'Qualified', count: 280, color: 'indigo' },
-            { name: 'Proposals', count: 156, color: 'amber' },
-            { name: 'Deals', count: 89, color: 'emerald' },
-            { name: 'Projects', count: 67, color: 'rose' }
+        const tableRows = [
+            { source: 'IndiaMart', leads: 180, qualified: 110, proposals: 62, deals: 36, projects: 28, convRate: '20.0%' },
+            { source: 'Website', leads: 95, qualified: 70, proposals: 44, deals: 28, projects: 22, convRate: '29.5%' },
+            { source: 'Referral', leads: 75, qualified: 58, proposals: 34, deals: 18, projects: 13, convRate: '24.0%' },
+            { source: 'Cold Call', leads: 60, qualified: 25, proposals: 10, deals: 4, projects: 2, convRate: '6.7%' },
+            { source: 'LinkedIn', leads: 40, qualified: 17, proposals: 6, deals: 3, projects: 2, convRate: '7.5%' }
         ];
-        const max = stages[0].count;
-
+        const kpis = [
+            { label: 'Total Leads', val: '450', sub: '↑ 14.8% vs prev', col: 'sky' },
+            { label: 'Qualified', val: '280', sub: '↑ 16.2% vs prev', col: 'indigo' },
+            { label: 'Proposals Sent', val: '156', sub: '↑ 13.0% vs prev', col: 'amber' },
+            { label: 'Deals Won', val: '89', sub: '↑ 20.3% vs prev', col: 'emerald' },
+            { label: 'Projects Started', val: '67', sub: '↑ 15.5% vs prev', col: 'purple' }
+        ];
         return `
             <div class="space-y-6 fade-in">
                 <div class="flex flex-wrap items-start justify-between gap-3">
                     <div>
-                        <h2 class="text-xl sm:text-2xl font-semibold text-slate-900">Funnel Reports</h2>
-                        <p class="text-sm text-slate-500">Lead → deal → project conversion visibility</p>
+                        <h2 class="text-xl sm:text-2xl font-semibold text-slate-900">Funnel Report</h2>
+                        <p class="text-sm text-slate-500">Lead to project conversion — full pipeline breakdown</p>
                     </div>
-                    <button data-action="toast" class="px-4 py-2 text-sm font-medium bg-purple-50 text-purple-700 rounded-lg hover:bg-purple-100 transition-colors">Download PDF</button>
+                    <button id="funnelExportBtn" class="flex items-center gap-2 px-4 py-2 text-sm font-medium bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors">
+                        <i data-lucide="download" class="w-4 h-4"></i> Export Excel
+                    </button>
                 </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    <div class="col-span-1 lg:col-span-2 bg-white rounded-lg border border-slate-200 p-4 sm:p-6 shadow-lg">
-                        <h3 class="text-lg font-semibold text-slate-900">Conversion Funnel</h3>
-                        <p class="text-sm text-slate-500">Last 30 days</p>
-                        <div class="mt-5 space-y-3">
-                            ${stages.map((s, idx) => `
-                                <div>
-                                    <div class="flex items-center justify-between text-sm">
-                                        <span class="text-slate-700">${idx + 1}. ${s.name}</span>
-                                        <span class="font-semibold text-slate-900">${s.count}</span>
-                                    </div>
-                                    <div class="mt-2 w-full bg-slate-200 rounded-full h-3">
-                                        <div class="bg-${s.color}-600 h-3 rounded-full" style="width: ${(s.count / max) * 100}%"></div>
-                                    </div>
-                                </div>
-                            `).join('')}
-                        </div>
+                <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+                    ${kpis.map(k => `
+                    <div class="bg-white rounded-xl border border-slate-200 p-4 shadow-sm">
+                        <div class="text-xs text-slate-500 mb-1">${k.label}</div>
+                        <div class="text-2xl font-bold text-slate-900">${k.val}</div>
+                        <div class="text-xs mt-1 text-emerald-600">${k.sub}</div>
+                    </div>`).join('')}
+                </div>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
+                        <h3 class="text-base font-semibold text-slate-900 mb-1">Funnel Volume by Stage</h3>
+                        <p class="text-xs text-slate-500 mb-3">Count at each pipeline stage</p>
+                        <div class="h-60"><canvas id="funnelBarChart"></canvas></div>
                     </div>
-
-                    <div class="bg-white rounded-lg border border-slate-200 p-4 sm:p-6 shadow-lg">
-                        <h3 class="text-lg font-semibold text-slate-900">Insights</h3>
-                        <div class="mt-4 space-y-3">
-                            <div class="p-3 bg-emerald-50 border border-emerald-100 rounded-lg">
-                                <div class="text-sm font-medium text-emerald-900">Best converting stage</div>
-                                <div class="text-xs text-emerald-800">Deals → Projects: 75%</div>
-                            </div>
-                            <div class="p-3 bg-amber-50 border border-amber-100 rounded-lg">
-                                <div class="text-sm font-medium text-amber-900">Bottleneck</div>
-                                <div class="text-xs text-amber-800">Qualified → Proposals: 56%</div>
-                            </div>
-                            <div class="p-3 bg-sky-50 border border-sky-100 rounded-lg">
-                                <div class="text-sm font-medium text-sky-900">Recommended action</div>
-                                <div class="text-xs text-sky-800">Auto-follow-up within 24h on qualified leads</div>
-                            </div>
-                        </div>
-                        <button data-action="toast" class="mt-5 w-full px-4 py-2 text-sm font-medium bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">Create follow-up rule</button>
+                    <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
+                        <h3 class="text-base font-semibold text-slate-900 mb-1">Stage Conversion Rate %</h3>
+                        <p class="text-xs text-slate-500 mb-3">Drop-off between each stage</p>
+                        <div class="h-60"><canvas id="funnelConvChart"></canvas></div>
                     </div>
                 </div>
-            </div>
-    `;
+                <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                    <div class="p-4 border-b border-slate-100 flex items-center justify-between">
+                        <div>
+                            <div class="text-sm font-semibold text-slate-900">Funnel Breakdown by Lead Source</div>
+                            <div class="text-xs text-slate-500">Conversion at every stage per channel</div>
+                        </div>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table id="funnelTable" class="w-full text-sm" style="min-width:700px">
+                            <thead class="bg-slate-50 text-slate-500 text-xs uppercase tracking-wide">
+                                <tr>
+                                    <th class="text-left px-4 py-3">Source</th>
+                                    <th class="text-right px-4 py-3">Leads</th>
+                                    <th class="text-right px-4 py-3">Qualified</th>
+                                    <th class="text-right px-4 py-3">Proposals</th>
+                                    <th class="text-right px-4 py-3">Deals Won</th>
+                                    <th class="text-right px-4 py-3">Projects</th>
+                                    <th class="text-right px-4 py-3">Conv. Rate</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-100">
+                                ${tableRows.map(r => `
+                                <tr class="hover:bg-slate-50">
+                                    <td class="px-4 py-3 font-medium text-slate-900">${r.source}</td>
+                                    <td class="px-4 py-3 text-right text-slate-700">${r.leads}</td>
+                                    <td class="px-4 py-3 text-right text-slate-700">${r.qualified}</td>
+                                    <td class="px-4 py-3 text-right text-slate-700">${r.proposals}</td>
+                                    <td class="px-4 py-3 text-right font-semibold text-emerald-700">${r.deals}</td>
+                                    <td class="px-4 py-3 text-right text-slate-700">${r.projects}</td>
+                                    <td class="px-4 py-3 text-right"><span class="px-2 py-0.5 text-xs font-semibold bg-purple-50 text-purple-700 rounded-full">${r.convRate}</span></td>
+                                </tr>`).join('')}
+                            </tbody>
+                            <tfoot class="bg-slate-50 border-t border-slate-200 text-sm font-semibold text-slate-800">
+                                <tr><td class="px-4 py-3">Total</td><td class="px-4 py-3 text-right">450</td><td class="px-4 py-3 text-right">280</td><td class="px-4 py-3 text-right">156</td><td class="px-4 py-3 text-right text-emerald-700">89</td><td class="px-4 py-3 text-right">67</td><td class="px-4 py-3 text-right text-purple-700">19.8%</td></tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div class="bg-emerald-50 border border-emerald-200 rounded-xl p-4">
+                        <div class="text-xs font-semibold text-emerald-700 uppercase tracking-wide mb-1">Best Stage</div>
+                        <div class="text-sm font-bold text-emerald-900">Deals → Projects: 75.3%</div>
+                    </div>
+                    <div class="bg-amber-50 border border-amber-200 rounded-xl p-4">
+                        <div class="text-xs font-semibold text-amber-700 uppercase tracking-wide mb-1">Bottleneck</div>
+                        <div class="text-sm font-bold text-amber-900">Qualified → Proposals: 55.7%</div>
+                    </div>
+                    <div class="bg-sky-50 border border-sky-200 rounded-xl p-4">
+                        <div class="text-xs font-semibold text-sky-700 uppercase tracking-wide mb-1">Overall Win Rate</div>
+                        <div class="text-sm font-bold text-sky-900">Leads → Deals: 19.8%</div>
+                    </div>
+                </div>
+            </div>`;
     }
 
-    getReportsRoi() {
-        const campaigns = [
-            { name: 'CRM Upgrade', spend: '₹22,000', revenue: '₹1,20,000', roi: '445%', color: 'emerald' },
-            { name: 'Quarterly Offer', spend: '₹18,000', revenue: '₹65,000', roi: '261%', color: 'sky' },
-            { name: 'Re-engagement Push', spend: '₹12,000', revenue: '₹28,000', roi: '133%', color: 'amber' }
-        ];
 
+    getReportsCampaigns() {
+        const channels = [
+            { type: 'Email', sent: 1240, delivered: 1198, opened: 356, clicked: 112, converted: 28, unsub: 9, color: 'sky' },
+            { type: 'WhatsApp', sent: 680, delivered: 671, opened: 510, clicked: 214, converted: 64, unsub: 3, color: 'emerald' },
+            { type: 'SMS', sent: 950, delivered: 938, opened: 0, clicked: 87, converted: 21, unsub: 0, color: 'indigo' },
+            { type: 'Call', sent: 320, delivered: 290, opened: 0, clicked: 0, converted: 44, unsub: 0, color: 'amber' },
+            { type: 'Re-engagement', sent: 420, delivered: 415, opened: 198, clicked: 76, converted: 18, unsub: 6, color: 'rose' }
+        ];
+        const kpis = [
+            { label: 'Total Sent', val: '3,610', sub: 'All channels combined', col: 'sky' },
+            { label: 'Total Delivered', val: '3,512', sub: '97.3% delivery rate', col: 'indigo' },
+            { label: 'Total Converted', val: '175', sub: '4.9% conversion rate', col: 'emerald' },
+            { label: 'Best Channel', val: 'WhatsApp', sub: '9.4% conversion', col: 'purple' }
+        ];
         return `
             <div class="space-y-6 fade-in">
                 <div class="flex flex-wrap items-start justify-between gap-3">
                     <div>
-                        <h2 class="text-xl sm:text-2xl font-semibold text-slate-900">Campaign ROI</h2>
-                        <p class="text-sm text-slate-500">Spend vs revenue by campaign</p>
+                        <h2 class="text-xl sm:text-2xl font-semibold text-slate-900">Campaign Performance Report</h2>
+                        <p class="text-sm text-slate-500">All channels — Email, WhatsApp, SMS, Call &amp; Re-engagement</p>
                     </div>
-                    <button data-action="toast" class="px-4 py-2 text-sm font-medium bg-purple-50 text-purple-700 rounded-lg hover:bg-purple-100 transition-colors">Download</button>
+                    <button id="campaignExportBtn" class="flex items-center gap-2 px-4 py-2 text-sm font-medium bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors">
+                        <i data-lucide="download" class="w-4 h-4"></i> Export Excel
+                    </button>
                 </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    ${campaigns.map(c => `
-                        <div class="bg-white rounded-lg border border-slate-200 p-4 sm:p-6 shadow-lg">
-                            <div class="flex items-start justify-between">
-                                <div class="text-sm font-semibold text-slate-900">${c.name}</div>
-                                <span class="px-2 py-1 text-xs font-medium bg-${c.color}-50 text-${c.color}-700 rounded-full">ROI ${c.roi}</span>
-                            </div>
-                            <div class="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                <div class="p-3 bg-slate-50 rounded-lg">
-                                    <div class="text-xs text-slate-500">Spend</div>
-                                    <div class="text-sm font-semibold text-slate-900">${c.spend}</div>
-                                </div>
-                                <div class="p-3 bg-slate-50 rounded-lg">
-                                    <div class="text-xs text-slate-500">Revenue</div>
-                                    <div class="text-sm font-semibold text-slate-900">${c.revenue}</div>
-                                </div>
-                            </div>
-                            <button data-action="toast" class="mt-4 w-full px-4 py-2 text-sm font-medium bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">View attribution</button>
-                        </div>
-                    `).join('')}
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                    ${kpis.map(k => `
+                    <div class="bg-white rounded-xl border border-slate-200 p-4 shadow-sm">
+                        <div class="text-xs text-slate-500 mb-1">${k.label}</div>
+                        <div class="text-2xl font-bold text-slate-900">${k.val}</div>
+                        <div class="text-xs text-slate-500 mt-1">${k.sub}</div>
+                    </div>`).join('')}
                 </div>
-
-                <div class="bg-white rounded-lg border border-slate-200 p-4 sm:p-6 shadow-lg">
-                    <h3 class="text-lg font-semibold text-slate-900">Notes</h3>
-                    <div class="mt-3 text-sm text-slate-600">
-                        CRM Upgrade delivered the highest ROI due to targeted follow-ups and high-fit audience segmentation.
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
+                        <h3 class="text-base font-semibold text-slate-900 mb-1">Messages Sent vs Converted</h3>
+                        <p class="text-xs text-slate-500 mb-3">Volume per channel</p>
+                        <div class="h-60"><canvas id="campaignBarChart"></canvas></div>
+                    </div>
+                    <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
+                        <h3 class="text-base font-semibold text-slate-900 mb-1">Conversion Rate by Channel %</h3>
+                        <p class="text-xs text-slate-500 mb-3">Effectiveness comparison</p>
+                        <div class="h-60"><canvas id="campaignConvChart"></canvas></div>
                     </div>
                 </div>
-            </div>
-    `;
+                <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                    <div class="p-4 border-b border-slate-100">
+                        <div class="text-sm font-semibold text-slate-900">Campaign Channel Breakdown</div>
+                        <div class="text-xs text-slate-500">Sent, Delivered, Opened, Clicked, Converted per channel</div>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table id="campaignTable" class="w-full text-sm" style="min-width:750px">
+                            <thead class="bg-slate-50 text-slate-500 text-xs uppercase tracking-wide">
+                                <tr>
+                                    <th class="text-left px-4 py-3">Channel</th>
+                                    <th class="text-right px-4 py-3">Sent</th>
+                                    <th class="text-right px-4 py-3">Delivered</th>
+                                    <th class="text-right px-4 py-3">Opened</th>
+                                    <th class="text-right px-4 py-3">Clicked</th>
+                                    <th class="text-right px-4 py-3">Converted</th>
+                                    <th class="text-right px-4 py-3">Unsub</th>
+                                    <th class="text-right px-4 py-3">Conv %</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-100">
+                                ${channels.map(r => {
+            const convPct = ((r.converted / r.sent) * 100).toFixed(1);
+            return `<tr class="hover:bg-slate-50">
+                                        <td class="px-4 py-3 font-semibold text-slate-900">${r.type}</td>
+                                        <td class="px-4 py-3 text-right text-slate-700">${r.sent.toLocaleString()}</td>
+                                        <td class="px-4 py-3 text-right text-slate-700">${r.delivered.toLocaleString()}</td>
+                                        <td class="px-4 py-3 text-right text-slate-700">${r.opened > 0 ? r.opened.toLocaleString() : '—'}</td>
+                                        <td class="px-4 py-3 text-right text-slate-700">${r.clicked > 0 ? r.clicked.toLocaleString() : '—'}</td>
+                                        <td class="px-4 py-3 text-right font-semibold text-emerald-700">${r.converted}</td>
+                                        <td class="px-4 py-3 text-right text-slate-500">${r.unsub > 0 ? r.unsub : '—'}</td>
+                                        <td class="px-4 py-3 text-right"><span class="px-2 py-0.5 text-xs font-semibold bg-purple-50 text-purple-700 rounded-full">${convPct}%</span></td>
+                                    </tr>`;
+        }).join('')}
+                            </tbody>
+                            <tfoot class="bg-slate-50 border-t border-slate-200 text-sm font-semibold text-slate-800">
+                                <tr><td class="px-4 py-3">Total</td><td class="px-4 py-3 text-right">3,610</td><td class="px-4 py-3 text-right">3,512</td><td class="px-4 py-3 text-right">1,064</td><td class="px-4 py-3 text-right">489</td><td class="px-4 py-3 text-right text-emerald-700">175</td><td class="px-4 py-3 text-right">18</td><td class="px-4 py-3 text-right text-purple-700">4.9%</td></tr>
+            </tfoot>
+            </table></div></div>
+            </div>`;
     }
+
+
+
+
+
+
 
     getReportsLtv() {
         const clients = [
@@ -12253,7 +13147,6 @@ class MarketFlowCRM {
             { name: 'GreenLeaf Industries', ltv: '₹6,80,000', tenure: '7 months', score: 66, color: 'amber' },
             { name: 'Mumbai Retail Chain', ltv: '₹2,20,000', tenure: '4 months', score: 48, color: 'rose' }
         ];
-
         return `
             <div class="space-y-6 fade-in">
                 <div class="flex flex-wrap items-start justify-between gap-3">
@@ -12300,8 +13193,199 @@ class MarketFlowCRM {
                     </div>
                 </div>
             </div>
-    `;
+        `;
     }
+
+    getReportsSopMonthly() {
+        const months = [
+            { month: 'Oct 2025', newClients: 4, activeProjects: 12, completed: 3, invoiced: '₹8,45,000', collected: '₹7,20,000', followups: 38, campaigns: 6, satisfaction: '88%' },
+            { month: 'Nov 2025', newClients: 6, activeProjects: 14, completed: 5, invoiced: '₹9,80,000', collected: '₹8,60,000', followups: 42, campaigns: 8, satisfaction: '91%' },
+            { month: 'Dec 2025', newClients: 3, activeProjects: 11, completed: 4, invoiced: '₹7,20,000', collected: '₹6,90,000', followups: 31, campaigns: 5, satisfaction: '85%' },
+            { month: 'Jan 2026', newClients: 7, activeProjects: 16, completed: 6, invoiced: '₹11,20,000', collected: '₹9,80,000', followups: 50, campaigns: 9, satisfaction: '92%' },
+            { month: 'Feb 2026', newClients: 5, activeProjects: 15, completed: 4, invoiced: '₹10,50,000', collected: '₹9,20,000', followups: 46, campaigns: 7, satisfaction: '89%' },
+            { month: 'Mar 2026', newClients: 6, activeProjects: 17, completed: 7, invoiced: '₹12,10,000', collected: '₹10,80,000', followups: 54, campaigns: 10, satisfaction: '94%' }
+        ];
+        const kpis = [
+            { label: 'New Clients (6M)', val: '31', sub: 'Avg 5.2/month', col: 'sky' },
+            { label: 'Projects Completed', val: '29', sub: 'Last 6 months', col: 'emerald' },
+            { label: 'Total Invoiced', val: '₹59.3 L', sub: '6 month total', col: 'indigo' },
+            { label: 'Total Collected', val: '₹52.5 L', sub: '88.5% collection rate', col: 'purple' }
+        ];
+        return `
+            <div class="space-y-6 fade-in">
+                <div class="flex flex-wrap items-start justify-between gap-3">
+                    <div>
+                        <h2 class="text-xl sm:text-2xl font-semibold text-slate-900">SOP Monthly Report</h2>
+                        <p class="text-sm text-slate-500">Overall monthly activities — clients, projects, billing &amp; campaigns</p>
+                    </div>
+                    <button id="sopExportBtn" class="flex items-center gap-2 px-4 py-2 text-sm font-medium bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors">
+                        <i data-lucide="download" class="w-4 h-4"></i> Export Excel
+                    </button>
+                </div>
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                    ${kpis.map(k => `
+                    <div class="bg-white rounded-xl border border-slate-200 p-4 shadow-sm">
+                        <div class="text-xs text-slate-500 mb-1">${k.label}</div>
+                        <div class="text-2xl font-bold text-slate-900">${k.val}</div>
+                        <div class="text-xs text-slate-500 mt-1">${k.sub}</div>
+                    </div>`).join('')}
+                </div>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
+                        <h3 class="text-base font-semibold text-slate-900 mb-1">Monthly Invoiced vs Collected</h3>
+                        <p class="text-xs text-slate-500 mb-3">Billing trend over 6 months</p>
+                        <div class="h-60"><canvas id="sopBillingChart"></canvas></div>
+                    </div>
+                    <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
+                        <h3 class="text-base font-semibold text-slate-900 mb-1">Projects &amp; Clients Activity</h3>
+                        <p class="text-xs text-slate-500 mb-3">New clients &amp; completed projects per month</p>
+                        <div class="h-60"><canvas id="sopActivityChart"></canvas></div>
+                    </div>
+                </div>
+                <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                    <div class="p-4 border-b border-slate-100">
+                        <div class="text-sm font-semibold text-slate-900">Monthly Activity Summary</div>
+                        <div class="text-xs text-slate-500">Clients, projects, billing, follow-ups &amp; campaigns</div>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table id="sopTable" class="w-full text-sm" style="min-width:900px">
+                            <thead class="bg-slate-50 text-slate-500 text-xs uppercase tracking-wide">
+                                <tr>
+                                    <th class="text-left px-4 py-3">Month</th>
+                                    <th class="text-right px-4 py-3">New Clients</th>
+                                    <th class="text-right px-4 py-3">Active Projects</th>
+                                    <th class="text-right px-4 py-3">Completed</th>
+                                    <th class="text-right px-4 py-3">Invoiced</th>
+                                    <th class="text-right px-4 py-3">Collected</th>
+                                    <th class="text-right px-4 py-3">Follow-ups</th>
+                                    <th class="text-right px-4 py-3">Campaigns</th>
+                                    <th class="text-right px-4 py-3">Satisfaction</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-100">
+                                ${months.map(r => `
+                                <tr class="hover:bg-slate-50">
+                                    <td class="px-4 py-3 font-semibold text-slate-900">${r.month}</td>
+                                    <td class="px-4 py-3 text-right text-sky-700 font-medium">${r.newClients}</td>
+                                    <td class="px-4 py-3 text-right text-slate-700">${r.activeProjects}</td>
+                                    <td class="px-4 py-3 text-right text-emerald-700 font-medium">${r.completed}</td>
+                                    <td class="px-4 py-3 text-right text-slate-700">${r.invoiced}</td>
+                                    <td class="px-4 py-3 text-right font-semibold text-indigo-700">${r.collected}</td>
+                                    <td class="px-4 py-3 text-right text-slate-700">${r.followups}</td>
+                                    <td class="px-4 py-3 text-right text-slate-700">${r.campaigns}</td>
+                                    <td class="px-4 py-3 text-right"><span class="px-2 py-0.5 text-xs font-semibold bg-emerald-50 text-emerald-700 rounded-full">${r.satisfaction}</span></td>
+                                </tr>`).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>`;
+    }
+
+    initializeFunnelReportCharts() {
+        const barCtx = document.getElementById('funnelBarChart');
+        if (barCtx) {
+            this.charts.funnelBarChart = new Chart(barCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Leads', 'Qualified', 'Proposals', 'Deals', 'Projects'],
+                    datasets: [{ label: 'Count', data: [450, 280, 156, 89, 67], backgroundColor: ['#0ea5e9', '#6366f1', '#f59e0b', '#10b981', '#8b5cf6'] }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { grid: { display: false } }, y: { beginAtZero: true } } }
+            });
+        }
+        const convCtx = document.getElementById('funnelConvChart');
+        if (convCtx) {
+            this.charts.funnelConvChart = new Chart(convCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Lead→Qual', 'Qual→Prop', 'Prop→Deal', 'Deal→Proj'],
+                    datasets: [{ label: 'Conv %', data: [62.2, 55.7, 57.1, 75.3], backgroundColor: ['#0ea5e9', '#f59e0b', '#6366f1', '#10b981'] }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { grid: { display: false } }, y: { beginAtZero: true, max: 100 } } }
+            });
+        }
+        document.getElementById('funnelExportBtn')?.addEventListener('click', () => this.exportTableToExcel('funnelTable', 'Funnel_Report'));
+    }
+
+    initializeCampaignReportCharts() {
+        const barCtx = document.getElementById('campaignBarChart');
+        if (barCtx) {
+            this.charts.campaignBarChart = new Chart(barCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Email', 'WhatsApp', 'SMS', 'Call', 'Re-engagement'],
+                    datasets: [
+                        { label: 'Sent', data: [1240, 680, 950, 320, 420], backgroundColor: 'rgba(99,102,241,0.65)' },
+                        { label: 'Converted', data: [28, 64, 21, 44, 18], backgroundColor: 'rgba(16,185,129,0.75)' }
+                    ]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } }, scales: { x: { grid: { display: false } }, y: { beginAtZero: true } } }
+            });
+        }
+        const convCtx = document.getElementById('campaignConvChart');
+        if (convCtx) {
+            this.charts.campaignConvChart = new Chart(convCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Email', 'WhatsApp', 'SMS', 'Call', 'Re-eng'],
+                    datasets: [{ label: 'Conv %', data: [2.3, 9.4, 2.2, 13.8, 4.3], backgroundColor: ['#0ea5e9', '#10b981', '#6366f1', '#f59e0b', '#f43f5e'] }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { grid: { display: false } }, y: { beginAtZero: true, max: 20 } } }
+            });
+        }
+        document.getElementById('campaignExportBtn')?.addEventListener('click', () => this.exportTableToExcel('campaignTable', 'Campaign_Report'));
+    }
+
+    initializeSopMonthlyCharts() {
+        const billingCtx = document.getElementById('sopBillingChart');
+        if (billingCtx) {
+            this.charts.sopBillingChart = new Chart(billingCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar'],
+                    datasets: [
+                        { label: 'Invoiced', data: [845000, 980000, 720000, 1120000, 1050000, 1210000], borderColor: '#6366f1', backgroundColor: 'rgba(99,102,241,0.1)', tension: 0.35 },
+                        { label: 'Collected', data: [720000, 860000, 690000, 980000, 920000, 1080000], borderColor: '#10b981', backgroundColor: 'rgba(16,185,129,0.1)', tension: 0.35 }
+                    ]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
+            });
+        }
+        const actCtx = document.getElementById('sopActivityChart');
+        if (actCtx) {
+            this.charts.sopActivityChart = new Chart(actCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar'],
+                    datasets: [
+                        { label: 'New Clients', data: [4, 6, 3, 7, 5, 6], backgroundColor: 'rgba(14,165,233,0.7)' },
+                        { label: 'Completed', data: [3, 5, 4, 6, 4, 7], backgroundColor: 'rgba(16,185,129,0.7)' }
+                    ]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } }, scales: { x: { grid: { display: false } }, y: { beginAtZero: true } } }
+            });
+        }
+        document.getElementById('sopExportBtn')?.addEventListener('click', () => this.exportTableToExcel('sopTable', 'SOP_Monthly_Report'));
+    }
+
+    exportTableToExcel(tableId, fileName) {
+        const table = document.getElementById(tableId);
+        if (!table) return;
+        const rows = [];
+        table.querySelectorAll('tr').forEach(tr => {
+            const row = [];
+            tr.querySelectorAll('th, td').forEach(cell => row.push(cell.innerText.trim()));
+            rows.push(row.join('\t'));
+        });
+        const tsv = rows.join('\n');
+        const blob = new Blob(['\ufeff' + tsv], { type: 'text/tab-separated-values;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url; a.download = fileName + '.xls'; a.click();
+        URL.revokeObjectURL(url);
+    }
+
 
     initializeRevenueReportChart() {
         const ctx = document.getElementById('revenueReportChart');
@@ -12338,6 +13422,113 @@ class MarketFlowCRM {
         }
     }
 
+    initializeProjectRoadmapCharts() {
+        // ── Progress Chart ──────────────────────────────────────────────────
+        const progressLabels = ['SEO Revamp', 'CRM Upgrade', 'Re-engagement Funnel', 'Performance Ads'];
+        const progressData = [62, 45, 28, 71];
+        const budgetData = [320000, 280000, 150000, 180000];
+        const spentData = [210000, 160000, 98000, 123000];
+
+        const ctxP = document.getElementById('projectProgressChart');
+        if (ctxP) {
+            const colors = ['rgba(16,185,129,0.8)', 'rgba(245,158,11,0.8)', 'rgba(14,165,233,0.8)', 'rgba(16,185,129,0.7)'];
+            if (this.charts.projectProgressChart) { try { this.charts.projectProgressChart.destroy(); } catch (e) { } }
+            this.charts.projectProgressChart = new Chart(ctxP, {
+                type: 'bar',
+                data: { labels: progressLabels, datasets: [{ label: 'Progress %', data: progressData, backgroundColor: colors, borderRadius: 6 }] },
+                options: {
+                    responsive: true, maintainAspectRatio: false, indexAxis: 'y',
+                    plugins: { legend: { display: false } },
+                    scales: { x: { max: 100, ticks: { callback: v => v + '%' } } }
+                }
+            });
+        }
+
+        const ctxB = document.getElementById('projectBudgetChart');
+        if (ctxB) {
+            if (this.charts.projectBudgetChart) { try { this.charts.projectBudgetChart.destroy(); } catch (e) { } }
+            this.charts.projectBudgetChart = new Chart(ctxB, {
+                type: 'bar',
+                data: {
+                    labels: ['SEO Revamp', 'CRM Upgrade', 'Re-engagement', 'Performance Ads'],
+                    datasets: [
+                        { label: 'Budget (INR)', data: budgetData, backgroundColor: 'rgba(139,92,246,0.6)', borderRadius: 4 },
+                        { label: 'Spent (INR)', data: spentData, backgroundColor: 'rgba(16,185,129,0.6)', borderRadius: 4 }
+                    ]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { position: 'bottom' } },
+                    scales: { y: { ticks: { callback: v => '\u20b9' + (v / 1000).toFixed(0) + 'k' } } }
+                }
+            });
+        }
+
+        // ── Export Excel — single .xlsx with 3 sheets ───────────────────────
+        const exportBtn = document.getElementById('projectRoadmapExportBtn');
+        if (!exportBtn) return;
+
+        exportBtn.onclick = () => {
+            if (typeof XLSX === 'undefined') {
+                alert('SheetJS library not loaded. Please check your internet connection and refresh.');
+                return;
+            }
+
+            const wb = XLSX.utils.book_new();
+
+            // ── Sheet 1: Summary (KPI Cards) ─────────────────────────────────
+            const kpiRows = [
+                ['Project Roadmap Report — Summary'],
+                ['Generated', new Date().toLocaleString('en-IN')],
+                [],
+                ['KPI', 'Value', 'Note'],
+                ['Total Projects', 4, 'All registered projects'],
+                ['On Track', 3, '75% of total'],
+                ['At Risk / Delayed', 2, 'Needs attention'],
+                ['Completed', 1, 'Fully delivered'],
+                ['Avg Progress', '52%', 'Across all projects'],
+                ['Total Budget', 930000, 'Sum of all PO values (INR)'],
+                ['Total Spent', 591000, '64% utilised (INR)'],
+                ['Delivered', '1/4', 'Delivery confirmed']
+            ];
+            const wsSummary = XLSX.utils.aoa_to_sheet(kpiRows);
+            wsSummary['!cols'] = [{ wch: 28 }, { wch: 18 }, { wch: 38 }];
+            XLSX.utils.book_append_sheet(wb, wsSummary, 'Summary');
+
+            // ── Sheet 2: Chart Data ──────────────────────────────────────────
+            const chartRows = [
+                ['Project Progress Overview'],
+                ['Project', 'Progress (%)'],
+                ...progressLabels.map((l, i) => [l, progressData[i]]),
+                [],
+                ['Budget vs Spent'],
+                ['Project', 'Budget (INR)', 'Spent (INR)', 'Balance (INR)', 'Utilised (%)'],
+                ...['SEO Revamp', 'CRM Upgrade', 'Re-engagement Funnel', 'Performance Ads'].map((l, i) => [
+                    l, budgetData[i], spentData[i],
+                    budgetData[i] - spentData[i],
+                    Math.round(spentData[i] / budgetData[i] * 100) + '%'
+                ])
+            ];
+            const wsChart = XLSX.utils.aoa_to_sheet(chartRows);
+            wsChart['!cols'] = [{ wch: 26 }, { wch: 16 }, { wch: 16 }, { wch: 16 }, { wch: 14 }];
+            XLSX.utils.book_append_sheet(wb, wsChart, 'Chart Data');
+
+            // ── Sheet 3: Project Register (read from the live table DOM) ─────
+            const table = document.getElementById('projRoadmapMasterTable');
+            if (table) {
+                const wsTable = XLSX.utils.table_to_sheet(table, { raw: false });
+                // Set column widths (63 columns — give them a comfortable default)
+                wsTable['!cols'] = Array(63).fill({ wch: 18 });
+                XLSX.utils.book_append_sheet(wb, wsTable, 'Project Register');
+            }
+
+            // ── Download ─────────────────────────────────────────────────────
+            const dateStr = new Date().toISOString().slice(0, 10);
+            XLSX.writeFile(wb, `ProjectRoadmapReport_${dateStr}.xlsx`);
+        };
+    }
+
+
     renderAIContent(container) {
         switch (this.currentSubSection) {
             case 'insights':
@@ -12366,7 +13557,7 @@ class MarketFlowCRM {
         ];
 
         return `
-            <div class="space-y-6 fade-in">
+    < div class="space-y-6 fade-in" >
                 <div class="flex flex-wrap items-start justify-between gap-3">
                     <div>
                         <h2 class="text-xl sm:text-2xl font-semibold text-slate-900">AI Insights</h2>
@@ -12417,7 +13608,7 @@ class MarketFlowCRM {
                         `).join('')}
                     </div>
                 </div>
-            </div>
+            </div >
     `;
     }
 
@@ -12430,7 +13621,7 @@ class MarketFlowCRM {
         ];
 
         return `
-            <div class="space-y-6 fade-in">
+    < div class="space-y-6 fade-in" >
                 <div class="flex flex-wrap items-start justify-between gap-3">
                     <div>
                         <h2 class="text-xl sm:text-2xl font-semibold text-slate-900">Workflow Rules</h2>
@@ -12459,7 +13650,7 @@ class MarketFlowCRM {
                         `).join('')}
                     </div>
                 </div>
-            </div>
+            </div >
     `;
     }
 
@@ -12472,7 +13663,7 @@ class MarketFlowCRM {
         ];
 
         return `
-            <div class="space-y-6 fade-in">
+    < div class="space-y-6 fade-in" >
                 <div class="flex flex-wrap items-start justify-between gap-3">
                     <div>
                         <h2 class="text-xl sm:text-2xl font-semibold text-slate-900">Smart Alerts</h2>
@@ -12500,7 +13691,7 @@ class MarketFlowCRM {
                         </div>
                     `).join('')}
                 </div>
-            </div>
+            </div >
     `;
     }
 
@@ -12512,7 +13703,7 @@ class MarketFlowCRM {
         ];
 
         return `
-            <div class="space-y-6 fade-in">
+    < div class="space-y-6 fade-in" >
                 <div class="flex flex-wrap items-start justify-between gap-3">
                     <div>
                         <h2 class="text-xl sm:text-2xl font-semibold text-slate-900">Predictions</h2>
@@ -12551,7 +13742,7 @@ class MarketFlowCRM {
                         <button class="mt-5 w-full px-4 py-2 text-sm font-medium bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">Create retention plan</button>
                     </div>
                 </div>
-            </div>
+            </div >
     `;
     }
 
@@ -12630,20 +13821,20 @@ class MarketFlowCRM {
 
             if (matches.length === 0 && q) {
                 resultsEl.innerHTML = `
-                    <div class="p-4 text-center">
+    < div class="p-4 text-center" >
                         <svg class="w-8 h-8 mx-auto text-slate-300 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
                         <div class="text-sm font-semibold text-slate-500">No results for &ldquo;${q}&rdquo;</div>
                         <div class="text-xs text-slate-400 mt-0.5">Try a client name, invoice number, or project</div>
-                    </div>`;
+                    </div > `;
                 showResults();
                 return;
             }
 
             if (!q) {
-                resultsEl.innerHTML = `<div class="px-3 pt-3 pb-1 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Recent / Quick Access</div>` +
+                resultsEl.innerHTML = `< div class="px-3 pt-3 pb-1 text-[10px] font-bold text-slate-400 uppercase tracking-widest" > Recent / Quick Access</div > ` +
                     matches.map((m, i) => buildRow(m, i)).join('');
             } else {
-                resultsEl.innerHTML = `<div class="px-3 pt-3 pb-1 text-[10px] font-bold text-slate-400 uppercase tracking-widest">${matches.length} result${matches.length !== 1 ? 's' : ''}</div>` +
+                resultsEl.innerHTML = `< div class="px-3 pt-3 pb-1 text-[10px] font-bold text-slate-400 uppercase tracking-widest" > ${matches.length} result${matches.length !== 1 ? 's' : ''}</div > ` +
                     matches.map((m, i) => buildRow(m, i)).join('');
             }
             showResults();
@@ -12663,7 +13854,7 @@ class MarketFlowCRM {
         const buildRow = (m, i) => {
             const badge = typeColors[m.type] || 'bg-slate-100 text-slate-600';
             const isActive = i === activeIndex;
-            return `<button class="w-full text-left px-3 py-2.5 flex items-center gap-3 transition-colors ${isActive ? 'bg-purple-50' : 'hover:bg-slate-50'}" data-target-section="${m.section}" data-target-subsection="${m.subsection}">
+            return `< button class="w-full text-left px-3 py-2.5 flex items-center gap-3 transition-colors ${isActive ? 'bg-purple-50' : 'hover:bg-slate-50'}" data - target - section="${m.section}" data - target - subsection="${m.subsection}" >
                 <div class="flex-1 min-w-0">
                     <div class="flex items-center gap-2">
                         <span class="text-sm font-semibold text-slate-900 truncate">${m.title}</span>
@@ -12672,7 +13863,7 @@ class MarketFlowCRM {
                     <div class="text-xs text-slate-500 truncate mt-0.5">${m.subtitle}</div>
                 </div>
                 <svg class="w-3.5 h-3.5 text-slate-300 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
-            </button>`;
+            </button > `;
         };
 
         const render = (query) => renderResults(query);
@@ -12830,19 +14021,19 @@ class MarketFlowCRM {
             list.innerHTML = items.map(n => {
                 const meta = sectionLabel(n.type);
                 return `
-                    <button data-notification-id="${n.id}" class="w-full text-left p-4 border-b border-slate-100 hover:bg-slate-50 transition-colors">
-                        <div class="flex items-start gap-3">
-                            <div class="min-w-0 flex-1">
-                                <div class="flex items-center gap-2">
-                                    <span class="px-2 py-0.5 text-[11px] font-medium bg-${meta.color}-50 text-${meta.color}-700 rounded-full">${meta.label}</span>
-                                    ${n.unread ? '<span class="w-2 h-2 rounded-full bg-red-500 flex-shrink-0"></span>' : ''}
-                                </div>
-                                <div class="mt-1.5 text-sm font-semibold text-slate-900 truncate">${n.title}</div>
-                                <div class="text-xs text-slate-500 mt-0.5 line-clamp-2">${n.message}</div>
-                                <div class="text-[11px] text-slate-400 mt-1.5">${n.time}</div>
-                            </div>
-                        </div>
-                    </button>`;
+    < button data - notification - id="${n.id}" class="w-full text-left p-4 border-b border-slate-100 hover:bg-slate-50 transition-colors" >
+        <div class="flex items-start gap-3">
+            <div class="min-w-0 flex-1">
+                <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 text-[11px] font-medium bg-${meta.color}-50 text-${meta.color}-700 rounded-full">${meta.label}</span>
+                    ${n.unread ? '<span class="w-2 h-2 rounded-full bg-red-500 flex-shrink-0"></span>' : ''}
+                </div>
+                <div class="mt-1.5 text-sm font-semibold text-slate-900 truncate">${n.title}</div>
+                <div class="text-xs text-slate-500 mt-0.5 line-clamp-2">${n.message}</div>
+                <div class="text-[11px] text-slate-400 mt-1.5">${n.time}</div>
+            </div>
+        </div>
+                    </button > `;
             }).join('');
 
             updateBadge();
@@ -13050,10 +14241,10 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!mc) return;
         const msg = (err && (err.stack || err.message)) ? (err.stack || err.message) : String(err || 'Unknown error');
         mc.innerHTML = `
-            <div style="padding:16px;border:1px solid #fecaca;background:#fff1f2;border-radius:12px;color:#881337;">
+    < div style = "padding:16px;border:1px solid #fecaca;background:#fff1f2;border-radius:12px;color:#881337;" >
                 <div style="font-weight:800;">MarketFlow failed to start</div>
                 <pre style="margin-top:10px;white-space:pre-wrap;font-size:12px;line-height:1.4;color:#9f1239;">${String(msg).replace(/</g, '&lt;')}</pre>
-            </div>
+            </div >
     `;
     };
 

@@ -410,9 +410,7 @@
                 <button
                     class="nav-tab shrink-0 whitespace-nowrap px-3 py-1.5 text-sm font-medium rounded-md transition-colors text-slate-600 hover:text-slate-900 hover:bg-slate-50"
                     data-section="reports">Reports</button>
-                <button
-                    class="nav-tab shrink-0 whitespace-nowrap px-3 py-1.5 text-sm font-medium rounded-md transition-colors text-slate-600 hover:text-slate-900 hover:bg-slate-50"
-                    data-section="ai">AI &amp; Automation</button>
+
             </nav>
 
             <!-- Right Side Actions -->
@@ -462,12 +460,12 @@
                     <button id="profileToggle"
                         class="w-8 h-8 bg-purple-600 rounded-full flex items-center justify-center text-white text-xs font-bold ring-2 ring-white hover:ring-purple-300 transition"
                         aria-label="Open profile menu">
-                        SK
+
                     </button>
                     <div id="profileMenu"
                         class="hidden absolute right-0 mt-2 w-56 bg-white border border-slate-200 rounded-xl shadow-lg overflow-hidden">
                         <div class="p-4 border-b border-slate-200">
-                            <div id="profileName" class="text-sm font-semibold text-slate-900">Sarah Kumar</div>
+                            <div id="profileName" class="text-sm font-semibold text-slate-900"></div>
                             <div id="profileRole" class="text-xs text-slate-500">Administrator</div>
                         </div>
                         <div class="p-2">
@@ -504,8 +502,35 @@
         </main>
     </div>
 
-    <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
-    <script src="app.js?v=155"></script>
+    <script>
+        // Auth guard — must have JWT token to view this page
+        (function () {
+            if (!localStorage.getItem('bezent_jwt')) {
+                location.replace('index.html');
+            }
+            // Expose BezentAuth globally for app.js to use
+            var TK = 'bezent_jwt';
+            window.BezentAuth = {
+                getToken: function () { return localStorage.getItem(TK) || ''; },
+                setToken: function (t) { localStorage.setItem(TK, t); },
+                clearToken: function () { localStorage.removeItem(TK); localStorage.removeItem('bezent_user'); },
+                isLoggedIn: function () { return Boolean(localStorage.getItem(TK)); }
+            };
+            window.apiFetch = function (p, o) {
+                o = o || {};
+                var hdr = { 'Content-Type': 'application/json' };
+                var tok = window.BezentAuth.getToken();
+                if (tok) hdr['Authorization'] = 'Bearer ' + tok;
+                if (o.headers) Object.assign(hdr, o.headers);
+                return fetch('/api' + p, Object.assign({}, o, { headers: hdr }))
+                    .then(function (r) {
+                        if (r.status === 401) { window.BezentAuth.clearToken(); location.replace('index.html'); return null; }
+                        return r.json().catch(function () { return {}; });
+                    });
+            };
+        })();
+    </script>
+    <script src="app.js?v=156"></script>
 </body>
 
 </html>

@@ -7,13 +7,13 @@ class ParticleField {
         this.mouse = { x: 0, y: 0, radius: 200, isMoving: false };
         this.resize();
         this.init();
-        
+
         window.addEventListener('resize', () => this.resize());
         window.addEventListener('mousemove', (e) => {
             this.mouse.x = e.clientX;
             this.mouse.y = e.clientY;
             this.mouse.isMoving = true;
-            
+
             clearTimeout(this.mouseTimeout);
             this.mouseTimeout = setTimeout(() => {
                 this.mouse.isMoving = false;
@@ -26,20 +26,20 @@ class ParticleField {
         this.canvas.height = window.innerHeight;
         this.init();
     }
-    
+
     drawCRMIcon(x, y, size, type, opacity) {
         this.ctx.save();
         this.ctx.globalAlpha = opacity;
         this.ctx.strokeStyle = `rgba(55, 65, 81, ${opacity * 0.95})`;
         this.ctx.fillStyle = `rgba(55, 65, 81, ${opacity * 0.14})`;
         this.ctx.lineWidth = 2;
-        
-        switch(type) {
+
+        switch (type) {
             case 'contact': {
                 const w = size;
                 const h = size * 0.72;
                 this.ctx.beginPath();
-                this.ctx.rect(x - w/2, y - h/2, w, h);
+                this.ctx.rect(x - w / 2, y - h / 2, w, h);
                 this.ctx.stroke();
 
                 this.ctx.beginPath();
@@ -106,18 +106,18 @@ class ParticleField {
                 const w = size;
                 const h = size * 0.7;
                 this.ctx.beginPath();
-                this.ctx.rect(x - w/2, y - h/2, w, h);
+                this.ctx.rect(x - w / 2, y - h / 2, w, h);
                 this.ctx.stroke();
                 const colW = w / 3;
                 for (let i = 1; i < 3; i++) {
                     this.ctx.beginPath();
-                    this.ctx.moveTo(x - w/2 + colW * i, y - h/2);
-                    this.ctx.lineTo(x - w/2 + colW * i, y + h/2);
+                    this.ctx.moveTo(x - w / 2 + colW * i, y - h / 2);
+                    this.ctx.lineTo(x - w / 2 + colW * i, y + h / 2);
                     this.ctx.stroke();
                 }
                 for (let c = 0; c < 3; c++) {
-                    const cx = x - w/2 + colW * c + colW * 0.15;
-                    const cy = y - h/2 + h * 0.18;
+                    const cx = x - w / 2 + colW * c + colW * 0.15;
+                    const cy = y - h / 2 + h * 0.18;
                     this.ctx.beginPath();
                     this.ctx.rect(cx, cy, colW * 0.7, h * 0.12);
                     this.ctx.stroke();
@@ -150,7 +150,7 @@ class ParticleField {
                 const w = size;
                 const h = size * 0.7;
                 this.ctx.beginPath();
-                this.ctx.rect(x - w/2, y - h/2, w, h);
+                this.ctx.rect(x - w / 2, y - h / 2, w, h);
                 this.ctx.stroke();
                 for (let i = 0; i < 3; i++) {
                     const yy = y - h * 0.2 + i * h * 0.2;
@@ -169,7 +169,7 @@ class ParticleField {
                 const w = size;
                 const h = size * 0.68;
                 this.ctx.beginPath();
-                this.ctx.rect(x - w/2, y - h/2, w, h);
+                this.ctx.rect(x - w / 2, y - h / 2, w, h);
                 this.ctx.stroke();
                 this.ctx.beginPath();
                 this.ctx.rect(x - w * 0.35, y - h * 0.2, w * 0.28, h * 0.28);
@@ -205,15 +205,15 @@ class ParticleField {
                 const w = size;
                 const h = size * 0.5;
                 this.ctx.beginPath();
-                this.ctx.rect(x - w/2, y - h/2, w, h);
+                this.ctx.rect(x - w / 2, y - h / 2, w, h);
                 this.ctx.stroke();
                 this.ctx.beginPath();
                 this.ctx.moveTo(x - w * 0.15, y);
                 this.ctx.lineTo(x + w * 0.15, y);
                 this.ctx.stroke();
                 this.ctx.beginPath();
-                this.ctx.arc(x - w * 0.22, y, h * 0.22, -Math.PI/2, Math.PI/2);
-                this.ctx.arc(x + w * 0.22, y, h * 0.22, Math.PI/2, -Math.PI/2);
+                this.ctx.arc(x - w * 0.22, y, h * 0.22, -Math.PI / 2, Math.PI / 2);
+                this.ctx.arc(x + w * 0.22, y, h * 0.22, Math.PI / 2, -Math.PI / 2);
                 this.ctx.stroke();
                 break;
             }
@@ -243,8 +243,8 @@ class ParticleField {
                 const w = size * 0.8;
                 const h = size * 0.38;
                 this.ctx.beginPath();
-                this.ctx.rect(x - w/2, y - h/2, w * 0.5, h);
-                this.ctx.rect(x, y - h/2, w * 0.5, h);
+                this.ctx.rect(x - w / 2, y - h / 2, w * 0.5, h);
+                this.ctx.rect(x, y - h / 2, w * 0.5, h);
                 this.ctx.stroke();
                 this.ctx.beginPath();
                 this.ctx.moveTo(x - w * 0.05, y);
@@ -275,21 +275,21 @@ class ParticleField {
                 break;
             }
         }
-        
+
         this.ctx.restore();
     }
-    
+
     init() {
         this.particles = [];
         this.crmIcons = [];
         const particleCount = 40;
         const iconCount = 16;
         const iconTypes = ['contact', 'pipeline', 'workflow', 'kanban', 'segment', 'tasks', 'dashboard', 'kpi', 'deal', 'support', 'integration', 'automation'];
-        
+
         for (let i = 0; i < particleCount; i++) {
             const x = Math.random() * this.canvas.width;
             const y = Math.random() * this.canvas.height;
-            
+
             this.particles.push({
                 x: x,
                 y: y,
@@ -299,7 +299,7 @@ class ParticleField {
                 opacity: Math.random() * 0.20 + 0.08
             });
         }
-        
+
         const aspect = this.canvas.width / Math.max(1, this.canvas.height);
         const cols = Math.max(1, Math.ceil(Math.sqrt(iconCount * aspect)));
         const rows = Math.max(1, Math.ceil(iconCount / cols));
@@ -333,14 +333,14 @@ class ParticleField {
             });
         }
     }
-    
+
     update() {
         this.particles.forEach(particle => {
             particle.x += particle.vx;
             particle.y += particle.vy;
             particle.vx *= 0.99;
             particle.vy *= 0.99;
-            
+
             if (particle.x < 0 || particle.x > this.canvas.width) {
                 particle.vx *= -1;
                 particle.x = Math.max(0, Math.min(this.canvas.width, particle.x));
@@ -349,13 +349,13 @@ class ParticleField {
                 particle.vy *= -1;
                 particle.y = Math.max(0, Math.min(this.canvas.height, particle.y));
             }
-            
+
             if (Math.random() < 0.01) {
                 particle.vx += (Math.random() - 0.5) * 0.2;
                 particle.vy += (Math.random() - 0.5) * 0.2;
             }
         });
-        
+
         this.crmIcons.forEach(icon => {
             icon.x += icon.vx;
             icon.y += icon.vy;
@@ -365,14 +365,14 @@ class ParticleField {
             icon.x += Math.cos(icon.bobPhase * 0.7) * 0.08;
             icon.vx *= 0.998;
             icon.vy *= 0.998;
-            
+
             if (icon.x < -icon.size * 2) icon.x = this.canvas.width + icon.size * 2;
             if (icon.x > this.canvas.width + icon.size * 2) icon.x = -icon.size * 2;
             if (icon.y < -icon.size * 2) icon.y = this.canvas.height + icon.size * 2;
             if (icon.y > this.canvas.height + icon.size * 2) icon.y = -icon.size * 2;
         });
     }
-    
+
     draw() {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
@@ -384,7 +384,7 @@ class ParticleField {
             this.ctx.restore();
         });
     }
-    
+
     animate() {
         this.update();
         this.draw();
@@ -617,22 +617,22 @@ class BackgroundBlobs {
         this.time = 0;
         this.resize();
         this.init();
-        
+
         window.addEventListener('resize', () => this.resize());
         window.addEventListener('mousemove', (e) => {
             this.mouse.x = e.clientX;
             this.mouse.y = e.clientY;
         });
     }
-    
+
     resize() {
         this.canvas.width = window.innerWidth;
         this.canvas.height = window.innerHeight;
     }
-    
+
     init() {
         const blobCount = 5;
-        
+
         for (let i = 0; i < blobCount; i++) {
             this.blobs.push({
                 x: Math.random() * this.canvas.width,
@@ -647,55 +647,55 @@ class BackgroundBlobs {
             });
         }
     }
-    
+
     update() {
         this.time += 0.01;
-        
+
         this.blobs.forEach(blob => {
             const dx = this.mouse.x - blob.x;
             const dy = this.mouse.y - blob.y;
             const distance = Math.sqrt(dx * dx + dy * dy);
             const maxDistance = 300;
-            
+
             if (distance < maxDistance) {
                 const force = (1 - distance / maxDistance) * 20;
                 const angle = Math.atan2(dy, dx);
                 blob.x -= Math.cos(angle) * force * 0.3;
                 blob.y -= Math.sin(angle) * force * 0.3;
             }
-            
+
             blob.x += (blob.baseX - blob.x) * 0.02;
             blob.y += (blob.baseY - blob.y) * 0.02;
-            
+
             blob.baseX += blob.speedX;
             blob.baseY += blob.speedY;
-            
+
             if (blob.baseX < -blob.radius || blob.baseX > this.canvas.width + blob.radius) {
                 blob.speedX *= -1;
             }
             if (blob.baseY < -blob.radius || blob.baseY > this.canvas.height + blob.radius) {
                 blob.speedY *= -1;
             }
-            
+
             blob.phase += 0.02;
         });
     }
-    
+
     draw() {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-        
+
         this.blobs.forEach(blob => {
             const gradient = this.ctx.createRadialGradient(
                 blob.x, blob.y, 0,
                 blob.x, blob.y, blob.radius
             );
-            
+
             gradient.addColorStop(0, `rgba(${blob.color}, 0.15)`);
             gradient.addColorStop(0.5, `rgba(${blob.color}, 0.08)`);
             gradient.addColorStop(1, `rgba(${blob.color}, 0)`);
-            
+
             this.ctx.fillStyle = gradient;
-            
+
             this.ctx.beginPath();
             const points = 8;
             for (let i = 0; i <= points; i++) {
@@ -704,7 +704,7 @@ class BackgroundBlobs {
                 const r = blob.radius + wobble;
                 const x = blob.x + Math.cos(angle) * r;
                 const y = blob.y + Math.sin(angle) * r;
-                
+
                 if (i === 0) {
                     this.ctx.moveTo(x, y);
                 } else {
@@ -715,7 +715,7 @@ class BackgroundBlobs {
             this.ctx.fill();
         });
     }
-    
+
     animate() {
         this.update();
         this.draw();
@@ -805,139 +805,170 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     startCrmShowcase();
-    
+
+    // ── DOM refs ───────────────────────────────────────────────────────────────
     const loginForm = document.getElementById('loginForm');
     const otpGroup = document.getElementById('otpGroup');
     const otpInput = document.getElementById('otp');
     const statusEl = document.getElementById('otpStatus');
     const btnTextEl = document.getElementById('loginBtnText');
     const changeEmailLink = document.getElementById('changeEmailLink');
-    const inputs = document.querySelectorAll('input[type="email"], input[type="text"], input[type="password"]');
 
-    let pendingOtp = null;
-    let otpSentTo = null;
+    // ── Token helpers ──────────────────────────────────────────────────────────
+    const TK = 'bezent_jwt';
+    const getToken = () => localStorage.getItem(TK) || '';
+    const setToken = t => localStorage.setItem(TK, t);
+
+    // Already logged in — go straight to dashboard
+    if (getToken()) {
+        window.location.replace('marketflow-crm.html');
+        return;
+    }
+
+    // ── State ──────────────────────────────────────────────────────────────────
+    let otpSentTo = null;   // email OTP was dispatched to
 
     const resetToEmailStep = () => {
-        pendingOtp = null;
         otpSentTo = null;
         if (otpGroup) otpGroup.style.display = 'none';
         if (btnTextEl) btnTextEl.textContent = 'Send OTP';
         if (otpInput) otpInput.value = '';
         if (statusEl) statusEl.innerHTML = '';
         if (changeEmailLink) changeEmailLink.style.display = 'none';
-        const emailInput = document.getElementById('email');
-        emailInput?.focus();
+        document.getElementById('email')?.focus();
     };
 
     if (changeEmailLink) {
-        changeEmailLink.addEventListener('click', (e) => {
+        changeEmailLink.addEventListener('click', e => {
             e.preventDefault();
             resetToEmailStep();
         });
     }
-    
-    inputs.forEach(input => {
-        input.addEventListener('focus', () => {
-            input.parentElement.classList.add('focused');
-        });
-        
-        input.addEventListener('blur', () => {
-            if (!input.value) {
-                input.parentElement.classList.remove('focused');
-            }
-        });
-        
+
+    // Focus / blur floating-label behaviour for all inputs
+    document.querySelectorAll('#loginForm input').forEach(input => {
+        input.addEventListener('focus', () => input.parentElement.classList.add('focused'));
+        input.addEventListener('blur', () => { if (!input.value) input.parentElement.classList.remove('focused'); });
         input.addEventListener('input', () => {
-            if (input.value) {
-                input.parentElement.classList.add('has-value');
-            } else {
-                input.parentElement.classList.remove('has-value');
-            }
+            input.parentElement.classList.toggle('has-value', Boolean(input.value));
         });
     });
-    
-    loginForm.addEventListener('submit', (e) => {
+
+    const setStatus = (html, color) => {
+        if (!statusEl) return;
+        statusEl.style.textAlign = 'left';
+        statusEl.style.fontSize = '12px';
+        statusEl.style.color = color || '#6B7280';
+        statusEl.innerHTML = html;
+    };
+
+    // ── Submit handler ─────────────────────────────────────────────────────────
+    loginForm.addEventListener('submit', async e => {
         e.preventDefault();
 
         const emailInput = document.getElementById('email');
         const email = (emailInput?.value || '').trim();
         const button = loginForm.querySelector('.login-btn');
-        const originalText = button.innerHTML;
-
-        const setStatus = (html) => {
-            if (!statusEl) return;
-            statusEl.style.textAlign = 'left';
-            statusEl.style.fontSize = '12px';
-            statusEl.style.color = '#6B7280';
-            statusEl.innerHTML = html;
-        };
-
-        const isOtpStep = !!pendingOtp;
 
         if (!email) {
-            setStatus('<span style="color:#b91c1c;">Please enter your email.</span>');
+            setStatus('<span style="color:#b91c1c;">Please enter your email address.</span>');
             emailInput?.focus();
             return;
         }
 
-        if (!isOtpStep) {
-            pendingOtp = String(Math.floor(100000 + Math.random() * 900000));
-            otpSentTo = email;
+        // ── STEP 1: no OTP sent yet → request one ─────────────────────────────
+        if (!otpSentTo) {
+            button.disabled = true;
+            if (btnTextEl) btnTextEl.textContent = 'Sending…';
+            setStatus('');
 
-            if (otpGroup) otpGroup.style.display = '';
-            if (btnTextEl) btnTextEl.textContent = 'Verify OTP';
-            if (changeEmailLink) changeEmailLink.style.display = '';
-            setStatus(
-                '<span>' +
-                'OTP has been sent to <strong>' + email.replace(/</g, '&lt;') + '</strong><br>' +
-                'OTP : <strong>' + pendingOtp + '</strong>' +
-                '</span>'
-            );
-            if (otpInput) {
-                otpInput.value = '';
-                otpInput.focus();
+            try {
+                const res = await fetch('/api/auth/send-otp', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email })
+                });
+                const data = await res.json();
+
+                if (!res.ok) {
+                    button.disabled = false;
+                    if (btnTextEl) btnTextEl.textContent = 'Send OTP';
+                    setStatus('<span style="color:#b91c1c;">' + (data.error || 'Failed to send OTP.') + '</span>');
+                    return;
+                }
+
+                // OTP sent successfully
+                otpSentTo = email;
+                if (otpGroup) otpGroup.style.display = '';
+                if (changeEmailLink) changeEmailLink.style.display = '';
+                if (btnTextEl) btnTextEl.textContent = 'Verify OTP';
+                button.disabled = false;
+
+                setStatus(
+                    '<span>OTP sent to <strong>' + email.replace(/</g, '&lt;') + '</strong><br>' +
+                    'OTP: <strong style="letter-spacing:4px;font-size:15px;">' + (data.otp || '••••••') + '</strong></span>'
+                );
+                otpInput?.focus();
+
+            } catch (_) {
+                button.disabled = false;
+                if (btnTextEl) btnTextEl.textContent = 'Send OTP';
+                setStatus('<span style="color:#b91c1c;">Cannot reach server. Run <code>npm run server</code> first.</span>');
             }
-
-            try { console.log('[BEZENT] OTP (dev):', pendingOtp); } catch (_) {}
             return;
         }
 
+        // ── STEP 2: OTP already sent → verify it ─────────────────────────────
         const enteredOtp = String((otpInput?.value || '').trim());
+
         if (!enteredOtp) {
             setStatus('<span style="color:#b91c1c;">Please enter the OTP.</span>');
             otpInput?.focus();
             return;
         }
 
+        // If email field changed reset and ask user to re-request
         if (email !== otpSentTo) {
-            pendingOtp = null;
-            otpSentTo = null;
-            if (otpGroup) otpGroup.style.display = 'none';
-            if (btnTextEl) btnTextEl.textContent = 'Send OTP';
-            if (otpInput) otpInput.value = '';
-            setStatus('<span style="color:#b91c1c;">Email changed. Please request a new OTP.</span>');
+            resetToEmailStep();
+            setStatus('<span style="color:#b91c1c;">Email changed — please request a new OTP.</span>');
             return;
         }
 
-        if (!/^[0-9]{6}$/.test(enteredOtp) || enteredOtp !== pendingOtp) {
-            setStatus('<span style="color:#b91c1c;">Invalid OTP. Please try again.</span>');
-            otpInput?.focus();
-            return;
-        }
-
-        button.innerHTML = '<span>Verifying...</span>';
         button.disabled = true;
+        if (btnTextEl) btnTextEl.textContent = 'Verifying…';
 
-        setTimeout(() => {
-            button.innerHTML = '<span>Welcome back!</span>';
+        try {
+            const res = await fetch('/api/auth/verify-otp', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, otp: enteredOtp })
+            });
+            const data = await res.json();
+
+            if (!res.ok) {
+                button.disabled = false;
+                if (btnTextEl) btnTextEl.textContent = 'Verify OTP';
+                setStatus('<span style="color:#b91c1c;">' + (data.error || 'Verification failed.') + '</span>');
+                // If OTP expired, reset to step 1
+                if (data.error && data.error.toLowerCase().includes('expired')) resetToEmailStep();
+                return;
+            }
+
+            // ── Success ──────────────────────────────────────────────────────
+            setToken(data.token);
+            localStorage.setItem('bezent_user', JSON.stringify(data.user));
+            if (btnTextEl) btnTextEl.textContent = 'Welcome!';
             button.style.background = 'linear-gradient(135deg, #10b981 0%, #059669 100%)';
-            setStatus('<span style="color:#059669;">Logged in successfully.</span>');
+            setStatus('<span style="color:#059669;">Verified! Loading your dashboard…</span>');
 
-            setTimeout(() => {
-                try { localStorage.setItem('bezent_user_email', email); } catch (_) {}
-                // Navigate to CRM dashboard
-                window.location.href = 'marketflow-crm.html';
-            }, 1000);
-        }, 900);
+            setTimeout(() => window.location.replace('marketflow-crm.html'), 700);
+
+        } catch (_) {
+            button.disabled = false;
+            if (btnTextEl) btnTextEl.textContent = 'Verify OTP';
+            setStatus('<span style="color:#b91c1c;">Server error. Please try again.</span>');
+        }
     });
 });
+
+

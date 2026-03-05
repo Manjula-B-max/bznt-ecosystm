@@ -46,7 +46,7 @@ class MarketFlowCRM {
         const stages = this.getLeadPipelineStages();
         const curr = String(currentStage || '').trim().toLowerCase();
         let currentIdx = stages.findIndex(s => String(s).toLowerCase() === curr);
-        if (currentIdx < 0) currentIdx = 0;
+        if (currentIdx <0) currentIdx = 0;
 
         return `
             <div class="mt-2">
@@ -855,7 +855,7 @@ class MarketFlowCRM {
 
         const leads = this.getStoredLeads();
         const idx = leads.findIndex(l => String(l?.id || '').trim().toLowerCase() === id.toLowerCase());
-        if (idx < 0) return { ok: false, message: 'Lead not found.' };
+        if (idx <0) return { ok: false, message: 'Lead not found.' };
 
         const lead = leads[idx];
         const clientName = String(lead.company || '').trim();
@@ -1232,7 +1232,7 @@ class MarketFlowCRM {
             const model = this.ensureProjectModel(p);
             const parts = path.split('.').filter(Boolean);
             let ref = model;
-            for (let i = 0; i < parts.length - 1; i++) {
+            for (let i = 0; i <parts.length - 1; i++) {
                 const k = parts[i];
                 if (!ref[k] || typeof ref[k] !== 'object') ref[k] = {};
                 ref = ref[k];
@@ -1398,7 +1398,7 @@ class MarketFlowCRM {
     setNestedProperty(obj, path, value) {
         const parts = path.split('.');
         let cur = obj;
-        for (let i = 0; i < parts.length - 1; i++) {
+        for (let i = 0; i <parts.length - 1; i++) {
             const part = parts[i];
             if (!(part in cur) || typeof cur[part] !== 'object') cur[part] = {};
             cur = cur[part];
@@ -2868,7 +2868,7 @@ class MarketFlowCRM {
                 const idx = Number(a.slice('quote:item:remove:'.length));
                 if (!this._quoteDraft) this._quoteDraft = this.getSampleQuotationTemplate();
                 const items = Array.isArray(this._quoteDraft.items) ? this._quoteDraft.items : [];
-                if (Number.isFinite(idx) && idx >= 0 && idx < items.length) {
+                if (Number.isFinite(idx) && idx >= 0 && idx <items.length) {
                     items.splice(idx, 1);
                     this._quoteDraft.items = items;
                     this.renderContent();
@@ -3544,7 +3544,7 @@ class MarketFlowCRM {
                 if (itemEl) {
                     const idx = Number(itemEl.getAttribute('data-quote-item-index'));
                     const field = String(itemEl.getAttribute('data-quote-item-field') || '').trim();
-                    if (!Number.isFinite(idx) || idx < 0) return;
+                    if (!Number.isFinite(idx) || idx <0) return;
                     if (!Array.isArray(this._quoteDraft.items)) this._quoteDraft.items = [];
                     while (this._quoteDraft.items.length <= idx) this._quoteDraft.items.push({ description: '', hsnSac: '', dueOn: '', qty: 0, rate: 0, amount: 0 });
                     const value = (itemEl instanceof HTMLInputElement || itemEl instanceof HTMLTextAreaElement || itemEl instanceof HTMLSelectElement)
@@ -3592,7 +3592,7 @@ class MarketFlowCRM {
                 if (itemEl) {
                     const idx = Number(itemEl.getAttribute('data-rfp-item-index'));
                     const field = String(itemEl.getAttribute('data-rfp-item-field') || '').trim();
-                    if (!Number.isFinite(idx) || idx < 0) return;
+                    if (!Number.isFinite(idx) || idx <0) return;
                     if (!Array.isArray(this._rfpDraft.items)) this._rfpDraft.items = [];
                     while (this._rfpDraft.items.length <= idx) this._rfpDraft.items.push({ description: '', uom: 'AE', qty: 1, rate: 0, amount: 0 });
                     const value = (itemEl instanceof HTMLInputElement || itemEl instanceof HTMLTextAreaElement || itemEl instanceof HTMLSelectElement)
@@ -3688,7 +3688,7 @@ class MarketFlowCRM {
                 const itemEl = target.closest('[data-quote-item-index][data-quote-item-field="serviceCharge"]');
                 if (!itemEl) return;
                 const idx = Number(itemEl.getAttribute('data-quote-item-index'));
-                if (!Number.isFinite(idx) || idx < 0) return;
+                if (!Number.isFinite(idx) || idx <0) return;
                 if (!this._quoteDraft) this._quoteDraft = this.getSampleQuotationTemplate();
                 if (!Array.isArray(this._quoteDraft.items)) this._quoteDraft.items = [];
                 while (this._quoteDraft.items.length <= idx) this._quoteDraft.items.push({ description: '', hsnSac: '', dueOn: '', qty: 0, rate: 0, amount: 0 });
@@ -6956,7 +6956,7 @@ class MarketFlowCRM {
                         <button data-action="client:upload:trigger" class="px-4 py-2 text-sm font-medium bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors flex items-center gap-1"><i data-lucide="upload" style="width:14px;height:14px;"></i>Upload Excel</button>
                         <input type="file" id="clientExcelUpload" accept=".xlsx,.xls,.csv" style="display:none;" />
                     </div>
-                </div >
+                </div>
 
             <div class="bg-white rounded-lg border border-slate-200 p-4 sm:p-6 shadow-lg">
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -7021,7 +7021,7 @@ class MarketFlowCRM {
                     </div>
                 </div>
             </div>
-            </div >
+            </div>
             `;
     }
 
@@ -7035,7 +7035,7 @@ class MarketFlowCRM {
             : [];
         const latestInvoices = selectedInvoices.slice(0, 3);
         return `
-            < div class="space-y-6 fade-in" >
+            <div class="space-y-6 fade-in" >
                 <div class="flex flex-wrap items-start justify-between gap-3">
                     <div>
                         <h2 class="text-xl sm:text-2xl font-semibold text-slate-900">Client Directory</h2>
@@ -7231,7 +7231,7 @@ class MarketFlowCRM {
                         </div>
                     ` : ``}
                 </div>
-            </div >
+            </div>
             `;
     }
 
@@ -7241,7 +7241,7 @@ class MarketFlowCRM {
         const owners = uniq(contacts.map(c => c.owner));
         const sources = uniq(contacts.map(c => c.source));
         return `
-            < div class="space-y-6 fade-in" >
+            <div class="space-y-6 fade-in" >
                 <div class="flex flex-wrap items-start justify-between gap-3">
                     <div>
                         <h2 class="text-xl sm:text-2xl font-semibold text-slate-900">Contacts</h2>
@@ -7329,7 +7329,7 @@ class MarketFlowCRM {
                         </table>
                     </div>
                 </div>
-            </div >
+            </div>
             `;
     }
 
@@ -7346,7 +7346,7 @@ class MarketFlowCRM {
         ];
 
         return `
-            < div class="space-y-6 fade-in" >
+            <div class="space-y-6 fade-in" >
                 <div class="flex flex-wrap items-start justify-between gap-3">
                     <div>
                         <h2 class="text-xl sm:text-2xl font-semibold text-slate-900">Onboarding Status</h2>
@@ -7394,7 +7394,7 @@ class MarketFlowCRM {
                         <button class="mt-5 w-full px-4 py-2 text-sm font-medium bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">Apply Actions</button>
                     </div>
                 </div>
-            </div >
+            </div>
             `;
     }
 
@@ -7439,7 +7439,7 @@ class MarketFlowCRM {
         const tax = draft.tax || {};
 
         return `
-            < div class="space-y-6 fade-in" >
+            <div class="space-y-6 fade-in" >
                 <div class="flex flex-wrap items-start justify-between gap-3">
                     <div>
                         <h2 class="text-xl sm:text-2xl font-semibold text-slate-900">Quotation Templates</h2>
@@ -7685,7 +7685,7 @@ class MarketFlowCRM {
                         </div>
                     </div>
                 </div>
-            </div >
+            </div>
             `;
     }
 
@@ -7841,10 +7841,10 @@ class MarketFlowCRM {
 
         const bank = doc.bank || {};
 
-        const list = (arr) => `< ol > ${arr.map(x => `<li>${esc(x)}</li>`).join('')}</ol > `;
+        const list = (arr) => `<ol > ${arr.map(x => `<li>${esc(x)}</li>`).join('')}</ol > `;
 
         return `
-            < !-- ══ COVER PAGE ══ -->
+            <!-- ══ COVER PAGE ══ -->
             <div class="cover-page">
 
                 <!-- Background SVG: blueprint grid + 3D shapes -->
@@ -8342,7 +8342,7 @@ class MarketFlowCRM {
 
     amountToWordsINR(amount) {
         const n = Math.round(Number(amount) || 0);
-        if (!Number.isFinite(n) || n < 0) return 'INR Zero Only';
+        if (!Number.isFinite(n) || n <0) return 'INR Zero Only';
         if (n === 0) return 'INR Zero Only';
         const words = this.numberToWordsIndian(n);
         return `INR ${words} Only`;
@@ -8357,7 +8357,7 @@ class MarketFlowCRM {
 
         const two = (n) => {
             if (n === 0) return '';
-            if (n < 20) return a[n];
+            if (n <20) return a[n];
             const t = Math.floor(n / 10);
             const r = n % 10;
             return `${b[t]}${r ? ' ' + a[r] : ''} `.trim();
@@ -8399,7 +8399,7 @@ class MarketFlowCRM {
         const terms = Array.isArray(quote.terms) ? quote.terms : [];
 
         return `
-            < div class="doc" >
+            <div class="doc" >
                 <div class="hdr">
                     <div class="hdr-logo-box">
                         ${company.logoDataUrl ? `<img src="${esc(company.logoDataUrl)}" alt="" />` : ''}
@@ -8510,7 +8510,7 @@ class MarketFlowCRM {
 
                 </div>
                 <div class="footer">This is a Computer Generated Document</div>
-            </div >
+            </div>
             `;
     }
 
@@ -8598,7 +8598,7 @@ class MarketFlowCRM {
 
     getProjectRegistration() {
         return `
-            < div class="space-y-6 fade-in" >
+            <div class="space-y-6 fade-in" >
                 <div class="flex flex-wrap items-start justify-between gap-3">
                     <div>
                         <h2 class="text-xl sm:text-2xl font-semibold text-slate-900">Project Registration</h2>
@@ -8932,7 +8932,7 @@ class MarketFlowCRM {
                         </div>
                     </div>
                 </div>
-            </div >
+            </div>
             `;
     }
 
@@ -8955,19 +8955,19 @@ class MarketFlowCRM {
         const renderStatusSelect = (p, path, current) => {
             const key = this.getProjectKey(p);
             return `
-            < select data - project - key="${key}" data - project - field="${path}" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" >
+            <select data - project - key="${key}" data - project - field="${path}" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" >
                 ${['Pending', 'In Progress', 'Completed', 'Blocked'].map(opt => `<option ${opt === (current || 'Pending') ? 'selected' : ''}>${opt}</option>`).join('')}
-                </select >
+                </select>
             `;
         };
 
         const renderProfile = (p) => {
             if (!p) {
-                return `< div class="text-sm text-slate-500" > Select a project to view details.</div > `;
+                return `<div class="text-sm text-slate-500" > Select a project to view details.</div> `;
             }
             const key = this.getProjectKey(p);
             return `
-            < div class="bg-white rounded-lg border border-slate-200 p-4 sm:p-6 shadow-lg" >
+            <div class="bg-white rounded-lg border border-slate-200 p-4 sm:p-6 shadow-lg" >
                     <div class="flex items-start justify-between gap-3">
                         <div>
                             <h3 class="text-lg font-semibold text-slate-900">${esc(p.name)}</h3>
@@ -9230,13 +9230,13 @@ class MarketFlowCRM {
                         <button data-action="project:save:${String(key).replace(/"/g, '&quot;')}" class="px-3 py-1.5 text-xs font-medium bg-green-600 text-white rounded-lg hover:bg-green-700">Save</button>
                         <button data-action="project:delete:${String(key).replace(/"/g, '&quot;')
                 } " class="px-3 py - 1.5 text - xs font - medium bg - red - 600 text - white rounded - lg hover: bg - red - 700">Delete</button>
-                    </div >
-                </div >
+                    </div>
+                </div>
     `;
         };
 
         return `
-    < div class="space-y-6 fade-in" >
+    <div class="space-y-6 fade-in" >
         <div class="flex flex-wrap items-start justify-between gap-3">
             <div>
                 <h2 class="text-xl sm:text-2xl font-semibold text-slate-900">Project Directory</h2>
@@ -9324,7 +9324,7 @@ class MarketFlowCRM {
                         </div>
                     </div>
                 `}
-            </div >
+            </div>
     `;
     }
 
@@ -9390,7 +9390,7 @@ class MarketFlowCRM {
         } catch (_) { }
 
         return `
-    < div class="space-y-6 fade-in" >
+    <div class="space-y-6 fade-in" >
                 <div class="flex flex-wrap items-start justify-between gap-3">
                     <div>
                         <h2 class="text-xl sm:text-2xl font-semibold text-slate-900">Sales Pipeline</h2>
@@ -9422,7 +9422,7 @@ class MarketFlowCRM {
                         </div>
                     `).join('')}
                 </div>
-            </div >
+            </div>
     `;
     }
 
@@ -9444,13 +9444,13 @@ class MarketFlowCRM {
 
         const renderVerticalProgress = () => {
             return `
-    < div class="space-y-3" >
+    <div class="space-y-3" >
         ${progressStages.map((s, i) => {
                 const done = i <= stageIdx;
                 const line = done ? `bg-${stageColor}-500` : 'bg-slate-200';
                 const dot = done ? `bg-${stageColor}-600 border-${stageColor}-600` : 'bg-white border-slate-300';
                 const text = done ? 'text-slate-900' : 'text-slate-600';
-                const showLine = i < progressStages.length - 1;
+                const showLine = i <progressStages.length - 1;
                 return `
                             <div class="flex items-start gap-3">
                                 <div class="flex flex-col items-center">
@@ -9467,7 +9467,7 @@ class MarketFlowCRM {
                         `;
             }).join('')
                 }
-                </div >
+                </div>
     `;
         };
 
@@ -9476,7 +9476,7 @@ class MarketFlowCRM {
             const idx = Math.min(progressStages.length - 1, Math.max(0, Math.floor(pct / (100 / progressStages.length))));
             const c = p?.statusColor || 'sky';
             return `
-    < div class="flex items-center gap-3" >
+    <div class="flex items-center gap-3" >
                     <div class="flex items-center flex-1">
                         ${progressStages.map((_, i) => {
                 const done = i <= idx;
@@ -9494,14 +9494,14 @@ class MarketFlowCRM {
             }).join('')}
                     </div>
                     <div class="text-xs font-semibold text-slate-900">${pct}%</div>
-                </div >
+                </div>
     `;
         };
 
         const isSplit = Boolean(this.isProjectDetailOpen && selected);
 
         return `
-    < div class="space-y-6 fade-in" >
+    <div class="space-y-6 fade-in" >
                 <div class="flex flex-wrap items-start justify-between gap-3">
                     <div>
                         <h2 class="text-xl sm:text-2xl font-semibold text-slate-900">Active Projects</h2>
@@ -9597,7 +9597,7 @@ class MarketFlowCRM {
                         </div>
                     ` : ''}
                 </div>
-            </div >
+            </div>
     `;
     }
 
@@ -9614,7 +9614,7 @@ class MarketFlowCRM {
                 rating: Number(p.ratings?.clientRating || p.rating || 0)
             }));
         return `
-    < div class="space-y-6 fade-in" >
+    <div class="space-y-6 fade-in" >
                 <div class="flex flex-wrap items-start justify-between gap-3">
                     <div>
                         <h2 class="text-xl sm:text-2xl font-semibold text-slate-900">Completed Projects</h2>
@@ -9645,7 +9645,7 @@ class MarketFlowCRM {
                                         <td class="px-4 py-3">
                                             <div class="flex items-center gap-1">
                                                 ${Array.from({ length: 5 }).map((_, idx) => `
-                                                    <i data-lucide="star" class="w-4 h-4 ${idx < i.rating ? 'text-amber-500' : 'text-slate-300'}"></i>
+                                                    <i data-lucide="star" class="w-4 h-4 ${idx <i.rating ? 'text-amber-500' : 'text-slate-300'}"></i>
                                                 `).join('')}
                                             </div>
                                         </td>
@@ -9655,7 +9655,7 @@ class MarketFlowCRM {
                         </table>
                     </div>
                 </div>
-            </div >
+            </div>
     `;
     }
 
@@ -9763,9 +9763,9 @@ class MarketFlowCRM {
         const alertProjects = projects.filter(p => p.overdue && p.overdue !== 'Paid').slice(0, 3);
 
         return `
-    < div class="space-y-6 fade-in" >
+    <div class="space-y-6 fade-in" >
 
-                < !--Header -->
+                <!--Header -->
                 <div class="flex flex-wrap items-start justify-between gap-3">
                     <div>
                         <h2 class="text-2xl font-bold text-slate-900">Campaign Hub</h2>
@@ -9813,14 +9813,14 @@ class MarketFlowCRM {
                             </div>
                         </div>
                         <div class="mt-5 grid grid-cols-1 sm:grid-cols-2 gap-3">
-                            <div class="bg-white/8 rounded-xl p-3">
+                            <div class="bg-white/10 rounded-xl p-3">
                                 <div class="text-xs text-slate-400">With Email</div>
                                 <div class="text-lg font-bold text-white mt-0.5">${withEmail}</div>
                                 <div class="mt-1.5 h-1.5 bg-white/10 rounded-full overflow-hidden">
                                     <div class="h-full bg-emerald-400 rounded-full transition-all" style="width:${totalContacts ? Math.round(withEmail / totalContacts * 100) : 0}%"></div>
                                 </div>
                             </div>
-                            <div class="bg-white/8 rounded-xl p-3">
+                            <div class="bg-white/10 rounded-xl p-3">
                                 <div class="text-xs text-slate-400">Missing Email</div>
                                 <div class="text-lg font-bold text-rose-400 mt-0.5">${withoutEmail}</div>
                                 <div class="mt-1.5 h-1.5 bg-white/10 rounded-full overflow-hidden">
@@ -9977,7 +9977,7 @@ class MarketFlowCRM {
             </div>
         </div>
     </div>
-            </div >
+            </div>
     `;
     }
 
@@ -10036,13 +10036,13 @@ class MarketFlowCRM {
         const allDomains = ['All', ...uniq(clients.map(r => r.emailDomain !== '—' ? r.emailDomain : null))];
         const allTlds = ['All', ...uniq(clients.map(r => r.emailTld !== '—' ? r.emailTld : null))];
 
-        const fi = (id, ph) => `< input id = "${id}" type = "text" placeholder = "${ph}" class="w-full mt-1 px-2 py-1 text-xs border border-slate-200 rounded-md focus:outline-none focus:ring-1 focus:ring-purple-400 bg-white" /> `;
-        const fs = (id, opts) => `< select id = "${id}" class="w-full mt-1 px-2 py-1 text-xs border border-slate-200 rounded-md focus:outline-none focus:ring-1 focus:ring-purple-400 bg-white" > ${opts.map(v => `<option>${esc(v)}</option>`).join('')}</select > `;
+        const fi = (id, ph) => `<input id = "${id}" type = "text" placeholder = "${ph}" class="w-full mt-1 px-2 py-1 text-xs border border-slate-200 rounded-md focus:outline-none focus:ring-1 focus:ring-purple-400 bg-white" /> `;
+        const fs = (id, opts) => `<select id = "${id}" class="w-full mt-1 px-2 py-1 text-xs border border-slate-200 rounded-md focus:outline-none focus:ring-1 focus:ring-purple-400 bg-white" > ${opts.map(v => `<option>${esc(v)}</option>`).join('')}</select> `;
 
         return `
-    < div class="space-y-4 fade-in" >
+    <div class="space-y-4 fade-in" >
 
-                < !--Header -->
+                <!--Header -->
                 <div class="flex flex-wrap items-start justify-between gap-3">
                     <div>
                         <h2 class="text-xl sm:text-2xl font-semibold text-slate-900">Contacts Directory</h2>
@@ -10158,7 +10158,7 @@ class MarketFlowCRM {
         <button id="cdCopyEmails" class="px-4 py-2 text-sm font-semibold bg-slate-700 text-white rounded-lg hover:bg-slate-600 transition-colors">Copy Emails</button>
         <button id="cdClearSel" class="text-xs text-slate-400 hover:text-white transition-colors">Clear</button>
     </div>
-            </div >
+            </div>
     `;
     }
 
@@ -12442,7 +12442,7 @@ class MarketFlowCRM {
                                     </div>
                                 `).join('')}
                             </div>
-                            ${(() => { try { const low = (this.readStore('bezent_feedback_submissions', []) || []).filter(f => parseFloat(f.avg || 10) < 4.0); if (!low.length) return ''; return '<div class="mt-3 p-3 bg-rose-50 border border-rose-100 rounded-lg text-xs font-medium text-rose-800">&#9888; Attention: ' + low.map(f => f.client || 'Client').join(', ') + ' scored below 4.0 — follow up recommended.</div>'; } catch (_) { return ''; } })()}
+                            ${(() => { try { const low = (this.readStore('bezent_feedback_submissions', []) || []).filter(f => parseFloat(f.avg || 10) <4.0); if (!low.length) return ''; return '<div class="mt-3 p-3 bg-rose-50 border border-rose-100 rounded-lg text-xs font-medium text-rose-800">&#9888; Attention: ' + low.map(f => f.client || 'Client').join(', ') + ' scored below 4.0 — follow up recommended.</div>'; } catch (_) { return ''; } })()}
                         </div>
                     </div>
                 </div>
@@ -12890,12 +12890,12 @@ class MarketFlowCRM {
                             <!-- Stop list -->
                             <div class="space-y-0">
                                 ${r.stops.map((stop, idx) => {
-                const isDone = idx < completedStops;
+                const isDone = idx <completedStops;
                 return `
-                                <div class="flex gap-3 ${idx < r.stops.length - 1 ? 'mb-2.5' : ''}">
+                                <div class="flex gap-3 ${idx <r.stops.length - 1 ? 'mb-2.5' : ''}">
                                     <div class="flex flex-col items-center flex-shrink-0">
                                         <div class="w-3 h-3 rounded-full mt-0.5 ${isDone ? 'bg-emerald-500' : dotClass(stop.status)} ${isDone ? 'ring-2 ring-emerald-200' : ''}"></div>
-                                        ${idx < r.stops.length - 1 ? `<div class="w-px flex-1 mt-1 ${isDone ? 'bg-emerald-300' : 'bg-slate-200'}" style="min-height:14px;"></div>` : ''}
+                                        ${idx <r.stops.length - 1 ? `<div class="w-px flex-1 mt-1 ${isDone ? 'bg-emerald-300' : 'bg-slate-200'}" style="min-height:14px;"></div>` : ''}
                                     </div>
                                     <div class="pb-1 min-w-0 flex-1">
                                         <div class="flex items-center gap-1.5">
@@ -12937,7 +12937,7 @@ class MarketFlowCRM {
                             </thead>
                             <tbody class="divide-y divide-slate-100">
                                 ${routes.flatMap((r, ri) => r.stops.map((s, si) => {
-            const done = ri === 0 && si < 2;
+            const done = ri === 0 && si <2;
             const label = done ? 'Completed' : ri === 0 && si === 2 ? 'Next Up' : 'Scheduled';
             const cls = done ? 'bg-emerald-50 text-emerald-700' : label === 'Next Up' ? 'bg-purple-50 text-purple-700' : 'bg-slate-100 text-slate-500';
             return `
@@ -13501,17 +13501,17 @@ class MarketFlowCRM {
             },
             {
                 id: 'KRI-002', category: 'Financial', risk: 'Invoice Collection Rate',
-                likelihood: collRate < 80 ? 4 : collRate < 90 ? 2 : 1,
+                likelihood: collRate <80 ? 4 : collRate <90 ? 2 : 1,
                 impact: 4, threshold: '\u2265 90% collection rate',
                 current: `${collRate}% collection rate`,
                 status: collRate >= 90 ? 'Within' : collRate >= 80 ? 'Warning' : 'Breached',
                 trend: collRate >= 90 ? 'Stable' : 'Declining', owner: 'Billing',
-                action: collRate < 90 ? 'Follow up on pending invoices' : 'Maintain billing cadence'
+                action: collRate <90 ? 'Follow up on pending invoices' : 'Maintain billing cadence'
             },
             {
                 id: 'KRI-003', category: 'Operational', risk: 'Project Delivery Delays',
                 likelihood: delayPct >= 25 ? 5 : delayPct >= 15 ? 3 : 1,
-                impact: 5, threshold: '< 15% projects delayed',
+                impact: 5, threshold: '<15% projects delayed',
                 current: `${delayPct}% projects delayed`,
                 status: delayPct >= 25 ? 'Breached' : delayPct >= 15 ? 'Warning' : 'Within',
                 trend: delayPct >= 20 ? 'Worsening' : 'Stable', owner: 'Project Manager',
@@ -13519,39 +13519,39 @@ class MarketFlowCRM {
             },
             {
                 id: 'KRI-004', category: 'Client', risk: 'Lead Conversion Rate',
-                likelihood: convRate < 25 ? 4 : convRate < 35 ? 2 : 1,
+                likelihood: convRate <25 ? 4 : convRate <35 ? 2 : 1,
                 impact: 4, threshold: '\u2265 30% lead conversion',
                 current: `${convRate}% conversion (${convertedLeads}/${totalLeads})`,
                 status: convRate >= 30 ? 'Within' : convRate >= 20 ? 'Warning' : 'Breached',
                 trend: convRate >= 30 ? 'Stable' : 'Declining', owner: 'Sales',
-                action: convRate < 30 ? 'Review pitch process; increase follow-ups' : 'Maintain current strategy'
+                action: convRate <30 ? 'Review pitch process; increase follow-ups' : 'Maintain current strategy'
             },
             {
                 id: 'KRI-005', category: 'Client', risk: 'Client Satisfaction Score',
-                likelihood: !avgFeedback ? 2 : parseFloat(avgFeedback) < 3 ? 4 : parseFloat(avgFeedback) < 4 ? 2 : 1,
+                likelihood: !avgFeedback ? 2 : parseFloat(avgFeedback) <3 ? 4 : parseFloat(avgFeedback) <4 ? 2 : 1,
                 impact: 5, threshold: '\u2265 4.0 / 5.0 avg feedback',
                 current: avgFeedback ? `${avgFeedback} / 5.0 avg (${feedback.length} responses)` : 'No feedback yet',
                 status: !avgFeedback ? 'Warning' : parseFloat(avgFeedback) >= 4 ? 'Within' : parseFloat(avgFeedback) >= 3 ? 'Warning' : 'Breached',
                 trend: 'Stable', owner: 'Account Management',
-                action: !avgFeedback ? 'Share feedback survey link with clients' : parseFloat(avgFeedback) < 4 ? 'Review low-scoring areas' : 'Keep up quality'
+                action: !avgFeedback ? 'Share feedback survey link with clients' : parseFloat(avgFeedback) <4 ? 'Review low-scoring areas' : 'Keep up quality'
             },
             {
                 id: 'KRI-006', category: 'Marketing', risk: 'Lead Pipeline Volume',
-                likelihood: totalLeads < 10 ? 4 : totalLeads < 50 ? 2 : 1,
+                likelihood: totalLeads <10 ? 4 : totalLeads <50 ? 2 : 1,
                 impact: 4, threshold: '\u2265 20 active leads',
                 current: `${totalLeads} total leads`,
                 status: totalLeads >= 20 ? 'Within' : totalLeads >= 10 ? 'Warning' : 'Breached',
                 trend: totalLeads >= 20 ? 'Improving' : 'Declining', owner: 'Marketing',
-                action: totalLeads < 20 ? 'Increase lead generation activities' : 'Maintain current outreach'
+                action: totalLeads <20 ? 'Increase lead generation activities' : 'Maintain current outreach'
             },
             {
                 id: 'KRI-007', category: 'Financial', risk: 'Revenue Visibility',
-                likelihood: projects.length < 3 ? 3 : 1,
+                likelihood: projects.length <3 ? 3 : 1,
                 impact: 3, threshold: '\u2265 3 active projects',
                 current: `${projects.length} total projects`,
                 status: projects.length >= 5 ? 'Within' : projects.length >= 3 ? 'Warning' : 'Breached',
                 trend: projects.length >= 3 ? 'Stable' : 'Declining', owner: 'Sales',
-                action: projects.length < 3 ? 'Convert pending leads to projects' : 'Project pipeline healthy'
+                action: projects.length <3 ? 'Convert pending leads to projects' : 'Project pipeline healthy'
             }
         ];
 
@@ -15413,7 +15413,7 @@ class MarketFlowCRM {
                 }
 
                 if (e.key === 'Enter') {
-                    if (!lastMatches.length || activeIndex < 0) return;
+                    if (!lastMatches.length || activeIndex <0) return;
                     const item = lastMatches[activeIndex];
                     if (!item) return;
                     searchInput.value = '';

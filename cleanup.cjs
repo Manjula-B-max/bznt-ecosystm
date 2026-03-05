@@ -1,37 +1,40 @@
 const fs = require('fs');
 let src = fs.readFileSync('./client/app.js', 'utf8');
+const orig = src;
 
-function rep(old, neo, label) {
-    if (src.includes(old)) { src = src.replace(old, neo); console.log('✅', label); return; }
-    const lf = old.replace(/\r\n/g, '\n');
-    if (src.includes(lf)) { src = src.replace(lf, neo.replace(/\r\n/g, '\n')); console.log('✅', label, '(LF)'); return; }
-    console.log('⚠️  NOT FOUND:', label);
-}
+// 1. Fix all broken < div, < !-- (space after <) HTML tags
+// These were caused by bad template literal formatting
+let count = 0;
 
-// Fix the tableRows in getReportsFunnel()
-rep(
-    `        const tableRows = [\r\n            { source: 'IndiaMart', leads: 180, qualified: 110, proposals: 62, deals: 36, projects: 28, convRate: '20.0%' },\r\n            { source: 'Website', leads: 95, qualified: 70, proposals: 44, deals: 28, projects: 22, convRate: '29.5%' },\r\n            { source: 'Referral', leads: 75, qualified: 58, proposals: 34, deals: 18, projects: 13, convRate: '24.0%' },\r\n            { source: 'Cold Call', leads: 60, qualified: 25, proposals: 10, deals: 4, projects: 2, convRate: '6.7%' },\r\n            { source: 'LinkedIn', leads: 40, qualified: 17, proposals: 6, deals: 3, projects: 2, convRate: '7.5%' }\r\n        ];`,
-    `        // Build source breakdown from real leads
-        const _funnelLeads = this.getStoredLeads ? this.getStoredLeads() : [];
-        const _srcMap = new Map();
-        _funnelLeads.forEach(l => {
-            const src2 = String(l.source||'Other').trim() || 'Other';
-            if (!_srcMap.has(src2)) _srcMap.set(src2, { leads:0, qualified:0, proposals:0, deals:0, projects:0 });
-            const r = _srcMap.get(src2);
-            r.leads++;
-            const st = String(l.stage||'').toLowerCase();
-            if (!['new lead','missed call'].includes(st)) r.qualified++;
-            if (['quotation','negotiation','closed','po received'].includes(st)) r.proposals++;
-            if (['closed','po received'].includes(st)) r.deals++;
-        });
-        const tableRows = [..._srcMap.entries()].map(([source, d]) => ({
-            source,
-            leads: d.leads, qualified: d.qualified, proposals: d.proposals,
-            deals: d.deals, projects: d.projects,
-            convRate: d.leads > 0 ? (d.deals/d.leads*100).toFixed(1)+'%' : '0%'
-        }));`,
-    'funnel tableRows hardcoded'
-);
+// Fix "< div" -> "<div", "< !--" -> "<!--", "< select" -> "<select", etc.
+src = src.replace(/< (div|span|p |button|a |section|ul|li|h[1-6]|table|thead|tbody|tr|td|th|form|input|select|option|label|svg|path|circle|img|canvas|nav|aside|main|header|footer)/g, (m, tag) => {
+    count++;
+    return '<' + tag;
+});
+src = src.replace(/< !--/g, () => { count++; return '<!--'; });
+src = src.replace(/<\/select >/g, () => { count++; return '</select>'; });
+src = src.replace(/<\/div >/g, () => { count++; return '</div>'; });
+src = src.replace(/< select /g, () => { count++; return '<select '; });
+// Fix "< div " style with trailing space before tag name
+src = src.replace(/\< ([\w])/g, (m, c) => { count++; return '<' + c; });
+
+console.log(`✅ Fixed ${count} broken HTML tag(s)`);
+
+// 2. Fix bg-white/8 -> bg-white/10 (invalid Tailwind opacity)
+const bgCount = (src.match(/bg-white\/8\b/g) || []).length;
+src = src.replace(/bg-white\/8\b/g, 'bg-white/10');
+console.log(`✅ Fixed ${bgCount} bg-white/8 -> bg-white/10`);
+
+// 3. Fix broken < select id = "..." with spaces around =
+// Already checked for </select > above, but also fix select with spaces:
+const selCount = (src.match(/\< select id = /g) || []).length;
+src = src.replace(/\< select id = /g, '<select id=');
+console.log(`✅ Fixed ${selCount} broken <select id = ...`);
 
 fs.writeFileSync('./client/app.js', src);
-console.log('Done.');
+console.log('Saved.');
+
+// Verify syntax
+const vm = require('vm');
+try { new vm.Script(src); console.log('SYNTAX OK'); }
+catch (e) { console.log('ERROR:', e.message); }

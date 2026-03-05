@@ -1,40 +1,81 @@
 const fs = require('fs');
 let src = fs.readFileSync('./client/app.js', 'utf8');
-const orig = src;
 
-// 1. Fix all broken < div, < !-- (space after <) HTML tags
-// These were caused by bad template literal formatting
-let count = 0;
+// The nuclear option: 
+// Instead of relying on grid on the WRAPPER div,
+// make EACH CARD explicitly sized to 50% using inline styles
+// with float as fallback, ensuring side-by-side regardless of any CSS override
 
-// Fix "< div" -> "<div", "< !--" -> "<!--", "< select" -> "<select", etc.
-src = src.replace(/< (div|span|p |button|a |section|ul|li|h[1-6]|table|thead|tbody|tr|td|th|form|input|select|option|label|svg|path|circle|img|canvas|nav|aside|main|header|footer)/g, (m, tag) => {
-    count++;
-    return '<' + tag;
-});
-src = src.replace(/< !--/g, () => { count++; return '<!--'; });
-src = src.replace(/<\/select >/g, () => { count++; return '</select>'; });
-src = src.replace(/<\/div >/g, () => { count++; return '</div>'; });
-src = src.replace(/< select /g, () => { count++; return '<select '; });
-// Fix "< div " style with trailing space before tag name
-src = src.replace(/\< ([\w])/g, (m, c) => { count++; return '<' + c; });
+// Find the contacts card opening div and make it explicitly 50% wide float left
+const contactsCard = `<div class="relative overflow-hidden bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl p-6 shadow-xl cursor-pointer group" id="emailCampCardContacts">`;
+const contactsFixed = `<div class="relative overflow-hidden bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl p-6 shadow-xl cursor-pointer group" id="emailCampCardContacts" style="width:calc(50% - 0.375rem);float:left;box-sizing:border-box;">`;
 
-console.log(`✅ Fixed ${count} broken HTML tag(s)`);
+// Find the alerts card opening div and make it explicitly 50% wide float right  
+const alertsCard = `<div class="relative overflow-hidden bg-gradient-to-br from-amber-600 to-orange-700 rounded-2xl p-6 shadow-xl cursor-pointer group" id="emailCampCardAlerts">`;
+const alertsFixed = `<div class="relative overflow-hidden bg-gradient-to-br from-amber-600 to-orange-700 rounded-2xl p-6 shadow-xl cursor-pointer group" id="emailCampCardAlerts" style="width:calc(50% - 0.375rem);float:right;box-sizing:border-box;">`;
 
-// 2. Fix bg-white/8 -> bg-white/10 (invalid Tailwind opacity)
-const bgCount = (src.match(/bg-white\/8\b/g) || []).length;
-src = src.replace(/bg-white\/8\b/g, 'bg-white/10');
-console.log(`✅ Fixed ${bgCount} bg-white/8 -> bg-white/10`);
+if (src.includes(contactsCard)) {
+    src = src.replace(contactsCard, contactsFixed);
+    console.log('✅ Contacts card: float left, 50%');
+} else {
+    console.log('⚠️ contacts card div not found');
+    const i = src.indexOf('emailCampCardContacts');
+    const lines = src.split('\n');
+    const ln = src.slice(0, i).split('\n').length;
+    console.log('At L' + ln + ':', lines[ln - 1].trim().slice(0, 130));
+}
 
-// 3. Fix broken < select id = "..." with spaces around =
-// Already checked for </select > above, but also fix select with spaces:
-const selCount = (src.match(/\< select id = /g) || []).length;
-src = src.replace(/\< select id = /g, '<select id=');
-console.log(`✅ Fixed ${selCount} broken <select id = ...`);
+if (src.includes(alertsCard)) {
+    src = src.replace(alertsCard, alertsFixed);
+    console.log('✅ Alerts card: float right, 50%');
+} else {
+    console.log('⚠️ alerts card div not found');
+    const i = src.indexOf('emailCampCardAlerts');
+    const lines = src.split('\n');
+    const ln = src.slice(0, i).split('\n').length;
+    console.log('At L' + ln + ':', lines[ln - 1].trim().slice(0, 130));
+}
+
+// Change the wrapper div to use clearfix instead of grid
+const oldWrapper = `                <style>#campaignCardsRow{display:grid!important;grid-template-columns:1fr 1fr!important;gap:.75rem!important;}</style>
+                <div id="campaignCardsRow" style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem;">`;
+const newWrapper = `                <div id="campaignCardsRow" style="overflow:hidden;width:100%;">`;
+
+if (src.includes(oldWrapper)) {
+    src = src.replace(oldWrapper, newWrapper);
+    console.log('✅ Wrapper changed to clearfix container');
+} else {
+    console.log('⚠️ old wrapper not found, trying simpler...');
+    if (src.includes('id="campaignCardsRow"')) {
+        // Just update the existing tag
+        src = src.replace(
+            /(<div id="campaignCardsRow"[^>]*>)/,
+            '<div id="campaignCardsRow" style="overflow:hidden;width:100%;">'
+        );
+        console.log('✅ Wrapper replaced via regex');
+    }
+}
+
+// Add a clearfix div after alerts card closing to contain the floats
+// Find end of alertsCard and its closing </div> (cards wrapper closing)
+const closingPattern = `                    </div>\r\n\r\n                </div>`;
+const closingFixed = `                    </div>\r\n                    <div style="clear:both;"></div>\r\n\r\n                </div>`;
+if (src.includes(closingPattern)) {
+    // find the one right after alertsCard
+    const alertsPos = src.indexOf('emailCampCardAlerts');
+    const closingPos = src.indexOf(closingPattern, alertsPos);
+    src = src.slice(0, closingPos) + closingFixed + src.slice(closingPos + closingPattern.length);
+    console.log('✅ Clearfix div added after alerts card');
+}
 
 fs.writeFileSync('./client/app.js', src);
-console.log('Saved.');
 
-// Verify syntax
+// Bump version
+let html = fs.readFileSync('./client/marketflow-crm.html', 'utf8');
+html = html.replace(/app\.js\?v=\d+/, 'app.js?v=163');
+fs.writeFileSync('./client/marketflow-crm.html', html);
+console.log('✅ Version bumped to 163');
+
 const vm = require('vm');
 try { new vm.Script(src); console.log('SYNTAX OK'); }
 catch (e) { console.log('ERROR:', e.message); }

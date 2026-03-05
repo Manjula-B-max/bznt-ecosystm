@@ -46,7 +46,7 @@ class MarketFlowCRM {
         const stages = this.getLeadPipelineStages();
         const curr = String(currentStage || '').trim().toLowerCase();
         let currentIdx = stages.findIndex(s => String(s).toLowerCase() === curr);
-        if (currentIdx <0) currentIdx = 0;
+        if (currentIdx < 0) currentIdx = 0;
 
         return `
             <div class="mt-2">
@@ -855,7 +855,7 @@ class MarketFlowCRM {
 
         const leads = this.getStoredLeads();
         const idx = leads.findIndex(l => String(l?.id || '').trim().toLowerCase() === id.toLowerCase());
-        if (idx <0) return { ok: false, message: 'Lead not found.' };
+        if (idx < 0) return { ok: false, message: 'Lead not found.' };
 
         const lead = leads[idx];
         const clientName = String(lead.company || '').trim();
@@ -1232,7 +1232,7 @@ class MarketFlowCRM {
             const model = this.ensureProjectModel(p);
             const parts = path.split('.').filter(Boolean);
             let ref = model;
-            for (let i = 0; i <parts.length - 1; i++) {
+            for (let i = 0; i < parts.length - 1; i++) {
                 const k = parts[i];
                 if (!ref[k] || typeof ref[k] !== 'object') ref[k] = {};
                 ref = ref[k];
@@ -1398,7 +1398,7 @@ class MarketFlowCRM {
     setNestedProperty(obj, path, value) {
         const parts = path.split('.');
         let cur = obj;
-        for (let i = 0; i <parts.length - 1; i++) {
+        for (let i = 0; i < parts.length - 1; i++) {
             const part = parts[i];
             if (!(part in cur) || typeof cur[part] !== 'object') cur[part] = {};
             cur = cur[part];
@@ -2868,7 +2868,7 @@ class MarketFlowCRM {
                 const idx = Number(a.slice('quote:item:remove:'.length));
                 if (!this._quoteDraft) this._quoteDraft = this.getSampleQuotationTemplate();
                 const items = Array.isArray(this._quoteDraft.items) ? this._quoteDraft.items : [];
-                if (Number.isFinite(idx) && idx >= 0 && idx <items.length) {
+                if (Number.isFinite(idx) && idx >= 0 && idx < items.length) {
                     items.splice(idx, 1);
                     this._quoteDraft.items = items;
                     this.renderContent();
@@ -3544,7 +3544,7 @@ class MarketFlowCRM {
                 if (itemEl) {
                     const idx = Number(itemEl.getAttribute('data-quote-item-index'));
                     const field = String(itemEl.getAttribute('data-quote-item-field') || '').trim();
-                    if (!Number.isFinite(idx) || idx <0) return;
+                    if (!Number.isFinite(idx) || idx < 0) return;
                     if (!Array.isArray(this._quoteDraft.items)) this._quoteDraft.items = [];
                     while (this._quoteDraft.items.length <= idx) this._quoteDraft.items.push({ description: '', hsnSac: '', dueOn: '', qty: 0, rate: 0, amount: 0 });
                     const value = (itemEl instanceof HTMLInputElement || itemEl instanceof HTMLTextAreaElement || itemEl instanceof HTMLSelectElement)
@@ -3592,7 +3592,7 @@ class MarketFlowCRM {
                 if (itemEl) {
                     const idx = Number(itemEl.getAttribute('data-rfp-item-index'));
                     const field = String(itemEl.getAttribute('data-rfp-item-field') || '').trim();
-                    if (!Number.isFinite(idx) || idx <0) return;
+                    if (!Number.isFinite(idx) || idx < 0) return;
                     if (!Array.isArray(this._rfpDraft.items)) this._rfpDraft.items = [];
                     while (this._rfpDraft.items.length <= idx) this._rfpDraft.items.push({ description: '', uom: 'AE', qty: 1, rate: 0, amount: 0 });
                     const value = (itemEl instanceof HTMLInputElement || itemEl instanceof HTMLTextAreaElement || itemEl instanceof HTMLSelectElement)
@@ -3688,7 +3688,7 @@ class MarketFlowCRM {
                 const itemEl = target.closest('[data-quote-item-index][data-quote-item-field="serviceCharge"]');
                 if (!itemEl) return;
                 const idx = Number(itemEl.getAttribute('data-quote-item-index'));
-                if (!Number.isFinite(idx) || idx <0) return;
+                if (!Number.isFinite(idx) || idx < 0) return;
                 if (!this._quoteDraft) this._quoteDraft = this.getSampleQuotationTemplate();
                 if (!Array.isArray(this._quoteDraft.items)) this._quoteDraft.items = [];
                 while (this._quoteDraft.items.length <= idx) this._quoteDraft.items.push({ description: '', hsnSac: '', dueOn: '', qty: 0, rate: 0, amount: 0 });
@@ -4123,10 +4123,10 @@ class MarketFlowCRM {
                             label: 'Expected Revenue (₹)',
                             data: (() => {
                                 try {
-                                    const invs = this.getStoredInvoices ? this.getStoredInvoices().filter(i=>String(i.status||'').toLowerCase()!=='paid') : [];
-                                    const total = invs.reduce((s,i)=>s+(parseFloat(String(i.amount||'0').replace(/[^0-9.]/g,''))||0),0);
-                                    return [Math.round(total*0.2), Math.round(total*0.45), total];
-                                } catch(_){ return [0,0,0]; }
+                                    const invs = this.getStoredInvoices ? this.getStoredInvoices().filter(i => String(i.status || '').toLowerCase() !== 'paid') : [];
+                                    const total = invs.reduce((s, i) => s + (parseFloat(String(i.amount || '0').replace(/[^0-9.]/g, '')) || 0), 0);
+                                    return [Math.round(total * 0.2), Math.round(total * 0.45), total];
+                                } catch (_) { return [0, 0, 0]; }
                             })(),
                             backgroundColor: 'rgba(14, 165, 233, 0.65)'
                         },
@@ -4134,10 +4134,10 @@ class MarketFlowCRM {
                             label: 'Risk Amount (₹)',
                             data: (() => {
                                 try {
-                                    const ov = this.getStoredInvoices ? this.getStoredInvoices().filter(i=>String(i.status||'').toLowerCase()==='overdue') : [];
-                                    const total = ov.reduce((s,i)=>s+(parseFloat(String(i.amount||'0').replace(/[^0-9.]/g,''))||0),0);
-                                    return [Math.round(total*0.3), Math.round(total*0.65), total];
-                                } catch(_){ return [0,0,0]; }
+                                    const ov = this.getStoredInvoices ? this.getStoredInvoices().filter(i => String(i.status || '').toLowerCase() === 'overdue') : [];
+                                    const total = ov.reduce((s, i) => s + (parseFloat(String(i.amount || '0').replace(/[^0-9.]/g, '')) || 0), 0);
+                                    return [Math.round(total * 0.3), Math.round(total * 0.65), total];
+                                } catch (_) { return [0, 0, 0]; }
                             })(),
                             backgroundColor: 'rgba(244, 63, 94, 0.65)'
                         }
@@ -4282,18 +4282,18 @@ class MarketFlowCRM {
                             const byService = new Map();
                             invs.forEach(inv => {
                                 const svc = String(inv.service || inv.type || 'Other').trim() || 'Other';
-                                const amt = parseFloat(String(inv.amount||'0').replace(/[^0-9.]/g,''))||0;
-                                byService.set(svc, (byService.get(svc)||0)+amt);
+                                const amt = parseFloat(String(inv.amount || '0').replace(/[^0-9.]/g, '')) || 0;
+                                byService.set(svc, (byService.get(svc) || 0) + amt);
                             });
-                            const sorted = [...byService.entries()].sort((a,b)=>b[1]-a[1]).slice(0,5);
-                            if(!sorted.length) return { labels:['No Data'], datasets:[{data:[1], backgroundColor:['#e2e8f0']}] };
-                            const colors = ['#0ea5e9','#6366f1','#10b981','#f59e0b','#f43f5e'];
+                            const sorted = [...byService.entries()].sort((a, b) => b[1] - a[1]).slice(0, 5);
+                            if (!sorted.length) return { labels: ['No Data'], datasets: [{ data: [1], backgroundColor: ['#e2e8f0'] }] };
+                            const colors = ['#0ea5e9', '#6366f1', '#10b981', '#f59e0b', '#f43f5e'];
                             return {
-                                labels: sorted.map(([k])=>k),
-                                datasets: [{ data: sorted.map(([,v])=>v), backgroundColor: colors.slice(0,sorted.length) }]
+                                labels: sorted.map(([k]) => k),
+                                datasets: [{ data: sorted.map(([, v]) => v), backgroundColor: colors.slice(0, sorted.length) }]
                             };
-                        } catch(_) {
-                            return { labels:['No Data'], datasets:[{data:[1], backgroundColor:['#e2e8f0']}] };
+                        } catch (_) {
+                            return { labels: ['No Data'], datasets: [{ data: [1], backgroundColor: ['#e2e8f0'] }] };
                         }
                     })()
                 },
@@ -4586,6 +4586,7 @@ class MarketFlowCRM {
             // Large dashboard cards
             document.getElementById('emailCampCardContacts')?.addEventListener('click', goContacts);
             document.getElementById('emailCampCardAlerts')?.addEventListener('click', goAlerts);
+
             // Bottom panel "View All" links
             document.getElementById('emailCampOpenContacts2')?.addEventListener('click', goContacts);
             document.getElementById('emailCampOpenAlerts2')?.addEventListener('click', goAlerts);
@@ -6794,7 +6795,7 @@ class MarketFlowCRM {
                                 <div class="text-xs text-slate-500">${selected.contact || '—'}</div>
                             </div>
 
-                            <div class="mt-5 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div style="margin-top:1.25rem;display:grid;grid-template-columns:1fr 1fr;gap:0.5rem;">
                                 <div>
                                     <div class="text-[11px] font-semibold text-slate-500">Source</div>
                                     <div class="text-sm font-medium text-slate-900 mt-1">${selected.source || '—'}</div>
@@ -8046,6 +8047,7 @@ class MarketFlowCRM {
                         </div>
                         <div class="sec-body">${esc(doc.confidentialityText || '')}</div>
                     </div>
+                    
 
                 </div>
 
@@ -8342,7 +8344,7 @@ class MarketFlowCRM {
 
     amountToWordsINR(amount) {
         const n = Math.round(Number(amount) || 0);
-        if (!Number.isFinite(n) || n <0) return 'INR Zero Only';
+        if (!Number.isFinite(n) || n < 0) return 'INR Zero Only';
         if (n === 0) return 'INR Zero Only';
         const words = this.numberToWordsIndian(n);
         return `INR ${words} Only`;
@@ -8357,7 +8359,7 @@ class MarketFlowCRM {
 
         const two = (n) => {
             if (n === 0) return '';
-            if (n <20) return a[n];
+            if (n < 20) return a[n];
             const t = Math.floor(n / 10);
             const r = n % 10;
             return `${b[t]}${r ? ' ' + a[r] : ''} `.trim();
@@ -9450,7 +9452,7 @@ class MarketFlowCRM {
                 const line = done ? `bg-${stageColor}-500` : 'bg-slate-200';
                 const dot = done ? `bg-${stageColor}-600 border-${stageColor}-600` : 'bg-white border-slate-300';
                 const text = done ? 'text-slate-900' : 'text-slate-600';
-                const showLine = i <progressStages.length - 1;
+                const showLine = i < progressStages.length - 1;
                 return `
                             <div class="flex items-start gap-3">
                                 <div class="flex flex-col items-center">
@@ -9645,7 +9647,7 @@ class MarketFlowCRM {
                                         <td class="px-4 py-3">
                                             <div class="flex items-center gap-1">
                                                 ${Array.from({ length: 5 }).map((_, idx) => `
-                                                    <i data-lucide="star" class="w-4 h-4 ${idx <i.rating ? 'text-amber-500' : 'text-slate-300'}"></i>
+                                                    <i data-lucide="star" class="w-4 h-4 ${idx < i.rating ? 'text-amber-500' : 'text-slate-300'}"></i>
                                                 `).join('')}
                                             </div>
                                         </td>
@@ -9784,10 +9786,10 @@ class MarketFlowCRM {
                     </div>
                 </div>
 
-                <!--Two big CTA cards-- >
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <!-- 2x2 Campaign Grid -->
+                <div id="campaignCardsRow" style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;width:100%;">
 
-                    <!-- Contacts card -->
+                    <!-- 1. Contacts card (top-left) -->
                     <div class="relative overflow-hidden bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl p-6 shadow-xl cursor-pointer group" id="emailCampCardContacts">
                         <div class="absolute inset-0 opacity-10 pointer-events-none" style="background: radial-gradient(circle at 80% 20%, #a78bfa 0%, transparent 60%)"></div>
                         <div class="flex items-start justify-between">
@@ -9798,7 +9800,7 @@ class MarketFlowCRM {
                                     </div>
                                     <span class="text-xs font-semibold text-slate-400 uppercase tracking-widest">Contacts Directory</span>
                                 </div>
-                                <div class="text-5xl font-extrabold text-white">${totalContacts}</div>
+                                <div class="text-3xl font-extrabold text-white">${totalContacts}</div>
                                 <div class="text-sm text-slate-400 mt-1">Total contacts in CRM</div>
                             </div>
                             <div class="flex flex-col gap-2 text-right">
@@ -9812,7 +9814,7 @@ class MarketFlowCRM {
                                 </div>
                             </div>
                         </div>
-                        <div class="mt-5 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div class="mt-5 grid grid-cols-2 gap-3">
                             <div class="bg-white/10 rounded-xl p-3">
                                 <div class="text-xs text-slate-400">With Email</div>
                                 <div class="text-lg font-bold text-white mt-0.5">${withEmail}</div>
@@ -9837,7 +9839,7 @@ class MarketFlowCRM {
                         </div>
                     </div>
 
-                    <!-- Alerts & GMass card -->
+                    <!-- 2. Alerts & GMass card (top-right) -->
                     <div class="relative overflow-hidden bg-gradient-to-br from-amber-600 to-orange-700 rounded-2xl p-6 shadow-xl cursor-pointer group" id="emailCampCardAlerts">
                         <div class="absolute inset-0 opacity-10 pointer-events-none" style="background: radial-gradient(circle at 80% 20%, #fde68a 0%, transparent 60%)"></div>
                         <div class="flex items-start justify-between">
@@ -9848,7 +9850,7 @@ class MarketFlowCRM {
                                     </div>
                                     <span class="text-xs font-semibold text-amber-200 uppercase tracking-widest">Alerts &amp; GMass</span>
                                 </div>
-                                <div class="text-5xl font-extrabold text-white">${totalTriggers}</div>
+                                <div class="text-3xl font-extrabold text-white">${totalTriggers}</div>
                                 <div class="text-sm text-amber-200 mt-1">Active trigger alerts</div>
                             </div>
                             <div class="flex flex-col gap-2 text-right">
@@ -9862,7 +9864,7 @@ class MarketFlowCRM {
                                 </div>
                             </div>
                         </div>
-                        <div class="mt-5 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div class="mt-5 grid grid-cols-2 gap-3">
                             <div class="bg-white/10 rounded-xl p-3">
                                 <div class="text-xs text-amber-200">Completed Projects</div>
                                 <div class="text-lg font-bold text-white mt-0.5">${trigCompleted} <span class="text-xs font-normal text-amber-200">need follow-up</span></div>
@@ -9880,74 +9882,18 @@ class MarketFlowCRM {
                             </div>
                         </div>
                     </div>
-                </div>
 
-                <!--Stats row-- >
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <div class="bg-white rounded-xl border border-slate-200 p-4 shadow-sm">
-                        <div class="text-xs font-semibold text-slate-500 uppercase tracking-wide">Total Contacts</div>
-                        <div class="text-3xl font-extrabold text-slate-900 mt-2">${totalContacts}</div>
-                        <div class="text-xs text-slate-400 mt-1">${totalClients} clients · ${totalLeads} leads</div>
-                    </div>
-                    <div class="bg-white rounded-xl border border-emerald-200 p-4 shadow-sm">
-                        <div class="text-xs font-semibold text-emerald-600 uppercase tracking-wide">Email-Ready</div>
-                        <div class="text-3xl font-extrabold text-slate-900 mt-2">${withEmail}</div>
-                        <div class="text-xs text-slate-400 mt-1">${totalContacts ? Math.round(withEmail / totalContacts * 100) : 0}% of all contacts</div>
-                    </div>
-                    <div class="bg-white rounded-xl border border-rose-200 p-4 shadow-sm">
-                        <div class="text-xs font-semibold text-rose-600 uppercase tracking-wide">Payment Alerts</div>
-                        <div class="text-3xl font-extrabold text-slate-900 mt-2">${trigPayment}</div>
-                        <div class="text-xs text-slate-400 mt-1">overdue / outstanding</div>
-                    </div>
-                    <div class="bg-white rounded-xl border border-amber-200 p-4 shadow-sm">
-                        <div class="text-xs font-semibold text-amber-600 uppercase tracking-wide">Active Triggers</div>
-                        <div class="text-3xl font-extrabold text-slate-900 mt-2">${totalTriggers}</div>
-                        <div class="text-xs text-slate-400 mt-1">auto-emails queued</div>
-                    </div>
-                </div>
-
-                <!--Bottom split: contacts list + trigger breakdown-- >
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-
-        <!-- Recent contacts -->
-        <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-            <div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
-                <div>
-                    <div class="text-sm font-bold text-slate-900">Recent Clients</div>
-                    <div class="text-xs text-slate-400 mt-0.5">Latest ${recentClients.length} in directory</div>
-                </div>
-                <button id="emailCampOpenContacts2" class="text-xs font-semibold text-purple-600 hover:text-purple-700 transition-colors">View All →</button>
-            </div>
-            <div class="divide-y divide-slate-50">
-                ${recentClients.map(c => `
-                                <div class="flex items-center gap-3 px-5 py-3">
-                                    <div class="w-8 h-8 rounded-full bg-purple-100 text-purple-700 font-bold text-sm flex items-center justify-center flex-shrink-0">
-                                        ${esc(String(c.name || '?')[0].toUpperCase())}
-                                    </div>
-                                    <div class="flex-1 min-w-0">
-                                        <div class="text-sm font-semibold text-slate-900 truncate">${esc(c.name)}</div>
-                                        <div class="text-xs text-slate-400 truncate">${esc(c.email || '— no email —')} · ${esc(c.city || '—')}</div>
-                                    </div>
-                                    <div class="text-right flex-shrink-0">
-                                        <span class="px-2 py-0.5 text-[10px] font-semibold rounded-full ${c.stage === 'Active' ? 'bg-emerald-50 text-emerald-700' : c.stage === 'At Risk' ? 'bg-rose-50 text-rose-700' : 'bg-amber-50 text-amber-700'}">${esc(c.stage || '—')}</span>
-                                        ${c.dueAmount && c.dueAmount !== '₹0' ? `<div class="text-[10px] text-rose-500 font-semibold mt-0.5">${esc(c.dueAmount)} due</div>` : ''}
-                                    </div>
-                                </div>
-                            `).join('')}
-            </div>
-        </div>
-
-        <!-- Trigger breakdown -->
-        <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-            <div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
-                <div>
-                    <div class="text-sm font-bold text-slate-900">Trigger Breakdown</div>
-                    <div class="text-xs text-slate-400 mt-0.5">Auto-emails by category</div>
-                </div>
-                <button id="emailCampOpenAlerts2" class="text-xs font-semibold text-amber-600 hover:text-amber-700 transition-colors">View All →</button>
-            </div>
-            <div class="px-5 py-4 space-y-4">
-                ${[
+                    <!-- 3. Trigger Breakdown card (bottom-left) -->
+                    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                        <div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
+                            <div>
+                                <div class="text-sm font-bold text-slate-900">Trigger Breakdown</div>
+                                <div class="text-xs text-slate-400 mt-0.5">Auto-emails by category</div>
+                            </div>
+                            <button id="emailCampOpenAlerts2" class="text-xs font-semibold text-amber-600 hover:text-amber-700 transition-colors">View All →</button>
+                        </div>
+                        <div class="px-5 py-4 space-y-4">
+                            ${[
                 { label: 'Payment Overdue', count: trigPayment, color: 'rose', w: totalTriggers ? Math.round(trigPayment / totalTriggers * 100) : 0 },
                 { label: 'Project Delayed', count: trigDelayed, color: 'amber', w: totalTriggers ? Math.round(trigDelayed / totalTriggers * 100) : 0 },
                 { label: 'Completed Follow-up', count: trigCompleted, color: 'emerald', w: totalTriggers ? Math.round(trigCompleted / totalTriggers * 100) : 0 },
@@ -9963,8 +9909,8 @@ class MarketFlowCRM {
                                     </div>
                                 </div>
                             `).join('')}
-                <div class="pt-2 border-t border-slate-100">
-                    ${alertProjects.length ? alertProjects.map(p => `
+                            <div class="pt-2 border-t border-slate-100">
+                                ${alertProjects.length ? alertProjects.map(p => `
                                     <div class="flex items-center justify-between py-2">
                                         <div>
                                             <div class="text-xs font-semibold text-slate-800">${esc(p.name)}</div>
@@ -9973,11 +9919,40 @@ class MarketFlowCRM {
                                         <span class="px-2 py-0.5 text-[10px] font-bold bg-rose-50 text-rose-600 rounded-full">${esc(p.overdue)}</span>
                                     </div>
                                 `).join('') : '<div class="text-xs text-slate-400 py-2">No overdue projects — great work!</div>'}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 4. Emails / Campaigns card (bottom-right) -->
+                    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                        <div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
+                            <div>
+                                <div class="text-sm font-bold text-slate-900">Emails & Campaigns</div>
+                                <div class="text-xs text-slate-400 mt-0.5">Recent contacts & quick actions</div>
+                            </div>
+                            <button id="emailCampOpenContacts2" class="text-xs font-semibold text-purple-600 hover:text-purple-700 transition-colors">View All →</button>
+                        </div>
+                        <div class="px-5 py-4 space-y-3">
+                            ${recentClients.length ? recentClients.map(c => `
+                                <div class="flex items-center gap-3 py-2 border-b border-slate-50 last:border-0">
+                                    <div class="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-indigo-500 flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
+                                        ${esc((c.name || c.company || '?')[0]).toUpperCase()}
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <div class="text-xs font-semibold text-slate-800 truncate">${esc(c.name || c.company || '—')}</div>
+                                        <div class="text-[11px] text-slate-400 truncate">${esc(c.email || 'No email')}</div>
+                                    </div>
+                                    <span class="px-2 py-0.5 text-[10px] font-bold rounded-full flex-shrink-0 ${c.email && c.email.includes('@') ? 'bg-emerald-50 text-emerald-600' : 'bg-slate-100 text-slate-400'}">${c.email && c.email.includes('@') ? 'Ready' : 'No Email'}</span>
+                                </div>
+                            `).join('') : '<div class="text-xs text-slate-400 py-2">No contacts yet — add clients or leads to get started.</div>'}
+                            <div class="pt-2 border-t border-slate-100 flex items-center justify-between">
+                                <div class="text-xs text-slate-500">${withEmail} of ${totalContacts} contacts email-ready</div>
+                                <div class="text-xs font-semibold text-purple-600">${totalContacts ? Math.round(withEmail / totalContacts * 100) : 0}%</div>
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
-            </div>
-        </div>
-    </div>
-            </div>
     `;
     }
 
@@ -12442,7 +12417,7 @@ class MarketFlowCRM {
                                     </div>
                                 `).join('')}
                             </div>
-                            ${(() => { try { const low = (this.readStore('bezent_feedback_submissions', []) || []).filter(f => parseFloat(f.avg || 10) <4.0); if (!low.length) return ''; return '<div class="mt-3 p-3 bg-rose-50 border border-rose-100 rounded-lg text-xs font-medium text-rose-800">&#9888; Attention: ' + low.map(f => f.client || 'Client').join(', ') + ' scored below 4.0 — follow up recommended.</div>'; } catch (_) { return ''; } })()}
+                            ${(() => { try { const low = (this.readStore('bezent_feedback_submissions', []) || []).filter(f => parseFloat(f.avg || 10) < 4.0); if (!low.length) return ''; return '<div class="mt-3 p-3 bg-rose-50 border border-rose-100 rounded-lg text-xs font-medium text-rose-800">&#9888; Attention: ' + low.map(f => f.client || 'Client').join(', ') + ' scored below 4.0 — follow up recommended.</div>'; } catch (_) { return ''; } })()}
                         </div>
                     </div>
                 </div>
@@ -12890,12 +12865,12 @@ class MarketFlowCRM {
                             <!-- Stop list -->
                             <div class="space-y-0">
                                 ${r.stops.map((stop, idx) => {
-                const isDone = idx <completedStops;
+                const isDone = idx < completedStops;
                 return `
-                                <div class="flex gap-3 ${idx <r.stops.length - 1 ? 'mb-2.5' : ''}">
+                                <div class="flex gap-3 ${idx < r.stops.length - 1 ? 'mb-2.5' : ''}">
                                     <div class="flex flex-col items-center flex-shrink-0">
                                         <div class="w-3 h-3 rounded-full mt-0.5 ${isDone ? 'bg-emerald-500' : dotClass(stop.status)} ${isDone ? 'ring-2 ring-emerald-200' : ''}"></div>
-                                        ${idx <r.stops.length - 1 ? `<div class="w-px flex-1 mt-1 ${isDone ? 'bg-emerald-300' : 'bg-slate-200'}" style="min-height:14px;"></div>` : ''}
+                                        ${idx < r.stops.length - 1 ? `<div class="w-px flex-1 mt-1 ${isDone ? 'bg-emerald-300' : 'bg-slate-200'}" style="min-height:14px;"></div>` : ''}
                                     </div>
                                     <div class="pb-1 min-w-0 flex-1">
                                         <div class="flex items-center gap-1.5">
@@ -12937,7 +12912,7 @@ class MarketFlowCRM {
                             </thead>
                             <tbody class="divide-y divide-slate-100">
                                 ${routes.flatMap((r, ri) => r.stops.map((s, si) => {
-            const done = ri === 0 && si <2;
+            const done = ri === 0 && si < 2;
             const label = done ? 'Completed' : ri === 0 && si === 2 ? 'Next Up' : 'Scheduled';
             const cls = done ? 'bg-emerald-50 text-emerald-700' : label === 'Next Up' ? 'bg-purple-50 text-purple-700' : 'bg-slate-100 text-slate-500';
             return `
@@ -13501,12 +13476,12 @@ class MarketFlowCRM {
             },
             {
                 id: 'KRI-002', category: 'Financial', risk: 'Invoice Collection Rate',
-                likelihood: collRate <80 ? 4 : collRate <90 ? 2 : 1,
+                likelihood: collRate < 80 ? 4 : collRate < 90 ? 2 : 1,
                 impact: 4, threshold: '\u2265 90% collection rate',
                 current: `${collRate}% collection rate`,
                 status: collRate >= 90 ? 'Within' : collRate >= 80 ? 'Warning' : 'Breached',
                 trend: collRate >= 90 ? 'Stable' : 'Declining', owner: 'Billing',
-                action: collRate <90 ? 'Follow up on pending invoices' : 'Maintain billing cadence'
+                action: collRate < 90 ? 'Follow up on pending invoices' : 'Maintain billing cadence'
             },
             {
                 id: 'KRI-003', category: 'Operational', risk: 'Project Delivery Delays',
@@ -13519,39 +13494,39 @@ class MarketFlowCRM {
             },
             {
                 id: 'KRI-004', category: 'Client', risk: 'Lead Conversion Rate',
-                likelihood: convRate <25 ? 4 : convRate <35 ? 2 : 1,
+                likelihood: convRate < 25 ? 4 : convRate < 35 ? 2 : 1,
                 impact: 4, threshold: '\u2265 30% lead conversion',
                 current: `${convRate}% conversion (${convertedLeads}/${totalLeads})`,
                 status: convRate >= 30 ? 'Within' : convRate >= 20 ? 'Warning' : 'Breached',
                 trend: convRate >= 30 ? 'Stable' : 'Declining', owner: 'Sales',
-                action: convRate <30 ? 'Review pitch process; increase follow-ups' : 'Maintain current strategy'
+                action: convRate < 30 ? 'Review pitch process; increase follow-ups' : 'Maintain current strategy'
             },
             {
                 id: 'KRI-005', category: 'Client', risk: 'Client Satisfaction Score',
-                likelihood: !avgFeedback ? 2 : parseFloat(avgFeedback) <3 ? 4 : parseFloat(avgFeedback) <4 ? 2 : 1,
+                likelihood: !avgFeedback ? 2 : parseFloat(avgFeedback) < 3 ? 4 : parseFloat(avgFeedback) < 4 ? 2 : 1,
                 impact: 5, threshold: '\u2265 4.0 / 5.0 avg feedback',
                 current: avgFeedback ? `${avgFeedback} / 5.0 avg (${feedback.length} responses)` : 'No feedback yet',
                 status: !avgFeedback ? 'Warning' : parseFloat(avgFeedback) >= 4 ? 'Within' : parseFloat(avgFeedback) >= 3 ? 'Warning' : 'Breached',
                 trend: 'Stable', owner: 'Account Management',
-                action: !avgFeedback ? 'Share feedback survey link with clients' : parseFloat(avgFeedback) <4 ? 'Review low-scoring areas' : 'Keep up quality'
+                action: !avgFeedback ? 'Share feedback survey link with clients' : parseFloat(avgFeedback) < 4 ? 'Review low-scoring areas' : 'Keep up quality'
             },
             {
                 id: 'KRI-006', category: 'Marketing', risk: 'Lead Pipeline Volume',
-                likelihood: totalLeads <10 ? 4 : totalLeads <50 ? 2 : 1,
+                likelihood: totalLeads < 10 ? 4 : totalLeads < 50 ? 2 : 1,
                 impact: 4, threshold: '\u2265 20 active leads',
                 current: `${totalLeads} total leads`,
                 status: totalLeads >= 20 ? 'Within' : totalLeads >= 10 ? 'Warning' : 'Breached',
                 trend: totalLeads >= 20 ? 'Improving' : 'Declining', owner: 'Marketing',
-                action: totalLeads <20 ? 'Increase lead generation activities' : 'Maintain current outreach'
+                action: totalLeads < 20 ? 'Increase lead generation activities' : 'Maintain current outreach'
             },
             {
                 id: 'KRI-007', category: 'Financial', risk: 'Revenue Visibility',
-                likelihood: projects.length <3 ? 3 : 1,
+                likelihood: projects.length < 3 ? 3 : 1,
                 impact: 3, threshold: '\u2265 3 active projects',
                 current: `${projects.length} total projects`,
                 status: projects.length >= 5 ? 'Within' : projects.length >= 3 ? 'Warning' : 'Breached',
                 trend: projects.length >= 3 ? 'Stable' : 'Declining', owner: 'Sales',
-                action: projects.length <3 ? 'Convert pending leads to projects' : 'Project pipeline healthy'
+                action: projects.length < 3 ? 'Convert pending leads to projects' : 'Project pipeline healthy'
             }
         ];
 
@@ -13686,28 +13661,28 @@ class MarketFlowCRM {
         const _invAll = this.getStoredInvoices ? this.getStoredInvoices() : [];
         const _projAll = this.getStoredProjects ? this.getStoredProjects() : [];
         const _leadsAll = this.getStoredLeads ? this.getStoredLeads() : [];
-        const _overdueCount = _invAll.filter(i=>String(i.status||'').toLowerCase()==='overdue').length;
-        const _delayedProj = _projAll.filter(p=>String(p.status||'').toLowerCase().includes('delay')||String(p.status||'').toLowerCase().includes('overdue')).length;
-        const _closedLeads = _leadsAll.filter(l=>['closed','po received'].includes(String(l.stage||'').toLowerCase())).length;
-        const _convRate = _leadsAll.length > 0 ? _closedLeads/_leadsAll.length : 0;
+        const _overdueCount = _invAll.filter(i => String(i.status || '').toLowerCase() === 'overdue').length;
+        const _delayedProj = _projAll.filter(p => String(p.status || '').toLowerCase().includes('delay') || String(p.status || '').toLowerCase().includes('overdue')).length;
+        const _closedLeads = _leadsAll.filter(l => ['closed', 'po received'].includes(String(l.stage || '').toLowerCase())).length;
+        const _convRate = _leadsAll.length > 0 ? _closedLeads / _leadsAll.length : 0;
         const slope = (val, threshLow, threshHigh) => {
             if (val >= threshHigh) return 20;
             if (val >= threshLow) return 12;
             return 6;
         };
         const risks = [
-            { id:'KRI-001', label:'Revenue Target',    score: slope(_invAll.filter(i=>String(i.status||'').toLowerCase()==='paid').length, 2, 5), status:'Within',   cat:'Financial' },
-            { id:'KRI-002', label:'Overdue Invoices',  score: slope(_overdueCount, 1, 3),   status: _overdueCount>=3?'Breached':_overdueCount>=1?'Warning':'Within', cat:'Financial' },
-            { id:'KRI-003', label:'Budget Overrun',    score: 6,  status:'Within',   cat:'Financial' },
-            { id:'KRI-004', label:'Delivery Delays',   score: slope(_delayedProj, 1, 2), status: _delayedProj>=2?'Breached':_delayedProj>=1?'Warning':'Within', cat:'Operational' },
-            { id:'KRI-005', label:'SOP Compliance',    score: 6,  status:'Within',   cat:'Operational' },
-            { id:'KRI-006', label:'Response Time',     score: 6,  status:'Within',   cat:'Operational' },
-            { id:'KRI-007', label:'Client Satisfaction', score: 6, status:'Within',  cat:'Client' },
-            { id:'KRI-008', label:'Client Churn Risk', score: slope(_overdueCount, 1, 3), status: _overdueCount>=3?'Warning':'Within', cat:'Client' },
-            { id:'KRI-009', label:'Conversion Rate',   score: slope(1-_convRate, 0.5, 0.75), status: _convRate<0.25?'Warning':'Within', cat:'Client' },
-            { id:'KRI-010', label:'Campaign ROI',      score: 6,  status:'Within',   cat:'Marketing' },
-            { id:'KRI-011', label:'Lead Pipeline',     score: slope(_leadsAll.length, 5, 20), status: _leadsAll.length<5?'Warning':'Within', cat:'Marketing' },
-            { id:'KRI-012', label:'Key Person Risk',   score: 8,  status:'Within',   cat:'Team' }
+            { id: 'KRI-001', label: 'Revenue Target', score: slope(_invAll.filter(i => String(i.status || '').toLowerCase() === 'paid').length, 2, 5), status: 'Within', cat: 'Financial' },
+            { id: 'KRI-002', label: 'Overdue Invoices', score: slope(_overdueCount, 1, 3), status: _overdueCount >= 3 ? 'Breached' : _overdueCount >= 1 ? 'Warning' : 'Within', cat: 'Financial' },
+            { id: 'KRI-003', label: 'Budget Overrun', score: 6, status: 'Within', cat: 'Financial' },
+            { id: 'KRI-004', label: 'Delivery Delays', score: slope(_delayedProj, 1, 2), status: _delayedProj >= 2 ? 'Breached' : _delayedProj >= 1 ? 'Warning' : 'Within', cat: 'Operational' },
+            { id: 'KRI-005', label: 'SOP Compliance', score: 6, status: 'Within', cat: 'Operational' },
+            { id: 'KRI-006', label: 'Response Time', score: 6, status: 'Within', cat: 'Operational' },
+            { id: 'KRI-007', label: 'Client Satisfaction', score: 6, status: 'Within', cat: 'Client' },
+            { id: 'KRI-008', label: 'Client Churn Risk', score: slope(_overdueCount, 1, 3), status: _overdueCount >= 3 ? 'Warning' : 'Within', cat: 'Client' },
+            { id: 'KRI-009', label: 'Conversion Rate', score: slope(1 - _convRate, 0.5, 0.75), status: _convRate < 0.25 ? 'Warning' : 'Within', cat: 'Client' },
+            { id: 'KRI-010', label: 'Campaign ROI', score: 6, status: 'Within', cat: 'Marketing' },
+            { id: 'KRI-011', label: 'Lead Pipeline', score: slope(_leadsAll.length, 5, 20), status: _leadsAll.length < 5 ? 'Warning' : 'Within', cat: 'Marketing' },
+            { id: 'KRI-012', label: 'Key Person Risk', score: 8, status: 'Within', cat: 'Team' }
         ];
         const scoreColors = risks.map(r => r.score >= 15 ? 'rgba(239,68,68,0.75)' : r.score >= 9 ? 'rgba(245,158,11,0.75)' : 'rgba(16,185,129,0.75)');
 
@@ -14198,32 +14173,32 @@ class MarketFlowCRM {
         const _funnelLeads = this.getStoredLeads ? this.getStoredLeads() : [];
         const _srcMap = new Map();
         _funnelLeads.forEach(l => {
-            const src2 = String(l.source||'Other').trim() || 'Other';
-            if (!_srcMap.has(src2)) _srcMap.set(src2, { leads:0, qualified:0, proposals:0, deals:0, projects:0 });
+            const src2 = String(l.source || 'Other').trim() || 'Other';
+            if (!_srcMap.has(src2)) _srcMap.set(src2, { leads: 0, qualified: 0, proposals: 0, deals: 0, projects: 0 });
             const r = _srcMap.get(src2);
             r.leads++;
-            const st = String(l.stage||'').toLowerCase();
-            if (!['new lead','missed call'].includes(st)) r.qualified++;
-            if (['quotation','negotiation','closed','po received'].includes(st)) r.proposals++;
-            if (['closed','po received'].includes(st)) r.deals++;
+            const st = String(l.stage || '').toLowerCase();
+            if (!['new lead', 'missed call'].includes(st)) r.qualified++;
+            if (['quotation', 'negotiation', 'closed', 'po received'].includes(st)) r.proposals++;
+            if (['closed', 'po received'].includes(st)) r.deals++;
         });
         const tableRows = [..._srcMap.entries()].map(([source, d]) => ({
             source,
             leads: d.leads, qualified: d.qualified, proposals: d.proposals,
             deals: d.deals, projects: d.projects,
-            convRate: d.leads > 0 ? (d.deals/d.leads*100).toFixed(1)+'%' : '0%'
+            convRate: d.leads > 0 ? (d.deals / d.leads * 100).toFixed(1) + '%' : '0%'
         }));
         // Build funnel KPIs from real lead data
         const _allLeads3 = this.getStoredLeads ? this.getStoredLeads() : [];
         const _stages = this.getLeadPipelineStages ? this.getLeadPipelineStages() : [];
-        const stageCounts = (stage) => _allLeads3.filter(l => String(l.stage||'').toLowerCase() === stage.toLowerCase()).length;
+        const stageCounts = (stage) => _allLeads3.filter(l => String(l.stage || '').toLowerCase() === stage.toLowerCase()).length;
         const _totalLeads = _allLeads3.length;
         const _qualified = _allLeads3.filter(l => {
-            const s = String(l.stage||'').toLowerCase();
+            const s = String(l.stage || '').toLowerCase();
             return s !== 'new lead' && s !== 'missed call';
         }).length;
-        const _proposals = _allLeads3.filter(l => ['quotation','negotiation','closed','po received'].includes(String(l.stage||'').toLowerCase())).length;
-        const _deals = _allLeads3.filter(l => ['closed','po received'].includes(String(l.stage||'').toLowerCase())).length;
+        const _proposals = _allLeads3.filter(l => ['quotation', 'negotiation', 'closed', 'po received'].includes(String(l.stage || '').toLowerCase())).length;
+        const _deals = _allLeads3.filter(l => ['closed', 'po received'].includes(String(l.stage || '').toLowerCase())).length;
         const _projects = (this.getStoredProjects ? this.getStoredProjects() : []).length;
         const kpis = [
             { label: 'Total Leads', val: String(_totalLeads), sub: _totalLeads > 0 ? 'from lead registry' : 'No leads yet', col: 'sky' },
@@ -14683,13 +14658,15 @@ class MarketFlowCRM {
                 type: 'bar',
                 data: {
                     labels: ['Leads', 'Qualified', 'Proposals', 'Deals', 'Projects'],
-                    datasets: [{ label: 'Count', data: (() => {
-                        try {
-                            const all = this.getLeadsData ? this.getLeadsData() : [];
-                            const stages = ['New Lead','Contacted','Follow-up','Quotation','PO Received'];
-                            return stages.map(st => all.filter(l => String(l.stage||'').toLowerCase() === st.toLowerCase()).length);
-                        } catch(_) { return [0,0,0,0,0]; }
-                    })(), backgroundColor: ['#0ea5e9', '#6366f1', '#f59e0b', '#10b981', '#8b5cf6'] }]
+                    datasets: [{
+                        label: 'Count', data: (() => {
+                            try {
+                                const all = this.getLeadsData ? this.getLeadsData() : [];
+                                const stages = ['New Lead', 'Contacted', 'Follow-up', 'Quotation', 'PO Received'];
+                                return stages.map(st => all.filter(l => String(l.stage || '').toLowerCase() === st.toLowerCase()).length);
+                            } catch (_) { return [0, 0, 0, 0, 0]; }
+                        })(), backgroundColor: ['#0ea5e9', '#6366f1', '#f59e0b', '#10b981', '#8b5cf6']
+                    }]
                 },
                 options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { grid: { display: false } }, y: { beginAtZero: true } } }
             });
@@ -14716,8 +14693,8 @@ class MarketFlowCRM {
                 data: {
                     labels: ['Email', 'WhatsApp', 'SMS', 'Call', 'Re-engagement'],
                     datasets: [
-                        { label: 'Sent', data: (() => { try { const f=this.getStoredFollowups?this.getStoredFollowups():[]; const types=['Email','WhatsApp','SMS','Call','Re-engagement']; return types.map(t=>f.filter(x=>String(x.type||'').toLowerCase()===t.toLowerCase()).length); } catch(_){return [0,0,0,0,0];} })(), backgroundColor: 'rgba(99,102,241,0.65)' },
-                        { label: 'Converted', data: [0,0,0,0,0], backgroundColor: 'rgba(16,185,129,0.75)' }
+                        { label: 'Sent', data: (() => { try { const f = this.getStoredFollowups ? this.getStoredFollowups() : []; const types = ['Email', 'WhatsApp', 'SMS', 'Call', 'Re-engagement']; return types.map(t => f.filter(x => String(x.type || '').toLowerCase() === t.toLowerCase()).length); } catch (_) { return [0, 0, 0, 0, 0]; } })(), backgroundColor: 'rgba(99,102,241,0.65)' },
+                        { label: 'Converted', data: [0, 0, 0, 0, 0], backgroundColor: 'rgba(16,185,129,0.75)' }
                     ]
                 },
                 options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } }, scales: { x: { grid: { display: false } }, y: { beginAtZero: true } } }
@@ -14743,28 +14720,28 @@ class MarketFlowCRM {
             this.charts.sopBillingChart = new Chart(billingCtx, {
                 type: 'line',
                 data: {
-                    labels: (() => { try { const invs=this.getStoredInvoices?this.getStoredInvoices():[]; const mn=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']; const set=new Set(); invs.forEach(i=>{ const d=i.invoice_date||i.date?new Date(i.invoice_date||i.date):new Date(); set.add(mn[d.getMonth()]); }); const r=[...set].slice(-6); return r.length?r:['Oct','Nov','Dec','Jan','Feb','Mar']; }catch(_){return ['Oct','Nov','Dec','Jan','Feb','Mar'];} })(),
+                    labels: (() => { try { const invs = this.getStoredInvoices ? this.getStoredInvoices() : []; const mn = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']; const set = new Set(); invs.forEach(i => { const d = i.invoice_date || i.date ? new Date(i.invoice_date || i.date) : new Date(); set.add(mn[d.getMonth()]); }); const r = [...set].slice(-6); return r.length ? r : ['Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar']; } catch (_) { return ['Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar']; } })(),
                     datasets: [
                         ...(() => {
                             try {
                                 const invs = this.getStoredInvoices ? this.getStoredInvoices() : [];
-                                const mn = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+                                const mn = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
                                 const map = new Map();
                                 invs.forEach(inv => {
-                                    const amt = parseFloat(String(inv.amount||'0').replace(/[^0-9.]/g,''))||0;
-                                    const paid = String(inv.status||'').toLowerCase()==='paid';
-                                    const d = inv.invoice_date||inv.date ? new Date(inv.invoice_date||inv.date) : new Date();
+                                    const amt = parseFloat(String(inv.amount || '0').replace(/[^0-9.]/g, '')) || 0;
+                                    const paid = String(inv.status || '').toLowerCase() === 'paid';
+                                    const d = inv.invoice_date || inv.date ? new Date(inv.invoice_date || inv.date) : new Date();
                                     const key = mn[d.getMonth()];
-                                    if(!map.has(key)) map.set(key,{inv:0,col:0});
-                                    const m=map.get(key); m.inv+=amt; if(paid) m.col+=amt;
+                                    if (!map.has(key)) map.set(key, { inv: 0, col: 0 });
+                                    const m = map.get(key); m.inv += amt; if (paid) m.col += amt;
                                 });
                                 const entries = [...map.entries()].slice(-6);
-                                const labs = entries.length ? entries.map(([k])=>k) : ['Oct','Nov','Dec','Jan','Feb','Mar'];
+                                const labs = entries.length ? entries.map(([k]) => k) : ['Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar'];
                                 return [
-                                    { label:'Invoiced',  data: entries.length?entries.map(([,v])=>v.inv):[0,0,0,0,0,0], borderColor:'#6366f1', backgroundColor:'rgba(99,102,241,0.1)', tension:0.35 },
-                                    { label:'Collected', data: entries.length?entries.map(([,v])=>v.col):[0,0,0,0,0,0], borderColor:'#10b981', backgroundColor:'rgba(16,185,129,0.1)', tension:0.35 }
+                                    { label: 'Invoiced', data: entries.length ? entries.map(([, v]) => v.inv) : [0, 0, 0, 0, 0, 0], borderColor: '#6366f1', backgroundColor: 'rgba(99,102,241,0.1)', tension: 0.35 },
+                                    { label: 'Collected', data: entries.length ? entries.map(([, v]) => v.col) : [0, 0, 0, 0, 0, 0], borderColor: '#10b981', backgroundColor: 'rgba(16,185,129,0.1)', tension: 0.35 }
                                 ];
-                            } catch(_){ return [{ label:'Invoiced',data:[0,0,0,0,0,0],borderColor:'#6366f1',backgroundColor:'rgba(99,102,241,0.1)',tension:0.35 },{ label:'Collected',data:[0,0,0,0,0,0],borderColor:'#10b981',backgroundColor:'rgba(16,185,129,0.1)',tension:0.35 }]; }
+                            } catch (_) { return [{ label: 'Invoiced', data: [0, 0, 0, 0, 0, 0], borderColor: '#6366f1', backgroundColor: 'rgba(99,102,241,0.1)', tension: 0.35 }, { label: 'Collected', data: [0, 0, 0, 0, 0, 0], borderColor: '#10b981', backgroundColor: 'rgba(16,185,129,0.1)', tension: 0.35 }]; }
                         })()
                     ]
                 },
@@ -14778,8 +14755,8 @@ class MarketFlowCRM {
                 data: {
                     labels: ['Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar'],
                     datasets: [
-                        { label: 'New Clients', data: (() => { try { const c=this.getStoredClients?this.getStoredClients():[]; return [0,0,0,0,0,Math.min(c.length,9)]; }catch(_){return [0,0,0,0,0,0];} })(), backgroundColor: 'rgba(14,165,233,0.7)' },
-                        { label: 'Completed', data: (() => { try { const p=this.getStoredProjects?this.getStoredProjects().filter(x=>String(x.status||'').toLowerCase()==='completed'):[]; return [0,0,0,0,0,Math.min(p.length,9)]; }catch(_){return [0,0,0,0,0,0];} })(), backgroundColor: 'rgba(16,185,129,0.7)' }
+                        { label: 'New Clients', data: (() => { try { const c = this.getStoredClients ? this.getStoredClients() : []; return [0, 0, 0, 0, 0, Math.min(c.length, 9)]; } catch (_) { return [0, 0, 0, 0, 0, 0]; } })(), backgroundColor: 'rgba(14,165,233,0.7)' },
+                        { label: 'Completed', data: (() => { try { const p = this.getStoredProjects ? this.getStoredProjects().filter(x => String(x.status || '').toLowerCase() === 'completed') : []; return [0, 0, 0, 0, 0, Math.min(p.length, 9)]; } catch (_) { return [0, 0, 0, 0, 0, 0]; } })(), backgroundColor: 'rgba(16,185,129,0.7)' }
                     ]
                 },
                 options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } }, scales: { x: { grid: { display: false } }, y: { beginAtZero: true } } }
@@ -14815,29 +14792,29 @@ class MarketFlowCRM {
                     ...(() => {
                         try {
                             const invs = this.getStoredInvoices ? this.getStoredInvoices() : [];
-                            const monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+                            const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
                             const map = new Map();
                             invs.forEach(inv => {
-                                const amt = parseFloat(String(inv.amount||'0').replace(/[^0-9.]/g,''))||0;
-                                const paid = String(inv.status||'').toLowerCase()==='paid';
-                                const d = inv.invoice_date||inv.date ? new Date(inv.invoice_date||inv.date) : new Date();
-                                const key = monthNames[d.getMonth()]+' '+d.getFullYear();
-                                if(!map.has(key)) map.set(key,{rev:0,col:0});
+                                const amt = parseFloat(String(inv.amount || '0').replace(/[^0-9.]/g, '')) || 0;
+                                const paid = String(inv.status || '').toLowerCase() === 'paid';
+                                const d = inv.invoice_date || inv.date ? new Date(inv.invoice_date || inv.date) : new Date();
+                                const key = monthNames[d.getMonth()] + ' ' + d.getFullYear();
+                                if (!map.has(key)) map.set(key, { rev: 0, col: 0 });
                                 const m = map.get(key);
                                 m.rev += amt;
-                                if(paid) m.col += amt;
+                                if (paid) m.col += amt;
                             });
                             const entries = [...map.entries()].slice(-6);
                             return {
-                                labels: entries.length ? entries.map(([k])=>k.split(' ')[0]) : monthNames.slice(0,6),
+                                labels: entries.length ? entries.map(([k]) => k.split(' ')[0]) : monthNames.slice(0, 6),
                                 datasets: [
-                                    { label: 'Revenue (₹)', data: entries.length ? entries.map(([,v])=>v.rev) : [0,0,0,0,0,0], borderColor: '#0ea5e9', backgroundColor: 'rgba(14,165,233,0.10)', tension: 0.35 },
-                                    { label: 'Collection (₹)', data: entries.length ? entries.map(([,v])=>v.col) : [0,0,0,0,0,0], borderColor: '#10b981', backgroundColor: 'rgba(16,185,129,0.10)', tension: 0.35 }
+                                    { label: 'Revenue (₹)', data: entries.length ? entries.map(([, v]) => v.rev) : [0, 0, 0, 0, 0, 0], borderColor: '#0ea5e9', backgroundColor: 'rgba(14,165,233,0.10)', tension: 0.35 },
+                                    { label: 'Collection (₹)', data: entries.length ? entries.map(([, v]) => v.col) : [0, 0, 0, 0, 0, 0], borderColor: '#10b981', backgroundColor: 'rgba(16,185,129,0.10)', tension: 0.35 }
                                 ]
                             };
-                        } catch(_) {
-                            const mn=['Jan','Feb','Mar','Apr','May','Jun'];
-                            return { labels: mn, datasets: [{ label:'Revenue (₹)', data:[0,0,0,0,0,0], borderColor:'#0ea5e9', backgroundColor:'rgba(14,165,233,0.10)', tension:0.35 }, { label:'Collection (₹)', data:[0,0,0,0,0,0], borderColor:'#10b981', backgroundColor:'rgba(16,185,129,0.10)', tension:0.35 }] };
+                        } catch (_) {
+                            const mn = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
+                            return { labels: mn, datasets: [{ label: 'Revenue (₹)', data: [0, 0, 0, 0, 0, 0], borderColor: '#0ea5e9', backgroundColor: 'rgba(14,165,233,0.10)', tension: 0.35 }, { label: 'Collection (₹)', data: [0, 0, 0, 0, 0, 0], borderColor: '#10b981', backgroundColor: 'rgba(16,185,129,0.10)', tension: 0.35 }] };
                         }
                     })()
                 },
@@ -14854,11 +14831,11 @@ class MarketFlowCRM {
 
     initializeProjectRoadmapCharts() {
         // ── Progress Chart ──────────────────────────────────────────────────
-        const _rp = this.getStoredProjects ? this.getStoredProjects().slice(0,6) : [];
-        const progressLabels = _rp.map(p=>String(p.name||'').slice(0,16));
-        const progressData   = _rp.map(p=>Number(p.progress)||0);
-        const budgetData     = _rp.map(p=>parseFloat(String(p.budget||'0').replace(/[^0-9.]/g,''))||0);
-        const spentData      = _rp.map(p=>parseFloat(String(p.spent||'0').replace(/[^0-9.]/g,''))||0);
+        const _rp = this.getStoredProjects ? this.getStoredProjects().slice(0, 6) : [];
+        const progressLabels = _rp.map(p => String(p.name || '').slice(0, 16));
+        const progressData = _rp.map(p => Number(p.progress) || 0);
+        const budgetData = _rp.map(p => parseFloat(String(p.budget || '0').replace(/[^0-9.]/g, '')) || 0);
+        const spentData = _rp.map(p => parseFloat(String(p.spent || '0').replace(/[^0-9.]/g, '')) || 0);
 
         const ctxP = document.getElementById('projectProgressChart');
         if (ctxP) {
@@ -15413,7 +15390,7 @@ class MarketFlowCRM {
                 }
 
                 if (e.key === 'Enter') {
-                    if (!lastMatches.length || activeIndex <0) return;
+                    if (!lastMatches.length || activeIndex < 0) return;
                     const item = lastMatches[activeIndex];
                     if (!item) return;
                     searchInput.value = '';

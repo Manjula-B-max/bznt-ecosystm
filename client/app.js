@@ -8591,7 +8591,7 @@ class MarketFlowCRM {
                         ${html}
                         <script>
                     window.onload = () => { try {window.focus(); window.print(); } catch(e) { } };
-                        </script>
+                        <\/script>
                     </body>
                 </html>
         `);

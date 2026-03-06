@@ -8070,7 +8070,7 @@ class MarketFlowCRM {
         }
         w.document.open();
         w.document.write(`
-            < !doctype html >
+            <!DOCTYPE html>
                 <html>
                     <head>
                         <meta charset="utf-8" />
@@ -8080,22 +8080,22 @@ class MarketFlowCRM {
                             @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
                             *{box - sizing:border-box;margin:0;padding:0;}
-                            body{font - family:'Inter',Arial,sans-serif;background:#f1f5f9;color:#0f172a;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+                            body{font-family:'Inter',Arial,sans-serif;background:#f1f5f9;color:#0f172a;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
 
                             /* ══ Cover Page ══ */
                             .cover-page{position:relative;width:100%;max-width:860px;height:1215px;margin:28px auto 0;overflow:hidden;page-break-after:always;break-after:page;display:flex;align-items:center;justify-content:center;background:#04091a;border-radius:16px;box-shadow:0 4px 32px rgba(0,0,0,0.10);}
                             .cover-bg-svg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;}
                             .cover-content{position:relative;z-index:10;text-align:center;color:#fff;padding:40px 60px;max-width:700px;}
-                            .cover-logo-wrap{margin - bottom:32px;display:flex;justify-content:center;}
+                            .cover-logo-wrap{margin-bottom:32px;display:flex;justify-content:center;}
                             .cover-logo{width:110px;height:110px;object-fit:contain;filter:drop-shadow(0 0 20px rgba(59,130,246,0.7));}
-                            .cover-eyebrow{font - size:13px;font-weight:600;letter-spacing:.22em;text-transform:uppercase;color:#93c5fd;margin-bottom:20px;}
-                            .cover-title{font - size:52px;font-weight:900;line-height:1.1;background:linear-gradient(135deg,#c8c8c8 0%,#ffffff 30%,#a0a0a0 55%,#e8e8e8 75%,#b0b0b0 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:28px;letter-spacing:-.5px;}
+                            .cover-eyebrow{font-size:13px;font-weight:600;letter-spacing:.22em;text-transform:uppercase;color:#93c5fd;margin-bottom:20px;}
+                            .cover-title{font-size:52px;font-weight:900;line-height:1.1;background:linear-gradient(135deg,#c8c8c8 0%,#ffffff 30%,#a0a0a0 55%,#e8e8e8 75%,#b0b0b0 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:28px;letter-spacing:-.5px;}
                             .cover-divider{width:80px;height:3px;background:linear-gradient(90deg,#1d4ed8,#60a5fa,#1d4ed8);margin:0 auto 24px;border-radius:2px;}
-                            .cover-subtitle{font - size:16px;font-weight:700;letter-spacing:.28em;text-transform:uppercase;color:#dbeafe;margin-bottom:14px;}
-                            .cover-meta{font - size:13px;color:#93c5fd;letter-spacing:.1em;}
+                            .cover-subtitle{font-size:16px;font-weight:700;letter-spacing:.28em;text-transform:uppercase;color:#dbeafe;margin-bottom:14px;}
+                            .cover-meta{font-size:13px;color:#93c5fd;letter-spacing:.1em;}
 
                             /* ── Outer wrapper ── */
-                            .doc{max - width:860px;margin:28px auto 40px;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 4px 32px rgba(0,0,0,0.10);}
+                            .doc{max-width:860px;margin:28px auto 40px;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 4px 32px rgba(0,0,0,0.10);}
                             .title-bar{background:#fff;color:#0c1a3a;text-align:center;padding:10px 0;font-size:13px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;}
 
                             /* ── Header banner ── */
@@ -8103,51 +8103,51 @@ class MarketFlowCRM {
                             .hdr-logo{width:120px;height:120px;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;}
                             .hdr-logo img{width:114px;height:114px;object-fit:contain;}
                             .hdr-text{flex:1;}
-                            .hdr-label{font - size:10px;letter-spacing:.18em;text-transform:uppercase;opacity:.75;margin-bottom:4px;}
-                            .hdr-company{font - size:20px;font-weight:800;line-height:1.2;margin-bottom:6px;}
-                            .hdr-sub{font - size:9px;opacity:.85;line-height:1.55;}
+                            .hdr-label{font-size:10px;letter-spacing:.18em;text-transform:uppercase;opacity:.75;margin-bottom:4px;}
+                            .hdr-company{font-size:20px;font-weight:800;line-height:1.2;margin-bottom:6px;}
+                            .hdr-sub{font-size:9px;opacity:.85;line-height:1.55;}
                             .hdr-badge{background:rgba(255,255,255,0.18);border:1px solid rgba(255,255,255,0.3);border-radius:8px;padding:10px 16px;text-align:right;flex-shrink:0;}
-                            .hdr-badge-label{font - size:9px;letter-spacing:.12em;text-transform:uppercase;opacity:.7;}
-                            .hdr-badge-val{font - size:15px;font-weight:700;margin-top:2px;}
+                            .hdr-badge-label{font-size:9px;letter-spacing:.12em;text-transform:uppercase;opacity:.7;}
+                            .hdr-badge-val{font-size:15px;font-weight:700;margin-top:2px;}
 
                             /* ── Info strip (two columns) ── */
                             .info-strip{display:grid;grid-template-columns:1fr 1fr;gap:0;border-bottom:1px solid #e2e8f0;}
                             .info-col{padding:18px 28px;}
                             .info-col:first-child{border - right:1px solid #e2e8f0;background:#eff6ff;}
                             .info-col:last-child{background:#f8fafc;}
-                            .info-heading{font - size:9px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#1d4ed8;margin-bottom:10px;}
+                            .info-heading{font-size:9px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#1d4ed8;margin-bottom:10px;}
                             .info-row{display:flex;gap:8px;margin-bottom:5px;font-size:11px;}
                             .info-key{color:#64748b;min-width:110px;font-weight:500;}
                             .info-val{color:#0f172a;font-weight:600;flex:1;}
 
                             /* ── Section ── */
                             .body{padding:0 28px 28px;}
-                            .sec{margin - top:20px;}
+                            .sec{margin-top:20px;}
                             .sec-hdr{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
                             .sec-bar{width:4px;height:20px;background:linear-gradient(180deg,#1e3a8a,#3b82f6);border-radius:2px;flex-shrink:0;}
-                            .sec-title{font - size:12px;font-weight:700;color:#0c1a3a;text-transform:uppercase;letter-spacing:.06em;}
-                            .sec-body{font - size:11.5px;color:#1e293b;line-height:1.7;padding-left:14px;}
-                            .sec-body ol,.sec-body ul{padding - left:18px;margin:0;}
-                            .sec-body li{margin - bottom:3px;}
+                            .sec-title{font-size:12px;font-weight:700;color:#0c1a3a;text-transform:uppercase;letter-spacing:.06em;}
+                            .sec-body{font-size:11.5px;color:#1e293b;line-height:1.7;padding-left:14px;}
+                            .sec-body ol,.sec-body ul{padding-left:18px;margin:0;}
+                            .sec-body li{margin-bottom:3px;}
                             .sec-divider{border:none;border-top:1px solid #bfdbfe;margin:4px 0 0;}
 
                             /* ── Items table ── */
                             table.items{width:100%;border-collapse:collapse;font-size:11px;margin-top:6px;}
                             table.items th{background:#0f2d6b;color:#fff;font-weight:700;padding:8px 10px;text-align:left;}
-                            table.items th.r{text - align:right;}
+                            table.items th.r{text-align:right;}
                             table.items td{padding:7px 10px;border-bottom:1px solid #f1f5f9;vertical-align:top;}
-                            table.items td.r{text - align:right;}
+                            table.items td.r{text-align:right;}
                             table.items tbody tr:nth-child(even){background:#eff6ff;}
                             table.items tbody tr:hover{background:#dbeafe;}
                             .tfoot-subtotal td{background:#f8fafc;font-weight:600;border-top:2px solid #e2e8f0;}
                             .tfoot-tax td{background:#f8fafc;font-weight:600;}
                             .tfoot-total td{background:#0f2d6b;color:#fff;font-weight:800;font-size:12px;}
-                            .tfoot-total td.r{text - align:right;}
+                            .tfoot-total td.r{text-align:right;}
 
                             /* ── Amount words ── */
                             .words-box{background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:10px 14px;margin-top:12px;}
-                            .words-label{font - size:9px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#1d4ed8;margin-bottom:3px;}
-                            .words-val{font - size:11.5px;font-weight:700;color:#1e293b;}
+                            .words-label{font-size:9px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#1d4ed8;margin-bottom:3px;}
+                            .words-val{font-size:11.5px;font-weight:700;color:#1e293b;}
 
                             /* ── Bank details card ── */
                             .bank-card{background:linear-gradient(135deg,#eff6ff,#dbeafe);border:1px solid #93c5fd;border-radius:10px;padding:14px 18px;margin-top:6px;}
@@ -8167,7 +8167,7 @@ class MarketFlowCRM {
                             .cover-page{margin:0;border-radius:0;box-shadow:none;max-width:none;width:100%;height:100vh;position:relative;z-index:10001;isolation:isolate;}
                             .doc{margin:0;border-radius:0;box-shadow:none;max-width:none;}
                             .doc-footer{display:none;}
-                            .hdr,.tfoot-total td,.table.items th{-webkit - print - color - adjust:exact;print-color-adjust:exact;}
+                            .hdr,.tfoot-total td,.table.items th{-webkit - print-color - adjust:exact;print-color-adjust:exact;}
                             .print-footer{display:block;position:fixed;bottom:0;left:0;right:0;background:linear-gradient(135deg,#0a1628,#1e3a8a);color:rgba(255,255,255,0.85);text-align:center;padding:10px 14px;font-size:10px;letter-spacing:.06em;-webkit-print-color-adjust:exact;print-color-adjust:exact;z-index:9999;}
                     }
                         </style>
@@ -8525,34 +8525,34 @@ class MarketFlowCRM {
         }
         w.document.open();
         w.document.write(`
-            < !doctype html >
+            <!DOCTYPE html>
                 <html>
                     <head>
                         <meta charset="utf-8" />
                         <meta name="viewport" content="width=device-width, initial-scale=1" />
                         <title>Quotation</title>
                         <style>
-                            body{font - family:Arial,Helvetica,sans-serif;margin:0;background:#f1f5f9;}
-                            .doc{max - width:900px;margin:18px auto;background:#fff;padding:0;border-radius:12px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,0.08);-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+                            body{font-family:Arial,Helvetica,sans-serif;margin:0;background:#f1f5f9;}
+                            .doc{max-width:900px;margin:18px auto;background:#fff;padding:0;border-radius:12px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,0.08);-webkit-print-color-adjust:exact;print-color-adjust:exact;}
                             .doc-body{padding:0 20px;}
                             .hdr{background:linear-gradient(135deg,#0a1628 0%,#1e3a8a 55%,#1d4ed8 100%);color:#fff;padding:18px 22px;display:flex;align-items:center;gap:14px;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
                             .hdr-logo-box{width:80px;height:80px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
                             .hdr-logo-box img{width:74px;height:74px;object-fit:contain;}
                             .hdr-text{flex:1;}
-                            .hdr-company{font - size:16px;font-weight:800;margin-bottom:3px;}
-                            .hdr-sub{font - size:9px;opacity:.85;line-height:1.55;}
+                            .hdr-company{font-size:16px;font-weight:800;margin-bottom:3px;}
+                            .hdr-sub{font-size:9px;opacity:.85;line-height:1.55;}
 
-                            .title{font - weight:800;letter-spacing:0.06em;font-size:16px;text-align:center;padding:8px 0;border:1px solid #cbd5e1;border-bottom:none;}
-                            .co-name{font - weight:700;font-size:12px;color:#0f172a;}
-                            .muted{font - size:11px;color:#0f172a;}
-                            .strong{font - weight:800;color:#0f172a;}
-                            .sec-title{font - size:11px;font-weight:800;color:#0f172a;margin:0 0 4px 0;}
-                            .r{text - align:right;}
+                            .title{font-weight:800;letter-spacing:0.06em;font-size:16px;text-align:center;padding:8px 0;border:1px solid #cbd5e1;border-bottom:none;}
+                            .co-name{font-weight:700;font-size:12px;color:#0f172a;}
+                            .muted{font-size:11px;color:#0f172a;}
+                            .strong{font-weight:800;color:#0f172a;}
+                            .sec-title{font-size:11px;font-weight:800;color:#0f172a;margin:0 0 4px 0;}
+                            .r{text-align:right;}
 
                             table.co{width:100%;border-collapse:collapse;}
                             table.co td{border:none;padding:0;vertical-align:top;}
                             td.co-logo{width:116px;padding-right:10px;}
-                            td.co-text{padding - left:0;}
+                            td.co-text{padding-left:0;}
                             .logo-box{width:110px;height:110px;display:flex;align-items:center;justify-content:center;}
                             img.logo{width:104px;height:104px;object-fit:contain;display:block;}
 
@@ -8569,16 +8569,16 @@ class MarketFlowCRM {
                             table.items{width:100%;border-collapse:collapse;margin-top:10px;font-size:11px;}
                             table.items th, table.items td{border:1px solid #cbd5e1;padding:6px;vertical-align:top;}
                             table.items thead th{background:#f8fafc;color:#0f172a;font-weight:800;}
-                            table.items tfoot td{font - weight:800;}
+                            table.items tfoot td{font-weight:800;}
 
                             .words{border:1px solid #cbd5e1;border-top:none;padding:8px;}
-                            .eo{font - size:11px;text-align:right;margin-top:2px;}
+                            .eo{font-size:11px;text-align:right;margin-top:2px;}
 
                             .bottom{display:flex;gap:10px;justify-content:space-between;margin-top:10px;margin-bottom:16px;}
                             .terms{flex:1;border:1px solid #cbd5e1;padding:8px;min-height:140px;}
                             .terms ol{margin:0 0 0 18px;padding:0;font-size:11px;color:#0f172a;}
                             .bank{width:320px;border:1px solid #cbd5e1;padding:8px;}
-                            .sig{margin - top:10px;font-size:11px;color:#0f172a;font-weight:800;text-align:right;}
+                            .sig{margin-top:10px;font-size:11px;color:#0f172a;font-weight:800;text-align:right;}
                             .footer{background:#1e3a8a;color:#fff;text-align:center;font-size:10px;padding:8px 14px;letter-spacing:.05em;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
 
                             @media print{
@@ -9231,7 +9231,7 @@ class MarketFlowCRM {
                     <div class="mt-6 flex gap-2">
                         <button data-action="project:save:${String(key).replace(/"/g, '&quot;')}" class="px-3 py-1.5 text-xs font-medium bg-green-600 text-white rounded-lg hover:bg-green-700">Save</button>
                         <button data-action="project:delete:${String(key).replace(/"/g, '&quot;')
-                } " class="px-3 py - 1.5 text - xs font - medium bg - red - 600 text - white rounded - lg hover: bg - red - 700">Delete</button>
+                } " class="px-3 py - 1.5 text - xs font-medium bg - red - 600 text - white rounded - lg hover: bg - red - 700">Delete</button>
                     </div>
                 </div>
     `;

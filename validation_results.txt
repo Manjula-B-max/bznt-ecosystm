@@ -1,0 +1,4 @@
+Broken doctype at line 8073: <!DOCTYPE html>
+Broken doctype at line 8528: <!DOCTYPE html>
+DEBUG line 9904: <div class="text-xs font-semibold text-slate-700">${t.label}</div>
+Broken doctype at line 10736: const html = (headerBg, headerIcon, accentColor, title, greeting, body, closing) => `<!DOCTYPE html>

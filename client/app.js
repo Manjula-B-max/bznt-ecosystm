@@ -404,6 +404,157 @@ class MarketFlowCRM {
         });
     }
 
+
+    editLeadViaModal(lead) {
+        const l = lead || {};
+        const id = String(l.id || '').trim();
+        if (!id) {
+            this.showToast('Select a lead first.');
+            return;
+        }
+
+        const esc = (v) => String(v ?? '').replace(/</g, '&lt;');
+
+        this.openModal('Edit Lead', `
+            <div>
+                <label style="display:block;font-size:12px;font-weight:700;color:#475569;">Company Name</label>
+                <input name="company" required style="margin-top:6px;width:100%;border:1px solid #e2e8f0;border-radius:12px;padding:10px 12px;font-size:14px;" value="${esc(l.company || '')}" />
+            </div>
+            <div style="display:grid;grid-template-columns:1fr;gap:10px;" class="sm-grid-2col">
+                <div>
+                    <label style="display:block;font-size:12px;font-weight:700;color:#475569;">Contact</label>
+                    <input name="contact" style="margin-top:6px;width:100%;border:1px solid #e2e8f0;border-radius:12px;padding:10px 12px;font-size:14px;" value="${esc(l.contact || '')}" />
+                </div>
+                <div>
+                    <label style="display:block;font-size:12px;font-weight:700;color:#475569;">Assigned To</label>
+                    <input name="assignedTo" style="margin-top:6px;width:100%;border:1px solid #e2e8f0;border-radius:12px;padding:10px 12px;font-size:14px;" value="${esc(l.assignedTo || '')}" />
+                </div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr;gap:10px;" class="sm-grid-2col">
+                <div>
+                    <label style="display:block;font-size:12px;font-weight:700;color:#475569;">Source</label>
+                    <select name="source" style="margin-top:6px;width:100%;border:1px solid #e2e8f0;border-radius:12px;padding:10px 12px;font-size:14px;">
+                        <option value="Exhibition" ${(l.source === 'Exhibition') ? 'selected' : ''}>Exhibition</option>
+                        <option value="IndiaMART" ${(l.source === 'IndiaMART') ? 'selected' : ''}>IndiaMART</option>
+                        <option value="LinkedIn" ${(l.source === 'LinkedIn') ? 'selected' : ''}>LinkedIn</option>
+                        <option value="Field Visit" ${(l.source === 'Field Visit') ? 'selected' : ''}>Field Visit</option>
+                        <option value="Referral" ${(l.source === 'Referral') ? 'selected' : ''}>Referral</option>
+                    </select>
+                </div>
+                <div>
+                    <label style="display:block;font-size:12px;font-weight:700;color:#475569;">Stage</label>
+                    <input name="stage" style="margin-top:6px;width:100%;border:1px solid #e2e8f0;border-radius:12px;padding:10px 12px;font-size:14px;" value="${esc(l.stage || 'New Lead')}" />
+                </div>
+            </div>
+            <input type="hidden" name="id" value="${esc(id)}" />
+        `, {
+            submitLabel: 'Save Changes',
+            onSubmit: (form) => {
+                const data = new FormData(form);
+                const nextCompany = String(data.get('company') || '').trim();
+                if (!nextCompany) {
+                    this.showToast('Company name is required.');
+                    return;
+                }
+                const res = this.saveLead({
+                    id: data.get('id'),
+                    company: nextCompany,
+                    contact: data.get('contact'),
+                    assignedTo: data.get('assignedTo'),
+                    source: data.get('source'),
+                    stage: data.get('stage')
+                });
+                if (!res.ok) {
+                    this.showToast(res.message || 'Unable to update lead.');
+                    return;
+                }
+                this.closeModal();
+                this.renderContent();
+                this.initializeLucideIcons();
+                this.showToast('Lead updated.');
+            }
+        });
+    }
+
+    editProjectViaModal(project) {
+        const p = project || {};
+        const key = this.getProjectKey(p);
+        if (!key) {
+            this.showToast('Select a project first.');
+            return;
+        }
+
+        const esc = (v) => String(v ?? '').replace(/</g, '&lt;');
+
+        this.openModal('Edit Project', `
+            <div>
+                <label style="display:block;font-size:12px;font-weight:700;color:#475569;">Project Name / Code</label>
+                <input name="name" required style="margin-top:6px;width:100%;border:1px solid #e2e8f0;border-radius:12px;padding:10px 12px;font-size:14px;" value="${esc(p.name || p.identification?.projectCode || '')}" />
+            </div>
+            <div style="display:grid;grid-template-columns:1fr;gap:10px;" class="sm-grid-2col">
+                <div>
+                    <label style="display:block;font-size:12px;font-weight:700;color:#475569;">Client</label>
+                    <input name="client" style="margin-top:6px;width:100%;border:1px solid #e2e8f0;border-radius:12px;padding:10px 12px;font-size:14px;" value="${esc(p.client || '')}" />
+                </div>
+                <div>
+                    <label style="display:block;font-size:12px;font-weight:700;color:#475569;">Start Date</label>
+                    <input name="startDate" type="date" style="margin-top:6px;width:100%;border:1px solid #e2e8f0;border-radius:12px;padding:10px 12px;font-size:14px;" value="${esc(p.startDate || '')}" />
+                </div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr;gap:10px;" class="sm-grid-2col">
+                <div>
+                    <label style="display:block;font-size:12px;font-weight:700;color:#475569;">Budget</label>
+                    <input name="budget" style="margin-top:6px;width:100%;border:1px solid #e2e8f0;border-radius:12px;padding:10px 12px;font-size:14px;" value="${esc(p.budget || '')}" />
+                </div>
+                <div>
+                    <label style="display:block;font-size:12px;font-weight:700;color:#475569;">Owner</label>
+                    <input name="owner" style="margin-top:6px;width:100%;border:1px solid #e2e8f0;border-radius:12px;padding:10px 12px;font-size:14px;" value="${esc(p.owner || '')}" />
+                </div>
+            </div>
+            <div>
+                <label style="display:block;font-size:12px;font-weight:700;color:#475569;">Details</label>
+                <textarea name="details" rows="3" style="margin-top:6px;width:100%;border:1px solid #e2e8f0;border-radius:12px;padding:10px 12px;font-size:14px;">${esc(p.details || '')}</textarea>
+            </div>
+            <input type="hidden" name="key" value="${esc(key)}" />
+        `, {
+            submitLabel: 'Save Changes',
+            onSubmit: (form) => {
+                const data = new FormData(form);
+                const nextName = String(data.get('name') || '').trim();
+                if (!nextName) {
+                    this.showToast('Project name is required.');
+                    return;
+                }
+
+                const oldKey = data.get('key');
+                let existing = this.getStoredProjects();
+                let projIndex = existing.findIndex(x => this.getProjectKey(x) === oldKey);
+
+                if (projIndex !== -1) {
+                    existing[projIndex] = {
+                        ...existing[projIndex],
+                        name: nextName,
+                        client: data.get('client'),
+                        startDate: data.get('startDate'),
+                        budget: data.get('budget'),
+                        owner: data.get('owner'),
+                        details: data.get('details')
+                    };
+                    if (existing[projIndex].identification) {
+                        existing[projIndex].identification.projectCode = nextName;
+                    }
+                    this.writeStore('APJ 3D Solutions_projects', existing);
+                }
+
+                this.closeModal();
+                this.renderContent();
+                this.initializeLucideIcons();
+                this.showToast('Project updated.');
+            }
+        });
+    }
+
+
     deleteClientViaModal(name) {
         const n = String(name || '').trim();
         if (!n) {
@@ -2179,6 +2330,9 @@ class MarketFlowCRM {
             if (btn.classList.contains('nav-tab')) return true;
             if (btn.hasAttribute('data-subsection')) return true;
             if (btn.hasAttribute('data-target-section')) return true;
+            if (btn.hasAttribute('data-modal-close')) return true;
+            if (btn.type === 'submit') return true;
+            if (btn.closest && btn.closest('[data-modal-form]')) return true;
             const id = btn.id || '';
             if (
                 id === 'sidebarToggle' ||
@@ -2234,9 +2388,18 @@ class MarketFlowCRM {
                 return true;
             }
 
+            if (a.startsWith('project:update:')) {
+                const key = a.slice('project:update:'.length).replace(/&quot;/g, '"');
+                // Simulate save logic for update
+                this.saveProjectFromCurrentForm(key);
+                this._editingProject = null;
+                e?.stopPropagation?.();
+                return true;
+            }
+
             if (a.startsWith('project:delete:')) {
-                const key = a.slice('project:delete:'.length);
-                if (confirm('Delete this project? This cannot be undone.')) {
+                const key = a.slice('project:delete:'.length).replace(/&quot;/g, '"');
+                if (true) {
                     this.deleteProjectByKey(key);
                     this.selectedProjectKey = null;
                     this.renderContent();
@@ -2746,6 +2909,7 @@ class MarketFlowCRM {
                 }
                 return true;
             }
+
             if (a === 'client:edit') {
                 const btn = this._lastActionButton;
                 const clientName = btn?.dataset?.clientName;
@@ -2754,12 +2918,101 @@ class MarketFlowCRM {
                 this.editClientViaModal(c || { name: clientName });
                 return true;
             }
+
+            if (a === 'lead:edit') {
+                const btn = this._lastActionButton;
+                const leadId = btn?.dataset?.leadId;
+                const leads = this.getStoredLeads();
+                const l = leads.find(x => String(x.id) === String(leadId));
+                this.editLeadViaModal(l);
+                return true;
+            }
+
+            if (a.startsWith('project:edit:')) {
+                const key = a.slice('project:edit:'.length).replace(/&quot;/g, '"');
+                const projects = this.getAllProjectsMerged([]);
+                const p = projects.find(x => String(this.getProjectKey(x)) === key);
+                this.editProjectViaModal(p);
+                return true;
+            }
             if (a === 'client:delete') {
                 const btn = this._lastActionButton;
                 const clientName = btn?.dataset?.clientName;
-                this.deleteClientViaModal(clientName);
+                if (!clientName) return true;
+                const res = this.deleteClientByName(clientName);
+                if (!res.ok) {
+                    this.showToast(res.message || 'Unable to delete client.');
+                } else {
+                    this.showToast('Client deleted.');
+                    this.renderContent();
+                    this.initializeLucideIcons();
+                }
                 return true;
             }
+            if (a.startsWith('client:update:')) {
+                const name = a.slice('client:update:'.length).replace(/&quot;/g, '"');
+                const owner = document.getElementById('clientOwner')?.value?.trim() || '';
+                const email = document.getElementById('clientEmail')?.value?.trim() || '';
+                const phone = document.getElementById('clientPhone')?.value?.trim() || '';
+                const industry = document.getElementById('clientIndustry')?.value?.trim() || '';
+                const city = document.getElementById('clientCity')?.value?.trim() || '';
+                const address = document.getElementById('clientAddress')?.value?.trim() || '';
+                const gstin = document.getElementById('clientGstin')?.value?.trim() || '';
+
+                const res = this.saveClient({ name, owner, email, phone, industry, city, address, gstin });
+                if (res.ok) {
+                    this.showToast('Client updated.');
+                    this._editingClient = null;
+                    this.switchSection('leads');
+                    this.switchSubSection('client_directory');
+                    this.renderContent();
+                    this.initializeLucideIcons();
+                } else {
+                    this.showToast(res.message || 'Unable to update client.');
+                }
+                return true;
+            }
+
+
+            if (a === 'lead:delete') {
+                const btn = this._lastActionButton;
+                const leadId = btn?.dataset?.leadId;
+                if (!leadId) return true;
+                const leads = this.getStoredLeads();
+                const filtered = leads.filter(x => String(x.id) !== String(leadId));
+                this.writeStore('APJ 3D Solutions_leads', filtered);
+                this.showToast('Lead deleted.');
+                this.renderContent();
+                this.initializeLucideIcons();
+                return true;
+            }
+            if (a.startsWith('lead:update:')) {
+                const id = a.slice('lead:update:'.length);
+                const company = document.getElementById('leadCompany')?.value?.trim();
+                const assignedTo = document.getElementById('leadAssignedTo')?.value?.trim();
+                const contact = document.getElementById('leadContact')?.value?.trim();
+                const source = document.getElementById('leadSource')?.value?.trim() || 'LinkedIn';
+
+                if (!company) {
+                    this.showToast('Company is required.');
+                    return true;
+                }
+                const res = this.saveLead({ id, company, assignedTo, contact, source });
+                if (res.ok) {
+                    this.showToast('Lead updated.');
+                    this._editingLead = null;
+                    this.switchSection('leads');
+                    this.switchSubSection('lead_directory');
+                    this.renderContent();
+                    this.initializeLucideIcons();
+                } else {
+                    this.showToast(res.message || 'Unable to update lead.');
+                }
+                return true;
+            }
+
+            // Update old project edit alias
+
             if (a === 'client:createInvoice') {
                 const btn = this._lastActionButton;
                 const clientName = btn?.dataset?.clientName;
@@ -6649,7 +6902,8 @@ class MarketFlowCRM {
         `;
     }
 
-    getLeadRegistration() {
+    getLeadRegistration(leadData = null) {
+        const esc = (v) => String(v ?? "").replace(/</g, "&lt;");
         return `
             <div class="space-y-6 fade-in">
                 <div class="flex flex-wrap items-start justify-between gap-3">
@@ -6658,7 +6912,7 @@ class MarketFlowCRM {
                         <p class="text-sm text-slate-500">Capture lead source and details</p>
                     </div>
                     <div class="flex items-center gap-2">
-                        <button data-action="lead:register" class="px-4 py-2 text-sm font-medium bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">Save Lead</button>
+                        <button data-action="${leadData ? `lead:update:${leadData.id}` : 'lead:register'}" class="px-4 py-2 text-sm font-medium bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">${leadData ? 'Update Lead' : 'Save Lead'}</button>
                         <button data-action="lead:upload:trigger" class="px-4 py-2 text-sm font-medium bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors flex items-center gap-1"><i data-lucide="upload" style="width:14px;height:14px;"></i>Upload Excel</button>
                         <input type="file" id="leadExcelUpload" accept=".xlsx,.xls,.csv" style="display:none;" />
                     </div>
@@ -6669,24 +6923,24 @@ class MarketFlowCRM {
                         <div>
                             <label class="block text-sm font-medium text-slate-700">Lead Source</label>
                             <select id="leadSource" class="mt-2 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500">
-                                <option>Exhibition</option>
-                                <option>IndiaMART</option>
-                                <option selected>LinkedIn</option>
-                                <option>Field Visit</option>
-                                <option>Referral</option>
+                                <option ${leadData?.source === 'Exhibition' ? 'selected' : ''}>Exhibition</option>
+                                <option ${leadData?.source === 'IndiaMART' ? 'selected' : ''}>IndiaMART</option>
+                                <option ${(!leadData || leadData?.source === 'LinkedIn') ? 'selected' : ''}>LinkedIn</option>
+                                <option ${leadData?.source === 'Field Visit' ? 'selected' : ''}>Field Visit</option>
+                                <option ${leadData?.source === 'Referral' ? 'selected' : ''}>Referral</option>
                             </select>
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-slate-700">Assigned To</label>
-                            <input id="leadAssignedTo" type="text" class="mt-2 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="e.g., Team Member" />
+                            <input id="leadAssignedTo" type="text" class="mt-2 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="e.g., Team Member" value="${esc(leadData?.assignedTo || '')}" />
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-slate-700">Company</label>
-                            <input id="leadCompany" type="text" class="mt-2 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="e.g., Acme Corp" />
+                            <input id="leadCompany" type="text" class="mt-2 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="e.g., Acme Corp" value="${esc(leadData?.company || '')}" />
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-slate-700">Contact</label>
-                            <input id="leadContact" type="text" class="mt-2 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="Phone / Email" />
+                            <input id="leadContact" type="text" class="mt-2 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="Phone / Email" value="${esc(leadData?.contact || '')}" />
                         </div>
                         <div class="col-span-1 sm:col-span-2">
                             <label class="block text-sm font-medium text-slate-700">Next Action</label>
@@ -6744,11 +6998,12 @@ class MarketFlowCRM {
                                         <th class="text-left px-4 py-3 font-medium">Stage</th>
                                         <th class="text-left px-4 py-3 font-medium">Feedback Status</th>
                                         <th class="text-left px-4 py-3 font-medium">Convert</th>
+                                        <th class="text-center px-4 py-3 font-medium">Actions</th>
                                     </tr>
                                 </thead>
                                  <tbody class="divide-y divide-slate-200">
                                     ${leads.length === 0 ? `
-                                        <tr><td colspan="7" class="px-4 py-12 text-center">
+                                        <tr><td colspan="8" class="px-4 py-12 text-center">
                                             <div class="flex flex-col items-center gap-3">
                                                 <svg class="w-10 h-10 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M18 18.72a9.094 9.094 0 003.741-.479 3 3 0 00-4.682-2.72m.94 3.198l.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0112 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 016 18.719m12 0a5.971 5.971 0 00-.941-3.197m0 0A5.995 5.995 0 0012 12.75a5.995 5.995 0 00-5.058 2.772m0 0a3 3 0 00-4.681 2.72 8.986 8.986 0 003.74.477m.94-3.197a5.971 5.971 0 00-.94 3.197M15 6.75a3 3 0 11-6 0 3 3 0 016 0zm6 3a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0zm-13.5 0a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z"/></svg>
                                                 <p class="text-sm font-medium text-slate-500">No leads yet</p>
@@ -6771,6 +7026,16 @@ class MarketFlowCRM {
                             ? `<span class="px-2 py-1 text-xs font-medium bg-emerald-50 text-emerald-700 rounded-full">Converted</span>`
                             : `<button data-action="lead:convert" data-lead-id="${l.id}" class="px-3 py-1.5 text-xs font-medium bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">Convert to Client</button>`
                         }
+                                                </td>
+                                                <td class="px-4 py-3 text-center">
+                                                    <div class="flex items-center justify-center gap-2">
+                                                        <button data-action="lead:edit" data-lead-id="${l.id}" class="p-1.5 text-slate-400 hover:text-purple-600 rounded transition flex-shrink-0" title="Edit Lead">
+                                                            <i data-lucide="edit-2" class="w-4 h-4" style="width:16px;height:16px;"></i>
+                                                        </button>
+                                                        <button data-action="lead:delete" data-lead-id="${l.id}" class="p-1.5 text-slate-400 hover:text-red-600 rounded transition flex-shrink-0" title="Delete Lead" onclick="return confirm('Do you really want to delete this lead?')">
+                                                            <i data-lucide="trash-2" class="w-4 h-4" style="width:16px;height:16px;"></i>
+                                                        </button>
+                                                    </div>
                                                 </td>
                                             </tr>
                                         `;
@@ -6944,7 +7209,8 @@ class MarketFlowCRM {
         };
     }
 
-    getLeadsRegistration() {
+    getLeadsRegistration(clientData = null) {
+        const esc = (v) => String(v ?? "").replace(/</g, "&lt;");
         return `
             <div class="space-y-6 fade-in">
                 <div class="flex flex-wrap items-start justify-between gap-3">
@@ -6953,7 +7219,7 @@ class MarketFlowCRM {
                         <p class="text-sm text-slate-500">Create a client profile and capture requirements</p>
                     </div>
                     <div class="flex items-center gap-2">
-                        <button data-action="client:register" class="px-4 py-2 text-sm font-medium bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">Save Client</button>
+                        <button data-action="${clientData ? `client:update:${clientData.name.replace(/\"/g, '&quot;')}` : 'client:register'}" class="px-4 py-2 text-sm font-medium bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">${clientData ? 'Update Client' : 'Save Client'}</button>
                         <button data-action="client:upload:trigger" class="px-4 py-2 text-sm font-medium bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors flex items-center gap-1"><i data-lucide="upload" style="width:14px;height:14px;"></i>Upload Excel</button>
                         <input type="file" id="clientExcelUpload" accept=".xlsx,.xls,.csv" style="display:none;" />
                     </div>
@@ -7059,6 +7325,7 @@ class MarketFlowCRM {
                                         <th class="text-left px-4 py-3 font-medium">Owner</th>
                                         <th class="text-left px-4 py-3 font-medium">Status</th>
                                         <th class="text-right px-4 py-3 font-medium">Open Invoices</th>
+                                        <th class="text-center px-4 py-3 font-medium">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y divide-slate-200">
@@ -7073,6 +7340,16 @@ class MarketFlowCRM {
                                             <td class="px-4 py-3 text-right">
                                                 <span class="font-medium text-slate-900">${c.openInvoices}</span>
                                                 <span class="text-xs text-slate-500"> (${c.dueAmount})</span>
+                                            </td>
+                                            <td class="px-4 py-3 text-center">
+                                                <div class="flex items-center justify-center gap-2">
+                                                    <button data-action="client:edit" data-client-name="${c.name}" class="p-1.5 text-slate-400 hover:text-purple-600 rounded transition flex-shrink-0" title="Edit Client">
+                                                        <i data-lucide="edit-2" class="w-4 h-4" style="width:16px;height:16px;"></i>
+                                                    </button>
+                                                    <button data-action="client:delete" data-client-name="${c.name}" class="p-1.5 text-slate-400 hover:text-red-600 rounded transition flex-shrink-0" title="Delete Client" onclick="return confirm('Do you really want to delete this client?')">
+                                                        <i data-lucide="trash-2" class="w-4 h-4" style="width:16px;height:16px;"></i>
+                                                    </button>
+                                                </div>
                                             </td>
                                         </tr>
                                     `).join('')}
@@ -8598,7 +8875,8 @@ class MarketFlowCRM {
         w.document.close();
     }
 
-    getProjectRegistration() {
+    getProjectRegistration(projectData = null) {
+        const esc = (v) => String(v ?? "").replace(/</g, "&lt;");
         return `
             <div class="space-y-6 fade-in" >
                 <div class="flex flex-wrap items-start justify-between gap-3">
@@ -8607,7 +8885,7 @@ class MarketFlowCRM {
                         <p class="text-sm text-slate-500">Create a project linked to pipeline + billing</p>
                     </div>
                     <div class="flex items-center gap-2">
-                        <button data-action="project:register" class="px-4 py-2 text-sm font-medium bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">Create Project</button>
+                        <button data-action="${projectData ? `project:update:${projectData.id || this.getProjectKey(projectData).replace(/\"/g, '&quot;')}` : 'project:register'}" class="px-4 py-2 text-sm font-medium bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">${projectData ? 'Update Project' : 'Create Project'}</button>
                         <button data-action="project:upload:trigger" class="px-4 py-2 text-sm font-medium bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors flex items-center gap-1"><i data-lucide="upload" style="width:14px;height:14px;"></i>Upload Excel</button>
                         <input type="file" id="projectExcelUpload" accept=".xlsx,.xls,.csv" style="display:none;" />
                     </div>
@@ -8620,16 +8898,16 @@ class MarketFlowCRM {
                                 <label class="text-xs font-medium text-slate-600">Client</label>
                                 <select id="projectClient" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500">
                                     <option value="">— Select client —</option>
-                                    ${this.getStoredClients().map(c => `<option value="${c.name || ''}">${c.name || ''}</option>`).join('')}
+                                    ${this.getStoredClients().map(c => `<option value="${c.name || ''}" ${(projectData?.client || '') === c.name ? 'selected' : ''}>${c.name || ''}</option>`).join('')}
                                 </select>
                             </div>
                             <div>
                                 <label class="text-xs font-medium text-slate-600">Project Name</label>
-                                <input id="projectName" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="e.g., Website Redesign" />
+                                <input id="projectName" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="e.g., Website Redesign" value="${esc(projectData?.name || projectData?.identification?.projectCode || '')}" />
                             </div>
                             <div>
                                 <label class="text-xs font-medium text-slate-600">Start Date</label>
-                                <input id="projectStartDate" type="date" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" />
+                                <input id="projectStartDate" type="date" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" value="${esc(projectData?.startDate || '')}" />
                             </div>
                             <div>
                                 <label class="text-xs font-medium text-slate-600">Duration</label>
@@ -8641,7 +8919,7 @@ class MarketFlowCRM {
                             </div>
                             <div>
                                 <label class="text-xs font-medium text-slate-600">Budget (₹)</label>
-                                <input id="projectBudget" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="e.g., 320000" />
+                                <input id="projectBudget" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="e.g., 320000" value="${esc(projectData?.budget || '')}" />
                             </div>
                             <div>
                                 <label class="text-xs font-medium text-slate-600">Assigned Team</label>
@@ -9261,6 +9539,7 @@ class MarketFlowCRM {
                                             <th class="text-left px-4 py-3 font-medium text-slate-700">Company</th>
                                             <th class="text-left px-4 py-3 font-medium text-slate-700">Lead</th>
                                             <th class="text-left px-4 py-3 font-medium text-slate-700">Assigned</th>
+                                            <th class="text-center px-4 py-3 font-medium text-slate-700">Actions</th>
                                         </tr>
                                     </thead>
                                     <tbody class="divide-y divide-slate-200">
@@ -9277,6 +9556,16 @@ class MarketFlowCRM {
                                                     <td class="px-4 py-3 text-slate-700">${esc(p.identification?.companyName || p.client || '—')}</td>
                                                     <td class="px-4 py-3 text-slate-700">${esc(p.identification?.projectLead || p.owner || '—')}</td>
                                                     <td class="px-4 py-3 text-slate-700">${esc(p.identification?.assignedTo || '—')}</td>
+                                                    <td class="px-4 py-3 text-center">
+                                                        <div class="flex items-center justify-center gap-2">
+                                                            <button data-action="project:edit:${String(k).replace(/"/g, '&quot;')}" class="p-1.5 text-slate-400 hover:text-purple-600 rounded transition flex-shrink-0" title="Edit Project">
+                                                                <i data-lucide="edit-2" class="w-4 h-4" style="width:16px;height:16px;"></i>
+                                                            </button>
+                                                            <button data-action="project:delete:${String(k).replace(/\"/g, '&quot;')}" class="p-1.5 text-slate-400 hover:text-red-600 rounded transition flex-shrink-0" title="Delete Project" onclick="return confirm('Do you really want to delete this project?')">
+                                                                <i data-lucide="trash-2" class="w-4 h-4" style="width:16px;height:16px;"></i>
+                                                            </button>
+                                                        </div>
+                                                    </td>
                                                 </tr>
                                             `;
         }).join('')}
@@ -9303,6 +9592,7 @@ class MarketFlowCRM {
                                         <th class="text-left px-4 py-3 font-medium text-slate-700">Company</th>
                                         <th class="text-left px-4 py-3 font-medium text-slate-700">Lead</th>
                                         <th class="text-left px-4 py-3 font-medium text-slate-700">Assigned</th>
+                                        <th class="text-center px-4 py-3 font-medium text-slate-700">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y divide-slate-200">
@@ -9318,6 +9608,16 @@ class MarketFlowCRM {
                                                 <td class="px-4 py-3 text-slate-700">${esc(p.identification?.companyName || p.client || '—')}</td>
                                                 <td class="px-4 py-3 text-slate-700">${esc(p.identification?.projectLead || p.owner || '—')}</td>
                                                 <td class="px-4 py-3 text-slate-700">${esc(p.identification?.assignedTo || '—')}</td>
+                                                <td class="px-4 py-3 text-center">
+                                                    <div class="flex items-center justify-center gap-2">
+                                                        <button data-action="project:edit:${String(k).replace(/"/g, '&quot;')}" class="p-1.5 text-slate-400 hover:text-purple-600 rounded transition flex-shrink-0" title="Edit Project">
+                                                            <i data-lucide="edit-2" class="w-4 h-4" style="width:16px;height:16px;"></i>
+                                                        </button>
+                                                        <button data-action="project:delete:${String(k).replace(/"/g, '&quot;')}" class="p-1.5 text-slate-400 hover:text-red-600 rounded transition flex-shrink-0" title="Delete Project" onclick="return confirm('Do you really want to delete this project?')">
+                                                            <i data-lucide="trash-2" class="w-4 h-4" style="width:16px;height:16px;"></i>
+                                                        </button>
+                                                    </div>
+                                                </td>
                                             </tr>
                                         `;
         }).join('')}

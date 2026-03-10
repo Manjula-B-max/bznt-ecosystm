@@ -4449,32 +4449,38 @@ class MarketFlowCRM {
     initializeWeeklyChart() {
         const ctx = document.getElementById('weeklyChart');
         if (ctx) {
+            const days = [], leads = [], deals = [];
+            for (let i = 6; i >= 0; i--) {
+                const d = new Date();
+                d.setDate(d.getDate() - i);
+                const dStr = d.toISOString().slice(0, 10);
+                days.push(d.toLocaleDateString('en-US', { weekday: 'short' }));
+                let ln = 0, dn = 0;
+                (this.getStoredLeads ? this.getStoredLeads() : []).forEach(l => {
+                    if (String(l.createdOn || l.date || l.createdAt || '').startsWith(dStr)) ln++;
+                });
+                (this.getAllProjectsMerged ? this.getAllProjectsMerged() : []).forEach(p => {
+                    if (String(p.startDate || p.createdOn || p.date || '').startsWith(dStr)) dn++;
+                });
+                leads.push(ln);
+                deals.push(dn);
+            }
             this.charts.weeklyChart = new Chart(ctx, {
                 type: 'bar',
                 data: {
-                    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                    labels: days,
                     datasets: [
-                        {
-                            label: 'Leads',
-                            data: [6, 5, 15, 4, 9, 2, 1],
-                            backgroundColor: 'rgba(99, 102, 241, 0.7)'
-                        },
-                        {
-                            label: 'Deals',
-                            data: [1, 1, 4, 0, 5, 0, 0],
-                            backgroundColor: 'rgba(16, 185, 129, 0.7)'
-                        }
+                        { label: 'Leads', data: leads, backgroundColor: 'rgba(99, 102, 241, 0.7)' },
+                        { label: 'Deals', data: deals, backgroundColor: 'rgba(16, 185, 129, 0.7)' }
                     ]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: {
-                        legend: { position: 'bottom' }
-                    },
+                    plugins: { legend: { position: 'bottom' } },
                     scales: {
                         x: { grid: { display: false } },
-                        y: { beginAtZero: true }
+                        y: { beginAtZero: true, ticks: { precision: 0 } }
                     }
                 }
             });
@@ -5534,7 +5540,7 @@ class MarketFlowCRM {
 
         // KPI 5: Client Retention (clients with active/completed projects / total clients)
         const clientsWithProjects = new Set(projects.map(p => String(p?.client || '').trim().toLowerCase()).filter(Boolean));
-        const retentionPct = clients.length ? Math.round((clientsWithProjects.size / Math.max(clients.length, 1)) * 100) : 74;
+        const retentionPct = clients.length ? Math.round((clientsWithProjects.size / Math.max(clients.length, 1)) * 100) : 0;
 
         const fmtINR = (n) => {
             if (!n) return '₹0';
@@ -5727,12 +5733,42 @@ class MarketFlowCRM {
     }
 
     getDashboardDaily() {
+        const todayStr = new Date().toISOString().slice(0, 10);
+        let callsToday = 0;
+        let meetingsToday = 0;
+        const storedFollowups = this.getStoredFollowups ? this.getStoredFollowups() : [];
+        storedFollowups.forEach(f => {
+            if (!f.done && String(f.scheduled_date || f.scheduledDate || f.date || '').startsWith(todayStr)) {
+                const typ = String(f.type || '').toLowerCase();
+                if (typ === 'call' || typ === 'phone') callsToday++;
+                if (typ === 'meeting') meetingsToday++;
+            }
+        });
+        const allTasks = this.readStore ? this.readStore('bezent_tasks', []) : [];
+        const tasks = allTasks.filter(t => !t.completed).length;
+
+        let expectedPayments = 0;
+        (this.getAllInvoices ? this.getAllInvoices() : []).forEach(inv => {
+            if (String(inv.status || '').toLowerCase() !== 'paid' &&
+                String(inv.dueDate || inv.date || '').startsWith(todayStr)) {
+                expectedPayments += Number(inv.total || inv.amount || 0);
+            }
+        });
+
+        const fmtM = v => {
+            if (!v) return '₹0';
+            if (v >= 10000000) return '₹' + (v / 10000000).toFixed(1) + ' Cr';
+            if (v >= 100000) return '₹' + (v / 100000).toFixed(1) + ' L';
+            if (v >= 1000) return '₹' + (v / 1000).toFixed(1) + ' k';
+            return '₹' + Math.round(v);
+        };
+
         return `
             <div class="space-y-6 fade-in">
                 <div class="flex flex-wrap items-start justify-between gap-3">
                     <div>
                         <h2 class="text-xl sm:text-2xl font-semibold text-slate-900">Daily View</h2>
-                        <p class="text-sm text-slate-500">Today’s schedule, quick actions, and daily summary</p>
+                        <p class="text-sm text-slate-500">Today's schedule, quick actions, and daily summary</p>
                     </div>
                     <div class="flex gap-2">
                         <button data-action="nav:dashboard/daily" class="px-3 py-1.5 text-xs font-medium bg-purple-50 text-purple-700 rounded-lg">Daily</button>
@@ -5740,48 +5776,39 @@ class MarketFlowCRM {
                     </div>
                 </div>
 
-                <!-- Summary Cards -->
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <div class="bg-gradient-to-br from-sky-500 to-sky-600 rounded-lg p-4 sm:p-6 text-white">
+                    <div class="bg-gradient-to-br from-sky-500 to-sky-600 rounded-lg p-4 sm:p-6 text-white overflow-hidden">
                         <i data-lucide="phone" class="w-8 h-8 mb-3 opacity-80"></i>
-                        <div class="text-2xl sm:text-3xl font-semibold mb-1">4</div>
-                        <div class="text-sm opacity-90">Calls Scheduled</div>
+                        <div class="text-2xl sm:text-3xl font-semibold mb-1">${callsToday}</div>
+                        <div class="text-sm opacity-90 truncate">Calls Scheduled</div>
                     </div>
-                    
-                    <div class="bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-lg p-4 sm:p-6 text-white">
+                    <div class="bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-lg p-4 sm:p-6 text-white overflow-hidden">
                         <i data-lucide="calendar" class="w-8 h-8 mb-3 opacity-80"></i>
-                        <div class="text-2xl sm:text-3xl font-semibold mb-1">3</div>
-                        <div class="text-sm opacity-90">Meetings Today</div>
+                        <div class="text-2xl sm:text-3xl font-semibold mb-1">${meetingsToday}</div>
+                        <div class="text-sm opacity-90 truncate">Meetings Today</div>
                     </div>
-                    
-                    <div class="bg-gradient-to-br from-amber-500 to-amber-600 rounded-lg p-4 sm:p-6 text-white">
+                    <div class="bg-gradient-to-br from-amber-500 to-amber-600 rounded-lg p-4 sm:p-6 text-white overflow-hidden">
                         <i data-lucide="check-square" class="w-8 h-8 mb-3 opacity-80"></i>
-                        <div class="text-2xl sm:text-3xl font-semibold mb-1">6</div>
-                        <div class="text-sm opacity-90">Tasks Due Today</div>
+                        <div class="text-2xl sm:text-3xl font-semibold mb-1">${tasks}</div>
+                        <div class="text-sm opacity-90 truncate">Open Tasks</div>
                     </div>
-                    
-                    <div class="bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-lg p-4 sm:p-6 text-white">
+                    <div class="bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-lg p-4 sm:p-6 text-white overflow-hidden">
                         <i data-lucide="indian-rupee" class="w-8 h-8 mb-3 opacity-80"></i>
-                        <div class="text-2xl sm:text-3xl font-semibold mb-1">₹45,000</div>
-                        <div class="text-sm opacity-90">Payments Expected</div>
+                        <div class="text-2xl sm:text-3xl font-semibold mb-1">${fmtM(expectedPayments)}</div>
+                        <div class="text-sm opacity-90 truncate">Expected Today</div>
                     </div>
                 </div>
 
-                <!-- Today's Schedule -->
                 <div class="bg-white rounded-lg border border-slate-200 p-4 sm:p-6 shadow-lg">
                     <div class="flex flex-wrap items-center justify-between gap-3 mb-4 sm:mb-6">
                         <h3 class="text-lg font-semibold text-slate-900">Today's Schedule</h3>
                         <span class="px-3 py-1 text-xs font-medium bg-purple-50 text-purple-700 rounded-full">Upcoming</span>
                     </div>
-                    
                     <div class="space-y-4">
                         ${this.getTodayScheduleItems()}
                     </div>
-                    
-                    <button data-action="schedule:openMeeting" class="mt-6 w-full bg-purple-600 text-white py-2 px-4 rounded-lg hover:bg-purple-700 transition-colors font-medium">Join Meeting →</button>
                 </div>
 
-                <!-- Quick Actions -->
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                     <div data-action="dashboard:scheduleCall" class="bg-white rounded-lg border border-slate-200 p-4 sm:p-6 shadow-lg hover:bg-slate-50 transition-colors cursor-pointer">
                         <div class="w-12 h-12 bg-purple-50 rounded-lg flex items-center justify-center mb-4">
@@ -5790,7 +5817,6 @@ class MarketFlowCRM {
                         <h4 class="font-medium text-slate-900 mb-2">Schedule Call</h4>
                         <p class="text-sm text-slate-600">Add new call to calendar</p>
                     </div>
-                    
                     <div data-action="task:create" class="bg-white rounded-lg border border-slate-200 p-4 sm:p-6 shadow-lg hover:bg-slate-50 transition-colors cursor-pointer">
                         <div class="w-12 h-12 bg-purple-50 rounded-lg flex items-center justify-center mb-4">
                             <i data-lucide="plus" class="w-6 h-6 text-purple-600"></i>
@@ -5798,7 +5824,6 @@ class MarketFlowCRM {
                         <h4 class="font-medium text-slate-900 mb-2">Create Task</h4>
                         <p class="text-sm text-slate-600">Add task to today's list</p>
                     </div>
-                    
                     <div data-action="lead:add" class="bg-white rounded-lg border border-slate-200 p-4 sm:p-6 shadow-lg hover:bg-slate-50 transition-colors cursor-pointer">
                         <div class="w-12 h-12 bg-purple-50 rounded-lg flex items-center justify-center mb-4">
                             <i data-lucide="user-plus" class="w-6 h-6 text-purple-600"></i>
@@ -5845,6 +5870,49 @@ class MarketFlowCRM {
     }
 
     getDashboardWeekly() {
+        const oneWeekAgo = new Date(Date.now() - 7 * 86400000).toISOString().slice(0, 10);
+        const twoWeeksAgo = new Date(Date.now() - 14 * 86400000).toISOString().slice(0, 10);
+
+        let lW = 0, lLW = 0;
+        (this.getStoredLeads ? this.getStoredLeads() : []).forEach(l => {
+            const d = String(l.createdOn || l.date || l.createdAt || '');
+            if (d >= oneWeekAgo) lW++; else if (d >= twoWeeksAgo) lLW++;
+        });
+        const lPct = lLW ? Math.round(((lW - lLW) / lLW) * 100) : 0;
+        const lDiff = lPct > 0 ? '↑ ' + lPct + '%' : lPct < 0 ? '↓ ' + Math.abs(lPct) + '%' : '0%';
+        const lColor = lPct >= 0 ? 'green' : 'rose';
+
+        let dW = 0, dLW = 0;
+        (this.getAllProjectsMerged ? this.getAllProjectsMerged() : []).forEach(p => {
+            const d = String(p.startDate || p.createdOn || p.date || '');
+            if (d >= oneWeekAgo) dW++; else if (d >= twoWeeksAgo) dLW++;
+        });
+        const dPct = dLW ? Math.round(((dW - dLW) / dLW) * 100) : 0;
+        const dDiff = dPct > 0 ? '↑ ' + dPct + '%' : dPct < 0 ? '↓ ' + Math.abs(dPct) + '%' : '0%';
+        const dColor = dPct >= 0 ? 'green' : 'rose';
+
+        let rW = 0, rLW = 0;
+        (this.getAllInvoices ? this.getAllInvoices() : []).forEach(inv => {
+            if (String(inv.status || '').toLowerCase() === 'paid') {
+                const d = String(inv.issueDate || inv.date || inv.createdOn || '');
+                const amt = Number(inv.total || inv.amount || 0);
+                if (d >= oneWeekAgo) rW += amt; else if (d >= twoWeeksAgo) rLW += amt;
+            }
+        });
+        const rPct = rLW ? Math.round(((rW - rLW) / rLW) * 100) : 0;
+        const rDiff = rPct > 0 ? '↑ ' + rPct + '%' : rPct < 0 ? '↓ ' + Math.abs(rPct) + '%' : '0%';
+        const rColor = rPct >= 0 ? 'green' : 'rose';
+
+        const campaigns = (this.readStore ? this.readStore('bezent_campaigns', []) : []).length;
+
+        const fmtM = v => {
+            if (!v) return '₹0';
+            if (v >= 10000000) return '₹' + (v / 10000000).toFixed(1) + ' Cr';
+            if (v >= 100000) return '₹' + (v / 100000).toFixed(1) + ' L';
+            if (v >= 1000) return '₹' + (v / 1000).toFixed(1) + ' k';
+            return '₹' + Math.round(v);
+        };
+
         return `
             <div class="space-y-6 fade-in">
                 <div class="flex flex-wrap items-start justify-between gap-3">
@@ -5858,109 +5926,55 @@ class MarketFlowCRM {
                     </div>
                 </div>
 
-                <!-- Weekly Metrics -->
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <div class="bg-white rounded-lg border border-slate-200 p-4 sm:p-6 shadow-lg">
+                    <div class="bg-white rounded-lg border border-slate-200 p-4 sm:p-6 shadow-lg overflow-hidden">
                         <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
                             <i data-lucide="users" class="w-8 h-8 text-sky-600"></i>
-                            <span class="text-xs font-medium text-green-600 bg-green-50 px-2 py-1 rounded-full">↑ 18%</span>
+                            <span class="text-xs font-medium text-${lColor}-600 bg-${lColor}-50 px-2 py-1 rounded-full whitespace-nowrap">${lDiff}</span>
                         </div>
-                        <div class="text-3xl font-semibold text-slate-900 mb-1">42</div>
-                        <div class="text-sm text-slate-600">Leads This Week</div>
+                        <div class="text-3xl font-semibold text-slate-900 mb-1 truncate">${lW}</div>
+                        <div class="text-sm text-slate-600 truncate">Leads This Week</div>
                         <div class="text-xs text-slate-500 mt-2">vs last week</div>
                     </div>
-                    
-                    <div class="bg-white rounded-lg border border-slate-200 p-4 sm:p-6 shadow-lg">
+
+                    <div class="bg-white rounded-lg border border-slate-200 p-4 sm:p-6 shadow-lg overflow-hidden">
                         <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
                             <i data-lucide="briefcase" class="w-8 h-8 text-indigo-600"></i>
-                            <span class="text-xs font-medium text-green-600 bg-green-50 px-2 py-1 rounded-full">↑ 50%</span>
+                            <span class="text-xs font-medium text-${dColor}-600 bg-${dColor}-50 px-2 py-1 rounded-full whitespace-nowrap">${dDiff}</span>
                         </div>
-                        <div class="text-3xl font-semibold text-slate-900 mb-1">6</div>
-                        <div class="text-sm text-slate-600">Deals Closed</div>
+                        <div class="text-3xl font-semibold text-slate-900 mb-1 truncate">${dW}</div>
+                        <div class="text-sm text-slate-600 truncate">Deals Closed</div>
                         <div class="text-xs text-slate-500 mt-2">vs last week</div>
                     </div>
-                    
-                    <div class="bg-white rounded-lg border border-slate-200 p-4 sm:p-6 shadow-lg">
+
+                    <div class="bg-white rounded-lg border border-slate-200 p-4 sm:p-6 shadow-lg overflow-hidden">
                         <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
                             <i data-lucide="indian-rupee" class="w-8 h-8 text-emerald-600"></i>
-                            <span class="text-xs font-medium text-green-600 bg-green-50 px-2 py-1 rounded-full">↑ 24%</span>
+                            <span class="text-xs font-medium text-${rColor}-600 bg-${rColor}-50 px-2 py-1 rounded-full whitespace-nowrap">${rDiff}</span>
                         </div>
-                        <div class="text-3xl font-semibold text-slate-900 mb-1">₹2,10,000</div>
-                        <div class="text-sm text-slate-600">Revenue Generated</div>
+                        <div class="text-2xl font-semibold text-slate-900 mb-1 truncate">${fmtM(rW)}</div>
+                        <div class="text-sm text-slate-600 truncate">Revenue Generated</div>
                         <div class="text-xs text-slate-500 mt-2">vs last week</div>
                     </div>
-                    
-                    <div class="bg-white rounded-lg border border-slate-200 p-4 sm:p-6 shadow-lg">
+
+                    <div class="bg-white rounded-lg border border-slate-200 p-4 sm:p-6 shadow-lg overflow-hidden">
                         <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
                             <i data-lucide="send" class="w-8 h-8 text-amber-600"></i>
-                            <span class="text-xs font-medium text-amber-700 bg-amber-50 px-2 py-1 rounded-full">3</span>
+                            <span class="text-xs font-medium text-amber-700 bg-amber-50 px-2 py-1 rounded-full whitespace-nowrap">Active</span>
                         </div>
-                        <div class="text-3xl font-semibold text-slate-900 mb-1">3</div>
-                        <div class="text-sm text-slate-600">Campaigns Run</div>
+                        <div class="text-3xl font-semibold text-slate-900 mb-1 truncate">${campaigns}</div>
+                        <div class="text-sm text-slate-600 truncate">Campaigns</div>
                         <div class="text-xs text-slate-500 mt-2">Email, SMS, WhatsApp</div>
                     </div>
                 </div>
 
-                <!-- Weekly Chart -->
                 <div class="bg-white rounded-lg border border-slate-200 p-4 sm:p-6 shadow-lg">
                     <div class="mb-6">
-                        <h3 class="text-lg font-semibold text-slate-900">Leads vs Deals - This Week</h3>
+                        <h3 class="text-lg font-semibold text-slate-900">Leads vs Deals — This Week</h3>
                         <p class="text-sm text-slate-500">Daily comparison of leads generated and deals closed</p>
                     </div>
                     <div class="relative h-64 w-full bg-slate-50 rounded-lg">
-                            <div class="relative w-full h-full" style="position: relative; height: 100%; width: 100%; min-height: 250px; min-width: 0"><div class="absolute inset-0" style="position: absolute; left: 0; right: 0; top: 0; bottom: 0; min-height: 250px; min-width: 0"><canvas id="weeklyChart"></canvas></div></div>
-                        </div>
-                </div>
-
-                <!-- Top Performing Days & Highlights -->
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <div class="bg-white rounded-lg border border-slate-200 p-4 sm:p-6 shadow-lg">
-                        <h3 class="text-lg font-semibold text-slate-900 mb-4">Top Performing Days</h3>
-                        <div class="space-y-3">
-                            <div class="flex items-center justify-between p-3 bg-purple-50 rounded-lg">
-                                <div>
-                                    <div class="font-medium text-slate-900">Wednesday</div>
-                                    <div class="text-sm text-slate-600">15 leads, 4 deals</div>
-                                </div>
-                                <i data-lucide="trophy" class="w-5 h-5 text-purple-600"></i>
-                            </div>
-                            <div class="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
-                                <div>
-                                    <div class="font-medium text-slate-900">Friday</div>
-                                    <div class="text-sm text-slate-600">9 leads, 5 deals</div>
-                                </div>
-                                <i data-lucide="medal" class="w-5 h-5 text-slate-400"></i>
-                            </div>
-                            <div class="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
-                                <div>
-                                    <div class="font-medium text-slate-900">Monday</div>
-                                    <div class="text-sm text-slate-600">12 leads, 3 deals</div>
-                                </div>
-                                <i data-lucide="award" class="w-5 h-5 text-slate-400"></i>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="bg-white rounded-lg border border-slate-200 p-4 sm:p-6 shadow-lg">
-                        <h3 class="text-lg font-semibold text-slate-900 mb-4">Weekly Highlights</h3>
-                        <div class="space-y-3">
-                            <div class="flex items-center gap-3">
-                                <i data-lucide="check-circle" class="w-5 h-5 text-green-600"></i>
-                                <span class="text-sm text-slate-700">Highest revenue week this quarter</span>
-                            </div>
-                            <div class="flex items-center gap-3">
-                                <i data-lucide="check-circle" class="w-5 h-5 text-green-600"></i>
-                                <span class="text-sm text-slate-700">3 new enterprise clients onboarded</span>
-                            </div>
-                            <div class="flex items-center gap-3">
-                                <i data-lucide="check-circle" class="w-5 h-5 text-green-600"></i>
-                                <span class="text-sm text-slate-700">Campaign conversion rate: 28%</span>
-                            </div>
-                            <div class="flex items-center gap-3">
-                                <i data-lucide="alert-triangle" class="w-5 h-5 text-orange-600"></i>
-                                <span class="text-sm text-slate-700">2 proposals pending approval</span>
-                            </div>
-                        </div>
+                        <div class="relative w-full h-full" style="position:relative;height:100%;width:100%;min-height:250px;min-width:0"><div class="absolute inset-0" style="position:absolute;left:0;right:0;top:0;bottom:0;min-height:250px;min-width:0"><canvas id="weeklyChart"></canvas></div></div>
                     </div>
                 </div>
             </div>
@@ -5968,6 +5982,34 @@ class MarketFlowCRM {
     }
 
     getDashboardAnalytics() {
+        // Dynamic calculations
+        const clients = this.getStoredClients ? this.getStoredClients() : [];
+        const totalClients = clients.length;
+
+        const projects = this.getAllProjectsMerged ? this.getAllProjectsMerged() : [];
+        const completedProjects = projects.filter(p => {
+            const s = String(p.status || p.overallStatus || '').toLowerCase();
+            return s.includes('complet') || s.includes('deliver');
+        }).length;
+
+        const invoices = this.getAllInvoices ? this.getAllInvoices() : [];
+        let totalRevenue = 0;
+        invoices.forEach(inv => {
+            if (String(inv.status || '').toLowerCase() === 'paid') {
+                totalRevenue += Number(inv.total || inv.amount || 0);
+            }
+        });
+
+        const avgProjectValue = completedProjects > 0 ? Math.round(totalRevenue / completedProjects) : 0;
+
+        const fmtM = v => {
+            if (!v) return '₹0';
+            if (v >= 10000000) return '₹' + (v / 10000000).toFixed(1) + ' Cr';
+            if (v >= 100000) return '₹' + (v / 100000).toFixed(1) + ' L';
+            if (v >= 1000) return '₹' + (v / 1000).toFixed(1) + ' k';
+            return '₹' + Math.round(v);
+        };
+
         return `
             <div class="space-y-6 fade-in">
                 <!-- Long-term KPIs -->
@@ -5977,9 +6019,9 @@ class MarketFlowCRM {
                             <i data-lucide="users" class="w-8 h-8 text-purple-500"></i>
                             <span class="text-xs font-medium text-slate-600 bg-slate-100 px-2 py-1 rounded-full">All-time</span>
                         </div>
-                        <div class="text-3xl font-semibold text-slate-900 mb-1">126</div>
+                        <div class="text-3xl font-semibold text-slate-900 mb-1">${totalClients}</div>
                         <div class="text-sm text-slate-600">Total Clients</div>
-                        <div class="text-xs text-slate-500 mt-2">active</div>
+                        <div class="text-xs text-slate-500 mt-2">registered</div>
                     </div>
                     
                     <div class="bg-white rounded-lg border border-slate-200 p-4 sm:p-6 shadow-lg">
@@ -5987,7 +6029,7 @@ class MarketFlowCRM {
                             <i data-lucide="check-square" class="w-8 h-8 text-purple-500"></i>
                             <span class="text-xs font-medium text-slate-600 bg-slate-100 px-2 py-1 rounded-full">Since inception</span>
                         </div>
-                        <div class="text-3xl font-semibold text-slate-900 mb-1">89</div>
+                        <div class="text-3xl font-semibold text-slate-900 mb-1">${completedProjects}</div>
                         <div class="text-sm text-slate-600">Projects Completed</div>
                         <div class="text-xs text-slate-500 mt-2">delivered</div>
                     </div>
@@ -5997,7 +6039,7 @@ class MarketFlowCRM {
                             <i data-lucide="indian-rupee" class="w-8 h-8 text-purple-500"></i>
                             <span class="text-xs font-medium text-slate-600 bg-slate-100 px-2 py-1 rounded-full">Lifetime</span>
                         </div>
-                        <div class="text-3xl font-semibold text-slate-900 mb-1">₹1.8 Cr</div>
+                        <div class="text-3xl font-semibold text-slate-900 mb-1">${fmtM(totalRevenue)}</div>
                         <div class="text-sm text-slate-600">Total Revenue</div>
                         <div class="text-xs text-slate-500 mt-2">earned</div>
                     </div>
@@ -6007,7 +6049,7 @@ class MarketFlowCRM {
                             <i data-lucide="trending-up" class="w-8 h-8 text-purple-500"></i>
                             <span class="text-xs font-medium text-slate-600 bg-slate-100 px-2 py-1 rounded-full">Average</span>
                         </div>
-                        <div class="text-3xl font-semibold text-slate-900 mb-1">₹3.6 L</div>
+                        <div class="text-3xl font-semibold text-slate-900 mb-1">${fmtM(avgProjectValue)}</div>
                         <div class="text-sm text-slate-600">Avg Project Value</div>
                         <div class="text-xs text-slate-500 mt-2">per project</div>
                     </div>
@@ -6036,110 +6078,6 @@ class MarketFlowCRM {
                     </div>
                 </div>
 
-                <!-- Additional Analytics -->
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    <div class="bg-white rounded-lg border border-slate-200 p-4 sm:p-6 shadow-lg">
-                        <h3 class="text-lg font-semibold text-slate-900 mb-4">Client Acquisition</h3>
-                        <div class="space-y-3">
-                            <div class="flex flex-wrap items-start justify-between gap-3">
-                                <span class="text-sm text-slate-600">Referrals</span>
-                                <span class="text-sm font-medium text-slate-900">48%</span>
-                            </div>
-                            <div class="w-full bg-slate-100 rounded-full h-2">
-                                <div class="bg-purple-600 h-2 rounded-full" style="width: 48%"></div>
-                            </div>
-                            <div class="flex flex-wrap items-start justify-between gap-3">
-                                <span class="text-sm text-slate-600">Direct Marketing</span>
-                                <span class="text-sm font-medium text-slate-900">32%</span>
-                            </div>
-                            <div class="w-full bg-slate-100 rounded-full h-2">
-                                <div class="bg-purple-500 h-2 rounded-full" style="width: 32%"></div>
-                            </div>
-                            <div class="flex flex-wrap items-start justify-between gap-3">
-                                <span class="text-sm text-slate-600">Social Media</span>
-                                <span class="text-sm font-medium text-slate-900">15%</span>
-                            </div>
-                            <div class="w-full bg-slate-100 rounded-full h-2">
-                                <div class="bg-purple-400 h-2 rounded-full" style="width: 15%"></div>
-                            </div>
-                            <div class="flex flex-wrap items-start justify-between gap-3">
-                                <span class="text-sm text-slate-600">Other</span>
-                                <span class="text-sm font-medium text-slate-900">5%</span>
-                            </div>
-                            <div class="w-full bg-slate-100 rounded-full h-2">
-                                <div class="bg-purple-300 h-2 rounded-full" style="width: 5%"></div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="bg-white rounded-lg border border-slate-200 p-4 sm:p-6 shadow-lg">
-                        <h3 class="text-lg font-semibold text-slate-900 mb-4">Project Duration</h3>
-                        <div class="space-y-3">
-                            <div class="flex flex-wrap items-start justify-between gap-3">
-                                <span class="text-sm text-slate-600">1-3 months</span>
-                                <span class="text-sm font-medium text-slate-900">42%</span>
-                            </div>
-                            <div class="w-full bg-slate-100 rounded-full h-2">
-                                <div class="bg-purple-600 h-2 rounded-full" style="width: 42%"></div>
-                            </div>
-                            <div class="flex flex-wrap items-start justify-between gap-3">
-                                <span class="text-sm text-slate-600">3-6 months</span>
-                                <span class="text-sm font-medium text-slate-900">38%</span>
-                            </div>
-                            <div class="w-full bg-slate-100 rounded-full h-2">
-                                <div class="bg-purple-500 h-2 rounded-full" style="width: 38%"></div>
-                            </div>
-                            <div class="flex flex-wrap items-start justify-between gap-3">
-                                <span class="text-sm text-slate-600">6-12 months</span>
-                                <span class="text-sm font-medium text-slate-900">15%</span>
-                            </div>
-                            <div class="w-full bg-slate-100 rounded-full h-2">
-                                <div class="bg-purple-400 h-2 rounded-full" style="width: 15%"></div>
-                            </div>
-                            <div class="flex flex-wrap items-start justify-between gap-3">
-                                <span class="text-sm text-slate-600">12+ months</span>
-                                <span class="text-sm font-medium text-slate-900">5%</span>
-                            </div>
-                            <div class="w-full bg-slate-100 rounded-full h-2">
-                                <div class="bg-purple-300 h-2 rounded-full" style="width: 5%"></div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="bg-white rounded-lg border border-slate-200 p-4 sm:p-6 shadow-lg">
-                        <h3 class="text-lg font-semibold text-slate-900 mb-4">Client Satisfaction</h3>
-                        <div class="space-y-3">
-                            <div class="flex flex-wrap items-start justify-between gap-3">
-                                <span class="text-sm text-slate-600">Excellent (5★)</span>
-                                <span class="text-sm font-medium text-slate-900">64%</span>
-                            </div>
-                            <div class="w-full bg-slate-100 rounded-full h-2">
-                                <div class="bg-green-600 h-2 rounded-full" style="width: 64%"></div>
-                            </div>
-                            <div class="flex flex-wrap items-start justify-between gap-3">
-                                <span class="text-sm text-slate-600">Good (4★)</span>
-                                <span class="text-sm font-medium text-slate-900">28%</span>
-                            </div>
-                            <div class="w-full bg-slate-100 rounded-full h-2">
-                                <div class="bg-green-500 h-2 rounded-full" style="width: 28%"></div>
-                            </div>
-                            <div class="flex flex-wrap items-start justify-between gap-3">
-                                <span class="text-sm text-slate-600">Average (3★)</span>
-                                <span class="text-sm font-medium text-slate-900">6%</span>
-                            </div>
-                            <div class="w-full bg-slate-100 rounded-full h-2">
-                                <div class="bg-yellow-500 h-2 rounded-full" style="width: 6%"></div>
-                            </div>
-                            <div class="flex flex-wrap items-start justify-between gap-3">
-                                <span class="text-sm text-slate-600">Below Avg (≤2★)</span>
-                                <span class="text-sm font-medium text-slate-900">2%</span>
-                            </div>
-                            <div class="w-full bg-slate-100 rounded-full h-2">
-                                <div class="bg-red-500 h-2 rounded-full" style="width: 2%"></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
             </div>
         `;
     }
@@ -6197,30 +6135,55 @@ class MarketFlowCRM {
     }
 
     getServiceBreakdownItems() {
-        const services = [
-            { name: "Consulting", revenue: "₹4,60,000", percentage: 28, color: "purple" },
-            { name: "SEO Services", revenue: "₹4,50,000", percentage: 27, color: "purple-500" },
-            { name: "Social Media", revenue: "₹3,80,000", percentage: 23, color: "purple-400" },
-            { name: "Content Marketing", revenue: "₹2,90,000", percentage: 18, color: "purple-300" },
-            { name: "Email Marketing", revenue: "₹2,20,000", percentage: 13, color: "purple-200" }
-        ];
+        const invoices = this.getAllInvoices ? this.getAllInvoices() : [];
+        const paidInvoices = invoices.filter(inv => String(inv.status || '').toLowerCase() === 'paid');
 
-        return services.map(service => `
-            <div class="flex flex-wrap items-start justify-between gap-3">
-                <div class="flex-1">
-                    <div class="flex items-center justify-between mb-1">
-                        <span class="text-sm font-medium text-slate-900">${service.name}</span>
-                        <span class="text-sm text-slate-600">${service.revenue}</span>
+        if (paidInvoices.length === 0) {
+            return '<p class="text-sm text-slate-500 text-center py-4">No paid revenue data yet.</p>';
+        }
+
+        // Aggregate revenue by service type
+        const serviceMap = {};
+        paidInvoices.forEach(inv => {
+            const service = String(inv.serviceType || inv.service || inv.category || inv.type || 'Other');
+            const amt = Number(inv.total || inv.amount || 0);
+            serviceMap[service] = (serviceMap[service] || 0) + amt;
+        });
+
+        const totalRevenue = Object.values(serviceMap).reduce((a, b) => a + b, 0);
+        const colors = ['purple', 'blue', 'emerald', 'amber', 'rose'];
+
+        const fmtM = v => {
+            if (!v) return '₹0';
+            if (v >= 10000000) return '₹' + (v / 10000000).toFixed(1) + ' Cr';
+            if (v >= 100000)   return '₹' + (v / 100000).toFixed(1) + ' L';
+            if (v >= 1000)     return '₹' + (v / 1000).toFixed(1) + ' k';
+            return '₹' + Math.round(v);
+        };
+
+        return Object.entries(serviceMap)
+            .sort((a, b) => b[1] - a[1])
+            .slice(0, 5)
+            .map(([service, amount], idx) => {
+                const pct = totalRevenue > 0 ? Math.round((amount / totalRevenue) * 100) : 0;
+                const color = colors[idx % colors.length];
+                return `
+                    <div class="flex flex-wrap items-start justify-between gap-3">
+                        <div class="flex-1">
+                            <div class="flex items-center justify-between mb-1">
+                                <span class="text-sm font-medium text-slate-900">${service}</span>
+                                <span class="text-sm text-slate-600">${fmtM(amount)}</span>
+                            </div>
+                            <div class="w-full bg-slate-100 rounded-full h-2">
+                                <div class="bg-${color}-500 h-2 rounded-full transition-all" style="width: ${pct}%"></div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="w-full bg-slate-100 rounded-full h-2">
-                        <div class="bg-${service.color} h-2 rounded-full transition-all" style="width: ${service.percentage}%"></div>
-                    </div>
-                </div>
-            </div>
-        `).join('');
+                `;
+            }).join('');
     }
 
-    getTodayTasks() {
+        getTodayTasks() {
         // ── Real task store ──
         const stored = this.readStore('bezent_tasks', []);
 
@@ -6281,7 +6244,6 @@ class MarketFlowCRM {
                     <div class="font-medium text-slate-900 mb-1">${String(meeting.client || 'Client')}</div>
                     <div class="text-sm text-slate-600 mb-2">${String(meeting.topic || 'Meeting')}</div>
                     <div class="flex gap-2">
-                        <button class="px-3 py-1 text-xs font-medium bg-purple-600 text-white rounded hover:bg-purple-700 transition-colors">Join Call</button>
                         <button class="px-3 py-1 text-xs font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded transition-colors">View Details</button>
                     </div>
                 </div>
@@ -16072,16 +16034,18 @@ class MarketFlowCRM {
         const now = new Date();
         const MONTHS = [];
         const revenueData = [];
-        const targetData = [];
-        // Build 6-month rolling window
+        const targetData = [];        // Build 6-month rolling window
         for (let m = 5; m >= 0; m--) {
             const d = new Date(now.getFullYear(), now.getMonth() - m, 1);
+            const monthStr = d.toISOString().slice(0, 7); // YYYY-MM
             MONTHS.push(d.toLocaleString('en-IN', { month: 'short' }));
-            // Distribute total paid roughly across months with growth curve
-            const base = totalPaid ? Math.round(totalPaid / 6) : 285000;
-            const growth = 1 + (5 - m) * 0.03;
-            revenueData.push(Math.round(base * growth));
-            targetData.push(Math.round(base * (growth + 0.05)));
+            // Sum paid invoices for this specific month
+            const monthPaid = paidInvoices
+                .filter(inv => String(inv.issueDate || inv.date || inv.createdOn || '').startsWith(monthStr))
+                .reduce((s, inv) => s + this.parseCurrencyToNumber(inv.amount), 0);
+            revenueData.push(monthPaid);
+            // Target = 10% above that month's revenue, or 0 if no revenue
+            targetData.push(monthPaid ? Math.round(monthPaid * 1.1) : 0);
         }
 
         if (this.charts && this.charts.revenueChart) {

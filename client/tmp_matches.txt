@@ -1,0 +1,9 @@
+            datasets: [{
+                        data: [4, 3, 4, 3]
+                    datasets: [{ label: 'Conv %', data: [0, 0, 0, 0]
+},
+                        { label: 'Converted', data: [0, 0, 0, 0, 0]
+       } catch (_) { return [{ label: 'Invoiced', data: [0, 0, 0, 0, 0, 0]
+241,0.1)', tension: 0.35 }, { label: 'Collected', data: [0, 0, 0, 0, 0, 0]
+ { labels: mn, datasets: [{ label: 'Revenue (₹)', data: [0, 0, 0, 0, 0, 0]
+10)', tension: 0.35 }, { label: 'Collection (₹)', data: [0, 0, 0, 0, 0, 0]

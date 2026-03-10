@@ -1,0 +1,33 @@
+initializeKriRiskCharts() {
+        // Compute KRI scores dynamically from real data
+        const _invAll = this.getStoredInvoices ? this.getStoredInvoices() : [];
+        const _projAll = this.getStoredProjects ? this.getStoredProjects() : [];
+        const _leadsAll = this.getStoredLeads ? this.getStoredLeads() : [];
+        const _overdueCount = _invAll.filter(i => String(i.status || '').toLowerCase() === 'overdue').length;
+        const _delayedProj = _projAll.filter(p => String(p.status || '').toLowerCase().includes('delay') || String(p.status || '').toLowerCase().includes('overdue')).length;
+        const _closedLeads = _leadsAll.filter(l => ['closed', 'po received'].includes(String(l.stage || '').toLowerCase())).length;
+        const _convRate = _leadsAll.length > 0 ? _closedLeads / _leadsAll.length : 0;
+        const slope = (val, threshLow, threshHigh) => {
+            if (val >= threshHigh) return 20;
+            if (val >= threshLow) return 12;
+            return 6;
+        };
+        const risks = [
+            { id: 'KRI-001', label: 'Revenue Target', score: slope(_invAll.filter(i => String(i.status || '').toLowerCase() === 'paid').length, 2, 5), status: 'Within', cat: 'Financial' },
+            { id: 'KRI-002', label: 'Overdue Invoices', score: slope(_overdueCount, 1, 3), status: _overdueCount >= 3 ? 'Breached' : _overdueCount >= 1 ? 'Warning' : 'Within', cat: 'Financial' },
+            { id: 'KRI-003', label: 'Budget Overrun', score: 6, status: 'Within', cat: 'Financial' },
+            { id: 'KRI-004', label: 'Delivery Delays', score: slope(_delayedProj, 1, 2), status: _delayedProj >= 2 ? 'Breached' : _delayedProj >= 1 ? 'Warning' : 'Within', cat: 'Operational' },
+            { id: 'KRI-005', label: 'SOP Compliance', score: 6, status: 'Within', cat: 'Operational' },
+            { id: 'KRI-006', label: 'Response Time', score: 6, status: 'Within', cat: 'Operational' },
+            { id: 'KRI-007', label: 'Client Satisfaction', score: 6, status: 'Within', cat: 'Client' },
+            { id: 'KRI-008', label: 'Client Churn Risk', score: slope(_overdueCount, 1, 3), status: _overdueCount >= 3 ? 'Warning' : 'Within', cat: 'Client' },
+            { id: 'KRI-009', label: 'Conversion Rate', score: slope(1 - _convRate, 0.5, 0.75), status: _convRate < 0.25 ? 'Warning' : 'Within', cat: 'Client' },
+            { id: 'KRI-010', label: 'Campaign ROI', score: 6, status: 'Within', cat: 'Marketing' },
+            { id: 'KRI-011', label: 'Lead Pipeline', score: slope(_leadsAll.length, 5, 20), status: _leadsAll.length < 5 ? 'Warning' : 'Within', cat: 'Marketing' },
+            { id: 'KRI-012', label: 'Key Person Risk', score: 8, status: 'Within', cat: 'Team' }
+        ];
+        const scoreColors = risks.map(r => r.score >= 15 ? 'rgba(239,68,68,0.75)' : r.score >= 9 ? 'rgba(245,158,11,0.75)' : 'rgba(16,185,129,0.75)');
+
+        const ctxS = document.getElementById('kriScoreChart');
+        if (ctxS) {
+            if (thi

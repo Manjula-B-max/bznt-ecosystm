@@ -1,0 +1,10 @@
+
+--- Line 14573 ---
+<tfoot class="bg-slate-50 border-t border-slate-200 text-sm font-semibold text-slate-800">
+<tr><td class="px-4 py-3">Total</td><td class="px-4 py-3 text-right">450</td><td class="px-4 py-3 text-right">280</td><td class="px-4 py-3 text-right">156</td><td class="px-4 py-3 text-right text-emerald-700">89</td><td class="px-4 py-3 text-right">67</td><td class="px-4 py-3 text-right text-purple-700">19.8%</td></tr>
+</tfoot>
+
+--- Line 14704 ---
+<tfoot class="bg-slate-50 border-t border-slate-200 text-sm font-semibold text-slate-800">
+<tr><td class="px-4 py-3">Total</td><td class="px-4 py-3 text-right">3,610</td><td class="px-4 py-3 text-right">3,512</td><td class="px-4 py-3 text-right">1,064</td><td class="px-4 py-3 text-right">489</td><td class="px-4 py-3 text-right text-emerald-700">175</td><td class="px-4 py-3 text-right">18</td><td class="px-4 py-3 text-right text-purple-700">4.9%</td></tr>
+</tfoot>

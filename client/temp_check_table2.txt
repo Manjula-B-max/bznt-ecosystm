@@ -1,0 +1,51 @@
+--- FUNNEL ---
+<table id="funnelTable" class="w-full text-sm" style="min-width:700px">
+                            <thead class="bg-slate-50 text-slate-500 text-xs uppercase tracking-wide">
+                                <tr>
+                                    <th class="text-left px-4 py-3">Source</th>
+                                    <th class="text-right px-4 py-3">Leads</th>
+                                    <th class="text-right px-4 py-3">Qualified</th>
+                                    <th class="text-right px-4 py-3">Proposals</th>
+                                    <th class="text-right px-4 py-3">Deals Won</th>
+                                    <th class="text-right px-4 py-3">Projects</th>
+                                    <th class="text-right px-4 py-3">Conv. Rate</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-100">
+                                ${tableRows.map(r => `
+                                <tr class="hover:bg-slate-50">
+                                    <td class="px-4 py-3 font-medium text-slate-900">${r.source}</td>
+                                    <td class="px-4 py-3 text-right text-slate-700">${r.leads}</td>
+                                    <td class="px-4 py-3 text-right text-slate-700">${r.qualified}</td>
+                                    <td class="px-4 py-3 text-right text-slate-700">${r.proposals}</td>
+                                    <td class="px-4 py-3 text-right font-semibold text-emerald-700">${r.deals}</td>
+                                    <td class="px-4 py-3 text-right text-slate-700">${r.projects}</td>
+                                    <td class="px-4 py-3 text-right"><span class="px-2 py-0.5 text-xs font-semibold bg-purple-50 text-purple-700 rounded-full">${r.convRate}</span></td>
+                                </tr>`).join('')}
+                            </tbody>
+                    
+--- CAMP ---
+<table id="campaignTable" class="w-full text-sm" style="min-width:750px">
+                            <thead class="bg-slate-50 text-slate-500 text-xs uppercase tracking-wide">
+                                <tr>
+                                    <th class="text-left px-4 py-3">Channel</th>
+                                    <th class="text-right px-4 py-3">Sent</th>
+                                    <th class="text-right px-4 py-3">Delivered</th>
+                                    <th class="text-right px-4 py-3">Opened</th>
+                                    <th class="text-right px-4 py-3">Clicked</th>
+                                    <th class="text-right px-4 py-3">Converted</th>
+                                    <th class="text-right px-4 py-3">Unsub</th>
+                                    <th class="text-right px-4 py-3">Conv %</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-100">
+                                ${channels.map(r => {
+            const convPct = ((r.converted / r.sent) * 100).toFixed(1);
+            return `<tr class="hover:bg-slate-50">
+                                        <td class="px-4 py-3 font-semibold text-slate-900">${r.type}</td>
+                                        <td class="px-4 py-3 text-right text-slate-700">${r.sent.toLocaleString()}</td>
+                                        <td class="px-4 py-3 text-right text-slate-700">${r.delivered.toLocaleString()}</td>
+                                        <td class="px-4 py-3 text-right text-slate-700">${r.opened > 0 ? r.opened.toLocaleString() : '—'}</td>
+                                        <td class="px-4 py-3 text-right text-slate-700">${r.clicked > 0 ? r.clicked.toLocaleString() : '—'}</td>
+                                        <td class="px-4 py-3 text-right font-semibold text-emerald-700">${r.converted}</td>
+                           

@@ -820,10 +820,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const setToken = t => localStorage.setItem(TK, t);
 
     // Already logged in — go straight to dashboard
-    if (getToken()) {
-        window.location.replace('marketflow-crm.html');
-        return;
-    }
+    // if (getToken()) {
+    //     window.location.replace('marketflow-crm.html');
+    //     return;
+    // }
 
     // ── State ──────────────────────────────────────────────────────────────────
     let otpSentTo = null;   // email OTP was dispatched to

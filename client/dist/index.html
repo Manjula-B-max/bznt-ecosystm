@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BEZENT - Business Ecosystem Zentrum</title>
+  <link rel="stylesheet" crossorigin href="/assets/index-ChMAiUVS.css">
+</head>
+<body>
+
+    <main class="login-container">
+        <div class="login-card">
+            <section class="crm-pane" aria-hidden="true">
+                <div class="crm-pane-inner">
+                    <div class="crm-image-frame">
+                        <img id="crmShowcaseImg" class="crm-showcase-img" alt="CRM preview" src="assets/crm-slide-1.svg" />
+                    </div>
+                    <div class="crm-caption" id="crmShowcaseCaption">Track deals, stages, and revenue with clarity.</div>
+                </div>
+            </section>
+            <section class="login-pane">
+                <div class="login-details-box">
+                    <header class="branding">
+                        <div class="brand-mark" id="brandMark">
+                            <img id="brandLogo" class="brand-logo" alt="BEZENT" src="assets/logo.png" data-skip-recolor="true">
+                            <h1 class="logo brand-text" id="brandText">BEZENT</h1>
+                        </div>
+                    </header>
+
+                    <form class="login-form" id="loginForm">
+                        <div class="form-group">
+                            <input 
+                                type="email" 
+                                id="email" 
+                                name="email" 
+                                placeholder="Email" 
+                                required
+                                autocomplete="email"
+                            >
+                            <label for="email" class="floating-label">Email</label>
+                        </div>
+                        
+                        <div class="form-group" id="otpGroup" style="display: none;">
+                            <input 
+                                type="text" 
+                                id="otp" 
+                                name="otp" 
+                                inputmode="numeric"
+                                pattern="[0-9]{6}"
+                                maxlength="6"
+                                placeholder="OTP" 
+                                autocomplete="one-time-code"
+                            >
+                            <label for="otp" class="floating-label">OTP</label>
+                        </div>
+
+                        <div class="form-footer" id="otpStatus" style="margin-bottom: 16px;"></div>
+                        
+                        <button type="submit" class="login-btn">
+                            <span id="loginBtnText">Send OTP</span>
+                        </button>
+                    </form>
+                    
+                    <footer class="form-footer">
+                        <a href="#" id="changeEmailLink" class="forgot-password" style="display:none;">Change email</a>
+                    </footer>
+                </div>
+            </section>
+        </div>
+    </main>
+    
+    <script src="script.js"></script>
+</body>
+</html>

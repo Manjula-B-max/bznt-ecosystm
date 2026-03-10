@@ -1,0 +1,69 @@
+getReportsKriRisk() {
+        // ── Compute actual values from real stores ──
+        const invoices = this.getAllInvoices();
+        const projects = this.getStoredProjects();
+        const leads = this.getStoredLeads();
+        const clients = this.getStoredClients();
+        const feedback = this.readStore('bezent_feedback_submissions', []);
+        const followups = this.readStore('bezent_payment_followups', []);
+
+        const overdueCount = invoices.filter(i => String(i?.status || '').toLowerCase() === 'overdue').length;
+        const totalLeads = leads.length;
+        const convertedLeads = leads.filter(l => ['closed', 'po received', 'converted'].includes(String(l.stage || l.status || '').toLowerCase())).length;
+        const convRate = totalLeads ? Math.round(convertedLeads / totalLeads * 100) : 0;
+        const delayedProj = projects.filter(p => ['delayed', 'at risk'].includes(String(p?.status || '').toLowerCase())).length;
+        const totalProj = Math.max(projects.length, 1);
+        const delayPct = Math.round(delayedProj / totalProj * 100);
+        const avgFeedback = feedback.length ? (feedback.reduce((s, f) => s + parseFloat(f.avg || 0), 0) / feedback.length).toFixed(1) : null;
+        const totalInvoiced = invoices.reduce((s, i) => s + this.parseCurrencyToNumber(i.amount), 0);
+        const totalCollected = invoices.filter(i => String(i?.status || '').toLowerCase() === 'paid').reduce((s, i) => s + this.parseCurrencyToNumber(i.amount), 0);
+        const collRate = totalInvoiced ? Math.round(totalCollected / totalInvoiced * 100) : 100;
+
+        const risks = [
+            {
+                id: 'KRI-001', category: 'Financial', risk: 'Overdue Invoice Accumulation',
+                likelihood: overdueCount >= 5 ? 5 : overdueCount >= 3 ? 4 : overdueCount >= 1 ? 3 : 1,
+                impact: 4, threshold: '\u2264 2 overdue invoices',
+                current: `${overdueCount} overdue invoice${overdueCount !== 1 ? 's' : ''}`,
+                status: overdueCount >= 3 ? 'Breached' : overdueCount >= 1 ? 'Warning' : 'Within',
+                trend: overdueCount >= 3 ? 'Worsening' : 'Stable', owner: 'Finance team',
+                action: overdueCount >= 1 ? 'Send payment reminders immediately' : 'Continue monitoring'
+            },
+            {
+                id: 'KRI-002', category: 'Financial', risk: 'Invoice Collection Rate',
+                likelihood: collRate < 80 ? 4 : collRate < 90 ? 2 : 1,
+                impact: 4, threshold: '\u2265 90% collection rate',
+                current: `${collRate}% collection rate`,
+                status: collRate >= 90 ? 'Within' : collRate >= 80 ? 'Warning' : 'Breached',
+                trend: collRate >= 90 ? 'Stable' : 'Declining', owner: 'Billing',
+                action: collRate < 90 ? 'Follow up on pending invoices' : 'Maintain billing cadence'
+            },
+            {
+                id: 'KRI-003', category: 'Operational', risk: 'Project Delivery Delays',
+                likelihood: delayPct >= 25 ? 5 : delayPct >= 15 ? 3 : 1,
+                impact: 5, threshold: '<15% projects delayed',
+                current: `${delayPct}% projects delayed`,
+                status: delayPct >= 25 ? 'Breached' : delayPct >= 15 ? 'Warning' : 'Within',
+                trend: delayPct >= 20 ? 'Worsening' : 'Stable', owner: 'Project Manager',
+                action: delayPct > 0 ? 'Review delayed projects; update timelines' : 'On schedule'
+            },
+            {
+                id: 'KRI-004', category: 'Client', risk: 'Lead Conversion Rate',
+                likelihood: convRate < 25 ? 4 : convRate < 35 ? 2 : 1,
+                impact: 4, threshold: '\u2265 30% lead conversion',
+                current: `${convRate}% conversion (${convertedLeads}/${totalLeads})`,
+                status: convRate >= 30 ? 'Within' : convRate >= 20 ? 'Warning' : 'Breached',
+                trend: convRate >= 30 ? 'Stable' : 'Declining', owner: 'Sales',
+                action: convRate < 30 ? 'Review pitch process; increase follow-ups' : 'Maintain current strategy'
+            },
+            {
+                id: 'KRI-005', category: 'Client', risk: 'Client Satisfaction Score',
+                likelihood: !avgFeedback ? 2 : parseFloat(avgFeedback) < 3 ? 4 : parseFloat(avgFeedback) < 4 ? 2 : 1,
+                impact: 5, threshold: '\u2265 4.0 / 5.0 avg feedback',
+                current: avgFeedback ? `${avgFeedback} / 5.0 avg (${feedback.length} responses)` : 'No feedback yet',
+                status: !avgFeedback ? 'Warning' : parseFloat(avgFeedback) >= 4 ? 'Within' : parseFloat(avgFeedback) >= 3 ? 'Warning' : 'Breached',
+                trend: 'Stable', owner: 'Account Management',
+                action: !avgFeedback ? 'Share feedback survey link with clients' : parseFloat(avgFeedback) < 4 ? 'Review low-scoring areas' : 'Keep up quality'
+            },
+            {
+                id: 'KRI-006', category: 'M

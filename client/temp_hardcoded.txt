@@ -1,0 +1,19 @@
+abel: 'Open Rate %',
+                            data: [24, 28, 31, 29]
+bel: 'Click Rate %',
+                            data: [6, 7, 8, 7]
+     label: 'Leads',
+                            data: [6, 5, 15, 4, 9, 2, 1]
+     label: 'Deals',
+                            data: [1, 1, 4, 0, 5, 0, 0]
+ength) return { labels: ['No Data'], datasets: [{ data: [1]
+       return { labels: ['No Data'], datasets: [{ data: [1]
+            datasets: [{
+                        data: [4, 3, 4, 3]
+                    datasets: [{ label: 'Conv %', data: [0, 0, 0, 0]
+},
+                        { label: 'Converted', data: [0, 0, 0, 0, 0]
+       } catch (_) { return [{ label: 'Invoiced', data: [0, 0, 0, 0, 0, 0]
+241,0.1)', tension: 0.35 }, { label: 'Collected', data: [0, 0, 0, 0, 0, 0]
+ { labels: mn, datasets: [{ label: 'Revenue (₹)', data: [0, 0, 0, 0, 0, 0]
+10)', tension: 0.35 }, { label: 'Collection (₹)', data: [0, 0, 0, 0, 0, 0]

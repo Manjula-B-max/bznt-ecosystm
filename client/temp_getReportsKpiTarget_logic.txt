@@ -1,0 +1,73 @@
+nerHTML = this.getReportsKriRisk();
+                break;
+            case 'project_roadmap':
+                container.innerHTML = this.getReportsProjectRoadmap();
+                break;
+            default:
+                container.innerHTML = this.getReportsFunnel();
+        }
+    }
+
+
+    // ─────────────────────────────────────────────────────────────────────────
+    //  KPI vs Target Report
+    // ─────────────────────────────────────────────────────────────────────────
+    getReportsKpiTarget() {
+
+        // Compute real actuals from live data
+        const leadsData = this.getStoredLeads();
+        const invoicesData = this.getAllInvoices();
+        const projectsData = this.readStore('bezent_projects', []);
+        const feedbackData = this.readStore('bezent_feedback_submissions', []);
+        const campaignsData = this.readStore('bezent_campaigns', []);
+        const paidInvoices = invoicesData.filter(i => String(i.status || '').toLowerCase() === 'paid');
+        const paidAmt = paidInvoices.reduce((s, i) => s + this.parseCurrencyToNumber(i.amount), 0);
+        const totalAmt = invoicesData.reduce((s, i) => s + this.parseCurrencyToNumber(i.amount), 0);
+        const overdueCount = invoicesData.filter(i => String(i.status || '').toLowerCase() === 'overdue').length;
+        const wonLeads = leadsData.filter(l => ['won', 'closed'].includes(String(l.stage || l.status || '').toLowerCase())).length;
+        const convRate = leadsData.length ? Math.round(wonLeads / leadsData.length * 100) : 28;
+        const avgFeedback = feedbackData.length ? parseFloat((feedbackData.reduce((s, f) => s + parseFloat(f.avg || 0), 0) / feedbackData.length).toFixed(1)) : 8.4;
+        const activeCampaigns = campaignsData.filter(c => String(c.status || '').toLowerCase() === 'active').length;
+
+        // Load user-set targets from store
+        const storedTargets = this.readStore('bezent_kpi_targets', {});
+
+        const DEFAULT_KPIS = [
+            { id: 'rev', category: 'Sales', kpi: 'Monthly Revenue', target: 500000, defaultActual: paidAmt, unit: '₹', owner: 'Team' },
+            { id: 'leads', category: 'Sales', kpi: 'New Leads Generated', target: 120, defaultActual: leadsData.length, unit: '', owner: 'Team' },
+            { id: 'conv', category: 'Sales', kpi: 'Lead Conversion Rate', target: 35, defaultActual: convRate, unit: '%', owner: 'Team' },
+            { id: 'deal', category: 'Sales', kpi: 'Avg Deal Size', target: 85000, defaultActual: wonLeads ? Math.round(paidAmt / wonLeads) : 0, unit: '₹', owner: 'Team' },
+            { id: 'ontime', category: 'Projects', kpi: 'Projects Delivered On Time', target: 90, defaultActual: 0, unit: '%', owner: 'Team' },
+            { id: 'comp', category: 'Projects', kpi: 'Avg Project Completion', target: 85, defaultActual: 0, unit: '%', owner: 'Team' },
+            { id: 'csat', category: 'Projects', kpi: 'Client Satisfaction Score', target: 9, defaultActual: avgFeedback || 0, unit: '/10', owner: 'Team' },
+            { id: 'collect', category: 'Finance', kpi: 'Invoice Collection Rate', target: 95, defaultActual: totalAmt ? Math.round(paidAmt / totalAmt * 100) : 0, unit: '%', owner: 'Team' },
+            { id: 'overdue', category: 'Finance', kpi: 'Overdue Invoices', target: 2, defaultActual: overdueCount, unit: ' no.', owner: 'Team' },
+            { id: 'budget', category: 'Finance', kpi: 'Budget Utilisation', target: 80, defaultActual: 0, unit: '%', owner: 'Team' },
+            { id: 'email', category: 'Marketing', kpi: 'Email Open Rate', target: 28, defaultActual: 0, unit: '%', owner: 'Team' },
+            { id: 'roi', category: 'Marketing', kpi: 'Campaign ROI', target: 300, defaultActual: 0, unit: '%', owner: 'Team' },
+            { id: 'webLeads', category: 'Marketing', kpi: 'Website Leads Captured', target: 40, defaultActual: leadsData.filter(l => l.source === 'Website').length, unit: '', owner: 'Team' },
+            { id: 'sop', category: 'Team', kpi: 'SOP Daily Report Compliance', target: 100, defaultActual: 0, unit: '%', owner: 'Team' },
+            { id: 'fup', category: 'Team', kpi: 'Follow-up Response Time', target: 4, defaultActual: 0, unit: 'h', owner: 'Team' }
+        ];
+
+        const kpis = DEFAULT_KPIS.map(k => {
+            const st = storedTargets[k.id] || {};
+            const target = st.target ?? k.target;
+            const actual = k.defaultActual;
+            const pct = Math.round(actual / target * 100);
+            const status = pct >= 110 ? 'Exceeded' : pct >= 90 ? 'On Track' : pct >= 70 ? 'At Risk' : 'Critical';
+            const trend = pct >= 100 ? `+${pct - 100}%` : `-${100 - pct}%`;
+            return { ...k, target, actual, status, trend, kpiId: k.id };
+        });
+
+        const exceeded = kpis.filter(k => k.status === 'Exceeded').length;
+        const onTrack = kpis.filter(k => k.status === 'On Track').length;
+        const atRisk = kpis.filter(k => k.status === 'At Risk').length;
+        const critical = kpis.filter(k => k.status === 'Critical').length;
+        const avgAchieve = Math.round(kpis.reduce((s, k) => {
+            return s + Math.min(Math.round(k.actual / k.target * 100), 150);
+        }, 0) / kpis.length);
+
+        const statusBadge = s => {
+            const map = { 'Exceeded': 'bg-emerald-100 text-emerald-700', 'On Track': 'bg-sky-100 text-sky-700', 'At Risk': 'bg-amber-100 text-amber-700', 'Critical': 'bg-rose-100 text-rose-700' };
+            return

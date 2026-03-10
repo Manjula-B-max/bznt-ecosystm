@@ -1,0 +1,21 @@
+--- weeklyChart ---
+-semibold text-slate-900">Leads vs Deals - This Week</h3>
+                        <p class="text-sm text-slate-500">Daily comparison of leads generated and deals closed</p>
+                    </div>
+                    <div class="h-64 relative w-full h-full bg-slate-50 rounded-lg">
+                            <div class="relative w-full h-full" style="min-height: 250px; min-width: 0"><canvas id="weeklyChart"></canvas></div>
+                    </div>
+                </div>
+
+                <!-- Top Performing Days & Highlights -->
+                <div class="grid grid-cols-1 lg:grid-
+--- revenuePieChart ---
+s="text-lg font-semibold text-slate-900">Revenue by Service Type</h3>
+                            <p class="text-sm text-slate-500">Breakdown of revenue sources</p>
+                        </div>
+                        <div class="h-64 relative w-full h-full bg-slate-50 rounded-lg">
+                            <div class="relative w-full h-full" style="min-height: 250px; min-width: 0"><canvas id="revenuePieChart"></canvas></div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-lg border border-slate-200 p-4 sm:p-6 shadow-lg min

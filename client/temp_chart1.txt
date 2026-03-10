@@ -1,0 +1,53 @@
+initializeKpiTargetCharts() {
+        const kpis = [
+            { kpi: 'Monthly Revenue', target: 500000, actual: 485000, status: 'On Track' },
+            { kpi: 'New Leads', target: 120, actual: 138, status: 'Exceeded' },
+            { kpi: 'Conversion Rate', target: 35, actual: 28, status: 'At Risk' },
+            { kpi: 'Avg Deal Size', target: 85000, actual: 91000, status: 'Exceeded' },
+            { kpi: 'On-Time Delivery', target: 90, actual: 75, status: 'Critical' },
+            { kpi: 'Satisfaction', target: 9, actual: 8.4, status: 'On Track' },
+            { kpi: 'Collection Rate', target: 95, actual: 88, status: 'At Risk' },
+            { kpi: 'Email Open Rate', target: 28, actual: 31.4, status: 'Exceeded' },
+            { kpi: 'SOP Compliance', target: 100, actual: 82, status: 'Critical' },
+            { kpi: 'Follow-up Time', target: 4, actual: 6.5, status: 'At Risk' }
+        ];
+        const achievePct = kpis.map(k => Math.min(Math.round(k.actual / k.target * 100), 150));
+        const barColors = kpis.map(k => ({
+            'Exceeded': 'rgba(16,185,129,0.75)', 'On Track': 'rgba(14,165,233,0.75)',
+            'At Risk': 'rgba(245,158,11,0.75)', 'Critical': 'rgba(239,68,68,0.75)'
+        }[k.status]));
+
+        const ctxA = document.getElementById('kpiAchievementChart');
+        if (ctxA) {
+            if (this.charts.kpiAchievementChart) { try { this.charts.kpiAchievementChart.destroy(); } catch (e) { } }
+            this.charts.kpiAchievementChart = new Chart(ctxA, {
+                type: 'bar',
+                data: {
+                    labels: kpis.map(k => k.kpi),
+                    datasets: [{
+                        label: 'Achievement %', data: achievePct, backgroundColor: barColors, borderRadius: 5,
+                        borderSkipped: false
+                    }, {
+                        label: 'Target (100%)', data: Array(kpis.length).fill(100),
+                        type: 'line', borderColor: 'rgba(100,116,139,0.6)', borderDash: [4, 4],
+                        borderWidth: 1.5, pointRadius: 0, fill: false
+                    }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11 } } } },
+                    scales: {
+                        y: { min: 0, max: 150, ticks: { callback: v => v + '%', font: { size: 10 } } },
+                        x: { ticks: { font: { size: 10 } } }
+                    }
+                }
+            });
+        }
+
+        const ctxS = document.getElementById('kpiStatusChart');
+        if (ctxS) {
+            if (this.charts.kpiStatusChart) { try { this.charts.kpiStatusChart.destroy(); } catch (e) { } }
+            this.charts.kpiStatusChart = new Chart(ctxS, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Exceeded', 'On Track', '

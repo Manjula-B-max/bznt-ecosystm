@@ -200,6 +200,16 @@ CREATE TABLE IF NOT EXISTS sop_daily (
   PRIMARY KEY (date_key, user_id)
 );
 
+CREATE TABLE IF NOT EXISTS rfps (
+  id TEXT PRIMARY KEY,
+  user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  client_name TEXT,
+  project_name TEXT,
+  rfp_date TEXT,
+  data TEXT,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
 CREATE TABLE IF NOT EXISTS kv_store (
   key TEXT NOT NULL,
   user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,

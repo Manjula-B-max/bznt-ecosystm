@@ -136,6 +136,7 @@ router.use('/visits', crudRoutes('visits'));
 router.use('/greetings', crudRoutes('greetings'));
 router.use('/feedback', crudRoutes('feedback_submissions'));
 router.use('/workflow_rules', crudRoutes('workflow_rules'));
+router.use('/rfps', crudRoutes('rfps'));
 
 // ═══════════════════════════════════════════════════════════════════════════
 // KPI TARGETS — key-value per user

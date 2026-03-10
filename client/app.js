@@ -800,6 +800,7 @@ class MarketFlowCRM {
                 'bezent_contracts': 'contracts', 'bezent_visits': 'visits',
                 'bezent_greetings': 'greetings', 'bezent_feedback_submissions': 'feedback',
                 'bezent_workflow_rules': 'workflow_rules',
+                'bezent_rfps': 'rfps',
             };
             const hdr = { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token };
             const col = COL[key];
@@ -827,6 +828,7 @@ class MarketFlowCRM {
             ['bezent_quotations', 'quotations'], ['bezent_contracts', 'contracts'], ['bezent_visits', 'visits'],
             ['bezent_greetings', 'greetings'], ['bezent_feedback_submissions', 'feedback'],
             ['bezent_workflow_rules', 'workflow_rules'],
+            ['bezent_rfps', 'rfps'],
         ];
         await Promise.all(COLS.map(async ([sk, ep]) => {
             try {
@@ -3116,6 +3118,11 @@ class MarketFlowCRM {
                 r.date = r.client?.dateOfRequest || new Date().toISOString().split('T')[0];
                 r.clientName = r.client?.companyName || 'Unknown Client';
                 r.projectName = r.client?.projectName || '';
+                // Server-ready flat fields
+                r.client_name = r.clientName;
+                r.project_name = r.projectName;
+                r.rfp_date = r.date;
+                r.data = JSON.stringify(r);
                 rfps.unshift(r);
                 this.writeStore('bezent_rfps', rfps);
                 this.showToast('RFP saved to database!');

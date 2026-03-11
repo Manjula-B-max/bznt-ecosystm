@@ -23,6 +23,20 @@ router.post('/auth/send-otp', (req, res) => {
             return res.status(400).json({ error: 'Valid email required' });
 
         const code = String(Math.floor(100000 + Math.random() * 900000));
+        
+        // ── ALLOW-LIST CHECK ───────────────────────────────────────
+        // Only allow emails that exist in the allowed_emails table.
+        // If the table is empty, we allow the very first user to register (Admin bootstrap).
+        const allowedCount = db.prepare('SELECT COUNT(*) as c FROM allowed_emails').get().c;
+        if (allowedCount > 0) {
+            const isAllowed = db.prepare('SELECT 1 FROM allowed_emails WHERE email = ?').get(email);
+            if (!isAllowed) {
+                return res.status(403).json({ error: 'Access denied: Email not authorized.' });
+            }
+        } else {
+            // Bootstrap: Add the first user automatically to the allow-list
+            db.prepare('INSERT INTO allowed_emails (email) VALUES (?)').run(email);
+        }
         const expiresAt = Date.now() + 5 * 60 * 1000; // 5 minutes
 
         // Upsert OTP — one active code per email at a time

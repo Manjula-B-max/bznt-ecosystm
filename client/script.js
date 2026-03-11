@@ -955,6 +955,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             // ── Success ──────────────────────────────────────────────────────
+            localStorage.clear();
             setToken(data.token);
             localStorage.setItem('bezent_user', JSON.stringify(data.user));
             if (btnTextEl) btnTextEl.textContent = 'Welcome!';

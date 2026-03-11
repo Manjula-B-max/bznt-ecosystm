@@ -1,4 +1,5 @@
 import { defineConfig } from 'vite';
+import { resolve } from 'path';
 
 export default defineConfig({
   server: {
@@ -11,8 +12,14 @@ export default defineConfig({
         secure: false
       }
     }
+  },
+  build: {
+    rollupOptions: {
+      input: {
+        main: resolve(__dirname, 'index.html'),
+        crm: resolve(__dirname, 'marketflow-crm.html'),
+        feedback: resolve(__dirname, 'feedback.html')
+      }
+    }
   }
 });
-
-
-// trigger reload

@@ -1,6 +1,34 @@
 node_modules/
 client/node_modules/
 .DS_Store
+
+# Environment files
 .env
 .env.*
+server/.env
+client/.env
+
+# Logs
 *.log
+output.log
+
+# SQLite runtime files
+*.db-shm
+*.db-wal
+
+# Build output
+client/dist/
+client/build/
+
+# Temp / scratch files
+*.cjs
+!add_user.cjs
+temp_*.txt
+audit*.txt
+validation*.txt
+inspect.txt
+methods.txt
+bank_search.txt
+
+# Vite
+client/.vite/

@@ -4427,37 +4427,59 @@ class MarketFlowCRM {
 
     initializeWeeklyChart() {
         const ctx = document.getElementById('weeklyChart');
-        if (ctx) {
-            this.charts.weeklyChart = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-                    datasets: [
-                        {
-                            label: 'Leads',
-                            data: [6, 5, 15, 4, 9, 2, 1],
-                            backgroundColor: 'rgba(99, 102, 241, 0.7)'
-                        },
-                        {
-                            label: 'Deals',
-                            data: [1, 1, 4, 0, 5, 0, 0],
-                            backgroundColor: 'rgba(16, 185, 129, 0.7)'
-                        }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { position: 'bottom' }
-                    },
-                    scales: {
-                        x: { grid: { display: false } },
-                        y: { beginAtZero: true }
-                    }
-                }
+        if (!ctx) return;
+
+        // Build real lead/deal counts by day-of-week from stored data
+        const dayLabels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+        const leadsPerDay = [0, 0, 0, 0, 0, 0, 0];
+        const dealsPerDay = [0, 0, 0, 0, 0, 0, 0];
+
+        try {
+            const leads = this.getStoredLeads ? this.getStoredLeads() : [];
+            const now = new Date();
+            // Get start of current week (Monday)
+            const dayOfWeek = now.getDay(); // 0=Sun,1=Mon,...6=Sat
+            const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+            const weekStart = new Date(now.getFullYear(), now.getMonth(), now.getDate() + mondayOffset);
+            const weekEnd = new Date(weekStart.getTime() + 7 * 24 * 60 * 60 * 1000);
+
+            leads.forEach(l => {
+                const d = new Date(l.receivedAt || l.createdAt || l.date || '');
+                if (isNaN(d.getTime()) || d < weekStart || d >= weekEnd) return;
+                const idx = ((d.getDay() + 6) % 7); // Mon=0 ... Sun=6
+                leadsPerDay[idx]++;
+                const st = String(l.stage || '').toLowerCase();
+                if (['closed', 'po received', 'won'].includes(st)) dealsPerDay[idx]++;
             });
-        }
+        } catch (_) { }
+
+        this.charts.weeklyChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: dayLabels,
+                datasets: [
+                    {
+                        label: 'Leads',
+                        data: leadsPerDay,
+                        backgroundColor: 'rgba(99, 102, 241, 0.7)'
+                    },
+                    {
+                        label: 'Deals',
+                        data: dealsPerDay,
+                        backgroundColor: 'rgba(16, 185, 129, 0.7)'
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { position: 'bottom' } },
+                scales: {
+                    x: { grid: { display: false } },
+                    y: { beginAtZero: true, ticks: { precision: 0 } }
+                }
+            }
+        });
     }
 
     initializeInvoiceStatusChart() {
@@ -5513,7 +5535,7 @@ class MarketFlowCRM {
 
         // KPI 5: Client Retention (clients with active/completed projects / total clients)
         const clientsWithProjects = new Set(projects.map(p => String(p?.client || '').trim().toLowerCase()).filter(Boolean));
-        const retentionPct = clients.length ? Math.round((clientsWithProjects.size / Math.max(clients.length, 1)) * 100) : 74;
+        const retentionPct = clients.length ? Math.round((clientsWithProjects.size / Math.max(clients.length, 1)) * 100) : 0;
 
         const fmtINR = (n) => {
             if (!n) return '₹0';
@@ -5893,54 +5915,53 @@ class MarketFlowCRM {
                     </div>
                 </div>
 
-                <!-- Top Performing Days & Highlights -->
+                <!-- Top Performing Days & Highlights (real data) -->
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     <div class="bg-white rounded-lg border border-slate-200 p-4 sm:p-6 shadow-lg">
-                        <h3 class="text-lg font-semibold text-slate-900 mb-4">Top Performing Days</h3>
+                        <h3 class="text-lg font-semibold text-slate-900 mb-4">This Week's Activity</h3>
                         <div class="space-y-3">
-                            <div class="flex items-center justify-between p-3 bg-purple-50 rounded-lg">
-                                <div>
-                                    <div class="font-medium text-slate-900">Wednesday</div>
-                                    <div class="text-sm text-slate-600">15 leads, 4 deals</div>
-                                </div>
-                                <i data-lucide="trophy" class="w-5 h-5 text-purple-600"></i>
-                            </div>
-                            <div class="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
-                                <div>
-                                    <div class="font-medium text-slate-900">Friday</div>
-                                    <div class="text-sm text-slate-600">9 leads, 5 deals</div>
-                                </div>
-                                <i data-lucide="medal" class="w-5 h-5 text-slate-400"></i>
-                            </div>
-                            <div class="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
-                                <div>
-                                    <div class="font-medium text-slate-900">Monday</div>
-                                    <div class="text-sm text-slate-600">12 leads, 3 deals</div>
-                                </div>
-                                <i data-lucide="award" class="w-5 h-5 text-slate-400"></i>
-                            </div>
+                            ${(() => {
+                                const leads = this.getStoredLeads ? this.getStoredLeads() : [];
+                                const projects = this.getAllProjectsMerged ? this.getAllProjectsMerged() : [];
+                                const invoices = this.getAllInvoices ? this.getAllInvoices() : [];
+                                const overdueInvs = invoices.filter(i => String(i.status || '').toLowerCase() === 'overdue');
+                                const pendingQuotes = this.readStore('bezent_quotations', []).filter(q => ['sent', 'draft'].includes(String(q.status || '').toLowerCase()));
+                                const rows = [
+                                    { icon: 'users', color: 'sky', label: `${leads.length} lead${leads.length !== 1 ? 's' : ''} in system` },
+                                    { icon: 'briefcase', color: 'indigo', label: `${projects.length} active project${projects.length !== 1 ? 's' : ''}` },
+                                    overdueInvs.length ? { icon: 'alert-triangle', color: 'orange', label: `${overdueInvs.length} overdue invoice${overdueInvs.length !== 1 ? 's' : ''} need follow-up` } : null,
+                                    pendingQuotes.length ? { icon: 'file-text', color: 'amber', label: `${pendingQuotes.length} quotation${pendingQuotes.length !== 1 ? 's' : ''} pending approval` } : null,
+                                ].filter(Boolean);
+                                if (!rows.length) return '<div class="text-sm text-slate-400 text-center py-4">No activity yet — add leads, projects or invoices to get started.</div>';
+                                return rows.map((r, i) => `
+                                    <div class="flex items-center gap-3 p-3 ${i === 0 ? 'bg-purple-50' : 'bg-slate-50'} rounded-lg">
+                                        <i data-lucide="${r.icon}" class="w-5 h-5 text-${r.color}-600 flex-shrink-0"></i>
+                                        <span class="text-sm text-slate-700">${r.label}</span>
+                                    </div>`).join('');
+                            })()}
                         </div>
                     </div>
 
                     <div class="bg-white rounded-lg border border-slate-200 p-4 sm:p-6 shadow-lg">
                         <h3 class="text-lg font-semibold text-slate-900 mb-4">Weekly Highlights</h3>
                         <div class="space-y-3">
-                            <div class="flex items-center gap-3">
-                                <i data-lucide="check-circle" class="w-5 h-5 text-green-600"></i>
-                                <span class="text-sm text-slate-700">Highest revenue week this quarter</span>
-                            </div>
-                            <div class="flex items-center gap-3">
-                                <i data-lucide="check-circle" class="w-5 h-5 text-green-600"></i>
-                                <span class="text-sm text-slate-700">3 new enterprise clients onboarded</span>
-                            </div>
-                            <div class="flex items-center gap-3">
-                                <i data-lucide="check-circle" class="w-5 h-5 text-green-600"></i>
-                                <span class="text-sm text-slate-700">Campaign conversion rate: 28%</span>
-                            </div>
-                            <div class="flex items-center gap-3">
-                                <i data-lucide="alert-triangle" class="w-5 h-5 text-orange-600"></i>
-                                <span class="text-sm text-slate-700">2 proposals pending approval</span>
-                            </div>
+                            ${(() => {
+                                const leads = this.getStoredLeads ? this.getStoredLeads() : [];
+                                const wonLeads = leads.filter(l => ['closed', 'po received', 'won'].includes(String(l.stage || '').toLowerCase()));
+                                const invoices = this.getAllInvoices ? this.getAllInvoices() : [];
+                                const paidAmt = invoices.filter(i => String(i.status || '').toLowerCase() === 'paid').reduce((s, i) => s + this.parseCurrencyToNumber(i.amount), 0);
+                                const clients = this.getStoredClients ? this.getStoredClients() : [];
+                                const highlights = [];
+                                if (clients.length) highlights.push({ ok: true, text: `${clients.length} client${clients.length !== 1 ? 's' : ''} registered` });
+                                if (wonLeads.length) highlights.push({ ok: true, text: `${wonLeads.length} deal${wonLeads.length !== 1 ? 's' : ''} closed / PO received` });
+                                if (paidAmt) highlights.push({ ok: true, text: `${this.formatINR(paidAmt)} total collected` });
+                                if (!highlights.length) return '<div class="text-sm text-slate-400 text-center py-4">Highlights will appear once you add leads and close deals.</div>';
+                                return highlights.map(h => `
+                                    <div class="flex items-center gap-3">
+                                        <i data-lucide="${h.ok ? 'check-circle' : 'alert-triangle'}" class="w-5 h-5 ${h.ok ? 'text-green-600' : 'text-orange-600'}"></i>
+                                        <span class="text-sm text-slate-700">${h.text}</span>
+                                    </div>`).join('');
+                            })()}
                         </div>
                     </div>
                 </div>
@@ -6176,27 +6197,40 @@ class MarketFlowCRM {
     }
 
     getServiceBreakdownItems() {
-        const services = [
-            { name: "Consulting", revenue: "₹4,60,000", percentage: 28, color: "purple" },
-            { name: "SEO Services", revenue: "₹4,50,000", percentage: 27, color: "purple-500" },
-            { name: "Social Media", revenue: "₹3,80,000", percentage: 23, color: "purple-400" },
-            { name: "Content Marketing", revenue: "₹2,90,000", percentage: 18, color: "purple-300" },
-            { name: "Email Marketing", revenue: "₹2,20,000", percentage: 13, color: "purple-200" }
-        ];
-
-        return services.map(service => `
-            <div class="flex flex-wrap items-start justify-between gap-3">
-                <div class="flex-1">
-                    <div class="flex items-center justify-between mb-1">
-                        <span class="text-sm font-medium text-slate-900">${service.name}</span>
-                        <span class="text-sm text-slate-600">${service.revenue}</span>
-                    </div>
-                    <div class="w-full bg-slate-100 rounded-full h-2">
-                        <div class="bg-${service.color} h-2 rounded-full transition-all" style="width: ${service.percentage}%"></div>
-                    </div>
-                </div>
-            </div>
-        `).join('');
+        // Build real service breakdown from stored invoices
+        try {
+            const invs = this.getStoredInvoices ? this.getStoredInvoices() : [];
+            const paidInvs = invs.filter(i => String(i.status || '').toLowerCase() === 'paid');
+            const byService = new Map();
+            paidInvs.forEach(inv => {
+                const svc = String(inv.service || inv.type || inv.description || 'Other').trim().split('\n')[0].substring(0, 30) || 'Other';
+                const amt = this.parseCurrencyToNumber(inv.amount);
+                byService.set(svc, (byService.get(svc) || 0) + amt);
+            });
+            const sorted = [...byService.entries()].sort((a, b) => b[1] - a[1]).slice(0, 5);
+            if (!sorted.length) {
+                return '<div class="text-sm text-slate-400 text-center py-4">No paid invoices yet. Service breakdown will appear once invoices are marked as paid.</div>';
+            }
+            const maxVal = sorted[0][1] || 1;
+            const colors = ['purple-600', 'purple-500', 'purple-400', 'purple-300', 'purple-200'];
+            return sorted.map(([name, amt], idx) => {
+                const pct = Math.round((amt / maxVal) * 100);
+                return `
+                    <div class="flex flex-wrap items-start justify-between gap-3">
+                        <div class="flex-1">
+                            <div class="flex items-center justify-between mb-1">
+                                <span class="text-sm font-medium text-slate-900">${name}</span>
+                                <span class="text-sm text-slate-600">${this.formatINR(amt)}</span>
+                            </div>
+                            <div class="w-full bg-slate-100 rounded-full h-2">
+                                <div class="bg-${colors[idx]} h-2 rounded-full transition-all" style="width: ${pct}%"></div>
+                            </div>
+                        </div>
+                    </div>`;
+            }).join('');
+        } catch (_) {
+            return '<div class="text-sm text-slate-400">Unable to load service data.</div>';
+        }
     }
 
     getTodayTasks() {
@@ -16029,15 +16063,18 @@ class MarketFlowCRM {
         const MONTHS = [];
         const revenueData = [];
         const targetData = [];
-        // Build 6-month rolling window
+        // Build 6-month rolling window from real paid invoices
         for (let m = 5; m >= 0; m--) {
             const d = new Date(now.getFullYear(), now.getMonth() - m, 1);
             MONTHS.push(d.toLocaleString('en-IN', { month: 'short' }));
-            // Distribute total paid roughly across months with growth curve
-            const base = totalPaid ? Math.round(totalPaid / 6) : 285000;
-            const growth = 1 + (5 - m) * 0.03;
-            revenueData.push(Math.round(base * growth));
-            targetData.push(Math.round(base * (growth + 0.05)));
+            // Sum actual paid invoice amounts for this specific month
+            const monthRevenue = paidInvoices.filter(inv => {
+                const pd = new Date(inv.paidDate || inv.date || inv.createdAt || '');
+                return !isNaN(pd.getTime()) && pd.getFullYear() === d.getFullYear() && pd.getMonth() === d.getMonth();
+            }).reduce((s, inv) => s + this.parseCurrencyToNumber(inv.amount), 0);
+            revenueData.push(monthRevenue);
+            // Target = 10% above actual, or 0 if no real data
+            targetData.push(monthRevenue ? Math.round(monthRevenue * 1.1) : 0);
         }
 
         if (this.charts && this.charts.revenueChart) {

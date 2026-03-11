@@ -10324,8 +10324,8 @@ class MarketFlowCRM {
         const allDomains = ['All', ...uniq(clients.map(r => r.emailDomain !== '—' ? r.emailDomain : null))];
         const allTlds = ['All', ...uniq(clients.map(r => r.emailTld !== '—' ? r.emailTld : null))];
 
-        const fi = (id, ph) => `<input id = "${id}" type = "text" placeholder = "${ph}" class="w-full mt-1 px-2 py-1 text-xs border border-slate-200 rounded-md focus:outline-none focus:ring-1 focus:ring-purple-400 bg-white" /> `;
-        const fs = (id, opts) => `<select id = "${id}" class="w-full mt-1 px-2 py-1 text-xs border border-slate-200 rounded-md focus:outline-none focus:ring-1 focus:ring-purple-400 bg-white" > ${opts.map(v => `<option>${esc(v)}</option>`).join('')}</select> `;
+        const fi = (id, ph) => `<input id="${id}" type="text" placeholder="${ph}" class="block w-full px-2 py-1 text-xs border border-slate-200 rounded focus:outline-none focus:ring-1 focus:ring-purple-400 bg-white min-w-0" />`;
+        const fs = (id, opts) => `<select id="${id}" class="block w-full px-2 py-1 text-xs border border-slate-200 rounded focus:outline-none focus:ring-1 focus:ring-purple-400 bg-white min-w-0">${opts.map(v => `<option>${esc(v)}</option>`).join('')}</select>`;
 
         return `
     <div class="space-y-4 fade-in w-full">
@@ -10347,7 +10347,23 @@ class MarketFlowCRM {
                 <!--Table with inline column filters-- >
                 <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
                     <div class="overflow-x-auto">
-                        <table class="w-full text-sm border-collapse" style="min-width: 800px;">
+                        <table class="w-full text-sm" style="min-width: 1200px; table-layout: fixed;">
+                            <colgroup>
+                                <col style="width:32px" />
+                                <col style="width:72px" />
+                                <col style="width:160px" />
+                                <col style="width:120px" />
+                                <col style="width:130px" />
+                                <col style="width:55px" />
+                                <col style="width:110px" />
+                                <col style="width:90px" />
+                                <col style="width:110px" />
+                                <col style="width:100px" />
+                                <col style="width:100px" />
+                                <col style="width:110px" />
+                                <col style="width:80px" />
+                                <col style="width:90px" />
+                            </colgroup>
                             <thead class="bg-slate-50 border-b-2 border-slate-200 sticky top-0 z-10">
                                 <!-- Column labels row -->
                                 <tr>

@@ -13887,12 +13887,12 @@ class MarketFlowCRM {
                 <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
                     <h3 class="text-sm font-semibold text-slate-900 mb-1">Risk Score by KRI</h3>
                     <p class="text-xs text-slate-500 mb-3">Likelihood × Impact (max 25). Red zone ≥ 15</p>
-                    <div class="h-64"><div class="relative w-full h-full"><canvas id="kriScoreChart"></canvas></div>
+                    <div class="h-64"><div class="relative w-full h-full"><canvas id="kriScoreChart"></canvas></div></div>
                 </div>
                 <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
                     <h3 class="text-sm font-semibold text-slate-900 mb-1">Risk Status by Category</h3>
                     <p class="text-xs text-slate-500 mb-3">Breached / Warning / Within across categories</p>
-                    <div class="h-64"><div class="relative w-full h-full"><canvas id="kriCategoryChart"></canvas></div>
+                    <div class="h-64"><div class="relative w-full h-full"><canvas id="kriCategoryChart"></canvas></div></div>
                 </div>
             </div>
 
@@ -14107,12 +14107,12 @@ class MarketFlowCRM {
                     <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
                         <h3 class="text-sm font-semibold text-slate-900 mb-1">Project Progress Overview</h3>
                         <p class="text-xs text-slate-500 mb-3">% completion per project</p>
-                        <div class="h-48"><div class="relative w-full h-full"><canvas id="projectProgressChart"></canvas></div>
+                        <div class="h-48"><div class="relative w-full h-full"><canvas id="projectProgressChart"></canvas></div></div>
                     </div>
                     <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
                         <h3 class="text-sm font-semibold text-slate-900 mb-1">Budget vs Spent</h3>
                         <p class="text-xs text-slate-500 mb-3">Per project (₹)</p>
-                        <div class="h-48"><div class="relative w-full h-full"><canvas id="projectBudgetChart"></canvas></div>
+                        <div class="h-48"><div class="relative w-full h-full"><canvas id="projectBudgetChart"></canvas></div></div>
                     </div>
                 </div>
 
@@ -14501,12 +14501,12 @@ class MarketFlowCRM {
                     <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
                         <h3 class="text-base font-semibold text-slate-900 mb-1">Funnel Volume by Stage</h3>
                         <p class="text-xs text-slate-500 mb-3">Count at each pipeline stage</p>
-                        <div class="h-60"><div class="relative w-full h-full"><canvas id="funnelBarChart"></canvas></div>
+                        <div class="h-60"><div class="relative w-full h-full"><canvas id="funnelBarChart"></canvas></div></div>
                     </div>
                     <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
                         <h3 class="text-base font-semibold text-slate-900 mb-1">Stage Conversion Rate %</h3>
                         <p class="text-xs text-slate-500 mb-3">Drop-off between each stage</p>
-                        <div class="h-60"><div class="relative w-full h-full"><canvas id="funnelConvChart"></canvas></div>
+                        <div class="h-60"><div class="relative w-full h-full"><canvas id="funnelConvChart"></canvas></div></div>
                     </div>
                 </div>
                 <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
@@ -14635,12 +14635,12 @@ class MarketFlowCRM {
                     <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
                         <h3 class="text-base font-semibold text-slate-900 mb-1">Messages Sent vs Converted</h3>
                         <p class="text-xs text-slate-500 mb-3">Volume per channel</p>
-                        <div class="h-60"><div class="relative w-full h-full"><canvas id="campaignBarChart"></canvas></div>
+                        <div class="h-60"><div class="relative w-full h-full"><canvas id="campaignBarChart"></canvas></div></div>
                     </div>
                     <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
                         <h3 class="text-base font-semibold text-slate-900 mb-1">Conversion Rate by Channel %</h3>
                         <p class="text-xs text-slate-500 mb-3">Effectiveness comparison</p>
-                        <div class="h-60"><div class="relative w-full h-full"><canvas id="campaignConvChart"></canvas></div>
+                        <div class="h-60"><div class="relative w-full h-full"><canvas id="campaignConvChart"></canvas></div></div>
                     </div>
                 </div>
                 <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
@@ -14879,12 +14879,12 @@ class MarketFlowCRM {
                     <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
                         <h3 class="text-base font-semibold text-slate-900 mb-1">Monthly Invoiced vs Collected</h3>
                         <p class="text-xs text-slate-500 mb-3">Billing trend over 6 months</p>
-                        <div class="h-60 relative w-full"><div class="relative w-full h-full"><canvas id="sopBillingChart"></canvas></div>
+                        <div class="h-60 relative w-full"><div class="relative w-full h-full"><canvas id="sopBillingChart"></canvas></div></div>
                     </div>
                     <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
                         <h3 class="text-base font-semibold text-slate-900 mb-1">Projects &amp; Clients Activity</h3>
                         <p class="text-xs text-slate-500 mb-3">New clients &amp; completed projects per month</p>
-                        <div class="h-60 relative w-full"><div class="relative w-full h-full"><canvas id="sopActivityChart"></canvas></div>
+                        <div class="h-60 relative w-full"><div class="relative w-full h-full"><canvas id="sopActivityChart"></canvas></div></div>
                     </div>
                 </div>
                 <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">

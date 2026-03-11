@@ -3,6 +3,7 @@ import cors from 'cors';
 import bcrypt from 'bcryptjs';
 import db from './db.js';
 import { signToken, authMiddleware } from './auth.js';
+import nodemailer from 'nodemailer';
 
 const router = express.Router();
 
@@ -16,7 +17,7 @@ const parseCur = (v) => {
 // ── POST /auth/send-otp  { email } ──────────────────────────────────────────
 // Generates a 6-digit OTP, stores it with a 5-minute TTL, returns it in the
 // response (dev mode — in production you'd email it instead).
-router.post('/auth/send-otp', (req, res) => {
+router.post('/auth/send-otp', async (req, res) => {
     try {
         const email = (req.body.email || '').toLowerCase().trim();
         if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))

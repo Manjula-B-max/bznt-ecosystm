@@ -905,8 +905,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 button.disabled = false;
 
                 setStatus(
-                    '<span>OTP sent to <strong>' + email.replace(/</g, '&lt;') + '</strong><br>' +
-                    'OTP: <strong style="letter-spacing:4px;font-size:15px;">' + (data.otp || '••••••') + '</strong></span>'
+                    '<span>OTP sent completely securely to <strong>' + email.replace(/</g, '&lt;') + '</strong>.<br>' +
+                    '<span style="font-size:13px; color:#555;">Please check your inbox (and spam folder)</span></span>'
                 );
                 otpInput?.focus();
 

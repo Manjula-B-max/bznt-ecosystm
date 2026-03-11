@@ -220,7 +220,7 @@ class MarketFlowCRM {
                         </div>
 
                         <div class="mt-3 overflow-x-auto -mx-2 sm:mx-0">
-                            <table class="w-full text-sm" style="min-width: 800px;">
+                            <table class="w-full text-sm" style="min-width:1000px;">
                                 <thead class="bg-slate-50 border-b border-slate-200">
                                     <tr>
                                         <th class="text-left px-3 py-2 font-medium text-slate-700">Sl</th>
@@ -10294,7 +10294,7 @@ class MarketFlowCRM {
         const fs = (id, opts) => `<select id = "${id}" class="w-full mt-1 px-2 py-1 text-xs border border-slate-200 rounded-md focus:outline-none focus:ring-1 focus:ring-purple-400 bg-white" > ${opts.map(v => `<option>${esc(v)}</option>`).join('')}</select> `;
 
         return `
-    <div class="space-y-4 fade-in" >
+    <div class="space-y-4 fade-in">
 
                 <!--Header -->
                 <div class="flex flex-wrap items-start justify-between gap-3">
@@ -11527,10 +11527,10 @@ class MarketFlowCRM {
                     <button data-action="contracts:add" class="px-4 py-2 text-sm font-medium bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">+ New Contract</button>
                 </div>
                 <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                    <div class="bg-white rounded-xl border p-4"><div class="text-xs text-slate-500">Total Contracts</div><div class="text-2xl font-bold text-slate-900 mt-1">${contracts.length}</div>
-                    <div class="bg-white rounded-xl border p-4"><div class="text-xs text-slate-500">Active</div><div class="text-2xl font-bold text-emerald-700 mt-1">${active}</div>
-                    <div class="bg-white rounded-xl border p-4"><div class="text-xs text-slate-500">Pending</div><div class="text-2xl font-bold text-amber-600 mt-1">${pending}</div>
-                    <div class="bg-white rounded-xl border p-4"><div class="text-xs text-slate-500">Total Value</div><div class="text-lg font-bold text-purple-700 mt-1">₹${totalVal.toLocaleString('en-IN')}</div>
+                    <div class="bg-white rounded-xl border p-4"><div class="text-xs text-slate-500">Total Contracts</div><div class="text-2xl font-bold text-slate-900 mt-1">${contracts.length}</div></div>
+                    <div class="bg-white rounded-xl border p-4"><div class="text-xs text-slate-500">Active</div><div class="text-2xl font-bold text-emerald-700 mt-1">${active}</div></div>
+                    <div class="bg-white rounded-xl border p-4"><div class="text-xs text-slate-500">Pending</div><div class="text-2xl font-bold text-amber-600 mt-1">${pending}</div></div>
+                    <div class="bg-white rounded-xl border p-4"><div class="text-xs text-slate-500">Total Value</div><div class="text-lg font-bold text-purple-700 mt-1">₹${totalVal.toLocaleString('en-IN')}</div></div>
                 </div>
                 ${contracts.length === 0 ? `<div class="bg-white rounded-xl border border-slate-200 p-12 text-center text-slate-400 shadow-sm">
                     <i data-lucide="file-text" class="w-12 h-12 mx-auto mb-3 opacity-20"></i>
@@ -12979,10 +12979,10 @@ class MarketFlowCRM {
                     <button data-action="visits:logVisit" class="px-4 py-2 text-sm font-medium bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">+ Log Visit</button>
                 </div>
                 <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                    <div class="bg-white rounded-xl border p-4"><div class="text-xs text-slate-500">Total Visits</div><div class="text-2xl font-bold text-slate-900 mt-1">${visits.length}</div>
-                    <div class="bg-white rounded-xl border p-4"><div class="text-xs text-slate-500">Confirmed</div><div class="text-2xl font-bold text-emerald-700 mt-1">${confirmed}</div>
-                    <div class="bg-white rounded-xl border p-4"><div class="text-xs text-slate-500">Pending</div><div class="text-2xl font-bold text-amber-600 mt-1">${pending}</div>
-                    <div class="bg-white rounded-xl border p-4"><div class="text-xs text-slate-500">Unique Clients</div><div class="text-2xl font-bold text-purple-700 mt-1">${uniqueClients}</div>
+                    <div class="bg-white rounded-xl border p-4"><div class="text-xs text-slate-500">Total Visits</div><div class="text-2xl font-bold text-slate-900 mt-1">${visits.length}</div></div>
+                    <div class="bg-white rounded-xl border p-4"><div class="text-xs text-slate-500">Confirmed</div><div class="text-2xl font-bold text-emerald-700 mt-1">${confirmed}</div></div>
+                    <div class="bg-white rounded-xl border p-4"><div class="text-xs text-slate-500">Pending</div><div class="text-2xl font-bold text-amber-600 mt-1">${pending}</div></div>
+                    <div class="bg-white rounded-xl border p-4"><div class="text-xs text-slate-500">Unique Clients</div><div class="text-2xl font-bold text-purple-700 mt-1">${uniqueClients}</div></div>
                 </div>
                 ${visits.length === 0 ? `<div class="bg-white rounded-xl border p-12 text-center text-slate-400 shadow-sm">
                     <i data-lucide="map-pin" class="w-12 h-12 mx-auto mb-3 opacity-20"></i>
@@ -14734,10 +14734,10 @@ class MarketFlowCRM {
                 </div>
 
                 <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                    <div class="bg-white rounded-xl border p-4"><div class="text-xs text-slate-500">Total Clients</div><div class="text-2xl font-bold text-slate-900 mt-1">${clients.length}</div>
-                    <div class="bg-white rounded-xl border p-4"><div class="text-xs text-slate-500">Total LTV</div><div class="text-xl font-bold text-purple-700 mt-1">${this.formatINR(totalLtv)}</div>
-                    <div class="bg-white rounded-xl border p-4"><div class="text-xs text-slate-500">Avg LTV / Client</div><div class="text-xl font-bold text-sky-700 mt-1">${this.formatINR(avgLtv)}</div>
-                    <div class="bg-white rounded-xl border p-4"><div class="text-xs text-slate-500">High-Value Clients</div><div class="text-2xl font-bold text-emerald-700 mt-1">${highValue}</div>
+                    <div class="bg-white rounded-xl border p-4"><div class="text-xs text-slate-500">Total Clients</div><div class="text-2xl font-bold text-slate-900 mt-1">${clients.length}</div></div>
+                    <div class="bg-white rounded-xl border p-4"><div class="text-xs text-slate-500">Total LTV</div><div class="text-xl font-bold text-purple-700 mt-1">${this.formatINR(totalLtv)}</div></div>
+                    <div class="bg-white rounded-xl border p-4"><div class="text-xs text-slate-500">Avg LTV / Client</div><div class="text-xl font-bold text-sky-700 mt-1">${this.formatINR(avgLtv)}</div></div>
+                    <div class="bg-white rounded-xl border p-4"><div class="text-xs text-slate-500">High-Value Clients</div><div class="text-2xl font-bold text-emerald-700 mt-1">${highValue}</div></div>
                 </div>
 
                 <div class="bg-white rounded-xl border overflow-hidden shadow-sm">

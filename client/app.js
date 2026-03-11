@@ -88,7 +88,7 @@ class MarketFlowCRM {
         const totals = draft.totals || {};
 
         return `
-            <div class="space-y-6 fade-in">
+            <div class="space-y-6 fade-in w-full">
                 <div class="flex flex-wrap items-start justify-between gap-3">
                     <div>
                         <h2 class="text-xl sm:text-2xl font-semibold text-slate-900">RFP Templates</h2>
@@ -5142,7 +5142,7 @@ class MarketFlowCRM {
 
     getPlaceholderScreen(title, subtitle) {
         return `
-            <div class="space-y-6 fade-in">
+            <div class="space-y-6 fade-in w-full">
                 <div class="flex flex-wrap items-start justify-between gap-3">
                     <div>
                         <h2 class="text-xl sm:text-2xl font-semibold text-slate-900">${title}</h2>
@@ -5159,7 +5159,7 @@ class MarketFlowCRM {
 
     getLeadsRegistrationHub() {
         return `
-            <div class="space-y-6 fade-in">
+            <div class="space-y-6 fade-in w-full">
                 <div class="flex flex-wrap items-start justify-between gap-3">
                     <div>
                         <h2 class="text-xl sm:text-2xl font-semibold text-slate-900">Registration</h2>
@@ -5242,7 +5242,7 @@ class MarketFlowCRM {
         const pct_val = pct;
 
         return `
-            <div class="space-y-6 fade-in">
+            <div class="space-y-6 fade-in w-full">
                 <div class="flex flex-wrap items-start justify-between gap-3">
                     <div>
                         <h2 class="text-xl sm:text-2xl font-semibold text-slate-900">SOP Daily Checklist</h2>
@@ -5323,7 +5323,7 @@ class MarketFlowCRM {
         const now = new Date().toLocaleDateString('en-IN', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' });
 
         return `
-            <div class="space-y-6 fade-in">
+            <div class="space-y-6 fade-in w-full">
                 <div class="flex flex-wrap items-start justify-between gap-3">
                     <div>
                         <h2 class="text-xl sm:text-2xl font-semibold text-slate-900">Manager Dashboard</h2>
@@ -5431,7 +5431,7 @@ class MarketFlowCRM {
             color: statusColor(p.status)
         }));
         return `
-            <div class="space-y-6 fade-in">
+            <div class="space-y-6 fade-in w-full">
                 <div class="flex flex-wrap items-start justify-between gap-3">
                     <div>
                         <h2 class="text-xl sm:text-2xl font-semibold text-slate-900">Delivery Tracker</h2>
@@ -5522,7 +5522,7 @@ class MarketFlowCRM {
         };
 
         return `
-            <div class="space-y-6 fade-in">
+            <div class="space-y-6 fade-in w-full">
                 <!-- KPI Cards -->
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
                     <div class="bg-white rounded-lg border border-slate-200 p-4 sm:p-6 shadow-lg">
@@ -5707,7 +5707,7 @@ class MarketFlowCRM {
 
     getDashboardDaily() {
         return `
-            <div class="space-y-6 fade-in">
+            <div class="space-y-6 fade-in w-full">
                 <div class="flex flex-wrap items-start justify-between gap-3">
                     <div>
                         <h2 class="text-xl sm:text-2xl font-semibold text-slate-900">Daily View</h2>
@@ -5827,7 +5827,7 @@ class MarketFlowCRM {
 
     getDashboardWeekly() {
         return `
-            <div class="space-y-6 fade-in">
+            <div class="space-y-6 fade-in w-full">
                 <div class="flex flex-wrap items-start justify-between gap-3">
                     <div>
                         <h2 class="text-xl sm:text-2xl font-semibold text-slate-900">Weekly View</h2>
@@ -5950,7 +5950,7 @@ class MarketFlowCRM {
 
     getDashboardAnalytics() {
         return `
-            <div class="space-y-6 fade-in">
+            <div class="space-y-6 fade-in w-full">
                 <!-- Long-term KPIs -->
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                     <div class="bg-white rounded-lg border border-slate-200 p-4 sm:p-6 shadow-lg">
@@ -6125,7 +6125,7 @@ class MarketFlowCRM {
 
     getDashboardWork() {
         return `
-            <div class="space-y-6 fade-in">
+            <div class="space-y-6 fade-in w-full">
                 <div class="flex flex-wrap items-start justify-between gap-3">
                     <div>
                         <h2 class="text-xl sm:text-2xl font-semibold text-slate-900">Today's Work</h2>
@@ -6391,7 +6391,7 @@ class MarketFlowCRM {
         const topCount = sources[0]?.[1] || 0;
 
         return `
-        <div class="space-y-6 fade-in">
+        <div class="space-y-6 fade-in w-full">
             <div class="flex flex-wrap items-start justify-between gap-3">
                 <div><h2 class="text-xl sm:text-2xl font-semibold text-slate-900">Lead Sources Dashboard</h2>
                 <p class="text-sm text-slate-500">Where your leads come from and how they convert</p></div>
@@ -6474,7 +6474,7 @@ class MarketFlowCRM {
         const STAGE_COLORS = { 'New Lead': 'slate', 'Contacted': 'sky', 'Qualified': 'indigo', 'Proposal Sent': 'purple', 'Negotiation': 'amber', 'Converted': 'emerald', 'Lost': 'rose' };
         const total = leads.length;
         return `
-        <div class="space-y-6 fade-in">
+        <div class="space-y-6 fade-in w-full">
             <div class="flex flex-wrap items-start justify-between gap-3">
                 <div><h2 class="text-xl sm:text-2xl font-semibold text-slate-900">Lead Pipeline Tracker</h2>
                 <p class="text-sm text-slate-500">Kanban view of leads through each sales stage</p></div>
@@ -6532,7 +6532,7 @@ class MarketFlowCRM {
         const STAGE_BADGE = { 'New Lead': 'bg-sky-100 text-sky-700', 'Contacted': 'bg-indigo-100 text-indigo-700', 'Qualified': 'bg-purple-100 text-purple-700', 'Proposal Sent': 'bg-amber-100 text-amber-700', 'Converted': 'bg-emerald-100 text-emerald-700', 'Lost': 'bg-rose-100 text-rose-700' };
 
         return `
-        <div class="space-y-6 fade-in">
+        <div class="space-y-6 fade-in w-full">
             <div class="flex flex-wrap items-start justify-between gap-3">
                 <div><h2 class="text-xl sm:text-2xl font-semibold text-slate-900">IndiaMART Leads</h2>
                 <p class="text-sm text-slate-500">All leads sourced from IndiaMART with SLA tracking</p></div>
@@ -6594,7 +6594,7 @@ class MarketFlowCRM {
         const TAG_COLORS = { 'VIP': 'purple', 'Hot Lead': 'rose', 'Retainer': 'emerald', 'One-Time': 'sky', 'At Risk': 'amber', 'New': 'indigo', 'Priority': 'orange', 'Dormant': 'slate' };
 
         return `
-        <div class="space-y-6 fade-in">
+        <div class="space-y-6 fade-in w-full">
             <div class="flex flex-wrap items-start justify-between gap-3">
                 <div><h2 class="text-xl sm:text-2xl font-semibold text-slate-900">Client Categorization</h2>
                 <p class="text-sm text-slate-500">Tag and segment clients by priority or type</p></div>
@@ -6658,7 +6658,7 @@ class MarketFlowCRM {
         const recentFeedback = feedback.slice(0, 15);
 
         return `
-        <div class="space-y-6 fade-in">
+        <div class="space-y-6 fade-in w-full">
             <div class="flex flex-wrap items-start justify-between gap-3">
                 <div><h2 class="text-xl sm:text-2xl font-semibold text-slate-900">Smart Feedback Tracker</h2>
                 <p class="text-sm text-slate-500">Log call dispositions and follow-up status per lead</p></div>
@@ -6728,7 +6728,7 @@ class MarketFlowCRM {
         });
 
         return `
-        <div class="space-y-6 fade-in">
+        <div class="space-y-6 fade-in w-full">
             <div class="flex flex-wrap items-start justify-between gap-3">
                 <div><h2 class="text-xl sm:text-2xl font-semibold text-slate-900">Client Greetings & Re-engagement</h2>
                 <p class="text-sm text-slate-500">Schedule birthday, anniversary and festival greetings</p></div>
@@ -6792,7 +6792,7 @@ class MarketFlowCRM {
         const okCount = enriched.filter(l => !l.breached && !l.warning).length;
 
         return `
-        <div class="space-y-6 fade-in">
+        <div class="space-y-6 fade-in w-full">
             <div class="flex flex-wrap items-start justify-between gap-3">
                 <div><h2 class="text-xl sm:text-2xl font-semibold text-slate-900">Lead SLA Tracker</h2>
                 <p class="text-sm text-slate-500">Aging report — flag leads that need immediate follow-up</p></div>
@@ -6844,7 +6844,7 @@ class MarketFlowCRM {
 
     getLeadsDirectoryHub() {
         return `
-            <div class="space-y-6 fade-in">
+            <div class="space-y-6 fade-in w-full">
                 <div class="flex flex-wrap items-start justify-between gap-3">
                     <div>
                         <h2 class="text-xl sm:text-2xl font-semibold text-slate-900">Directory</h2>
@@ -6884,7 +6884,7 @@ class MarketFlowCRM {
     getLeadRegistration(leadData = null) {
         const esc = (v) => String(v ?? "").replace(/</g, "&lt;");
         return `
-            <div class="space-y-6 fade-in">
+            <div class="space-y-6 fade-in w-full">
                 <div class="flex flex-wrap items-start justify-between gap-3">
                     <div>
                         <h2 class="text-xl sm:text-2xl font-semibold text-slate-900">Lead Registration</h2>
@@ -6951,7 +6951,7 @@ class MarketFlowCRM {
             ? (leads.find(l => String(l?.id || '').trim().toLowerCase() === selectedId.toLowerCase()) || null)
             : null;
         return `
-            <div class="space-y-6 fade-in">
+            <div class="space-y-6 fade-in w-full">
                 <div class="flex flex-wrap items-start justify-between gap-3">
                     <div>
                         <h2 class="text-xl sm:text-2xl font-semibold text-slate-900">Lead Directory</h2>
@@ -7191,7 +7191,7 @@ class MarketFlowCRM {
     getLeadsRegistration(clientData = null) {
         const esc = (v) => String(v ?? "").replace(/</g, "&lt;");
         return `
-            <div class="space-y-6 fade-in">
+            <div class="space-y-6 fade-in w-full">
                 <div class="flex flex-wrap items-start justify-between gap-3">
                     <div>
                         <h2 class="text-xl sm:text-2xl font-semibold text-slate-900">Client Registration</h2>
@@ -10294,7 +10294,7 @@ class MarketFlowCRM {
         const fs = (id, opts) => `<select id = "${id}" class="w-full mt-1 px-2 py-1 text-xs border border-slate-200 rounded-md focus:outline-none focus:ring-1 focus:ring-purple-400 bg-white" > ${opts.map(v => `<option>${esc(v)}</option>`).join('')}</select> `;
 
         return `
-    <div class="space-y-4 fade-in">
+    <div class="space-y-4 fade-in w-full">
 
                 <!--Header -->
                 <div class="flex flex-wrap items-start justify-between gap-3">
@@ -10710,7 +10710,7 @@ class MarketFlowCRM {
         };
 
         return `
-            <div class="space-y-5 fade-in">
+            <div class="space-y-5 fade-in w-full">
                 <div class="flex flex-wrap items-start justify-between gap-3">
                     <div>
                         <h2 class="text-xl sm:text-2xl font-semibold text-slate-900">Alerts &amp; GMass</h2>
@@ -10947,7 +10947,7 @@ class MarketFlowCRM {
         const tLabel = { payment: 'Payment Overdue', delay: 'Project Delayed', lead: 'Lead Follow-up' };
 
         return `
-            <div class="space-y-5 fade-in">
+            <div class="space-y-5 fade-in w-full">
                 <div class="flex flex-wrap items-start justify-between gap-3">
                     <div>
                         <h2 class="text-2xl font-bold text-slate-900">SMS Alerts</h2>
@@ -11154,7 +11154,7 @@ class MarketFlowCRM {
         const cardJson = esc(JSON.stringify(allCardData));
 
         return `
-            <div class="space-y-5 fade-in">
+            <div class="space-y-5 fade-in w-full">
                 <div class="flex flex-wrap items-start justify-between gap-3">
                     <div>
                         <h2 class="text-2xl font-bold text-slate-900">Personalized Wishes</h2>
@@ -11332,7 +11332,7 @@ class MarketFlowCRM {
         const segJson = JSON.stringify(SEGMENTS.map(s => ({ id: s.id, title: s.title, subject: s.subject, preview: s.preview, body: s.body, color: s.color })));
 
         return `
-            <div class="space-y-5 fade-in">
+            <div class="space-y-5 fade-in w-full">
                 <div class="flex flex-wrap items-start justify-between gap-3">
                     <div>
                         <h2 class="text-2xl font-bold text-slate-900">Re-engagement</h2>
@@ -11451,7 +11451,7 @@ class MarketFlowCRM {
         const approvedVal = approved.reduce((s, q) => s + this.parseCurrencyToNumber(q.amount), 0);
 
         return `
-            <div class="space-y-6 fade-in">
+            <div class="space-y-6 fade-in w-full">
                 <div class="flex flex-wrap items-start justify-between gap-3">
                     <div>
                         <h2 class="text-xl sm:text-2xl font-semibold text-slate-900">Quotations</h2>
@@ -11463,10 +11463,10 @@ class MarketFlowCRM {
                     </div>
                 </div>
                 <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                    <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm"><div class="text-xs text-slate-500">Total Quotes</div><div class="text-2xl font-bold text-slate-900 mt-1">${quotes.length}</div><div class="text-xs text-slate-400 mt-1">all time</div>
-                    <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm"><div class="text-xs text-slate-500">Approved Value</div><div class="text-xl font-bold text-emerald-700 mt-1">${this.formatINR(approvedVal)}</div><div class="text-xs text-slate-400 mt-1">${approved.length} approved</div>
-                    <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm"><div class="text-xs text-slate-500">Pending Approval</div><div class="text-2xl font-bold text-amber-600 mt-1">${pending.length}</div><div class="text-xs text-amber-600 mt-1">${pending.length ? 'Action needed' : 'All clear'}</div>
-                    <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm"><div class="text-xs text-slate-500">Conversion Rate</div><div class="text-2xl font-bold text-purple-700 mt-1">${quotes.length ? Math.round(approved.length / quotes.length * 100) : 0}%</div><div class="text-xs text-slate-400 mt-1">draft→approved</div>
+                    <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm"><div class="text-xs text-slate-500">Total Quotes</div><div class="text-2xl font-bold text-slate-900 mt-1">${quotes.length}</div><div class="text-xs text-slate-400 mt-1">all time</div></div>
+                    <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm"><div class="text-xs text-slate-500">Approved Value</div><div class="text-xl font-bold text-emerald-700 mt-1">${this.formatINR(approvedVal)}</div><div class="text-xs text-slate-400 mt-1">${approved.length} approved</div></div>
+                    <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm"><div class="text-xs text-slate-500">Pending Approval</div><div class="text-2xl font-bold text-amber-600 mt-1">${pending.length}</div><div class="text-xs text-amber-600 mt-1">${pending.length ? 'Action needed' : 'All clear'}</div></div>
+                    <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm"><div class="text-xs text-slate-500">Conversion Rate</div><div class="text-2xl font-bold text-purple-700 mt-1">${quotes.length ? Math.round(approved.length / quotes.length * 100) : 0}%</div><div class="text-xs text-slate-400 mt-1">draft→approved</div></div>
                 </div>
                 ${quotes.length === 0 ? `<div class="bg-white rounded-xl border p-12 text-center text-slate-400 shadow-sm">
                     <i data-lucide="file-text" class="w-12 h-12 mx-auto mb-3 opacity-20"></i>
@@ -11518,7 +11518,7 @@ class MarketFlowCRM {
         const totalVal = contracts.reduce((s, c) => s + (this.parseCurrencyToNumber(c.value) || 0), 0);
 
         return `
-            <div class="space-y-6 fade-in">
+            <div class="space-y-6 fade-in w-full">
                 <div class="flex flex-wrap items-start justify-between gap-3">
                     <div>
                         <h2 class="text-xl sm:text-2xl font-semibold text-slate-900">Contracts</h2>
@@ -11590,7 +11590,7 @@ class MarketFlowCRM {
         const exportJson = encodeURIComponent(JSON.stringify(invoices));
 
         return `
-            <div class="space-y-6 fade-in">
+            <div class="space-y-6 fade-in w-full">
         <div class="flex flex-wrap items-start justify-between gap-3">
             <div>
                 <h2 class="text-xl sm:text-2xl font-semibold text-slate-900">Invoices</h2>
@@ -11745,7 +11745,7 @@ class MarketFlowCRM {
             }));
 
         return `
-            <div class="space-y-6 fade-in">
+            <div class="space-y-6 fade-in w-full">
                 <div class="flex flex-wrap items-start justify-between gap-3">
                     <div>
                         <h2 class="text-xl sm:text-2xl font-semibold text-slate-900">Payment Status</h2>
@@ -11839,7 +11839,7 @@ class MarketFlowCRM {
         const overdueFollowups = followups.filter(f => ['Overdue', 'Pending', 'Auto-alert'].includes(f.status)).length;
 
         return `
-            <div class="space-y-6 fade-in">
+            <div class="space-y-6 fade-in w-full">
                 <div class="flex flex-wrap items-start justify-between gap-3">
                     <div>
                         <h2 class="text-xl sm:text-2xl font-semibold text-slate-900">Payment Follow-up Log</h2>
@@ -11995,7 +11995,7 @@ class MarketFlowCRM {
         const atRiskClients = Array.from(clientRiskMap.values()).sort((a, b) => b.totalDue - a.totalDue);
 
         return `
-            <div class="space-y-6 fade-in">
+            <div class="space-y-6 fade-in w-full">
                 <div class="flex flex-wrap items-start justify-between gap-3">
                     <div>
                         <h2 class="text-xl sm:text-2xl font-semibold text-slate-900">Overdue Risk Dashboard</h2>
@@ -12344,7 +12344,7 @@ class MarketFlowCRM {
         const overdue = followups.filter(f => f.color === 'rose' && !f.done).length;
 
         return `
-            <div class="space-y-6 fade-in">
+            <div class="space-y-6 fade-in w-full">
 
                 <!-- Header -->
                 <div class="flex flex-wrap items-start justify-between gap-3">
@@ -12563,7 +12563,7 @@ class MarketFlowCRM {
         const shareUrl = (window.location.origin || '') + window.location.pathname.replace(/[^/]*$/, '') + 'feedback.html';
 
         return `
-            <div class="space-y-6 fade-in">
+            <div class="space-y-6 fade-in w-full">
                 <div class="flex flex-wrap items-start justify-between gap-3">
                     <div>
                         <h2 class="text-xl sm:text-2xl font-semibold text-slate-900">Feedback &amp; Surveys</h2>
@@ -12824,7 +12824,7 @@ class MarketFlowCRM {
         }
 
         return `
-            <div class="space-y-6 fade-in">
+            <div class="space-y-6 fade-in w-full">
                 <div class="flex flex-wrap items-start justify-between gap-3">
                     <div>
                         <h2 class="text-xl sm:text-2xl font-semibold text-slate-900">Client Health</h2>
@@ -12922,7 +12922,7 @@ class MarketFlowCRM {
         }
 
         return `
-            <div class="space-y-6 fade-in">
+            <div class="space-y-6 fade-in w-full">
                 <div class="flex flex-wrap items-start justify-between gap-3">
                     <div>
                         <h2 class="text-xl sm:text-2xl font-semibold text-slate-900">Next Projects</h2>
@@ -12970,7 +12970,7 @@ class MarketFlowCRM {
         const STATUS_COLORS = { 'Confirmed': 'emerald', 'Pending': 'amber', 'Tentative': 'purple', 'Logged': 'sky', 'Cancelled': 'rose' };
 
         return `
-            <div class="space-y-6 fade-in">
+            <div class="space-y-6 fade-in w-full">
                 <div class="flex flex-wrap items-start justify-between gap-3">
                     <div>
                         <h2 class="text-xl sm:text-2xl font-semibold text-slate-900">Field Visits Planner</h2>
@@ -13053,7 +13053,7 @@ class MarketFlowCRM {
         const totalRoutes = routes.length;
 
         return `
-            <div class="space-y-6 fade-in">
+            <div class="space-y-6 fade-in w-full">
 
                 <!-- Header -->
                 <div class="flex flex-wrap items-start justify-between gap-3">
@@ -13399,7 +13399,7 @@ class MarketFlowCRM {
         }));
         const actColor = { 'Check-in': 'purple', 'Photo Upload': 'sky', 'Visit Complete': 'emerald', 'Route Start': 'slate' };
         return `
-            <div class="space-y-6 fade-in">
+            <div class="space-y-6 fade-in w-full">
                 <div class="flex flex-wrap items-start justify-between gap-3">
                     <div>
                         <h2 class="text-xl sm:text-2xl font-semibold text-slate-900">Mobile Sync &amp; Field Activity</h2>
@@ -13620,7 +13620,7 @@ class MarketFlowCRM {
 
         const categories = [...new Set(kpis.map(k => k.category))];
 
-        return `<div class="space-y-6 fade-in">
+        return `<div class="space-y-6 fade-in w-full">
             <!-- Header -->
             <div class="flex flex-wrap items-start justify-between gap-3">
                 <div>
@@ -13852,7 +13852,7 @@ class MarketFlowCRM {
         const scoreColor = s => s >= 15 ? 'bg-rose-100 text-rose-800 font-bold' : s >= 9 ? 'bg-amber-100 text-amber-700 font-bold' : 'bg-emerald-100 text-emerald-700';
         const cats = [...new Set(risks.map(r => r.category))];
 
-        return `<div class="space-y-6 fade-in">
+        return `<div class="space-y-6 fade-in w-full">
             <!-- Header -->
             <div class="flex flex-wrap items-start justify-between gap-3">
                 <div>
@@ -14077,7 +14077,7 @@ class MarketFlowCRM {
         ];
 
         return `
-            <div class="space-y-6 fade-in">
+            <div class="space-y-6 fade-in w-full">
                 <!-- Header -->
                 <div class="flex flex-wrap items-start justify-between gap-3">
                     <div>
@@ -14333,7 +14333,7 @@ class MarketFlowCRM {
         }));
 
         return `
-            <div class="space-y-6 fade-in">
+            <div class="space-y-6 fade-in w-full">
                 <div class="flex flex-wrap items-start justify-between gap-3">
                     <div>
                         <h2 class="text-xl sm:text-2xl font-semibold text-slate-900">Revenue Reports</h2>
@@ -14479,7 +14479,7 @@ class MarketFlowCRM {
             { label: 'Projects Started', val: String(_projects), sub: _projects > 0 ? 'active projects' : '—', col: 'purple' }
         ];
         return `
-            <div class="space-y-6 fade-in">
+            <div class="space-y-6 fade-in w-full">
                 <div class="flex flex-wrap items-start justify-between gap-3">
                     <div>
                         <h2 class="text-xl sm:text-2xl font-semibold text-slate-900">Funnel Report</h2>
@@ -14613,7 +14613,7 @@ class MarketFlowCRM {
             { label: 'Best Channel', val: bestCh.type, sub: `${bestCh.sent ? (bestCh.converted / bestCh.sent * 100).toFixed(1) : 0}% conversion`, col: 'purple' }
         ];
         return `
-            <div class="space-y-6 fade-in">
+            <div class="space-y-6 fade-in w-full">
                 <div class="flex flex-wrap items-start justify-between gap-3">
                     <div>
                         <h2 class="text-xl sm:text-2xl font-semibold text-slate-900">Campaign Performance Report</h2>
@@ -14724,7 +14724,7 @@ class MarketFlowCRM {
         const highValue = clients.filter(c => c.score >= 80).length;
 
         return `
-            <div class="space-y-6 fade-in">
+            <div class="space-y-6 fade-in w-full">
                 <div class="flex flex-wrap items-start justify-between gap-3">
                     <div>
                         <h2 class="text-xl sm:text-2xl font-semibold text-slate-900">Client Lifetime Value</h2>
@@ -14857,7 +14857,7 @@ class MarketFlowCRM {
             { label: 'Total Collected', val: fmtINR(totalCollected), sub: `${collRate}% collection rate`, col: 'purple' }
         ];
         return `
-            <div class="space-y-6 fade-in">
+            <div class="space-y-6 fade-in w-full">
                 <div class="flex flex-wrap items-start justify-between gap-3">
                     <div>
                         <h2 class="text-xl sm:text-2xl font-semibold text-slate-900">SOP Monthly Report</h2>
@@ -15278,7 +15278,7 @@ class MarketFlowCRM {
         if (!actions.length) actions.push({ t: 'Add leads and clients to see AI-driven action suggestions', tag: 'Setup', color: 'slate', action: '' });
 
         return `
-            <div class="space-y-6 fade-in">
+            <div class="space-y-6 fade-in w-full">
                 <div class="flex flex-wrap items-start justify-between gap-3">
                     <div>
                         <h2 class="text-xl sm:text-2xl font-semibold text-slate-900">AI Insights</h2>
@@ -15342,7 +15342,7 @@ class MarketFlowCRM {
         const enabledCount = rules.filter(r => r.enabled).length;
 
         return `
-            <div class="space-y-6 fade-in">
+            <div class="space-y-6 fade-in w-full">
                 <div class="flex flex-wrap items-start justify-between gap-3">
                     <div>
                         <h2 class="text-xl sm:text-2xl font-semibold text-slate-900">Workflow Rules</h2>
@@ -15412,7 +15412,7 @@ class MarketFlowCRM {
         }
 
         return `
-            <div class="space-y-6 fade-in">
+            <div class="space-y-6 fade-in w-full">
                 <div class="flex flex-wrap items-start justify-between gap-3">
                     <div>
                         <h2 class="text-xl sm:text-2xl font-semibold text-slate-900">Smart Alerts</h2>
@@ -15454,7 +15454,7 @@ class MarketFlowCRM {
         });
 
         return `
-    <div class="space-y-6 fade-in">
+    <div class="space-y-6 fade-in w-full">
                 <div class="flex flex-wrap items-start justify-between gap-3">
                     <div>
                         <h2 class="text-xl sm:text-2xl font-semibold text-slate-900">Predictions</h2>

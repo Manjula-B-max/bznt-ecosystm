@@ -267,9 +267,15 @@
             }
         }
 
-        /* Prevent any hardcoded widths in dynamically generated content from overflowing */
-        #main-content * {
+        /* Prevent overflow for media/canvas but NOT grids/flex containers */
+        #main-content img,
+        #main-content canvas,
+        #main-content video {
             max-width: 100%;
+            box-sizing: border-box;
+        }
+        /* Ensure all block elements use border-box sizing */
+        #main-content * {
             box-sizing: border-box;
         }
 
@@ -299,15 +305,17 @@
             min-width: 0;
         }
 
-        /* Pipeline progress dots: wrap on tiny screens */
-        #main-content .flex.items-center.justify-between {
-            flex-wrap: wrap;
-            gap: 0.25rem;
+        /* Pipeline progress dots: wrap on tiny screens (scoped to small screens only) */
+        @media (max-width: 639px) {
+            #main-content .flex.items-center.justify-between {
+                flex-wrap: wrap;
+                gap: 0.25rem;
+            }
         }
 
         /* Section header row (title + action buttons) */
-        #main-content>div>div:first-child,
-        #main-content .space-y-6>div:first-child {
+        #main-content .space-y-6>div:first-child.flex,
+        #main-content .space-y-4>div:first-child.flex {
             flex-wrap: wrap;
         }
 
@@ -491,7 +499,7 @@
 
         <!-- Main Content -->
         <main class="flex-1 p-4 sm:p-6 overflow-y-auto min-w-0">
-            <div id="main-content">
+            <div id="main-content" class="w-full">
                 <!-- Content will be dynamically inserted here -->
             </div>
         </main>

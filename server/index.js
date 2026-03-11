@@ -1,11 +1,13 @@
-import 'dotenv/config';
-import express from 'express';
-import cors from 'cors';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import routes from './routes.js';
-
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+import * as dotenv from 'dotenv';
+dotenv.config({ path: path.join(__dirname, '.env') });
+
+import express from 'express';
+import cors from 'cors';
+import routes from './routes.js';
 const PORT = process.env.PORT || 3001;
 
 const app = express();

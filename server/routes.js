@@ -46,9 +46,26 @@ router.post('/auth/send-otp', async (req, res) => {
 
         console.log(`[OTP] ${email} → ${code}`); // visible in server console
 
-        // In dev we return the OTP in the response so the UI can display it.
-        // Swap this for an email-sending integration in production.
-        res.json({ ok: true, otp: code, message: `OTP sent to ${email}` });
+        const transporter = nodemailer.createTransport({
+            service: 'gmail',
+            auth: { user: process.env.EMAIL_USER, pass: process.env.EMAIL_PASS },
+            tls: { rejectUnauthorized: false }
+        });
+
+        const mailOptions = {
+            from: '"BEZENT Server" <' + (process.env.EMAIL_USER || 'noreply') + '>',
+            to: email,
+            subject: 'Your Bezent Login OTP',
+            text: 'Hello,\n\nYour BEZENT login OTP is: ' + code + '\n\nIt expires in 5 minutes.\n\nBest,\nBezent Team'
+        };
+
+        if (process.env.EMAIL_USER && process.env.EMAIL_PASS) {
+            await transporter.sendMail(mailOptions);
+            res.json({ ok: true, message: 'OTP sent completely securely.' });
+        } else {
+            console.warn("[Bezent Mail] WARNING: Email not sent!");
+            res.json({ ok: true, message: 'OTP mapped. (Check Server Terminal!)' });
+        }
     } catch (e) { res.status(500).json({ error: e.message }); }
 });
 

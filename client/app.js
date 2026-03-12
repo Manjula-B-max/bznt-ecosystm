@@ -12791,10 +12791,10 @@ class MarketFlowCRM {
                                     <div class="p-3 bg-slate-50 rounded-lg">
                                         <div class="flex items-center justify-between text-sm mb-2">
                                             <span class="text-slate-700 font-medium">${q.q}</span>
-                                            <span class="font-bold text-${q.color}-700">${q.avg.toFixed(1)}/5</span>
+                                            <span class="font-bold text-${q.color}-700">${q.avg}/5</span>
                                         </div>
                                         <div class="w-full bg-slate-200 rounded-full h-2">
-                                            <div class="bg-${q.color}-500 h-2 rounded-full" style="width:${(q.avg / 5) * 100}%"></div>
+                                            <div class="bg-${q.color}-500 h-2 rounded-full" style="width:${(parseFloat(q.avg) / 5) * 100}%"></div>
                                         </div>
                                     </div>
                                 `).join('')}

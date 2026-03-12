@@ -10344,76 +10344,64 @@ class MarketFlowCRM {
                     </div>
                 </div>
 
-                <!-- FILTER STRIP (above table, flex grid) -->
-                <div class="bg-slate-50 border border-slate-200 rounded-xl p-3 shadow-sm">
-                    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-2">
-                        <div>
-                            <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider block mb-1">Type</label>
-                            ${fs('cdFilterType', allTypes)}
-                        </div>
-                        <div class="col-span-2">
-                            <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider block mb-1">Name</label>
-                            ${fi('cdFilterName', 'Search name…')}
-                        </div>
-                        <div>
-                            <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider block mb-1">Email User</label>
-                            ${fi('cdFilterEmailUser', 'user…')}
-                        </div>
-                        <div>
-                            <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider block mb-1">Domain</label>
-                            ${fs('cdFilterDomain', allDomains)}
-                        </div>
-                        <div>
-                            <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider block mb-1">TLD</label>
-                            ${fs('cdFilterTld', allTlds)}
-                        </div>
-                        <div>
-                            <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider block mb-1">Phone</label>
-                            ${fi('cdFilterPhone', 'phone…')}
-                        </div>
-                        <div>
-                            <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider block mb-1">City</label>
-                            ${fs('cdFilterCity', allCities)}
-                        </div>
-                        <div>
-                            <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider block mb-1">Industry</label>
-                            ${fs('cdFilterIndustry', allIndustries)}
-                        </div>
-                        <div>
-                            <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider block mb-1">Owner</label>
-                            ${fs('cdFilterOwner', allOwners)}
-                        </div>
-                        <div>
-                            <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider block mb-1">Stage</label>
-                            ${fs('cdFilterStage', allStages)}
-                        </div>
-                        <div>
-                            <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider block mb-1">Source</label>
-                            ${fs('cdFilterSource', allSources)}
-                        </div>
-                    </div>
-                </div>
-
-                <!-- DATA TABLE (no filter row in thead) -->
                 <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
                     <div class="overflow-x-auto">
                         <table class="text-sm" style="min-width: 1100px; width: 100%; border-collapse: collapse;">
-                            <thead style="display:table-header-group; background:#f8fafc; border-bottom:2px solid #e2e8f0;">
+                            <thead style="display:table-header-group;">
                                 <tr style="display:table-row;">
-                                    <th style="width:32px; padding:8px 12px; text-align:left; display:table-cell;"><input type="checkbox" id="cdCheckAll" style="width:14px;height:14px;" /></th>
-                                    <th style="width:72px; padding:8px 12px; text-align:left; font-size:10px; font-weight:700; color:#475569; text-transform:uppercase; letter-spacing:0.05em; display:table-cell;">Type</th>
-                                    <th style="width:155px; padding:8px 12px; text-align:left; font-size:10px; font-weight:700; color:#475569; text-transform:uppercase; letter-spacing:0.05em; display:table-cell;">Name</th>
-                                    <th style="width:120px; padding:8px 12px; text-align:left; font-size:10px; font-weight:700; color:#475569; text-transform:uppercase; letter-spacing:0.05em; display:table-cell;">Email User</th>
-                                    <th style="width:130px; padding:8px 12px; text-align:left; font-size:10px; font-weight:700; color:#475569; text-transform:uppercase; letter-spacing:0.05em; display:table-cell;">Domain</th>
-                                    <th style="width:55px; padding:8px 12px; text-align:left; font-size:10px; font-weight:700; color:#475569; text-transform:uppercase; letter-spacing:0.05em; display:table-cell;">TLD</th>
-                                    <th style="width:110px; padding:8px 12px; text-align:left; font-size:10px; font-weight:700; color:#475569; text-transform:uppercase; letter-spacing:0.05em; display:table-cell;">Phone</th>
-                                    <th style="width:90px; padding:8px 12px; text-align:left; font-size:10px; font-weight:700; color:#475569; text-transform:uppercase; letter-spacing:0.05em; display:table-cell;">City</th>
-                                    <th style="width:105px; padding:8px 12px; text-align:left; font-size:10px; font-weight:700; color:#475569; text-transform:uppercase; letter-spacing:0.05em; display:table-cell;">Industry</th>
-                                    <th style="width:95px; padding:8px 12px; text-align:left; font-size:10px; font-weight:700; color:#475569; text-transform:uppercase; letter-spacing:0.05em; display:table-cell;">Owner</th>
-                                    <th style="width:95px; padding:8px 12px; text-align:left; font-size:10px; font-weight:700; color:#475569; text-transform:uppercase; letter-spacing:0.05em; display:table-cell;">Stage</th>
-                                    <th style="width:105px; padding:8px 12px; text-align:left; font-size:10px; font-weight:700; color:#475569; text-transform:uppercase; letter-spacing:0.05em; display:table-cell;">Source</th>
-                                    <th style="width:75px; padding:8px 12px; text-align:left; font-size:10px; font-weight:700; color:#475569; text-transform:uppercase; letter-spacing:0.05em; display:table-cell;">Vendor</th>
-                                    <th style="width:90px; padding:8px 12px; text-align:left; font-size:10px; font-weight:700; color:#475569; text-transform:uppercase; letter-spacing:0.05em; display:table-cell;">Due Amt</th>
+                                    <th style="width:32px; padding:6px 10px; text-align:left; vertical-align:top; border-bottom:2px solid #e2e8f0; background:#f8fafc;">
+                                        <input type="checkbox" id="cdCheckAll" style="width:14px;height:14px;margin-top:14px;" />
+                                    </th>
+                                    <th style="width:72px; padding:6px 10px; text-align:left; vertical-align:top; border-bottom:2px solid #e2e8f0; background:#f8fafc;">
+                                        <div style="font-size:10px; font-weight:700; color:#475569; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Type</div>
+                                        <select id="cdFilterType" style="width:100%; padding:3px 6px; font-size:11px; border:1px solid #e2e8f0; border-radius:5px; outline:none; background:#fff; box-sizing:border-box;">${allTypes.map(v => `<option>${esc(v)}</option>`).join('')}</select>
+                                    </th>
+                                    <th style="width:155px; padding:6px 10px; text-align:left; vertical-align:top; border-bottom:2px solid #e2e8f0; background:#f8fafc;">
+                                        <div style="font-size:10px; font-weight:700; color:#475569; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Name</div>
+                                        <input id="cdFilterName" type="text" placeholder="Search…" style="width:100%; padding:3px 6px; font-size:11px; border:1px solid #e2e8f0; border-radius:5px; outline:none; background:#fff; box-sizing:border-box;" />
+                                    </th>
+                                    <th style="width:120px; padding:6px 10px; text-align:left; vertical-align:top; border-bottom:2px solid #e2e8f0; background:#f8fafc;">
+                                        <div style="font-size:10px; font-weight:700; color:#475569; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Email User</div>
+                                        <input id="cdFilterEmailUser" type="text" placeholder="user…" style="width:100%; padding:3px 6px; font-size:11px; border:1px solid #e2e8f0; border-radius:5px; outline:none; background:#fff; box-sizing:border-box;" />
+                                    </th>
+                                    <th style="width:130px; padding:6px 10px; text-align:left; vertical-align:top; border-bottom:2px solid #e2e8f0; background:#f8fafc;">
+                                        <div style="font-size:10px; font-weight:700; color:#475569; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Domain</div>
+                                        <select id="cdFilterDomain" style="width:100%; padding:3px 6px; font-size:11px; border:1px solid #e2e8f0; border-radius:5px; outline:none; background:#fff; box-sizing:border-box;">${allDomains.map(v => `<option>${esc(v)}</option>`).join('')}</select>
+                                    </th>
+                                    <th style="width:55px; padding:6px 10px; text-align:left; vertical-align:top; border-bottom:2px solid #e2e8f0; background:#f8fafc;">
+                                        <div style="font-size:10px; font-weight:700; color:#475569; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">TLD</div>
+                                        <select id="cdFilterTld" style="width:100%; padding:3px 6px; font-size:11px; border:1px solid #e2e8f0; border-radius:5px; outline:none; background:#fff; box-sizing:border-box;">${allTlds.map(v => `<option>${esc(v)}</option>`).join('')}</select>
+                                    </th>
+                                    <th style="width:110px; padding:6px 10px; text-align:left; vertical-align:top; border-bottom:2px solid #e2e8f0; background:#f8fafc;">
+                                        <div style="font-size:10px; font-weight:700; color:#475569; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Phone</div>
+                                        <input id="cdFilterPhone" type="text" placeholder="phone…" style="width:100%; padding:3px 6px; font-size:11px; border:1px solid #e2e8f0; border-radius:5px; outline:none; background:#fff; box-sizing:border-box;" />
+                                    </th>
+                                    <th style="width:90px; padding:6px 10px; text-align:left; vertical-align:top; border-bottom:2px solid #e2e8f0; background:#f8fafc;">
+                                        <div style="font-size:10px; font-weight:700; color:#475569; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">City</div>
+                                        <select id="cdFilterCity" style="width:100%; padding:3px 6px; font-size:11px; border:1px solid #e2e8f0; border-radius:5px; outline:none; background:#fff; box-sizing:border-box;">${allCities.map(v => `<option>${esc(v)}</option>`).join('')}</select>
+                                    </th>
+                                    <th style="width:105px; padding:6px 10px; text-align:left; vertical-align:top; border-bottom:2px solid #e2e8f0; background:#f8fafc;">
+                                        <div style="font-size:10px; font-weight:700; color:#475569; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Industry</div>
+                                        <select id="cdFilterIndustry" style="width:100%; padding:3px 6px; font-size:11px; border:1px solid #e2e8f0; border-radius:5px; outline:none; background:#fff; box-sizing:border-box;">${allIndustries.map(v => `<option>${esc(v)}</option>`).join('')}</select>
+                                    </th>
+                                    <th style="width:95px; padding:6px 10px; text-align:left; vertical-align:top; border-bottom:2px solid #e2e8f0; background:#f8fafc;">
+                                        <div style="font-size:10px; font-weight:700; color:#475569; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Owner</div>
+                                        <select id="cdFilterOwner" style="width:100%; padding:3px 6px; font-size:11px; border:1px solid #e2e8f0; border-radius:5px; outline:none; background:#fff; box-sizing:border-box;">${allOwners.map(v => `<option>${esc(v)}</option>`).join('')}</select>
+                                    </th>
+                                    <th style="width:95px; padding:6px 10px; text-align:left; vertical-align:top; border-bottom:2px solid #e2e8f0; background:#f8fafc;">
+                                        <div style="font-size:10px; font-weight:700; color:#475569; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Stage</div>
+                                        <select id="cdFilterStage" style="width:100%; padding:3px 6px; font-size:11px; border:1px solid #e2e8f0; border-radius:5px; outline:none; background:#fff; box-sizing:border-box;">${allStages.map(v => `<option>${esc(v)}</option>`).join('')}</select>
+                                    </th>
+                                    <th style="width:105px; padding:6px 10px; text-align:left; vertical-align:top; border-bottom:2px solid #e2e8f0; background:#f8fafc;">
+                                        <div style="font-size:10px; font-weight:700; color:#475569; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Source</div>
+                                        <select id="cdFilterSource" style="width:100%; padding:3px 6px; font-size:11px; border:1px solid #e2e8f0; border-radius:5px; outline:none; background:#fff; box-sizing:border-box;">${allSources.map(v => `<option>${esc(v)}</option>`).join('')}</select>
+                                    </th>
+                                    <th style="width:75px; padding:6px 10px; text-align:left; vertical-align:top; border-bottom:2px solid #e2e8f0; background:#f8fafc;">
+                                        <div style="font-size:10px; font-weight:700; color:#475569; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Vendor</div>
+                                    </th>
+                                    <th style="width:90px; padding:6px 10px; text-align:left; vertical-align:top; border-bottom:2px solid #e2e8f0; background:#f8fafc;">
+                                        <div style="font-size:10px; font-weight:700; color:#475569; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Due Amt</div>
+                                    </th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-slate-100" id="cdTableBody">

@@ -12618,15 +12618,34 @@ class MarketFlowCRM {
                 last: fb?.submittedAt ? new Date(fb.submittedAt).toLocaleDateString('en-IN') : '—'
             };
         });
+        const storedFeedback = storedFb; // alias
+        const avgAll = storedFeedback.length ? (storedFeedback.reduce((s, r) => s + parseFloat(r.avg || 0), 0) / storedFeedback.length).toFixed(1) : '0.0';
+        // Compute real per-category averages from stored feedback
+        const catAvg = (field) => {
+            const vals = storedFeedback.map(r => parseFloat(r[field] || 0)).filter(v => v > 0);
+            return vals.length ? (vals.reduce((a, b) => a + b, 0) / vals.length).toFixed(1) : '0.0';
+        };
         const questions = [
-            { q: 'Delivery Quality', avg: 4.6, color: 'emerald' },
-            { q: 'Communication', avg: 4.1, color: 'indigo' },
-            { q: 'Timelines', avg: 3.8, color: 'amber' },
-            { q: 'Value for Money', avg: 4.2, color: 'sky' }
+            { q: 'Delivery Quality', avg: catAvg('quality'),  color: 'emerald' },
+            { q: 'Communication',   avg: catAvg('communication'), color: 'indigo' },
+            { q: 'Timelines',       avg: catAvg('timeline'), color: 'amber' },
+            { q: 'Value for Money', avg: catAvg('value'),    color: 'sky' }
         ];
 
-        const storedFeedback = this.readStore('bezent_feedback_submissions', []);
-        const avgAll = storedFeedback.length ? (storedFeedback.reduce((s, r) => s + parseFloat(r.avg || 0), 0) / storedFeedback.length).toFixed(1) : '0.0';
+        // NPS: promoters (avg>=4) minus detractors (avg<=2) as % of total, scaled to -100..100
+        const npsScore = storedFeedback.length
+            ? Math.round(((storedFeedback.filter(r => parseFloat(r.avg||0) >= 4).length
+                         - storedFeedback.filter(r => parseFloat(r.avg||0) <= 2).length)
+                         / storedFeedback.length) * 100)
+            : 0;
+
+        // "This week" count
+        const weekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
+        const thisWeekCount = storedFeedback.filter(r => (r.submittedAt || 0) > weekAgo).length;
+
+        // Pending = clients without any feedback entry
+        const pendingCount = storedClients2.filter(c => !fbByClient.has(String(c.name || '').toLowerCase())).length;
+
         const shareUrl = (window.location.origin || '') + window.location.pathname.replace(/[^/]*$/, '') + 'feedback.html';
 
         return `
@@ -12642,8 +12661,8 @@ class MarketFlowCRM {
                 <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
                     <div class="bg-white rounded-xl border border-slate-200 p-4 shadow-sm">
                         <div class="text-xs font-semibold text-slate-500 uppercase tracking-wide">Total Responses</div>
-                        <div class="text-2xl font-bold text-slate-900 mt-1">${storedFeedback.length + 3}</div>
-                        <div class="text-xs text-emerald-600 mt-1">&#x2191; 2 this week</div>
+                        <div class="text-2xl font-bold text-slate-900 mt-1">${storedFeedback.length}</div>
+                        <div class="text-xs text-emerald-600 mt-1">${thisWeekCount > 0 ? `&#x2191; ${thisWeekCount} this week` : 'No new responses this week'}</div>
                     </div>
                     <div class="bg-white rounded-xl border border-slate-200 p-4 shadow-sm">
                         <div class="text-xs font-semibold text-slate-500 uppercase tracking-wide">Avg Score</div>
@@ -12652,13 +12671,13 @@ class MarketFlowCRM {
                     </div>
                     <div class="bg-white rounded-xl border border-slate-200 p-4 shadow-sm">
                         <div class="text-xs font-semibold text-slate-500 uppercase tracking-wide">Pending</div>
-                        <div class="text-2xl font-bold text-amber-600 mt-1">1</div>
-                        <div class="text-xs text-slate-500 mt-1">awaiting response</div>
+                        <div class="text-2xl font-bold text-amber-600 mt-1">${pendingCount}</div>
+                        <div class="text-xs text-slate-500 mt-1">clients awaiting feedback</div>
                     </div>
                     <div class="bg-white rounded-xl border border-slate-200 p-4 shadow-sm">
                         <div class="text-xs font-semibold text-slate-500 uppercase tracking-wide">NPS Score</div>
-                        <div class="text-2xl font-bold text-purple-600 mt-1">72</div>
-                        <div class="text-xs text-emerald-600 mt-1">&#x2191; 8 pts from last month</div>
+                        <div class="text-2xl font-bold text-purple-600 mt-1">${npsScore}</div>
+                        <div class="text-xs ${npsScore >= 0 ? 'text-emerald-600' : 'text-rose-500'} mt-1">${storedFeedback.length ? (npsScore >= 0 ? '&#x2191;' : '&#x2193;') + ' based on ' + storedFeedback.length + ' response' + (storedFeedback.length !== 1 ? 's' : '') : 'No responses yet'}</div>
                     </div>
                 </div>
 
@@ -13159,7 +13178,7 @@ class MarketFlowCRM {
                             <svg class="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
                         </div>
                         <div>
-                            <div class="text-xl font-bold text-slate-900">~68 km</div>
+                            <div class="text-xl font-bold text-slate-900">${totalStops > 0 ? '~' + Math.round(totalStops * 8) + ' km' : '0 km'}</div>
                             <div class="text-xs text-slate-500">Est. Distance</div>
                         </div>
                     </div>
@@ -13168,7 +13187,7 @@ class MarketFlowCRM {
                             <svg class="w-5 h-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><circle cx="12" cy="12" r="10"/><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6l4 2"/></svg>
                         </div>
                         <div>
-                            <div class="text-xl font-bold text-slate-900">~6.5 hrs</div>
+                            <div class="text-xl font-bold text-slate-900">${totalStops > 0 ? '~' + (totalStops * 1.2).toFixed(1) + ' hrs' : '0 hrs'}</div>
                             <div class="text-xs text-slate-500">Est. Field Time</div>
                         </div>
                     </div>

@@ -13699,7 +13699,7 @@ class MarketFlowCRM {
             { id: 'email', category: 'Marketing', kpi: 'Email Open Rate', target: 28, defaultActual: activeEmailRate, unit: '%', owner: 'Team' },
             { id: 'roi', category: 'Marketing', kpi: 'Campaign ROI', target: 300, defaultActual: roiRate, unit: '%', owner: 'Team' },
             { id: 'webLeads', category: 'Marketing', kpi: 'Website Leads Captured', target: 40, defaultActual: leadsData.filter(l => String(l.source || '').toLowerCase() === 'website').length, unit: '', owner: 'Team' },
-            { id: 'sop', category: 'Team', kpi: 'SOP Daily Report Compliance', target: 100, defaultActual: 100, unit: '%', owner: 'Team' },
+            { id: 'sop', category: 'Team', kpi: 'SOP Daily Report Compliance', target: 100, defaultActual: (() => { const fups = typeof this.readStore === 'function' ? this.readStore('bezent_followups', []) : []; return fups.length > 0 ? 100 : 0; })(), unit: '%', owner: 'Team' },
             { id: 'fup', category: 'Team', kpi: 'Follow-up Response Time', target: 4, defaultActual: 0, unit: 'h', owner: 'Team' }
         ];
 
@@ -13716,8 +13716,16 @@ class MarketFlowCRM {
             else if (pct >= 90) { status = 'On Track'; trend = `+${pct - 100}%`; }
             else if (pct >= 70) { status = 'At Risk'; }
 
-            if (k.id === 'overdue' || k.id === 'fup') {
-                if (actual <= target) { status = 'Exceeded'; pct = 100; trend = '+5%'; }
+            if (k.id === 'overdue') {
+                if (actual === 0) { status = 'Exceeded'; pct = 100; trend = '+0%'; }
+                else if (actual <= target) { status = 'Exceeded'; pct = 100; trend = '+5%'; }
+                else if (actual <= target * 1.5) { status = 'At Risk'; pct = 70; trend = '-10%'; }
+                else { status = 'Critical'; pct = 40; trend = '-30%'; }
+            }
+            if (k.id === 'fup') {
+                // Only apply special logic if there is actual data (actual=0 means no data yet)
+                if (actual === 0) { status = 'Critical'; pct = 0; trend = '—'; }
+                else if (actual <= target) { status = 'Exceeded'; pct = 100; trend = '+5%'; }
                 else if (actual <= target * 1.5) { status = 'At Risk'; pct = 70; trend = '-10%'; }
                 else { status = 'Critical'; pct = 40; trend = '-30%'; }
             }

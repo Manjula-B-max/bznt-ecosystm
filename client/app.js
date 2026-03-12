@@ -13695,7 +13695,7 @@ class MarketFlowCRM {
             { id: 'csat', category: 'Projects', kpi: 'Client Satisfaction Score', target: 9, defaultActual: avgFeedback, unit: '/10', owner: 'Team' },
             { id: 'collect', category: 'Finance', kpi: 'Invoice Collection Rate', target: 95, defaultActual: totalAmt ? Math.round(paidAmt / totalAmt * 100) : 0, unit: '%', owner: 'Team' },
             { id: 'overdue', category: 'Finance', kpi: 'Overdue Invoices', target: 2, defaultActual: overdueCount, unit: ' no.', owner: 'Team' },
-            { id: 'budget', category: 'Finance', kpi: 'Budget Utilisation', target: 80, defaultActual: totalAmt ? 70 : 0, unit: '%', owner: 'Team' },
+            { id: 'budget', category: 'Finance', kpi: 'Budget Utilisation', target: 80, defaultActual: (() => { const spent = projectsData.reduce((s, p) => s + (parseFloat(String(p.spent || '0').replace(/[^0-9.]/g, '')) || 0), 0); const budget = projectsData.reduce((s, p) => s + (parseFloat(String(p.budget || '0').replace(/[^0-9.]/g, '')) || 0), 0); return budget ? Math.round(spent / budget * 100) : 0; })(), unit: '%', owner: 'Team' },
             { id: 'email', category: 'Marketing', kpi: 'Email Open Rate', target: 28, defaultActual: activeEmailRate, unit: '%', owner: 'Team' },
             { id: 'roi', category: 'Marketing', kpi: 'Campaign ROI', target: 300, defaultActual: roiRate, unit: '%', owner: 'Team' },
             { id: 'webLeads', category: 'Marketing', kpi: 'Website Leads Captured', target: 40, defaultActual: leadsData.filter(l => String(l.source || '').toLowerCase() === 'website').length, unit: '', owner: 'Team' },
@@ -13747,6 +13747,24 @@ class MarketFlowCRM {
         };
 
         const categories = [...new Set(kpis.map(k => k.category))];
+
+        // — Empty state guard: if we have no meaningful data in any store, show a prompt
+        const hasData = leadsData.length > 0 || invoicesData.length > 0 || projectsData.length > 0;
+        if (!hasData) {
+            return `<div class="space-y-6 fade-in w-full">
+                <div>
+                    <h2 class="text-xl sm:text-2xl font-semibold text-slate-900">KPI vs Target Report</h2>
+                    <p class="text-sm text-slate-500 mt-1">Live performance against defined targets</p>
+                </div>
+                <div class="flex flex-col items-center justify-center py-16 text-center bg-white rounded-xl border border-slate-200 shadow-sm">
+                    <div class="w-14 h-14 rounded-full bg-purple-50 flex items-center justify-center mb-4">
+                        <svg class="w-7 h-7 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z"/></svg>
+                    </div>
+                    <div class="text-base font-semibold text-slate-700 mb-1">No data to track yet</div>
+                    <p class="text-sm text-slate-400 max-w-xs">Add leads, invoices, and projects — KPI scores will populate automatically once data is available.</p>
+                </div>
+            </div>`;
+        }
 
         return `<div class="space-y-6 fade-in w-full">
             <!-- Header -->
@@ -13956,6 +13974,28 @@ class MarketFlowCRM {
 
     getReportsKriRisk() {
         const risks = this.getKRIData();
+
+        // — Empty state guard: needs at least some real data to be meaningful
+        const invoicesChk = typeof this.getAllInvoices === 'function' ? this.getAllInvoices() : [];
+        const leadsChk = typeof this.getStoredLeads === 'function' ? this.getStoredLeads() : [];
+        let projChk = [];
+        try { projChk = typeof this.getAllProjectsMerged === 'function' ? this.getAllProjectsMerged([]) : (typeof this.getStoredProjects === 'function' ? this.getStoredProjects() : []); } catch (_) {}
+        const hasDataKri = invoicesChk.length > 0 || leadsChk.length > 0 || projChk.length > 0;
+        if (!hasDataKri) {
+            return `<div class="space-y-6 fade-in w-full">
+                <div>
+                    <h2 class="text-xl sm:text-2xl font-semibold text-slate-900">KRI Risk Monitor</h2>
+                    <p class="text-sm text-slate-500 mt-1">Real-time key risk indicators from your business data</p>
+                </div>
+                <div class="flex flex-col items-center justify-center py-16 text-center bg-white rounded-xl border border-slate-200 shadow-sm">
+                    <div class="w-14 h-14 rounded-full bg-amber-50 flex items-center justify-center mb-4">
+                        <svg class="w-7 h-7 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.95 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/></svg>
+                    </div>
+                    <div class="text-base font-semibold text-slate-700 mb-1">No risk data yet</div>
+                    <p class="text-sm text-slate-400 max-w-xs">Risk indicators are computed from your invoices, leads, and projects. Add data to see live risk scores.</p>
+                </div>
+            </div>`;
+        }
 
         const riskScore = r => r.likelihood * r.impact;
         const breached = risks.filter(r => r.status === 'Breached').length;

@@ -3319,9 +3319,15 @@ class MarketFlowCRM {
                 const btn = this._lastActionButton;
                 const fid = btn?.dataset?.fid;
                 const fclient = btn?.dataset?.fclient;
-                const fups = this.readStore('bezent_followups', []);
-                const idx = fups.findIndex(f => f.id === fid || String(f.client || '') === fclient);
-                if (idx > -1) { fups[idx].done = true; this.writeStore('bezent_followups', fups); }
+                let fups = this.readStore('bezent_followups', []);
+                const idx = fups.findIndex(f => f.id === fid || String(f.client || '') === String(fclient || ''));
+                if (idx > -1) {
+                    fups[idx].done = true;
+                } else if (fid) {
+                    // Auto-generated followup not in store yet — add it as done
+                    fups.push({ id: fid, client: fclient, done: true, auto: true, priority: 'High', color: 'rose', type: 'billing', time: '—', topic: '', avatar: String(fclient || '?').slice(0, 2).toUpperCase() });
+                }
+                this.writeStore('bezent_followups', fups);
                 this.showToast('✅ Marked as done!');
                 this.renderContent(); this.initializeLucideIcons();
                 return true;
@@ -12321,32 +12327,41 @@ class MarketFlowCRM {
         // Auto-generate follow-ups from overdue invoices (if not already in store)
         const autoFollowups = [];
         invoices.filter(i => String(i?.status || '').toLowerCase() === 'overdue').forEach(inv => {
-            autoFollowups.push({
-                time: '—',
-                client: String(inv.client || ''),
-                topic: `Overdue invoice ${esc(inv.no)} (${esc(inv.amount)})`,
-                priority: 'High',
-                color: 'rose',
-                type: 'billing',
-                done: false,
-                avatar: String(inv.client || '?').split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase(),
-                auto: true
-            });
+            const autoId = `fup_auto_inv_${(inv.id || inv.no || inv.client || '').toString().replace(/\s/g, '_')}`;
+            // Only add if not already in stored followups
+            if (!stored.some(s => s.id === autoId)) {
+                autoFollowups.push({
+                    id: autoId,
+                    time: '—',
+                    client: String(inv.client || ''),
+                    topic: `Overdue invoice ${esc(inv.no)} (${esc(inv.amount)})`,
+                    priority: 'High',
+                    color: 'rose',
+                    type: 'billing',
+                    done: false,
+                    avatar: String(inv.client || '?').split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase(),
+                    auto: true
+                });
+            }
         });
 
         // Auto-generate from leads stuck in early stages
         leads.filter(l => ['new lead', 'open', 'contacted'].includes(String(l.stage || l.status || '').toLowerCase())).slice(0, 3).forEach(l => {
-            autoFollowups.push({
-                time: '—',
-                client: String(l.company || l.contact || 'Lead'),
-                topic: `Follow up — stage: ${l.stage || l.status || 'New Lead'}`,
-                priority: 'Medium',
-                color: 'amber',
-                type: 'pipeline',
-                done: false,
-                avatar: String(l.company || l.contact || '?').split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase(),
-                auto: true
-            });
+            const autoId = `fup_auto_lead_${(l.id || l.company || l.contact || '').toString().replace(/\s/g, '_')}`;
+            if (!stored.some(s => s.id === autoId)) {
+                autoFollowups.push({
+                    id: autoId,
+                    time: '—',
+                    client: String(l.company || l.contact || 'Lead'),
+                    topic: `Follow up — stage: ${l.stage || l.status || 'New Lead'}`,
+                    priority: 'Medium',
+                    color: 'amber',
+                    type: 'pipeline',
+                    done: false,
+                    avatar: String(l.company || l.contact || '?').split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase(),
+                    auto: true
+                });
+            }
         });
 
         // Merge: user-stored first, then auto-generated
@@ -12445,7 +12460,7 @@ class MarketFlowCRM {
                         <div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
                             <div>
                                 <div class="text-sm font-semibold text-slate-900">Today&apos;s Timeline</div>
-                                <div class="text-xs text-slate-400 mt-0.5">Mon, 02 Mar 2026</div>
+                                <div class="text-xs text-slate-400 mt-0.5">${new Date().toLocaleDateString('en-IN', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' })}</div>
                             </div>
                             <span class="px-2.5 py-1 text-xs font-semibold bg-purple-50 text-purple-700 rounded-full">${total - done} remaining</span>
                         </div>
@@ -13463,23 +13478,23 @@ class MarketFlowCRM {
                 <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
                     <div class="bg-white rounded-xl border border-slate-200 p-4 shadow-sm">
                         <div class="text-xs font-semibold text-slate-500 uppercase tracking-wide">Online Now</div>
-                        <div class="text-2xl font-bold text-emerald-600 mt-1">2</div>
-                        <div class="text-xs text-slate-500 mt-1">of 4 engineers</div>
+                        <div class="text-2xl font-bold text-emerald-600 mt-1">${syncs.filter(s => s.status === 'Online').length}</div>
+                        <div class="text-xs text-slate-500 mt-1">of ${syncs.length || 0} engineers</div>
                     </div>
                     <div class="bg-white rounded-xl border border-slate-200 p-4 shadow-sm">
                         <div class="text-xs font-semibold text-slate-500 uppercase tracking-wide">Check-ins Today</div>
-                        <div class="text-2xl font-bold text-purple-600 mt-1">7</div>
+                        <div class="text-2xl font-bold text-purple-600 mt-1">${syncs.reduce((a, s) => a + s.checkins, 0)}</div>
                         <div class="text-xs text-slate-500 mt-1">across all engineers</div>
                     </div>
                     <div class="bg-white rounded-xl border border-slate-200 p-4 shadow-sm">
-                        <div class="text-xs font-semibold text-slate-500 uppercase tracking-wide">Photos Uploaded</div>
-                        <div class="text-2xl font-bold text-sky-600 mt-1">34</div>
-                        <div class="text-xs text-slate-500 mt-1">site documentation</div>
+                        <div class="text-xs font-semibold text-slate-500 uppercase tracking-wide">Total Visits</div>
+                        <div class="text-2xl font-bold text-sky-600 mt-1">${syncs.reduce((a, s) => a + s.visits, 0)}</div>
+                        <div class="text-xs text-slate-500 mt-1">logged field visits</div>
                     </div>
                     <div class="bg-white rounded-xl border border-slate-200 p-4 shadow-sm">
-                        <div class="text-xs font-semibold text-slate-500 uppercase tracking-wide">Pending Sync</div>
-                        <div class="text-2xl font-bold text-amber-600 mt-1">1</div>
-                        <div class="text-xs text-slate-500 mt-1">engineer offline</div>
+                        <div class="text-xs font-semibold text-slate-500 uppercase tracking-wide">Pending</div>
+                        <div class="text-2xl font-bold text-amber-600 mt-1">${syncs.reduce((a, s) => a + (s.visits - s.checkins), 0)}</div>
+                        <div class="text-xs text-slate-500 mt-1">visits not completed</div>
                     </div>
                 </div>
 

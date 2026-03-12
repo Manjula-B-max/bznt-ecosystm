@@ -10344,62 +10344,76 @@ class MarketFlowCRM {
                     </div>
                 </div>
 
-                <!--Table with inline column filters-- >
+                <!-- FILTER STRIP (above table, flex grid) -->
+                <div class="bg-slate-50 border border-slate-200 rounded-xl p-3 shadow-sm">
+                    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-2">
+                        <div>
+                            <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider block mb-1">Type</label>
+                            ${fs('cdFilterType', allTypes)}
+                        </div>
+                        <div class="col-span-2">
+                            <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider block mb-1">Name</label>
+                            ${fi('cdFilterName', 'Search name…')}
+                        </div>
+                        <div>
+                            <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider block mb-1">Email User</label>
+                            ${fi('cdFilterEmailUser', 'user…')}
+                        </div>
+                        <div>
+                            <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider block mb-1">Domain</label>
+                            ${fs('cdFilterDomain', allDomains)}
+                        </div>
+                        <div>
+                            <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider block mb-1">TLD</label>
+                            ${fs('cdFilterTld', allTlds)}
+                        </div>
+                        <div>
+                            <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider block mb-1">Phone</label>
+                            ${fi('cdFilterPhone', 'phone…')}
+                        </div>
+                        <div>
+                            <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider block mb-1">City</label>
+                            ${fs('cdFilterCity', allCities)}
+                        </div>
+                        <div>
+                            <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider block mb-1">Industry</label>
+                            ${fs('cdFilterIndustry', allIndustries)}
+                        </div>
+                        <div>
+                            <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider block mb-1">Owner</label>
+                            ${fs('cdFilterOwner', allOwners)}
+                        </div>
+                        <div>
+                            <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider block mb-1">Stage</label>
+                            ${fs('cdFilterStage', allStages)}
+                        </div>
+                        <div>
+                            <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider block mb-1">Source</label>
+                            ${fs('cdFilterSource', allSources)}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- DATA TABLE (no filter row in thead) -->
                 <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
                     <div class="overflow-x-auto">
-                        <table class="w-full text-sm" style="min-width: 1200px; table-layout: fixed;">
-                            <colgroup>
-                                <col style="width:32px" />
-                                <col style="width:72px" />
-                                <col style="width:160px" />
-                                <col style="width:120px" />
-                                <col style="width:130px" />
-                                <col style="width:55px" />
-                                <col style="width:110px" />
-                                <col style="width:90px" />
-                                <col style="width:110px" />
-                                <col style="width:100px" />
-                                <col style="width:100px" />
-                                <col style="width:110px" />
-                                <col style="width:80px" />
-                                <col style="width:90px" />
-                            </colgroup>
-                            <thead class="bg-slate-50 border-b-2 border-slate-200 sticky top-0 z-10">
-                                <!-- Column labels row -->
-                                <tr>
-                                    <th class="px-3 py-2 text-left w-8">
-                                        <input type="checkbox" id="cdCheckAll" class="rounded border-slate-300" />
-                                    </th>
-                                    <th class="px-3 py-2 text-left text-[10px] font-bold text-slate-600 uppercase tracking-wider whitespace-nowrap">Type</th>
-                                    <th class="px-3 py-2 text-left text-[10px] font-bold text-slate-600 uppercase tracking-wider whitespace-nowrap">Name</th>
-                                    <th class="px-3 py-2 text-left text-[10px] font-bold text-slate-600 uppercase tracking-wider whitespace-nowrap">Email User</th>
-                                    <th class="px-3 py-2 text-left text-[10px] font-bold text-slate-600 uppercase tracking-wider whitespace-nowrap">Domain</th>
-                                    <th class="px-3 py-2 text-left text-[10px] font-bold text-slate-600 uppercase tracking-wider whitespace-nowrap">TLD</th>
-                                    <th class="px-3 py-2 text-left text-[10px] font-bold text-slate-600 uppercase tracking-wider whitespace-nowrap">Phone</th>
-                                    <th class="px-3 py-2 text-left text-[10px] font-bold text-slate-600 uppercase tracking-wider whitespace-nowrap">City</th>
-                                    <th class="px-3 py-2 text-left text-[10px] font-bold text-slate-600 uppercase tracking-wider whitespace-nowrap">Industry</th>
-                                    <th class="px-3 py-2 text-left text-[10px] font-bold text-slate-600 uppercase tracking-wider whitespace-nowrap">Owner</th>
-                                    <th class="px-3 py-2 text-left text-[10px] font-bold text-slate-600 uppercase tracking-wider whitespace-nowrap">Stage</th>
-                                    <th class="px-3 py-2 text-left text-[10px] font-bold text-slate-600 uppercase tracking-wider whitespace-nowrap">Source</th>
-                                    <th class="px-3 py-2 text-left text-[10px] font-bold text-slate-600 uppercase tracking-wider whitespace-nowrap">Vendor</th>
-                                    <th class="px-3 py-2 text-left text-[10px] font-bold text-slate-600 uppercase tracking-wider whitespace-nowrap">Due Amt</th>
-                                </tr>
-                                <!-- Inline filter row -->
-                                <tr class="bg-slate-100 border-b border-slate-200">
-                                    <td class="px-3 py-1.5"></td>
-                                    <td class="px-2 py-1.5">${fs('cdFilterType', allTypes)}</td>
-                                    <td class="px-2 py-1.5">${fi('cdFilterName', 'Search…')}</td>
-                                    <td class="px-2 py-1.5">${fi('cdFilterEmailUser', 'user…')}</td>
-                                    <td class="px-2 py-1.5">${fs('cdFilterDomain', allDomains)}</td>
-                                    <td class="px-2 py-1.5">${fs('cdFilterTld', allTlds)}</td>
-                                    <td class="px-2 py-1.5">${fi('cdFilterPhone', 'phone…')}</td>
-                                    <td class="px-2 py-1.5">${fs('cdFilterCity', allCities)}</td>
-                                    <td class="px-2 py-1.5">${fs('cdFilterIndustry', allIndustries)}</td>
-                                    <td class="px-2 py-1.5">${fs('cdFilterOwner', allOwners)}</td>
-                                    <td class="px-2 py-1.5">${fs('cdFilterStage', allStages)}</td>
-                                    <td class="px-2 py-1.5">${fs('cdFilterSource', allSources)}</td>
-                                    <td class="px-2 py-1.5"></td>
-                                    <td class="px-2 py-1.5"></td>
+                        <table class="text-sm" style="min-width: 1100px; width: 100%; border-collapse: collapse;">
+                            <thead style="display:table-header-group; background:#f8fafc; border-bottom:2px solid #e2e8f0;">
+                                <tr style="display:table-row;">
+                                    <th style="width:32px; padding:8px 12px; text-align:left; display:table-cell;"><input type="checkbox" id="cdCheckAll" style="width:14px;height:14px;" /></th>
+                                    <th style="width:72px; padding:8px 12px; text-align:left; font-size:10px; font-weight:700; color:#475569; text-transform:uppercase; letter-spacing:0.05em; display:table-cell;">Type</th>
+                                    <th style="width:155px; padding:8px 12px; text-align:left; font-size:10px; font-weight:700; color:#475569; text-transform:uppercase; letter-spacing:0.05em; display:table-cell;">Name</th>
+                                    <th style="width:120px; padding:8px 12px; text-align:left; font-size:10px; font-weight:700; color:#475569; text-transform:uppercase; letter-spacing:0.05em; display:table-cell;">Email User</th>
+                                    <th style="width:130px; padding:8px 12px; text-align:left; font-size:10px; font-weight:700; color:#475569; text-transform:uppercase; letter-spacing:0.05em; display:table-cell;">Domain</th>
+                                    <th style="width:55px; padding:8px 12px; text-align:left; font-size:10px; font-weight:700; color:#475569; text-transform:uppercase; letter-spacing:0.05em; display:table-cell;">TLD</th>
+                                    <th style="width:110px; padding:8px 12px; text-align:left; font-size:10px; font-weight:700; color:#475569; text-transform:uppercase; letter-spacing:0.05em; display:table-cell;">Phone</th>
+                                    <th style="width:90px; padding:8px 12px; text-align:left; font-size:10px; font-weight:700; color:#475569; text-transform:uppercase; letter-spacing:0.05em; display:table-cell;">City</th>
+                                    <th style="width:105px; padding:8px 12px; text-align:left; font-size:10px; font-weight:700; color:#475569; text-transform:uppercase; letter-spacing:0.05em; display:table-cell;">Industry</th>
+                                    <th style="width:95px; padding:8px 12px; text-align:left; font-size:10px; font-weight:700; color:#475569; text-transform:uppercase; letter-spacing:0.05em; display:table-cell;">Owner</th>
+                                    <th style="width:95px; padding:8px 12px; text-align:left; font-size:10px; font-weight:700; color:#475569; text-transform:uppercase; letter-spacing:0.05em; display:table-cell;">Stage</th>
+                                    <th style="width:105px; padding:8px 12px; text-align:left; font-size:10px; font-weight:700; color:#475569; text-transform:uppercase; letter-spacing:0.05em; display:table-cell;">Source</th>
+                                    <th style="width:75px; padding:8px 12px; text-align:left; font-size:10px; font-weight:700; color:#475569; text-transform:uppercase; letter-spacing:0.05em; display:table-cell;">Vendor</th>
+                                    <th style="width:90px; padding:8px 12px; text-align:left; font-size:10px; font-weight:700; color:#475569; text-transform:uppercase; letter-spacing:0.05em; display:table-cell;">Due Amt</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-slate-100" id="cdTableBody">

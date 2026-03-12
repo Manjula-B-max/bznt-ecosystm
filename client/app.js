@@ -13748,8 +13748,8 @@ class MarketFlowCRM {
 
         const categories = [...new Set(kpis.map(k => k.category))];
 
-        // — Empty state guard: if we have no meaningful data in any store, show a prompt
-        const hasData = leadsData.length > 0 || invoicesData.length > 0 || projectsData.length > 0;
+        // — Empty state guard: show prompt when all actuals are zero (no real data yet)
+        const hasData = kpis.some(k => k.actual > 0);
         if (!hasData) {
             return `<div class="space-y-6 fade-in w-full">
                 <div>

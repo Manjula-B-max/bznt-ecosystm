@@ -3363,11 +3363,11 @@ class MarketFlowCRM {
                 const existing = this.readStore('bezent_followups', []);
                 let added = 0;
                 invoices.filter(i => String(i.status || '').toLowerCase() === 'overdue').slice(0, 5).forEach(inv => {
-                    existing.push({ id: `fup_auto_${Date.now()}_${added}`, client: inv.client, topic: `Invoice ${inv.no} overdue — ${inv.amount}`, priority: 'High', time: '—', color: 'rose', type: 'billing', done: false, avatar: String(inv.client || '?').slice(0, 2).toUpperCase(), auto: true });
+                    existing.push({ id: `fup_auto_${Date.now()}_${added}`, client: inv.client, topic: `Invoice ${inv.no} overdue — ${inv.amount}`, priority: 'High', time: '—', color: 'rose', type: 'billing', done: false, avatar: String(inv.client || '?').slice(0, 2).toUpperCase(), auto: true, createdAt: Date.now() });
                     added++;
                 });
                 leads.filter(l => ['new lead', 'open', 'contacted'].includes(String(l.stage || l.status || '').toLowerCase())).slice(0, 5).forEach(l => {
-                    existing.push({ id: `fup_auto_lead_${Date.now()}_${added}`, client: l.company || l.contact || 'Lead', topic: `Lead follow-up — ${l.stage || l.status || 'New'}`, priority: 'Medium', time: '—', color: 'amber', type: 'pipeline', done: false, avatar: String(l.company || l.contact || '?').slice(0, 2).toUpperCase(), auto: true });
+                    existing.push({ id: `fup_auto_lead_${Date.now()}_${added}`, client: l.company || l.contact || 'Lead', topic: `Lead follow-up — ${l.stage || l.status || 'New'}`, priority: 'Medium', time: '—', color: 'amber', type: 'pipeline', done: false, avatar: String(l.company || l.contact || '?').slice(0, 2).toUpperCase(), auto: true, createdAt: Date.now() });
                     added++;
                 });
                 this.writeStore('bezent_followups', existing);
@@ -12363,7 +12363,8 @@ class MarketFlowCRM {
                     type: 'billing',
                     done: false,
                     avatar: String(inv.client || '?').split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase(),
-                    auto: true
+                    auto: true,
+                    createdAt: Date.now()
                 });
             }
         });
@@ -12403,13 +12404,27 @@ class MarketFlowCRM {
             );
         }
 
-        const week = [
-            { day: 'Mon', count: Math.max(1, Math.floor(followups.length * 0.3)), done: Math.floor(followups.length * 0.15) },
-            { day: 'Tue', count: Math.max(1, Math.floor(followups.length * 0.25)), done: Math.floor(followups.length * 0.2) },
-            { day: 'Wed', count: Math.max(1, Math.floor(followups.length * 0.2)), done: 0 },
-            { day: 'Thu', count: Math.max(1, Math.floor(followups.length * 0.15)), done: 0 },
-            { day: 'Fri', count: Math.max(1, Math.floor(followups.length * 0.1)), done: 0 }
-        ];
+        // Build "This Week" bars from real createdAt timestamps per Mon–Fri of current week
+        const allFupsForWeek = [...stored, ...autoFollowups].filter(f => !f.deleted);
+        const todayD = new Date();
+        const dayOfWeek = todayD.getDay() === 0 ? 6 : todayD.getDay() - 1; // 0=Mon..4=Fri..6=Sun
+        const monday = new Date(todayD);
+        monday.setHours(0, 0, 0, 0);
+        monday.setDate(todayD.getDate() - dayOfWeek);
+        const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
+        const week = DAYS.map((dayLabel, i) => {
+            const dayStart = new Date(monday);
+            dayStart.setDate(monday.getDate() + i);
+            const dayEnd = new Date(dayStart);
+            dayEnd.setHours(23, 59, 59, 999);
+            const dayStartMs = dayStart.getTime();
+            const dayEndMs = dayEnd.getTime();
+            const dayItems = allFupsForWeek.filter(f => {
+                const ts = f.createdAt || 0;
+                return ts >= dayStartMs && ts <= dayEndMs;
+            });
+            return { day: dayLabel, isToday: i === dayOfWeek, count: dayItems.length, done: dayItems.filter(f => f.done).length };
+        });
         const max = Math.max(...week.map(d => d.count), 1);
 
         const urgColor = u => ({ overdue: 'rose', 'at risk': 'amber', 'on track': 'emerald', upcoming: 'violet', pending: 'sky' }[String(u || '').toLowerCase()] || 'slate');
@@ -12479,7 +12494,7 @@ class MarketFlowCRM {
                 </div>
 
                 <!-- Overdue alert banner - dynamic -->
-                ${(() => { try { const ov = this.getStoredInvoices().filter(i => String(i.status || '').toLowerCase() === 'overdue'); if (!ov.length) return ''; const top = ov[0]; return `<div class="flex items-start gap-3 p-4 bg-rose-50 border border-rose-200 rounded-xl"><svg class="w-5 h-5 text-rose-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg><div class="flex-1 min-w-0"><div class="text-sm font-semibold text-rose-800">Action Required — ${top.client || 'Client'}</div><div class="text-xs text-rose-700 mt-0.5">${top.no} is overdue (${top.amount || ''}). Send a payment reminder to avoid further delay.</div><button data-action="billing:sendBulkReminders" class="flex-shrink-0 px-3 py-1.5 text-xs font-semibold bg-rose-600 text-white rounded-lg hover:bg-rose-700 transition-colors">Send Reminder</button></div>`; } catch (_) { return ''; } })()}
+                ${(() => { try { const ov = this.getStoredInvoices().filter(i => String(i.status || '').toLowerCase() === 'overdue'); if (!ov.length) return ''; const top = ov[0]; return `<div class="flex items-start gap-3 p-4 bg-rose-50 border border-rose-200 rounded-xl"><svg class="w-5 h-5 text-rose-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg><div class="flex-1 min-w-0"><div class="text-sm font-semibold text-rose-800">Action Required — ${top.client || 'Client'}</div><div class="text-xs text-rose-700 mt-0.5">${top.no} is overdue (${top.amount || ''}). Send a payment reminder to avoid further delay.</div><button data-action="billing:sendBulkReminders" class="flex-shrink-0 px-3 py-1.5 text-xs font-semibold bg-rose-600 text-white rounded-lg hover:bg-rose-700 transition-colors">Send Reminder</button></div></div>`; } catch (_) { return ''; } })()}
 
                 <!-- Main layout -->
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -12509,21 +12524,14 @@ class MarketFlowCRM {
                                     <div class="flex-1 min-w-0">
                                         <div class="flex items-center gap-2 flex-wrap">
                                             <span class="text-sm font-semibold text-slate-900 ${f.done ? 'line-through' : ''}">${f.client}</span>
-                                            <span class="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-medium bg-${f.color}-50 text-${f.color}-700 rounded-full">
-                                                ${typeIcon(f.type)} ${f.type.charAt(0).toUpperCase() + f.type.slice(1)}
-                                            </span>
+                                            <span class="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-medium bg-${f.color}-50 text-${f.color}-700 rounded-full">${typeIcon(f.type)} ${f.type.charAt(0).toUpperCase() + f.type.slice(1)}</span>
                                         </div>
                                         <div class="text-xs text-slate-500 mt-0.5 truncate">${f.topic}</div>
                                     </div>
                                     <div class="flex items-center gap-2 flex-shrink-0">
                                         <span class="hidden sm:inline px-2 py-1 text-xs font-medium ${f.priority === 'High' ? 'bg-rose-50 text-rose-700' : f.priority === 'Medium' ? 'bg-amber-50 text-amber-700' : 'bg-slate-100 text-slate-500'} rounded-full">${f.priority}</span>
-                                        ${f.done
-                ? '<span class="px-3 py-1.5 text-xs font-semibold bg-emerald-50 text-emerald-700 rounded-lg">&#10003; Done</span>'
-                : `<button data-action="followup:markDone" data-fid="${f.id || ''}" data-fclient="${esc(f.client || '')}" class="px-3 py-1.5 text-xs font-semibold bg-purple-50 text-purple-700 rounded-lg hover:bg-purple-100 transition-colors">Mark Done</button>`
-            }
-                                        <button data-action="followup:delete" data-fid="${f.id || ''}" data-fclient="${esc(f.client || '')}" title="Delete follow-up" class="w-7 h-7 flex items-center justify-center rounded-lg text-slate-400 hover:bg-rose-50 hover:text-rose-600 transition-colors flex-shrink-0">
-                                            <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
-                                        </button>
+                                        ${f.done ? '<span class=\"px-3 py-1.5 text-xs font-semibold bg-emerald-50 text-emerald-700 rounded-lg\">&#10003; Done</span>' : `<button data-action="followup:markDone" data-fid="${f.id || ''}" data-fclient="${esc(f.client || '')}" class="px-3 py-1.5 text-xs font-semibold bg-purple-50 text-purple-700 rounded-lg hover:bg-purple-100 transition-colors">Mark Done</button>`}
+                                        <button data-action="followup:delete" data-fid="${f.id || ''}" data-fclient="${esc(f.client || '')}" title="Delete" class="w-7 h-7 flex items-center justify-center rounded-lg text-slate-400 hover:bg-rose-50 hover:text-rose-600 transition-colors flex-shrink-0"><svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg></button>
                                     </div>
                                 </div>
                             `).join('')}
@@ -12541,12 +12549,14 @@ class MarketFlowCRM {
                                 ${week.map(d => `
                                     <div>
                                         <div class="flex items-center justify-between text-xs mb-1.5">
-                                            <span class="font-medium text-slate-700">${d.day}</span>
-                                            <span class="text-slate-400">${d.done}/${d.count}</span>
+                                            <span class="font-medium ${d.isToday ? 'text-purple-700' : 'text-slate-700'}">${d.day}${d.isToday ? ' ·' : ''}</span>
+                                            <span class="${d.count > 0 ? 'text-slate-600 font-medium' : 'text-slate-300'}">${d.done}/${d.count}</span>
                                         </div>
                                         <div class="w-full bg-slate-100 rounded-full h-2.5 relative overflow-hidden">
-                                            <div class="bg-indigo-400 h-2.5 rounded-full absolute top-0 left-0" style="width:${(d.count / max) * 100}%"></div>
-                                            <div class="bg-emerald-400 h-2.5 rounded-full absolute top-0 left-0" style="width:${(d.done / max) * 100}%"></div>
+                                            ${d.count > 0
+                                                ? `<div class="bg-indigo-400 h-2.5 rounded-full absolute top-0 left-0" style="width:${(d.count / max) * 100}%"></div><div class="bg-emerald-400 h-2.5 rounded-full absolute top-0 left-0" style="width:${(d.done / max) * 100}%"></div>`
+                                                : '<div class="bg-slate-200 h-2.5 rounded-full" style="width:0%"></div>'
+                                            }
                                         </div>
                                     </div>
                                 `).join('')}

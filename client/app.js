@@ -3323,12 +3323,35 @@ class MarketFlowCRM {
                 const idx = fups.findIndex(f => f.id === fid || String(f.client || '') === String(fclient || ''));
                 if (idx > -1) {
                     fups[idx].done = true;
+                    fups[idx].doneAt = Date.now(); // timestamp — used to auto-hide after 24hrs
                 } else if (fid) {
                     // Auto-generated followup not in store yet — add it as done
-                    fups.push({ id: fid, client: fclient, done: true, auto: true, priority: 'High', color: 'rose', type: 'billing', time: '—', topic: '', avatar: String(fclient || '?').slice(0, 2).toUpperCase() });
+                    fups.push({ id: fid, client: fclient, done: true, doneAt: Date.now(), auto: true, priority: 'High', color: 'rose', type: 'billing', time: '—', topic: '', avatar: String(fclient || '?').slice(0, 2).toUpperCase() });
                 }
                 this.writeStore('bezent_followups', fups);
                 this.showToast('✅ Marked as done!');
+                this.renderContent(); this.initializeLucideIcons();
+                return true;
+            }
+
+            // ── followup:delete ──
+            if (a === 'followup:delete') {
+                const btn = this._lastActionButton;
+                const fid = btn?.dataset?.fid;
+                const fclient = btn?.dataset?.fclient;
+                let fups = this.readStore('bezent_followups', []);
+                const before = fups.length;
+                // Remove from store by id first, then by client match
+                fups = fups.filter(f => !(f.id === fid || (!fid && String(f.client || '') === String(fclient || ''))));
+                if (fups.length < before) {
+                    this.writeStore('bezent_followups', fups);
+                    this.showToast('🗑️ Follow-up deleted');
+                } else {
+                    // Auto-generated item not in store — mark with deleted flag so it’s excluded next render
+                    if (fid) fups.push({ id: fid, client: fclient, deleted: true, done: true, doneAt: Date.now(), auto: true, priority: 'Low', color: 'slate', type: 'pipeline', time: '—', topic: '', avatar: '?' });
+                    this.writeStore('bezent_followups', fups);
+                    this.showToast('🗑️ Follow-up removed');
+                }
                 this.renderContent(); this.initializeLucideIcons();
                 return true;
             }
@@ -12364,8 +12387,14 @@ class MarketFlowCRM {
             }
         });
 
-        // Merge: user-stored first, then auto-generated
-        const followups = [...stored, ...autoFollowups].slice(0, 10);
+        // Merge: user-stored first, then auto-generated, filter out deleted items
+        const dayMs = 24 * 60 * 60 * 1000;
+        const now = Date.now();
+        // Hide done items older than 24 hours (still in DB, just not shown)
+        const followups = [...stored, ...autoFollowups]
+            .filter(f => !f.deleted)
+            .filter(f => !(f.done && f.doneAt && (now - f.doneAt) > dayMs))
+            .slice(0, 10);
 
         // If nothing at all, show a default set
         if (!followups.length) {
@@ -12492,6 +12521,9 @@ class MarketFlowCRM {
                 ? '<span class="px-3 py-1.5 text-xs font-semibold bg-emerald-50 text-emerald-700 rounded-lg">&#10003; Done</span>'
                 : `<button data-action="followup:markDone" data-fid="${f.id || ''}" data-fclient="${esc(f.client || '')}" class="px-3 py-1.5 text-xs font-semibold bg-purple-50 text-purple-700 rounded-lg hover:bg-purple-100 transition-colors">Mark Done</button>`
             }
+                                        <button data-action="followup:delete" data-fid="${f.id || ''}" data-fclient="${esc(f.client || '')}" title="Delete follow-up" class="w-7 h-7 flex items-center justify-center rounded-lg text-slate-400 hover:bg-rose-50 hover:text-rose-600 transition-colors flex-shrink-0">
+                                            <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+                                        </button>
                                     </div>
                                 </div>
                             `).join('')}

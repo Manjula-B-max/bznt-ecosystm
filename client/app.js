@@ -2951,7 +2951,36 @@ class MarketFlowCRM {
                 }
                 return true;
             }
-
+            if (a === 'invoice:delete') {
+                const btn = this._lastActionButton;
+                const vid = btn?.dataset?.vid;
+                if (!vid || !confirm('Delete invoice ' + vid + '?')) return true;
+                const items = this.readStore('bezent_invoices', []);
+                this.writeStore('bezent_invoices', items.filter(x => String(x.id || x.no) !== String(vid)));
+                this.showToast('Invoice deleted.');
+                this.renderContent();
+                return true;
+            }
+            if (a === 'quotation:delete') {
+                const btn = this._lastActionButton;
+                const vid = btn?.dataset?.vid;
+                if (!vid || !confirm('Delete quotation ' + vid + '?')) return true;
+                const items = this.readStore('bezent_quotations', []);
+                this.writeStore('bezent_quotations', items.filter(x => String(x.id || x.no) !== String(vid)));
+                this.showToast('Quotation deleted.');
+                this.renderContent();
+                return true;
+            }
+            if (a === 'contract:delete') {
+                const btn = this._lastActionButton;
+                const vid = btn?.dataset?.vid;
+                if (!vid || !confirm('Delete contract ' + vid + '?')) return true;
+                const items = this.readStore('bezent_contracts', []);
+                this.writeStore('bezent_contracts', items.filter(x => String(x.id || x.no) !== String(vid)));
+                this.showToast('Contract deleted.');
+                this.renderContent();
+                return true;
+            }
 
             if (a === 'lead:delete') {
                 const btn = this._lastActionButton;
@@ -11579,6 +11608,7 @@ class MarketFlowCRM {
                                 <td class="px-4 py-3 text-slate-600 text-xs">${next}</td>
                                 <td class="px-4 py-3">
                                     ${q.status === 'Approved' ? `<button data-action="quotation:toInvoice" data-qid="${esc(q.no || q.id)}" class="px-3 py-1.5 text-xs font-semibold bg-emerald-50 text-emerald-700 rounded-lg hover:bg-emerald-100">→ Invoice</button>` : ''}
+                                    <button data-action="quotation:delete" data-vid="${esc(q.no || q.id)}" class="p-1.5 text-slate-400 hover:text-rose-600 rounded transition flex-shrink-0 ml-1" title="Delete"><svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg></button>
                                 </td>
                             </tr>`;
         }).join('')}
@@ -11633,6 +11663,9 @@ class MarketFlowCRM {
                             <div class="mt-3 p-3 ${statusColor === 'emerald' ? 'bg-emerald-50 border border-emerald-100' : 'bg-amber-50 border border-amber-100'} rounded-lg">
                                 <div class="text-xs text-slate-500">Renewal</div>
                                 <div class="text-sm font-medium text-slate-900">${esc(c.renewal || '—')}</div>
+                            </div>
+                            <div class="mt-3 pt-3 border-t border-slate-100 flex justify-end">
+                                <button data-action="contract:delete" data-vid="${esc(c.no || c.id)}" class="p-1.5 text-slate-400 hover:text-rose-600 rounded transition flex-shrink-0" title="Delete Contract"><svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg></button>
                             </div>
                         </div>`;
                 }).join('')}
@@ -11772,6 +11805,7 @@ class MarketFlowCRM {
                                                             data-invoice-color="${i.color}"
                                                             class="px-3 py-1.5 text-xs font-medium bg-emerald-50 text-emerald-700 rounded-lg hover:bg-emerald-100 transition-colors">Mark Paid</button>
                                                     `}
+                                                    <button data-action="invoice:delete" data-vid="${i.no}" class="p-1.5 text-slate-400 hover:text-rose-600 rounded transition flex-shrink-0 ml-1" title="Delete"><svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg></button>
                                                 </div>
                                             </td>
                                         </tr>

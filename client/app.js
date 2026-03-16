@@ -11734,7 +11734,7 @@ class MarketFlowCRM {
                                         <tr class="hover:bg-slate-50">
                                             <td class="px-4 py-3 font-medium text-slate-900">${i.no}</td>
                                             <td class="px-4 py-3 text-slate-700">${i.client}</td>
-                                            <td class="px-4 py-3 text-right font-medium text-slate-900">${i.amount}</td>
+                                            <td class="px-4 py-3 text-right font-medium text-slate-900">${this.formatINR(this.parseCurrencyToNumber(i.amount))}</td>
                                             <td class="px-4 py-3 text-slate-700">${i.due}</td>
                                             <td class="px-4 py-3">
                                                 <span class="px-2 py-1 text-xs font-medium bg-${i.color}-50 text-${i.color}-700 rounded-full">${i.status}</span>
@@ -12512,8 +12512,8 @@ class MarketFlowCRM {
                             ${followups.map(f => `
                                 <div class="flex items-center gap-4 px-5 py-4 hover:bg-slate-50 transition-colors ${f.done ? 'opacity-60' : ''}">
                                     <div class="w-14 flex-shrink-0 text-center">
-                                        <div class="text-xs font-bold text-slate-900">${f.time.split(' ')[0]}</div>
-                                        <div class="text-[10px] text-slate-400">${f.time.split(' ')[1]}</div>
+                                        <div class="text-xs font-bold text-slate-900">${f.time && f.time !== '—' ? String(f.time).split(' ')[0] : '—'}</div>
+                                        <div class="text-[10px] text-slate-400">${f.time && String(f.time).includes(' ') ? String(f.time).split(' ')[1] : ''}</div>
                                     </div>
                                     <div class="flex-shrink-0">
                                         <div class="w-3 h-3 rounded-full border-2 ${f.done ? 'bg-emerald-500 border-emerald-500' : 'bg-white border-' + f.color + '-400'}"></div>
@@ -15761,7 +15761,7 @@ class MarketFlowCRM {
         const renderResults = (query) => {
             if (!resultsEl) return;
             const q = (query || '').trim().toLowerCase();
-            const matches = (q ? index.filter(item => item.search.includes(q)) : index).slice(0, 8);
+            const currentIndex = this._cachedIndex || index; const matches = (q ? currentIndex.filter(item => item.search.includes(q)) : currentIndex).slice(0, 8);
             lastMatches = matches;
             if (activeIndex >= matches.length) activeIndex = matches.length ? 0 : -1;
 
@@ -15815,8 +15815,8 @@ class MarketFlowCRM {
         const render = (query) => renderResults(query);
 
         if (searchInput) {
-            searchInput.addEventListener('input', (e) => render(e.target.value));
-            searchInput.addEventListener('focus', (e) => render(e.target.value));
+            searchInput.addEventListener('input', (e) => { const resultsEl = document.getElementById('globalSearchResults'); if (!resultsEl || resultsEl.classList.contains('hidden')) { this._cachedIndex = this.getGlobalSearchIndex(); } render(e.target.value); });
+            searchInput.addEventListener('focus', (e) => { this._cachedIndex = this.getGlobalSearchIndex(); render(e.target.value); });
             searchInput.addEventListener('keydown', (e) => {
                 if (!resultsEl) return;
 
@@ -15986,7 +15986,7 @@ class MarketFlowCRM {
         if (!this.notifications) this.notifications = this.getNotificationsData();
 
         const close = () => menu.classList.add('hidden');
-        const open = () => menu.classList.remove('hidden');
+        const open = () => { if (menu.id==='notificationMenu') { const pm = document.getElementById('profileMenu'); if (pm) pm.classList.add('hidden'); } else if (menu.id==='profileMenu') { const nm = document.getElementById('notificationMenu'); if (nm) nm.classList.add('hidden'); } const sr = document.getElementById('globalSearchResults'); if (sr) sr.classList.add('hidden'); menu.classList.remove('hidden'); };
         const isOpen = () => !menu.classList.contains('hidden');
 
         const sectionLabel = (type) => {
@@ -16080,7 +16080,7 @@ class MarketFlowCRM {
         if (!toggle || !menu) return;
 
         const close = () => menu.classList.add('hidden');
-        const open = () => menu.classList.remove('hidden');
+        const open = () => { if (menu.id==='notificationMenu') { const pm = document.getElementById('profileMenu'); if (pm) pm.classList.add('hidden'); } else if (menu.id==='profileMenu') { const nm = document.getElementById('notificationMenu'); if (nm) nm.classList.add('hidden'); } const sr = document.getElementById('globalSearchResults'); if (sr) sr.classList.add('hidden'); menu.classList.remove('hidden'); };
         const isOpen = () => !menu.classList.contains('hidden');
 
         toggle.addEventListener('click', (e) => {

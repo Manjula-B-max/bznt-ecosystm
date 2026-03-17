@@ -726,7 +726,7 @@ class MarketFlowCRM {
         if (roleEl) roleEl.textContent = role || 'Administrator';
     }
 
-    showToast(message) {
+    showToast(message) { console.trace('showToast', message); if (message === 'Client is required.') { const ob = new MutationObserver(m => console.log('Main content mutated!', m)); ob.observe(document.getElementById('main-content'), {childList: true, subtree: true, attributes: true, characterData: true}); }  console.trace('showToast called with', message); if (message === 'Client is required.') { console.log('Client invalid branch'); }
         const msg = String(message || '').trim();
         if (!msg) return;
 
@@ -2310,8 +2310,8 @@ class MarketFlowCRM {
             if (btn.hasAttribute('data-subsection')) return true;
             if (btn.hasAttribute('data-target-section')) return true;
             if (btn.hasAttribute('data-modal-close')) return true;
-            if (btn.type === 'submit') return true;
             if (btn.closest && btn.closest('[data-modal-form]')) return true;
+            if (btn.type === 'submit' && !btn.hasAttribute('data-action')) return true;
             const id = btn.id || '';
             if (
                 id === 'sidebarToggle' ||
@@ -2817,8 +2817,24 @@ class MarketFlowCRM {
                     additionalNotes: readVal('reg_ratings_additionalNotes') || ''
                 };
 
+                if (!clientEl?.value?.trim()) {
+                    this.showToast('Client is required.');
+                    return true;
+                }
                 if (!nameEl?.value?.trim()) {
                     this.showToast('Project name is required.');
+                    return true;
+                }
+                if (!startDateEl?.value?.trim()) {
+                    this.showToast('Start Date is required.');
+                    return true;
+                }
+                if (!budgetEl?.value?.trim()) {
+                    this.showToast('Budget is required.');
+                    return true;
+                }
+                if (!serviceCodeEl?.value?.trim()) {
+                    this.showToast('Service Code is required.');
                     return true;
                 }
                 const result = this.saveProject({
@@ -7006,7 +7022,7 @@ class MarketFlowCRM {
                             <input id="leadAssignedTo" type="text" class="mt-2 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="e.g., Team Member" value="${esc(leadData?.assignedTo || '')}" />
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-slate-700">Company</label>
+                            <label class="block text-sm font-medium text-slate-700">Company <span class="text-rose-500">*</span></label>
                             <input id="leadCompany" type="text" class="mt-2 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="e.g., Acme Corp" value="${esc(leadData?.company || '')}" />
                         </div>
                         <div>
@@ -7300,7 +7316,7 @@ class MarketFlowCRM {
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <input type="hidden" id="registerMode" value="client" />
                     <div>
-                        <label class="text-xs font-medium text-slate-600">Client Name</label>
+                        <label class="text-xs font-medium text-slate-600">Client Name <span class="text-rose-500">*</span></label>
                         <input id="clientName" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="e.g., Acme Private Limited" />
                     </div>
                     <div>
@@ -7312,11 +7328,11 @@ class MarketFlowCRM {
                         </select>
                     </div>
                     <div>
-                        <label class="text-xs font-medium text-slate-600">Email</label>
+                        <label class="text-xs font-medium text-slate-600">Email <span class="text-rose-500">*</span></label>
                         <input id="clientEmail" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="client@company.com" />
                     </div>
                     <div>
-                        <label class="text-xs font-medium text-slate-600">Phone</label>
+                        <label class="text-xs font-medium text-slate-600">Phone <span class="text-rose-500">*</span></label>
                         <input id="clientPhone" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="+91 9XXXXXXXXX" />
                     </div>
                     <div>
@@ -8966,22 +8982,22 @@ class MarketFlowCRM {
                     <div class="w-full max-w-4xl bg-white rounded-lg border border-slate-200 p-6 shadow-lg">
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div>
-                                <label class="text-xs font-medium text-slate-600">Client</label>
+                                <label class="text-xs font-medium text-slate-600">Client <span class="text-rose-500">*</span></label>
                                 <select id="projectClient" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500">
                                     <option value="">— Select client —</option>
                                     ${this.getStoredClients().map(c => `<option value="${c.name || ''}" ${(projectData?.client || '') === c.name ? 'selected' : ''}>${c.name || ''}</option>`).join('')}
                                 </select>
                             </div>
                             <div>
-                                <label class="text-xs font-medium text-slate-600">Project Name</label>
+                                <label class="text-xs font-medium text-slate-600">Project Name <span class="text-rose-500">*</span></label>
                                 <input id="projectName" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="e.g., Website Redesign" value="${esc(projectData?.name || projectData?.identification?.projectCode || '')}" />
                             </div>
                             <div>
-                                <label class="text-xs font-medium text-slate-600">Start Date</label>
+                                <label class="text-xs font-medium text-slate-600">Start Date <span class="text-rose-500">*</span></label>
                                 <input id="projectStartDate" type="date" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" value="${esc(projectData?.startDate || '')}" />
                             </div>
                             <div>
-                                <label class="text-xs font-medium text-slate-600">Duration</label>
+                                <label class="text-xs font-medium text-slate-600">Duration <span class="text-rose-500">*</span></label>
                                 <select id="projectDuration" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500">
                                     <option>1-3 months</option>
                                     <option>3-6 months</option>
@@ -8989,7 +9005,7 @@ class MarketFlowCRM {
                                 </select>
                             </div>
                             <div>
-                                <label class="text-xs font-medium text-slate-600">Budget (₹)</label>
+                                <label class="text-xs font-medium text-slate-600">Budget (₹) <span class="text-rose-500">*</span></label>
                                 <input id="projectBudget" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="e.g., 320000" value="${esc(projectData?.budget || '')}" />
                             </div>
                             <div>
@@ -9023,7 +9039,7 @@ class MarketFlowCRM {
                                             <input id="projectCode" readonly class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm bg-slate-50 text-slate-700" placeholder="Auto-generated based on Service Code" />
                                         </div>
                                         <div>
-                                            <label class="text-xs font-medium text-slate-600">Service Code</label>
+                                            <label class="text-xs font-medium text-slate-600">Service Code <span class="text-rose-500">*</span></label>
                                             <select id="serviceCode" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500">
                                                 <option value="">Select</option>
                                                 <option value="RE">RE</option>
@@ -15730,22 +15746,6 @@ class MarketFlowCRM {
                 if (!subSection) return;
                 this.switchSubSection(subSection);
                 this.closeMobileSidebar();
-            });
-        }
-
-        if (!this._sectionNavDelegated) {
-            this._sectionNavDelegated = true;
-            document.addEventListener('click', (e) => {
-                const btn = e.target.closest('button[data-action]');
-                if (!btn) return;
-                this._lastActionButton = btn;
-                const handled = this._handleAction ? this._handleAction(btn.dataset.action) : false;
-                if (handled) {
-                    this.renderSidebar();
-                    this.renderContent();
-                    this.initializeLucideIcons();
-                    this.renderChatPanel();
-                }
             });
         }
 

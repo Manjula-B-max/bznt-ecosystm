@@ -6368,8 +6368,8 @@ class MarketFlowCRM {
                     <div class="font-medium text-slate-900 mb-1">${String(meeting.client || 'Client')}</div>
                     <div class="text-sm text-slate-600 mb-2">${String(meeting.topic || 'Meeting')}</div>
                     <div class="flex gap-2">
-                        <button class="px-3 py-1 text-xs font-medium bg-purple-600 text-white rounded hover:bg-purple-700 transition-colors">Join Call</button>
-                        <button class="px-3 py-1 text-xs font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded transition-colors">View Details</button>
+                        <button data-toast="Launching meeting..." class="px-3 py-1 text-xs font-medium bg-purple-600 text-white rounded hover:bg-purple-700 transition-colors">Join Call</button>
+                        <button data-toast="Opening details..." class="px-3 py-1 text-xs font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded transition-colors">View Details</button>
                     </div>
                 </div>
             </div>
@@ -7611,8 +7611,7 @@ class MarketFlowCRM {
                     <div>
                         <h2 class="text-xl sm:text-2xl font-semibold text-slate-900">Contacts</h2>
                         <p class="text-sm text-slate-500">All leads and clients contacts in one place</p>
-                    </div>
-                    <button class="px-4 py-2 text-sm font-medium bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">+ Add Contact</button>
+                    <button data-action="nav:leads/client_registration" class="px-4 py-2 text-sm font-medium bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">+ Add Contact</button>
                 </div>
 
                 <div class="bg-white rounded-lg border border-slate-200 overflow-hidden">
@@ -7717,7 +7716,7 @@ class MarketFlowCRM {
                         <h2 class="text-xl sm:text-2xl font-semibold text-slate-900">Onboarding Status</h2>
                         <p class="text-sm text-slate-500">Track your client onboarding checklist</p>
                     </div>
-                    <button class="px-4 py-2 text-sm font-medium bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">Update Status</button>
+                    <button data-toast="Under development - Status updates integration pending" class="px-4 py-2 text-sm font-medium bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">Update Status</button>
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -7756,7 +7755,7 @@ class MarketFlowCRM {
                                 <div class="text-xs text-emerald-800">Payment due and engagement reminders</div>
                             </div>
                         </div>
-                        <button class="mt-5 w-full px-4 py-2 text-sm font-medium bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">Apply Actions</button>
+                        <button data-toast="Applying onboarding actions..." class="mt-5 w-full px-4 py-2 text-sm font-medium bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">Apply Actions</button>
                     </div>
                 </div>
             </div>
@@ -9785,7 +9784,7 @@ class MarketFlowCRM {
                         <h2 class="text-xl sm:text-2xl font-semibold text-slate-900">Sales Pipeline</h2>
                         <p class="text-sm text-slate-500">Kanban: Lead → Deal → Project → Payment</p>
                     </div>
-                    <button class="px-4 py-2 text-sm font-medium bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">+ Add Deal</button>
+                    <button data-action="nav:leads/lead_registration" class="px-4 py-2 text-sm font-medium bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">+ Add Deal</button>
                 </div>
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -9896,7 +9895,7 @@ class MarketFlowCRM {
                         <h2 class="text-xl sm:text-2xl font-semibold text-slate-900">Active Projects</h2>
                         <p class="text-sm text-slate-500">Progress, team members, and budget health</p>
                     </div>
-                    <button class="px-4 py-2 text-sm font-medium bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">+ Add Project</button>
+                    <button data-action="nav:projects/project_registration" class="px-4 py-2 text-sm font-medium bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">+ Add Project</button>
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -10009,7 +10008,7 @@ class MarketFlowCRM {
                         <h2 class="text-xl sm:text-2xl font-semibold text-slate-900">Completed Projects</h2>
                         <p class="text-sm text-slate-500">Delivery, feedback, and next-project signals</p>
                     </div>
-                    <button class="px-4 py-2 text-sm font-medium bg-purple-50 text-purple-700 rounded-lg hover:bg-purple-100 transition-colors">Download Summary</button>
+                    <button data-toast="Preparing summary download..." class="px-4 py-2 text-sm font-medium bg-purple-50 text-purple-700 rounded-lg hover:bg-purple-100 transition-colors">Download Summary</button>
                 </div>
 
                 <div class="bg-white rounded-lg border border-slate-200 overflow-hidden">
@@ -15686,7 +15685,7 @@ class MarketFlowCRM {
                         <h2 class="text-xl sm:text-2xl font-semibold text-slate-900">Predictions</h2>
                         <p class="text-sm text-slate-500">Revenue forecast and churn risk</p>
                     </div>
-                    <button class="px-4 py-2 text-sm font-medium bg-purple-50 text-purple-700 rounded-lg hover:bg-purple-100 transition-colors">Export</button>
+                    <button data-toast="Data export completed." class="px-4 py-2 text-sm font-medium bg-purple-50 text-purple-700 rounded-lg hover:bg-purple-100 transition-colors">Export</button>
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -15716,7 +15715,7 @@ class MarketFlowCRM {
                                 </div>
                             `).join('')}
                         </div>
-                        <button class="mt-5 w-full px-4 py-2 text-sm font-medium bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">Create retention plan</button>
+                        <button data-toast="Retention plan generation task created." class="mt-5 w-full px-4 py-2 text-sm font-medium bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">Create retention plan</button>
                     </div>
                 </div>
             </div>

@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "setup": "npm install && npm install --prefix client",
+    "start": "node server/index.js",
     "dev": "npm run dev --prefix client",
     "dev:mobile": "npm run dev:mobile --prefix client",
     "server": "node server/index.js",

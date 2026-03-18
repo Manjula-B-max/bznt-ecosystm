@@ -22,6 +22,15 @@ app.use('/api', routes);
 // Health check
 app.get('/health', (_, res) => res.json({ ok: true, ts: new Date().toISOString() }));
 
+// Serve static frontend in production
+const clientBuildPath = path.join(__dirname, '../client/dist');
+app.use(express.static(clientBuildPath));
+
+// Catch-all route to serve the React frontend for non-API routes
+app.get('*', (req, res) => {
+    res.sendFile(path.join(clientBuildPath, 'index.html'));
+});
+
 app.listen(PORT, () => {
     console.log(`\n🚀 Bezent API running at http://localhost:${PORT}`);
     console.log(`   Health:  http://localhost:${PORT}/health`);

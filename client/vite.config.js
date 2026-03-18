@@ -19,7 +19,8 @@ export default defineConfig({
       input: {
         main: resolve(__dirname, 'index.html'),
         crm: resolve(__dirname, 'marketflow-crm.html'),
-        feedback: resolve(__dirname, 'feedback.html')
+        feedback: resolve(__dirname, 'feedback.html'),
+        admin: resolve(__dirname, 'admin.html')
       }
     }
   }

@@ -22,7 +22,7 @@ export const sendOtp = async (req, res) => {
         await OtpCode.findOneAndUpdate(
             { email },
             { code, expires_at: expiresAt },
-            { upsert: true, new: true }
+            { upsert: true, returnDocument: 'after' }
         );
 
         console.log(`[OTP] ${email} → ${code}`); // visible in server console

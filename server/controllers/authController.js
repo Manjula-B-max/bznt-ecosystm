@@ -41,8 +41,15 @@ export const sendOtp = async (req, res) => {
         };
 
         if (process.env.EMAIL_USER && process.env.EMAIL_PASS) {
-            try { await transporter.sendMail(mailOptions); } catch (e) { /* ignore mail err */ }
-            res.json({ ok: true, message: 'OTP sent completely securely.' });
+            try {
+                await transporter.sendMail(mailOptions);
+                console.log(`[MAIL] Email sent successfully to ${email}`);
+                res.json({ ok: true, message: 'OTP sent to your email.' });
+            } catch (mailErr) {
+                console.error(`[MAIL ERROR] Failed to send email to ${email}:`, mailErr.message);
+                // Still allow login via Render logs OTP, but tell client mail failed
+                res.json({ ok: true, message: `OTP generated (email delivery failed: ${mailErr.message}). Check server logs for OTP.` });
+            }
         } else {
             console.warn('[Bezent Mail] WARNING: Email not sent! Provide valid SMTP details in .env');
             res.json({ ok: true, message: 'OTP mapped. (Check Server Terminal!)' });

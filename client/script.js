@@ -960,9 +960,15 @@ document.addEventListener('DOMContentLoaded', () => {
             localStorage.setItem('bezent_user', JSON.stringify(data.user));
             if (btnTextEl) btnTextEl.textContent = 'Welcome!';
             button.style.background = 'linear-gradient(135deg, #10b981 0%, #059669 100%)';
-            setStatus('<span style="color:#059669;">Verified! Loading your dashboard…</span>');
+            setStatus('<span style="color:#059669;">Verified! Redirecting...</span>');
 
-            setTimeout(() => window.location.replace('marketflow-crm.html'), 700);
+            setTimeout(() => {
+                if (data.user.email === 'bhujasrisadhanand@gmail.com') {
+                    window.location.replace('admin.html');
+                } else {
+                    window.location.replace('marketflow-crm.html');
+                }
+            }, 700);
 
         } catch (_) {
             button.disabled = false;

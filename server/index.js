@@ -7,8 +7,10 @@ dotenv.config({ path: path.join(__dirname, '.env') });
 
 import express from 'express';
 import cors from 'cors';
-import routes from './routes.js';
+import routes from './routes/index.js';
+import './db.js'; // Ensure MongoDB connection starts with the server
 const PORT = process.env.PORT || 3001;
+
 
 const app = express();
 app.use(cors({ origin: true, credentials: true }));

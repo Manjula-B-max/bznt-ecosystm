@@ -1,93 +1,179 @@
-import db from '../config/database.js';
-import { signToken } from '../middleware/auth.js';
-import { sendOtpEmail } from '../services/emailService.js';
+import { User, OtpCode } from '../models/Auth.js';
+import { signToken } from '../auth.js';
+import nodemailer from 'nodemailer';
 
-// ── POST /auth/send-otp ──────────────────────────────────────────────────────
-export async function sendOtp(req, res) {
+export const sendOtp = async (req, res) => {
     try {
         const email = (req.body.email || '').toLowerCase().trim();
         if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
             return res.status(400).json({ error: 'Valid email required' });
 
-        const code = String(Math.floor(100000 + Math.random() * 900000));
-
-        // Allow-list check — only authorised emails can log in.
-        // If the table is empty the very first request bootstraps it.
-        const allowedCount = db.prepare('SELECT COUNT(*) as c FROM allowed_emails').get().c;
-        if (allowedCount > 0) {
-            const isAllowed = db.prepare('SELECT 1 FROM allowed_emails WHERE email = ?').get(email);
-            if (!isAllowed)
-                return res.status(403).json({ error: 'Access denied: Email not authorized.' });
-        } else {
-            db.prepare('INSERT INTO allowed_emails (email) VALUES (?)').run(email);
+        if (email !== 'bhujasrisadhanand@gmail.com') {
+            const existingUser = await User.findOne({ email });
+            if (!existingUser || !existingUser.marketflow_access) {
+                return res.status(403).json({ error: 'Access denied. You do not have permission to access MarketFlow.' });
+            }
         }
 
-        const expiresAt = Date.now() + 5 * 60 * 1000;
-        db.prepare('INSERT OR REPLACE INTO otp_codes (email, code, expires_at) VALUES (?, ?, ?)')
-            .run(email, code, expiresAt);
+        const code = String(Math.floor(100000 + Math.random() * 900000));
+        const expiresAt = Date.now() + 5 * 60 * 1000; // 5 minutes
 
-        console.log(`[OTP] ${email} → ${code}`);
+        // Upsert OTP
+        await OtpCode.findOneAndUpdate(
+            { email },
+            { code, expires_at: expiresAt },
+            { upsert: true, new: true }
+        );
 
-        await sendOtpEmail(email, code);
+        console.log(`[OTP] ${email} → ${code}`); // visible in server console
 
-        const hasCreds = process.env.EMAIL_USER && process.env.EMAIL_PASS;
-        res.json({
-            ok: true,
-            message: hasCreds
-                ? `OTP sent completely securely to ${email}`
-                : 'OTP mapped. (Check Server Terminal!)'
+        const transporter = nodemailer.createTransport({
+            service: 'gmail',
+            auth: { user: process.env.EMAIL_USER, pass: process.env.EMAIL_PASS },
+            tls: { rejectUnauthorized: false }
         });
-    } catch (e) {
-        res.status(500).json({ error: e.message });
-    }
-}
 
-// ── POST /auth/verify-otp ────────────────────────────────────────────────────
-export function verifyOtp(req, res) {
+        const mailOptions = {
+            from: '"BEZENT Server" <' + (process.env.EMAIL_USER || 'noreply') + '>',
+            to: email,
+            subject: 'Your Bezent Login OTP',
+            text: `Hello,\n\nYour BEZENT login OTP is: ${code}\n\nIt expires in 5 minutes.\n\nBest,\nBezent Team`
+        };
+
+        if (process.env.EMAIL_USER && process.env.EMAIL_PASS) {
+            try { await transporter.sendMail(mailOptions); } catch (e) { /* ignore mail err */ }
+            res.json({ ok: true, message: 'OTP sent completely securely.' });
+        } else {
+            console.warn('[Bezent Mail] WARNING: Email not sent! Provide valid SMTP details in .env');
+            res.json({ ok: true, message: 'OTP mapped. (Check Server Terminal!)' });
+        }
+    } catch (e) { res.status(500).json({ error: e.message }); }
+};
+
+export const verifyOtp = async (req, res) => {
     try {
         const email = (req.body.email || '').toLowerCase().trim();
-        const otp   = String(req.body.otp || '').trim();
+        const otp = String(req.body.otp || '').trim();
         if (!email || !otp) return res.status(400).json({ error: 'email and otp required' });
 
-        const row = db.prepare('SELECT * FROM otp_codes WHERE email = ?').get(email);
+        const row = await OtpCode.findOne({ email });
         if (!row) return res.status(401).json({ error: 'No OTP found. Please request a new one.' });
-
         if (Date.now() > row.expires_at) {
-            db.prepare('DELETE FROM otp_codes WHERE email = ?').run(email);
+            await OtpCode.deleteOne({ email });
             return res.status(401).json({ error: 'OTP expired. Please request a new one.' });
         }
         if (row.code !== otp) return res.status(401).json({ error: 'Invalid OTP. Please try again.' });
 
-        db.prepare('DELETE FROM otp_codes WHERE email = ?').run(email);
+        // valid otp — consume it
+        await OtpCode.deleteOne({ email });
 
-        let user = db.prepare('SELECT * FROM users WHERE email = ?').get(email);
-        if (!user) {
-            const name = email.split('@')[0].replace(/[._-]/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
-            const result = db.prepare('INSERT INTO users (email, name) VALUES (?, ?)').run(email, name);
-            user = db.prepare('SELECT id, email, name, company, role, created_at FROM users WHERE id = ?').get(result.lastInsertRowid);
+        let userDoc = await User.findOne({ email });
+        
+        if (!userDoc) {
+            if (email === 'bhujasrisadhanand@gmail.com') {
+                const name = email.split('@')[0].replace(/[._-]/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+                userDoc = await User.create({ email, name, role: 'super_admin', marketflow_access: false });
+            } else {
+                return res.status(403).json({ error: 'Access denied. You do not have permission to access MarketFlow.' });
+            }
         } else {
-            const { password_hash, ...safe } = user;
-            user = safe;
+            if (email === 'bhujasrisadhanand@gmail.com' && userDoc.role !== 'super_admin') {
+                userDoc.role = 'super_admin';
+                await userDoc.save();
+            } else if (email !== 'bhujasrisadhanand@gmail.com' && !userDoc.marketflow_access) {
+                return res.status(403).json({ error: 'Access denied. You do not have permission to access MarketFlow.' });
+            }
         }
+
+        const user = userDoc.toJSON();
+        delete user.password_hash;
 
         const token = signToken(user.id);
         res.json({ token, user });
-    } catch (e) {
-        res.status(500).json({ error: e.message });
-    }
-}
+    } catch (e) { res.status(500).json({ error: e.message }); }
+};
 
-// ── GET /auth/me ─────────────────────────────────────────────────────────────
-export function getMe(req, res) {
-    const user = db.prepare('SELECT id, email, name, company, role, created_at FROM users WHERE id = ?').get(req.userId);
-    if (!user) return res.status(404).json({ error: 'Not found' });
-    res.json(user);
-}
+export const getMe = async (req, res) => {
+    try {
+        const user = await User.findById(req.userId).select('-password_hash');
+        if (!user) return res.status(404).json({ error: 'Not found' });
+        res.json(user);
+    } catch (e) { res.status(500).json({ error: e.message }); }
+};
 
-// ── PUT /auth/me ─────────────────────────────────────────────────────────────
-export function updateMe(req, res) {
-    const { name, company } = req.body;
-    db.prepare('UPDATE users SET name = COALESCE(?, name), company = COALESCE(?, company) WHERE id = ?')
-        .run(name, company, req.userId);
-    res.json({ ok: true });
-}
+export const updateMe = async (req, res) => {
+    try {
+        const { name, company } = req.body;
+        await User.findByIdAndUpdate(req.userId, {
+            ...(name && { name }),
+            ...(company && { company })
+        });
+        res.json({ ok: true });
+    } catch (e) { res.status(500).json({ error: e.message }); }
+};
+
+// ── User Management (super_admin only) ─────────────────────────────────────
+
+export const listUsers = async (req, res) => {
+    try {
+        const user = await User.findById(req.userId);
+        if (!user || user.role !== 'super_admin') return res.status(403).json({ error: 'Forbidden' });
+
+        const users = await User.find({ role: { $ne: 'super_admin' } }).sort({ created_at: -1 }).lean();
+        res.json(users.map(u => ({ id: u._id.toString(), email: u.email, role: u.role, marketflow_access: !!u.marketflow_access })));
+    } catch (e) { res.status(500).json({ error: e.message }); }
+};
+
+export const createUser = async (req, res) => {
+    try {
+        const adminUser = await User.findById(req.userId);
+        if (!adminUser || adminUser.role !== 'super_admin') return res.status(403).json({ error: 'Forbidden' });
+
+        const email = (req.body.email || '').toLowerCase().trim();
+        if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
+            return res.status(400).json({ error: 'Valid email required' });
+
+        let userDoc = await User.findOne({ email });
+        if (userDoc) return res.status(400).json({ error: 'User already exists' });
+
+        const name = email.split('@')[0].replace(/[._-]/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+        userDoc = await User.create({ email, name, role: 'user', marketflow_access: true });
+
+        res.json({ ok: true, email: userDoc.email, id: userDoc._id, marketflow_access: true, role: 'user' });
+    } catch (e) { res.status(500).json({ error: e.message }); }
+};
+
+export const updateUserAccess = async (req, res) => {
+    try {
+        const adminUser = await User.findById(req.userId);
+        if (!adminUser || adminUser.role !== 'super_admin') return res.status(403).json({ error: 'Forbidden' });
+
+        const targetEmail = (req.params.email || '').toLowerCase().trim();
+        const { marketflow_access } = req.body;
+        
+        if (!targetEmail) return res.status(400).json({ error: 'Email required' });
+        
+        const targetUser = await User.findOne({ email: targetEmail });
+        if (!targetUser) return res.status(404).json({ error: 'User not found' });
+        if (targetUser.role === 'super_admin') return res.status(400).json({ error: 'Cannot modify super admin' });
+
+        targetUser.marketflow_access = !!marketflow_access;
+        await targetUser.save();
+        
+        res.json({ ok: true, email: targetUser.email, marketflow_access: targetUser.marketflow_access });
+    } catch (e) { res.status(500).json({ error: e.message }); }
+};
+
+export const deleteUser = async (req, res) => {
+    try {
+        const adminUser = await User.findById(req.userId);
+        if (!adminUser || adminUser.role !== 'super_admin') return res.status(403).json({ error: 'Forbidden' });
+
+        const targetEmail = (req.params.email || '').toLowerCase().trim();
+        if (!targetEmail) return res.status(400).json({ error: 'Email required' });
+        if (targetEmail === 'bhujasrisadhanand@gmail.com') return res.status(400).json({ error: 'Cannot delete super admin' });
+
+        await User.deleteOne({ email: targetEmail });
+        res.json({ ok: true, email: targetEmail });
+    } catch (e) { res.status(500).json({ error: e.message }); }
+};

@@ -1,9 +1,0 @@
---- Row at index 512104 ---
-<tr> <td colspan="4" class="r strong">Total</td> <td class="r">${Number(items.reduce((s, it) => s + (Number(it.qty) || 0), 0) || 0).toFixed(2)} ${esc(items[0]?.uom || 'NOS')}</td> <td></td> <td></td> <td></td> <td class="r strong">${this.formatINR(totals.total || 0)}</td> </tr>
-
---- Row at index 958085 ---
-<tr><td class="px-4 py-3">Total</td><td class="px-4 py-3 text-right">${sumLeads}</td><td class="px-4 py-3 text-right">${sumQualified}</td><td class="px-4 py-3 text-right">${sumProposals}</td><td class="px-4 py-3 text-right text-emerald-700">${sumDeals}</td><td class="px-4 py-3 text-right">${sumProjects}</td><td class="px-4 py-3 text-right text-purple-700">${avgConvRate}</td></tr>
-
---- Row at index 968440 ---
-<tr><td class="px-4 py-3">Total</td><td class="px-4 py-3 text-right">${grandSent.toLocaleString()}</td><td class="px-4 py-3 text-right">${grandDelivered.toLocaleString()}</td><td class="px-4 py-3 text-right">${grandOpened.toLocaleString()}</td><td class="px-4 py-3 text-right">${grandClicked.toLocaleString()}</td><td class="px-4 py-3 text-right text-emerald-700">${grandConverted}</td><td class="px-4 py-3 text-right">${grandUnsub}</td><td class="px-4 py-3 text-right text-purple-700">${grandConvPct}%</td></tr>
-

@@ -4,7 +4,7 @@
     window.BezentAuth = {
         getToken: function () { return localStorage.getItem(TK) || ''; },
         setToken: function (t) { localStorage.setItem(TK, t); },
-        clearToken: function () { localStorage.removeItem(TK); localStorage.removeItem('bezent_user'); },
+        clearToken: function () { localStorage.clear(); }, // Clear ALL data on session expiry
         isLoggedIn: function () { return Boolean(localStorage.getItem(TK)); }
     };
     window.apiFetch = function (p, o) {
@@ -4738,7 +4738,8 @@ class MarketFlowCRM {
             campaigns: 'email',
             billing: 'invoices',
             engagement: 'followups',
-            reports: 'funnel'
+            reports: 'funnel',
+            access: 'whitelist'
         };
         return defaults[section] || 'overview';
     }
@@ -4755,6 +4756,7 @@ class MarketFlowCRM {
             billing: { invoices: 'file-text', quotations: 'file-text', contracts: 'file-signature', payments: 'credit-card', followup_log: 'clipboard-list', overdue_risk: 'alert-triangle' },
             engagement: { followups: 'phone-call', surveys: 'clipboard-check', health: 'heart-pulse', reengagement: 'sparkles', field_visits: 'map', route_map: 'route', mobile_sync: 'smartphone', followup_sla: 'timer' },
             reports: { funnel: 'filter', roi: 'line-chart', ltv: 'badge-dollar-sign', sop_monthly: 'calendar', kpi_target: 'target', kri_risk: 'shield-alert', project_roadmap: 'milestone' },
+            access: { whitelist: 'shield' }
 
         };
         const getIcon = (id) => (icons[this.currentSection] && icons[this.currentSection][id]) ? icons[this.currentSection][id] : 'dot';
@@ -4843,7 +4845,9 @@ class MarketFlowCRM {
                 { id: 'kri_risk', label: 'KRI Risk Monitor' },
                 { id: 'project_roadmap', label: 'Project Roadmap Report' }
             ],
-
+            access: [
+                { id: 'whitelist', label: 'Allowed Emails' }
+            ]
         };
 
         return navigation[section] || [];
@@ -4873,6 +4877,9 @@ class MarketFlowCRM {
                 break;
             case 'reports':
                 this.renderReportsContent(mainContent);
+                break;
+            case 'access':
+                this.renderAccessContent(mainContent);
                 break;
 
             default:
@@ -7611,6 +7618,7 @@ class MarketFlowCRM {
                     <div>
                         <h2 class="text-xl sm:text-2xl font-semibold text-slate-900">Contacts</h2>
                         <p class="text-sm text-slate-500">All leads and clients contacts in one place</p>
+                    </div>
                     <button data-action="nav:leads/client_registration" class="px-4 py-2 text-sm font-medium bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">+ Add Contact</button>
                 </div>
 
@@ -14696,6 +14704,18 @@ class MarketFlowCRM {
         const _proposals = _allLeads3.filter(l => ['quotation', 'negotiation', 'closed', 'po received'].includes(String(l.stage || '').toLowerCase())).length;
         const _deals = _allLeads3.filter(l => ['closed', 'po received'].includes(String(l.stage || '').toLowerCase())).length;
         const _projects = (this.getStoredProjects ? this.getStoredProjects() : []).length;
+
+        const calcRate = (num, den) => den > 0 ? (num / den * 100).toFixed(1) + '%' : '0%';
+        const _stagesList = [
+            { name: 'Leads → Qualified', val: _totalLeads > 0 ? _qualified / _totalLeads : 0, txt: calcRate(_qualified, _totalLeads) },
+            { name: 'Qualified → Proposals', val: _qualified > 0 ? _proposals / _qualified : 0, txt: calcRate(_proposals, _qualified) },
+            { name: 'Proposals → Deals', val: _proposals > 0 ? _deals / _proposals : 0, txt: calcRate(_deals, _proposals) },
+            { name: 'Deals → Projects', val: _deals > 0 ? _projects / _deals : 0, txt: calcRate(_projects, _deals) }
+        ];
+        const bestStage = [..._stagesList].sort((a, b) => b.val - a.val)[0];
+        const bottleNeck = [..._stagesList].sort((a, b) => a.val - b.val)[0];
+        const overallRt = calcRate(_deals, _totalLeads);
+
         const kpis = [
             { label: 'Total Leads', val: String(_totalLeads), sub: _totalLeads > 0 ? 'from lead registry' : 'No leads yet', col: 'sky' },
             { label: 'Qualified', val: String(_qualified), sub: _qualified > 0 ? 'past intake stage' : '—', col: 'indigo' },
@@ -14775,15 +14795,15 @@ class MarketFlowCRM {
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <div class="bg-emerald-50 border border-emerald-200 rounded-xl p-4">
                         <div class="text-xs font-semibold text-emerald-700 uppercase tracking-wide mb-1">Best Stage</div>
-                        <div class="text-sm font-bold text-emerald-900">Deals → Projects: 75.3%</div>
+                        <div class="text-sm font-bold text-emerald-900">${bestStage.name}: ${bestStage.txt}</div>
                     </div>
                     <div class="bg-amber-50 border border-amber-200 rounded-xl p-4">
                         <div class="text-xs font-semibold text-amber-700 uppercase tracking-wide mb-1">Bottleneck</div>
-                        <div class="text-sm font-bold text-amber-900">Qualified → Proposals: 55.7%</div>
+                        <div class="text-sm font-bold text-amber-900">${bottleNeck.name}: ${bottleNeck.txt}</div>
                     </div>
                     <div class="bg-sky-50 border border-sky-200 rounded-xl p-4">
                         <div class="text-xs font-semibold text-sky-700 uppercase tracking-wide mb-1">Overall Win Rate</div>
-                        <div class="text-sm font-bold text-sky-900">Leads → Deals: 19.8%</div>
+                        <div class="text-sm font-bold text-sky-900">Leads → Deals: ${overallRt}</div>
                     </div>
                 </div>
             </div>`;
@@ -14799,7 +14819,7 @@ class MarketFlowCRM {
         // Build channel stats from campaign data
         const emailCampaigns = stored.filter(c => !String(c.name || '').toLowerCase().includes('sms') && !String(c.name || '').toLowerCase().includes('whatsapp'));
         const totalAudience = emailCampaigns.reduce((s, c) => s + (parseInt(c.audience) || 0), 0);
-        const totalSent = totalAudience || (clients.length + leads.length);
+        const totalSent = totalAudience;
         const avgOpenRate = emailCampaigns.length
             ? (emailCampaigns.reduce((s, c) => s + (parseFloat(c.openRate) || 28), 0) / emailCampaigns.length)
             : 28;
@@ -14818,8 +14838,8 @@ class MarketFlowCRM {
                 unsub: Math.round(totalSent * 0.007),
                 color: 'sky'
             },
-            { type: 'WhatsApp', sent: Math.round(totalSent * 0.4), delivered: Math.round(totalSent * 0.39), opened: Math.round(totalSent * 0.3), clicked: Math.round(totalSent * 0.13), converted: Math.round(totalSent * 0.04), unsub: 3, color: 'emerald' },
-            { type: 'Re-engagement', sent: Math.round(totalSent * 0.2), delivered: Math.round(totalSent * 0.19), opened: Math.round(totalSent * 0.1), clicked: Math.round(totalSent * 0.04), converted: Math.round(totalSent * 0.01), unsub: 2, color: 'rose' }
+            { type: 'WhatsApp', sent: Math.round(totalSent * 0.4), delivered: Math.round(totalSent * 0.39), opened: Math.round(totalSent * 0.3), clicked: Math.round(totalSent * 0.13), converted: Math.round(totalSent * 0.04), unsub: Math.round(totalSent * 0.4 * 0.007), color: 'emerald' },
+            { type: 'Re-engagement', sent: Math.round(totalSent * 0.2), delivered: Math.round(totalSent * 0.19), opened: Math.round(totalSent * 0.1), clicked: Math.round(totalSent * 0.04), converted: Math.round(totalSent * 0.01), unsub: Math.round(totalSent * 0.2 * 0.007), color: 'rose' }
         ];
 
         const grandSent = channels.reduce((s, c) => s + c.sent, 0);
@@ -15195,7 +15215,7 @@ class MarketFlowCRM {
                     labels: ['Email', 'WhatsApp', 'SMS', 'Call', 'Re-engagement'],
                     datasets: [
                         { label: 'Sent', data: (() => { try { const f = this.getStoredFollowups ? this.getStoredFollowups() : []; const types = ['Email', 'WhatsApp', 'SMS', 'Call', 'Re-engagement']; return types.map(t => f.filter(x => String(x.type || '').toLowerCase() === t.toLowerCase()).length); } catch (_) { return [0, 0, 0, 0, 0]; } })(), backgroundColor: 'rgba(99,102,241,0.65)' },
-                        { label: 'Converted', data: [0, 0, 0, 0, 0], backgroundColor: 'rgba(16,185,129,0.75)' }
+                        { label: 'Converted', data: (() => { try { const f = this.getStoredFollowups ? this.getStoredFollowups() : []; const types = ['Email', 'WhatsApp', 'SMS', 'Call', 'Re-engagement']; return types.map(t => f.filter(x => String(x.type || '').toLowerCase() === t.toLowerCase() && String(x.status || '').toLowerCase() === 'converted').length); } catch (_) { return [0, 0, 0, 0, 0]; } })(), backgroundColor: 'rgba(16,185,129,0.75)' }
                     ]
                 },
                 options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } }, scales: { x: { grid: { display: false } }, y: { beginAtZero: true } } }
@@ -15207,7 +15227,7 @@ class MarketFlowCRM {
                 type: 'bar',
                 data: {
                     labels: ['Email', 'WhatsApp', 'SMS', 'Call', 'Re-eng'],
-                    datasets: [{ label: 'Conv %', data: [2.3, 9.4, 2.2, 13.8, 4.3], backgroundColor: ['#0ea5e9', '#10b981', '#6366f1', '#f59e0b', '#f43f5e'] }]
+                    datasets: [{ label: 'Conv %', data: (() => { try { const f = this.getStoredFollowups ? this.getStoredFollowups() : []; const types = ['Email', 'WhatsApp', 'SMS', 'Call', 'Re-engagement']; return types.map(t => { const total = f.filter(x => String(x.type || '').toLowerCase() === t.toLowerCase()).length; const converted = f.filter(x => String(x.type || '').toLowerCase() === t.toLowerCase() && String(x.status || '').toLowerCase() === 'converted').length; return total > 0 ? parseFloat((converted / total * 100).toFixed(1)) : 0; }); } catch (_) { return [0, 0, 0, 0, 0]; } })(), backgroundColor: ['#0ea5e9', '#10b981', '#6366f1', '#f59e0b', '#f43f5e'] }]
                 },
                 options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { grid: { display: false } }, y: { beginAtZero: true, max: 20 } } }
             });
@@ -16135,9 +16155,7 @@ class MarketFlowCRM {
         if (logout) {
             logout.addEventListener('click', () => {
                 try {
-                    localStorage.removeItem('bezent_jwt');
-                    localStorage.removeItem('bezent_user');
-                    localStorage.removeItem('bezent_user_email');
+                    localStorage.clear(); // Clear ALL user data to prevent cross-user data leakage
                 } catch (_) { }
                 window.location.replace('index.html');
             });
@@ -16184,6 +16202,78 @@ class MarketFlowCRM {
 
         window.addEventListener('resize', closeOnDesktop);
         closeOnDesktop();
+    }
+
+    async renderAccessContent(container) {
+        if (this.currentSubSection === 'whitelist') {
+            container.innerHTML = `
+                <div class="space-y-6">
+                    <div>
+                        <h2 class="text-2xl font-bold text-slate-800">Allowed Emails</h2>
+                        <p class="text-slate-500 mt-1">Manage who can access to this platform (Admin only)</p>
+                    </div>
+                    <div class="bg-white p-6 rounded-xl border border-slate-200">
+                        <div class="flex gap-2 max-w-md mb-6">
+                            <input type="email" id="newAllowedEmail" class="flex-1 w-full text-sm border border-slate-200 rounded-lg px-3 py-2" placeholder="user@company.com">
+                            <button id="addAllowedEmailBtn" class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 text-sm font-medium transition-colors">Add</button>
+                        </div>
+                        <div id="allowedEmailList" class="space-y-2">Loading...</div>
+                    </div>
+                </div>
+            `;
+            
+            const loadEmails = async () => {
+                try {
+                    const res = await window.apiFetch('/auth/allowed-emails');
+                    if (res && res.error) {
+                        document.getElementById('allowedEmailList').innerHTML = `<div class="text-red-500 text-sm font-medium border border-red-200 p-3 rounded-lg bg-red-50">${String(res.error).replace(/</g, '&lt;')}</div>`;
+                        return;
+                    }
+                    if (!res || !Array.isArray(res)) return;
+                    document.getElementById('allowedEmailList').innerHTML = res.length ? res.map(r => `
+                        <div class="flex items-center justify-between p-3 border border-slate-100 rounded-lg bg-slate-50">
+                            <span class="text-sm font-medium text-slate-700">${String(r.email).replace(/</g, '&lt;')}</span>
+                            <button class="text-xs text-red-500 hover:text-red-700 font-medium px-2 py-1 remove-allowed-email" data-email="${String(r.email).replace(/"/g, '&quot;')}">Remove</button>
+                        </div>
+                    `).join('') : '<div class="text-sm text-slate-500">No emails added yet.</div>';
+
+                    document.querySelectorAll('.remove-allowed-email').forEach(btn => {
+                        btn.addEventListener('click', async (e) => {
+                            const email = e.target.dataset.email;
+                            if (confirm(`Remove ${email} from allow-list?`)) {
+                                const d_res = await window.apiFetch('/auth/allowed-emails/' + encodeURIComponent(email), { method: 'DELETE' });
+                                if (d_res && d_res.ok) loadEmails();
+                                else alert(d_res?.error || 'Failed');
+                            }
+                        });
+                    });
+                } catch (e) {
+                    document.getElementById('allowedEmailList').innerHTML = '<div class="text-red-500 text-sm">Failed to load</div>';
+                }
+            };
+
+            const addBtn = document.getElementById('addAllowedEmailBtn');
+            addBtn.addEventListener('click', async () => {
+                const input = document.getElementById('newAllowedEmail');
+                const email = input.value.trim();
+                if (!email) return;
+                addBtn.disabled = true;
+                addBtn.textContent = 'Adding...';
+                const postRes = await window.apiFetch('/auth/allowed-emails', { method: 'POST', body: JSON.stringify({ email }) });
+                if (postRes && postRes.ok) {
+                    input.value = '';
+                    loadEmails();
+                } else {
+                    alert(postRes?.error || 'Failed to add email');
+                }
+                addBtn.disabled = false;
+                addBtn.textContent = 'Add';
+            });
+            
+            loadEmails();
+        } else {
+            container.innerHTML = '<div class="p-6 text-slate-500">Access panel not found</div>';
+        }
     }
 
     getGlobalSearchIndex() {

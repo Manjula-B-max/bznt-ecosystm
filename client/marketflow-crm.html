@@ -542,13 +542,35 @@
         (function () {
             if (!localStorage.getItem('bezent_jwt')) {
                 location.replace('index.html');
+                return;
             }
+            try {
+                var userStr = localStorage.getItem('bezent_user');
+                if (userStr) {
+                    var userObj = JSON.parse(userStr);
+                    if (!userObj.marketflow_access && userObj.email !== 'bhujasrisadhanand@gmail.com') {
+                        // Unauthorized or revoked — boot out silently instead of redirecting
+                        localStorage.clear();
+                        location.replace('index.html');
+                        return;
+                    }
+                    if (userObj.email === 'bhujasrisadhanand@gmail.com') {
+                        location.replace('admin.html');
+                        return;
+                    }
+                } else {
+                    // Legacy session without user object in localStorage - force re-login
+                    localStorage.clear();
+                    location.replace('index.html');
+                    return;
+                }
+            } catch(e) {}
             // Expose BezentAuth globally for app.js to use
             var TK = 'bezent_jwt';
             window.BezentAuth = {
                 getToken: function () { return localStorage.getItem(TK) || ''; },
                 setToken: function (t) { localStorage.setItem(TK, t); },
-                clearToken: function () { localStorage.removeItem(TK); localStorage.removeItem('bezent_user'); },
+                clearToken: function () { localStorage.clear(); }, // Clear ALL data on session expiry
                 isLoggedIn: function () { return Boolean(localStorage.getItem(TK)); }
             };
             window.apiFetch = function (p, o) {

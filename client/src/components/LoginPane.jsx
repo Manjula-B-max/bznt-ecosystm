@@ -5,51 +5,84 @@ export default function LoginPane({ onLoginSuccess }) {
     const [step, setStep] = useState('email');
     const [email, setEmail] = useState('');
     const [otp, setOtp] = useState('');
-    const [pendingOtp, setPendingOtp] = useState(null);
     const [status, setStatus] = useState('');
+    const [isError, setIsError] = useState(false);
+    const [loading, setLoading] = useState(false);
 
     const resetToEmailStep = () => {
-        setPendingOtp(null);
         setStep('email');
         setOtp('');
         setStatus('');
+        setIsError(false);
     };
 
     const buttonLabel = useMemo(() => {
+        if (loading) return step === 'email' ? 'Sending...' : 'Verifying...';
         return step === 'email' ? 'Send OTP' : 'Verify OTP';
-    }, [step]);
+    }, [step, loading]);
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
 
         const trimmedEmail = email.trim();
         if (!trimmedEmail) {
             setStatus('Please enter your email.');
+            setIsError(true);
             return;
         }
 
-        if (step === 'email') {
-            const generated = String(Math.floor(100000 + Math.random() * 900000));
-            setPendingOtp(generated);
-            setOtp('');
-            setStep('otp');
-            setStatus(`OTP has been sent to ${trimmedEmail}\nOTP : ${generated}`);
-            return;
-        }
+        setLoading(true);
+        setStatus('');
+        setIsError(false);
 
-        const entered = otp.trim();
-        if (!entered) {
-            setStatus('Please enter the OTP.');
-            return;
+        try {
+            if (step === 'email') {
+                const res = await fetch('/api/auth/send-otp', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: trimmedEmail }),
+                });
+                const data = await res.json();
+                if (!res.ok) {
+                    setIsError(true);
+                    setStatus(data.error || 'Failed to send OTP.');
+                } else {
+                    setStep('otp');
+                    setIsError(false);
+                    setStatus(`OTP sent to ${trimmedEmail}. Please check your inbox.`);
+                }
+            } else {
+                const entered = otp.trim();
+                if (!entered) {
+                    setStatus('Please enter the OTP.');
+                    setIsError(true);
+                    setLoading(false);
+                    return;
+                }
+                const res = await fetch('/api/auth/verify-otp', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: trimmedEmail, otp: entered }),
+                });
+                const data = await res.json();
+                if (!res.ok) {
+                    setIsError(true);
+                    setStatus(data.error || 'Invalid OTP. Please try again.');
+                } else {
+                    // Store token and user in localStorage
+                    localStorage.setItem('bezent_jwt', data.token);
+                    localStorage.setItem('bezent_user', JSON.stringify(data.user));
+                    setIsError(false);
+                    setStatus('Logged in successfully.');
+                    onLoginSuccess?.(data.user);
+                }
+            }
+        } catch (err) {
+            setIsError(true);
+            setStatus('Network error. Please try again.');
+        } finally {
+            setLoading(false);
         }
-
-        if (!/^[0-9]{6}$/.test(entered) || entered !== pendingOtp) {
-            setStatus('Invalid OTP. Please try again.');
-            return;
-        }
-
-        setStatus('Logged in successfully.');
-        onLoginSuccess?.(trimmedEmail);
     };
 
     return (
@@ -76,9 +109,9 @@ export default function LoginPane({ onLoginSuccess }) {
                                 const v = e.target.value;
                                 setEmail(v);
                                 if (step === 'otp') {
-                                    setPendingOtp(null);
                                     setStep('email');
                                     setOtp('');
+                                    setIsError(false);
                                     setStatus('Email changed. Please request a new OTP.');
                                 }
                             }}
@@ -108,13 +141,13 @@ export default function LoginPane({ onLoginSuccess }) {
                     {status ? (
                         <div
                             className="form-footer"
-                            style={{ marginBottom: 16, textAlign: 'left', fontSize: 12, color: '#6B7280' }}
+                            style={{ marginBottom: 16, textAlign: 'left', fontSize: 12, color: isError ? '#EF4444' : '#6B7280' }}
                         >
                             <span style={{ whiteSpace: 'pre-line' }}>{status}</span>
                         </div>
                     ) : null}
 
-                    <button type="submit" className="login-btn">
+                    <button type="submit" className="login-btn" disabled={loading}>
                         <span>{buttonLabel}</span>
                     </button>
                 </form>

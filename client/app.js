@@ -15159,130 +15159,138 @@ class MarketFlowCRM {
 
 
     getReportsCampaigns() {
-        // ── Compute from real stored campaigns ──
-        const stored = this.getStoredCampaigns();
-        const clients = this.getStoredClients();
-        const leads = this.getStoredLeads();
+        const stored = typeof this.getStoredCampaigns === 'function' ? this.getStoredCampaigns() : [];
+        const esc = v => String(v ?? '').replace(/</g, '&lt;');
 
-        // Build channel stats from campaign data
-        const emailCampaigns = stored.filter(c => !String(c.name || '').toLowerCase().includes('sms') && !String(c.name || '').toLowerCase().includes('whatsapp'));
-        const totalAudience = emailCampaigns.reduce((s, c) => s + (parseInt(c.audience) || 0), 0);
-        const totalSent = totalAudience;
-        const avgOpenRate = emailCampaigns.length
-            ? (emailCampaigns.reduce((s, c) => s + (parseFloat(c.openRate) || 28), 0) / emailCampaigns.length)
-            : 28;
-        const avgClickRate = emailCampaigns.length
-            ? (emailCampaigns.reduce((s, c) => s + (parseFloat(c.clickRate) || 8), 0) / emailCampaigns.length)
-            : 8;
+        // Empty state
+        if (!stored.length) {
+            return `<div class="space-y-6 fade-in w-full">
+                <div>
+                    <h2 class="text-xl sm:text-2xl font-semibold text-slate-900">Campaign Performance Report</h2>
+                    <p class="text-sm text-slate-500 mt-1">Email, WhatsApp & multi-channel campaign analytics</p>
+                </div>
+                <div class="flex flex-col items-center justify-center py-16 text-center bg-white rounded-xl border border-slate-200 shadow-sm">
+                    <div class="w-14 h-14 rounded-full bg-sky-50 flex items-center justify-center mb-4">
+                        <i data-lucide="send" class="w-7 h-7 text-sky-500"></i>
+                    </div>
+                    <div class="text-base font-semibold text-slate-700 mb-1">No campaigns yet</div>
+                    <p class="text-sm text-slate-400 max-w-xs">Create campaigns in the Campaigns section to see performance data here.</p>
+                </div>
+            </div>`;
+        }
 
-        const channels = [
-            {
-                type: 'Email',
-                sent: totalSent,
-                delivered: Math.round(totalSent * 0.97),
-                opened: Math.round(totalSent * avgOpenRate / 100),
-                clicked: Math.round(totalSent * avgClickRate / 100),
-                converted: Math.round(totalSent * avgClickRate / 100 * 0.25),
-                unsub: Math.round(totalSent * 0.007),
-                color: 'sky'
-            },
-            { type: 'WhatsApp', sent: Math.round(totalSent * 0.4), delivered: Math.round(totalSent * 0.39), opened: Math.round(totalSent * 0.3), clicked: Math.round(totalSent * 0.13), converted: Math.round(totalSent * 0.04), unsub: Math.round(totalSent * 0.4 * 0.007), color: 'emerald' },
-            { type: 'Re-engagement', sent: Math.round(totalSent * 0.2), delivered: Math.round(totalSent * 0.19), opened: Math.round(totalSent * 0.1), clicked: Math.round(totalSent * 0.04), converted: Math.round(totalSent * 0.01), unsub: Math.round(totalSent * 0.2 * 0.007), color: 'rose' }
-        ];
+        // Build per-campaign rows from real stored data only
+        const parse = v => parseInt(String(v || '0').replace(/\D/g, '')) || 0;
 
-        const grandSent = channels.reduce((s, c) => s + c.sent, 0);
-        const grandConverted = channels.reduce((s, c) => s + c.converted, 0);
-        const grandDelivered = channels.reduce((s, c) => s + c.delivered, 0);
-        const grandOpened = channels.reduce((s, c) => s + c.opened, 0);
-        const grandClicked = channels.reduce((s, c) => s + c.clicked, 0);
-        const grandUnsub = channels.reduce((s, c) => s + c.unsub, 0);
-        const grandConvPct = grandSent > 0 ? ((grandConverted / grandSent) * 100).toFixed(1) : 0;
-        const bestCh = channels.reduce((a, b) => ((a.converted / Math.max(a.sent, 1)) > (b.converted / Math.max(b.sent, 1))) ? a : b);
+        const rows = stored.map(c => {
+            const audience  = parse(c.audience);
+            const delivered = parse(c.delivered) || audience; // fallback to audience if delivered not tracked
+            const opened    = parse(c.opened || c.open);
+            const clicked   = parse(c.clicked || c.click);
+            const converted = parse(c.converted || c.conversions);
+            const unsub     = parse(c.unsubscribed || c.unsub);
+            const openRate  = delivered > 0 ? (opened / delivered * 100).toFixed(1) : '0.0';
+            const convPct   = delivered > 0 ? (converted / delivered * 100).toFixed(1) : '0.0';
+            const status    = String(c.status || 'Draft');
+            const statusCol = status === 'Sent' ? 'emerald' : status === 'Active' ? 'sky' : status === 'Scheduled' ? 'amber' : 'slate';
+            return { name: c.name || 'Unnamed', status, statusCol, audience, delivered, opened, clicked, converted, unsub, openRate, convPct };
+        });
+
+        const grandAudience  = rows.reduce((s, r) => s + r.audience, 0);
+        const grandDelivered = rows.reduce((s, r) => s + r.delivered, 0);
+        const grandOpened    = rows.reduce((s, r) => s + r.opened, 0);
+        const grandClicked   = rows.reduce((s, r) => s + r.clicked, 0);
+        const grandConverted = rows.reduce((s, r) => s + r.converted, 0);
+        const grandUnsub     = rows.reduce((s, r) => s + r.unsub, 0);
+        const grandOpenRate  = grandDelivered > 0 ? (grandOpened / grandDelivered * 100).toFixed(1) : '0.0';
+        const grandConvPct   = grandDelivered > 0 ? (grandConverted / grandDelivered * 100).toFixed(1) : '0.0';
+
+        const sentCampaigns   = rows.filter(r => r.status === 'Sent' || r.status === 'Active').length;
+        const activeCampaigns = rows.filter(r => r.status === 'Active').length;
 
         const kpis = [
-            { label: 'Total Sent', val: grandSent.toLocaleString('en-IN'), sub: 'All channels combined', col: 'sky' },
-            { label: 'Total Delivered', val: channels.reduce((s, c) => s + c.delivered, 0).toLocaleString('en-IN'), sub: `${grandSent ? Math.round(channels.reduce((s, c) => s + c.delivered, 0) / grandSent * 100) : 97}% delivery rate`, col: 'indigo' },
-            { label: 'Total Converted', val: grandConverted.toLocaleString('en-IN'), sub: `${grandSent ? (grandConverted / grandSent * 100).toFixed(1) : 0}% conversion rate`, col: 'emerald' },
-            { label: 'Best Channel', val: bestCh.type, sub: `${bestCh.sent ? (bestCh.converted / bestCh.sent * 100).toFixed(1) : 0}% conversion`, col: 'purple' }
+            { label: 'Total Campaigns', val: rows.length, sub: `${sentCampaigns} sent / ${activeCampaigns} active`, col: 'sky' },
+            { label: 'Total Audience', val: grandAudience.toLocaleString('en-IN'), sub: 'Across all campaigns', col: 'indigo' },
+            { label: 'Total Opened', val: grandOpened > 0 ? grandOpened.toLocaleString('en-IN') : '—', sub: grandOpened > 0 ? `${grandOpenRate}% open rate` : 'No data yet', col: 'amber' },
+            { label: 'Total Converted', val: grandConverted > 0 ? grandConverted.toLocaleString('en-IN') : '—', sub: grandConverted > 0 ? `${grandConvPct}% conversion` : 'No data yet', col: 'emerald' }
         ];
-        return `
-            <div class="space-y-6 fade-in w-full">
-                <div class="flex flex-wrap items-start justify-between gap-3">
-                    <div>
-                        <h2 class="text-xl sm:text-2xl font-semibold text-slate-900">Campaign Performance Report</h2>
-                        <p class="text-sm text-slate-500">All channels — Email, WhatsApp, SMS, Call &amp; Re-engagement</p>
-                    </div>
-                    <button id="campaignExportBtn" class="flex items-center gap-2 px-4 py-2 text-sm font-medium bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors">
-                        <i data-lucide="download" class="w-4 h-4"></i> Export Excel
-                    </button>
+
+        const statusBadge = (s, col) => `<span class="px-2 py-0.5 text-[10px] font-bold rounded-full bg-${col}-100 text-${col}-700">${s}</span>`;
+
+        return `<div class="space-y-6 fade-in w-full">
+            <div class="flex flex-wrap items-start justify-between gap-3">
+                <div>
+                    <h2 class="text-xl sm:text-2xl font-semibold text-slate-900">Campaign Performance Report</h2>
+                    <p class="text-sm text-slate-500">Real data from your ${rows.length} campaign(s)</p>
                 </div>
-                <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                    ${kpis.map(k => `
-                    <div class="bg-white rounded-xl border border-slate-200 p-4 shadow-sm">
-                        <div class="text-xs text-slate-500 mb-1">${k.label}</div>
-                        <div class="text-2xl font-bold text-slate-900">${k.val}</div>
-                        <div class="text-xs text-slate-500 mt-1">${k.sub}</div>
-                    </div>`).join('')}
+                <button id="campaignExportBtn" class="flex items-center gap-2 px-4 py-2 text-sm font-medium bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors">
+                    <i data-lucide="download" class="w-4 h-4"></i> Export CSV
+                </button>
+            </div>
+
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                ${kpis.map(k => `
+                <div class="bg-white rounded-xl border border-slate-200 p-4 shadow-sm">
+                    <div class="text-xs text-slate-500 mb-1">${k.label}</div>
+                    <div class="text-2xl font-bold text-slate-900">${k.val}</div>
+                    <div class="text-xs text-slate-500 mt-1">${k.sub}</div>
+                </div>`).join('')}
+            </div>
+
+            <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                <div class="p-4 border-b border-slate-100">
+                    <div class="text-sm font-semibold text-slate-900">Campaign Breakdown</div>
+                    <div class="text-xs text-slate-500">One row per campaign — all metrics from your stored data</div>
                 </div>
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
-                        <h3 class="text-base font-semibold text-slate-900 mb-1">Messages Sent vs Converted</h3>
-                        <p class="text-xs text-slate-500 mb-3">Volume per channel</p>
-                        <div class="h-60"><div class="relative w-full h-full"><canvas id="campaignBarChart"></canvas></div></div>
-                    </div>
-                    <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
-                        <h3 class="text-base font-semibold text-slate-900 mb-1">Conversion Rate by Channel %</h3>
-                        <p class="text-xs text-slate-500 mb-3">Effectiveness comparison</p>
-                        <div class="h-60"><div class="relative w-full h-full"><canvas id="campaignConvChart"></canvas></div></div>
-                    </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm" style="min-width:800px">
+                        <thead class="bg-slate-50 text-slate-500 text-xs uppercase tracking-wide">
+                            <tr>
+                                <th class="text-left px-4 py-3">Campaign</th>
+                                <th class="text-center px-4 py-3">Status</th>
+                                <th class="text-right px-4 py-3">Audience</th>
+                                <th class="text-right px-4 py-3">Delivered</th>
+                                <th class="text-right px-4 py-3">Opened</th>
+                                <th class="text-right px-4 py-3">Clicked</th>
+                                <th class="text-right px-4 py-3">Converted</th>
+                                <th class="text-right px-4 py-3">Unsub</th>
+                                <th class="text-right px-4 py-3">Open Rate</th>
+                                <th class="text-right px-4 py-3">Conv %</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100">
+                            ${rows.map(r => `
+                            <tr class="hover:bg-slate-50">
+                                <td class="px-4 py-3 font-semibold text-slate-900">${esc(r.name)}</td>
+                                <td class="px-4 py-3 text-center">${statusBadge(r.status, r.statusCol)}</td>
+                                <td class="px-4 py-3 text-right text-slate-700">${r.audience.toLocaleString()}</td>
+                                <td class="px-4 py-3 text-right text-slate-700">${r.delivered > 0 ? r.delivered.toLocaleString() : '—'}</td>
+                                <td class="px-4 py-3 text-right text-slate-700">${r.opened > 0 ? r.opened.toLocaleString() : '—'}</td>
+                                <td class="px-4 py-3 text-right text-slate-700">${r.clicked > 0 ? r.clicked.toLocaleString() : '—'}</td>
+                                <td class="px-4 py-3 text-right font-semibold text-emerald-700">${r.converted > 0 ? r.converted : '—'}</td>
+                                <td class="px-4 py-3 text-right text-slate-500">${r.unsub > 0 ? r.unsub : '—'}</td>
+                                <td class="px-4 py-3 text-right">${r.opened > 0 ? `<span class="px-2 py-0.5 text-xs font-semibold bg-sky-50 text-sky-700 rounded-full">${r.openRate}%</span>` : '—'}</td>
+                                <td class="px-4 py-3 text-right">${r.converted > 0 ? `<span class="px-2 py-0.5 text-xs font-semibold bg-purple-50 text-purple-700 rounded-full">${r.convPct}%</span>` : '—'}</td>
+                            </tr>`).join('')}
+                        </tbody>
+                        <tfoot class="bg-slate-50 border-t border-slate-200 text-sm font-semibold text-slate-800">
+                            <tr>
+                                <td class="px-4 py-3" colspan="2">Total (${rows.length} campaigns)</td>
+                                <td class="px-4 py-3 text-right">${grandAudience.toLocaleString()}</td>
+                                <td class="px-4 py-3 text-right">${grandDelivered.toLocaleString()}</td>
+                                <td class="px-4 py-3 text-right">${grandOpened > 0 ? grandOpened.toLocaleString() : '—'}</td>
+                                <td class="px-4 py-3 text-right">${grandClicked > 0 ? grandClicked.toLocaleString() : '—'}</td>
+                                <td class="px-4 py-3 text-right text-emerald-700">${grandConverted > 0 ? grandConverted : '—'}</td>
+                                <td class="px-4 py-3 text-right">${grandUnsub > 0 ? grandUnsub : '—'}</td>
+                                <td class="px-4 py-3 text-right text-sky-700">${grandOpened > 0 ? grandOpenRate + '%' : '—'}</td>
+                                <td class="px-4 py-3 text-right text-purple-700">${grandConverted > 0 ? grandConvPct + '%' : '—'}</td>
+                            </tr>
+                        </tfoot>
+                    </table>
                 </div>
-                <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-                    <div class="p-4 border-b border-slate-100">
-                        <div class="text-sm font-semibold text-slate-900">Campaign Channel Breakdown</div>
-                        <div class="text-xs text-slate-500">Sent, Delivered, Opened, Clicked, Converted per channel</div>
-                    </div>
-                    <div class="overflow-x-auto">
-                        <table id="campaignTable" class="w-full text-sm" style="min-width:750px">
-                            <thead class="bg-slate-50 text-slate-500 text-xs uppercase tracking-wide">
-                                <tr>
-                                    <th class="text-left px-4 py-3">Channel</th>
-                                    <th class="text-right px-4 py-3">Sent</th>
-                                    <th class="text-right px-4 py-3">Delivered</th>
-                                    <th class="text-right px-4 py-3">Opened</th>
-                                    <th class="text-right px-4 py-3">Clicked</th>
-                                    <th class="text-right px-4 py-3">Converted</th>
-                                    <th class="text-right px-4 py-3">Unsub</th>
-                                    <th class="text-right px-4 py-3">Conv %</th>
-                                </tr>
-                            </thead>
-                            <tbody class="divide-y divide-slate-100">
-                                ${channels.map(r => {
-            const convPct = ((r.converted / r.sent) * 100).toFixed(1);
-            return `<tr class="hover:bg-slate-50">
-                                        <td class="px-4 py-3 font-semibold text-slate-900">${r.type}</td>
-                                        <td class="px-4 py-3 text-right text-slate-700">${r.sent.toLocaleString()}</td>
-                                        <td class="px-4 py-3 text-right text-slate-700">${r.delivered.toLocaleString()}</td>
-                                        <td class="px-4 py-3 text-right text-slate-700">${r.opened > 0 ? r.opened.toLocaleString() : '—'}</td>
-                                        <td class="px-4 py-3 text-right text-slate-700">${r.clicked > 0 ? r.clicked.toLocaleString() : '—'}</td>
-                                        <td class="px-4 py-3 text-right font-semibold text-emerald-700">${r.converted}</td>
-                                        <td class="px-4 py-3 text-right text-slate-500">${r.unsub > 0 ? r.unsub : '—'}</td>
-                                        <td class="px-4 py-3 text-right"><span class="px-2 py-0.5 text-xs font-semibold bg-purple-50 text-purple-700 rounded-full">${convPct}%</span></td>
-                                    </tr>`;
-        }).join('')}
-                            </tbody>
-                            <tfoot class="bg-slate-50 border-t border-slate-200 text-sm font-semibold text-slate-800">
-                                <tr><td class="px-4 py-3">Total</td><td class="px-4 py-3 text-right">${grandSent.toLocaleString()}</td><td class="px-4 py-3 text-right">${grandDelivered.toLocaleString()}</td><td class="px-4 py-3 text-right">${grandOpened.toLocaleString()}</td><td class="px-4 py-3 text-right">${grandClicked.toLocaleString()}</td><td class="px-4 py-3 text-right text-emerald-700">${grandConverted}</td><td class="px-4 py-3 text-right">${grandUnsub}</td><td class="px-4 py-3 text-right text-purple-700">${grandConvPct}%</td></tr>
-            </tfoot>
-            </table></div>
-            </div>`;
+            </div>
+        </div>`;
     }
-
-
-
-
-
-
-
     getReportsLtv() {
 
         const storedClients = this.getStoredClients();

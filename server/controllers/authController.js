@@ -30,14 +30,20 @@ export const sendOtp = async (req, res) => {
         if (process.env.RESEND_API_KEY) {
             try {
                 const resend = new Resend(process.env.RESEND_API_KEY);
-                await resend.emails.send({
+                const result = await resend.emails.send({
                     from: 'BEZENT <onboarding@resend.dev>',
                     to: email,
                     subject: 'Your Bezent Login OTP',
                     text: `Hello,\n\nYour BEZENT login OTP is: ${code}\n\nIt expires in 5 minutes.\n\nBest,\nBezent Team`
                 });
-                console.log(`[MAIL] Email sent successfully to ${email}`);
-                res.json({ ok: true, message: 'OTP sent to your email.' });
+                if (result.error) {
+                    // Resend returned an API-level error (e.g. sandbox recipient restriction)
+                    console.error(`[MAIL ERROR] Resend rejected email to ${email}:`, JSON.stringify(result.error));
+                    res.json({ ok: true, message: `OTP generated (email blocked: ${result.error.message || result.error.name}). Contact admin.` });
+                } else {
+                    console.log(`[MAIL] Email sent successfully to ${email} (id: ${result.data?.id})`);
+                    res.json({ ok: true, message: 'OTP sent to your email.' });
+                }
             } catch (mailErr) {
                 console.error(`[MAIL ERROR] Failed to send email to ${email}:`, mailErr.message);
                 res.json({ ok: true, message: `OTP generated (email delivery failed: ${mailErr.message}). Check server logs for OTP.` });

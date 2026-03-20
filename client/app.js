@@ -13851,92 +13851,119 @@ class MarketFlowCRM {
     //  KPI vs Target Report
     // ─────────────────────────────────────────────────────────────────────────
     getKPIData() {
-        const leadsData = typeof this.getStoredLeads === 'function' ? this.getStoredLeads() : [];
-        const invoicesData = typeof this.getAllInvoices === 'function' ? this.getAllInvoices() : [];
+        const leadsData     = typeof this.getStoredLeads    === 'function' ? this.getStoredLeads()    : [];
+        const invoicesData  = typeof this.getAllInvoices     === 'function' ? this.getAllInvoices()     : [];
+        const feedbackData  = typeof this.readStore          === 'function' ? this.readStore('bezent_feedback_submissions', []) : [];
+        const campaignsData = typeof this.readStore          === 'function' ? this.readStore('bezent_campaigns', [])            : [];
+        const clientsData   = typeof this.getStoredClients   === 'function' ? this.getStoredClients()  : [];
+
         let projectsData = [];
         try {
-            if (typeof this.getAllProjectsMerged === 'function') {
-                projectsData = this.getAllProjectsMerged([]);
-            } else if (typeof this.getStoredProjects === 'function') {
-                projectsData = this.getStoredProjects();
-            } else if (typeof this.readStore === 'function') {
-                projectsData = this.readStore('bezent_projects', []);
-            }
-        } catch (e) { }
+            projectsData = typeof this.getAllProjectsMerged === 'function'
+                ? this.getAllProjectsMerged([])
+                : (typeof this.getStoredProjects === 'function' ? this.getStoredProjects() : []);
+        } catch (_) {}
 
-        const feedbackData = typeof this.readStore === 'function' ? this.readStore('bezent_feedback_submissions', []) : [];
-        const campaignsData = typeof this.readStore === 'function' ? this.readStore('bezent_campaigns', []) : [];
-
-        const paidInvoices = invoicesData.filter(i => String(i.status || '').toLowerCase() === 'paid');
-        const paidAmt = paidInvoices.reduce((s, i) => s + this.parseCurrencyToNumber(i.amount), 0);
-        const totalAmt = invoicesData.reduce((s, i) => s + this.parseCurrencyToNumber(i.amount), 0);
-        const overdueCount = invoicesData.filter(i => String(i.status || '').toLowerCase() === 'overdue').length;
-        const wonLeads = leadsData.filter(l => ['won', 'closed', 'po received'].includes(String(l.stage || l.status || '').toLowerCase())).length;
-        const convRate = leadsData.length ? Math.round(wonLeads / leadsData.length * 100) : 0;
-        const validFb = feedbackData.filter(f => parseFloat(f.avg || f.score || 0) > 0);
-        const avgFeedback = validFb.length ? parseFloat((validFb.reduce((s, f) => s + parseFloat(f.avg || f.score || 0), 0) / validFb.length).toFixed(1)) : 0;
-
-        const onTimeProj = projectsData.filter(p => {
-            const stat = String(p?.status || p?.monitoring?.overallProjectStatus || '').toLowerCase();
-            return !stat.includes('delay') && !stat.includes('risk');
-        }).length;
-        const projDeliveredPct = projectsData.length ? Math.round(onTimeProj / projectsData.length * 100) : 0;
-        const avgProjComp = projectsData.length ? Math.round(projectsData.reduce((s, p) => s + parseInt(p.progress || 0), 0) / projectsData.length) : 0;
-
-        const activeCampaigns = campaignsData.filter(c => String(c.status || '').toLowerCase() === 'active').length;
-        const totalOpens = campaignsData.reduce((s, c) => s + parseInt(c.opened || 0), 0);
-        const totalDelivered = campaignsData.reduce((s, c) => s + parseInt(c.delivered || 0), 0);
-        const activeEmailRate = totalDelivered ? Math.round(totalOpens / totalDelivered * 100) : 0;
-        const roiRate = activeCampaigns ? 100 : 0;
-
+        const parse = v => this.parseCurrencyToNumber ? this.parseCurrencyToNumber(v) : parseFloat(String(v||'0').replace(/[^0-9.]/g,''))||0;
         const storedTargets = typeof this.readStore === 'function' ? this.readStore('bezent_kpi_targets', {}) : {};
 
-        const DEFAULT_KPIS = [
-            { id: 'rev', category: 'Sales', kpi: 'Monthly Revenue', target: 500000, defaultActual: paidAmt, unit: '₹', owner: 'Team' },
-            { id: 'leads', category: 'Sales', kpi: 'New Leads Generated', target: 120, defaultActual: leadsData.length, unit: '', owner: 'Team' },
-            { id: 'conv', category: 'Sales', kpi: 'Lead Conversion Rate', target: 35, defaultActual: convRate, unit: '%', owner: 'Team' },
-            { id: 'deal', category: 'Sales', kpi: 'Avg Deal Size', target: 85000, defaultActual: wonLeads ? Math.round(paidAmt / wonLeads) : 0, unit: '₹', owner: 'Team' },
-            { id: 'ontime', category: 'Projects', kpi: 'Projects Delivered On Time', target: 90, defaultActual: projDeliveredPct, unit: '%', owner: 'Team' },
-            { id: 'comp', category: 'Projects', kpi: 'Avg Project Completion', target: 85, defaultActual: avgProjComp, unit: '%', owner: 'Team' },
-            { id: 'csat', category: 'Projects', kpi: 'Client Satisfaction Score', target: 9, defaultActual: avgFeedback, unit: '/10', owner: 'Team' },
-            { id: 'collect', category: 'Finance', kpi: 'Invoice Collection Rate', target: 95, defaultActual: totalAmt ? Math.round(paidAmt / totalAmt * 100) : 0, unit: '%', owner: 'Team' },
-            { id: 'overdue', category: 'Finance', kpi: 'Overdue Invoices', target: 2, defaultActual: overdueCount, unit: ' no.', owner: 'Team' },
-            { id: 'budget', category: 'Finance', kpi: 'Budget Utilisation', target: 80, defaultActual: (() => { const spent = projectsData.reduce((s, p) => s + (parseFloat(String(p.spent || '0').replace(/[^0-9.]/g, '')) || 0), 0); const budget = projectsData.reduce((s, p) => s + (parseFloat(String(p.budget || '0').replace(/[^0-9.]/g, '')) || 0), 0); return budget ? Math.round(spent / budget * 100) : 0; })(), unit: '%', owner: 'Team' },
-            { id: 'email', category: 'Marketing', kpi: 'Email Open Rate', target: 28, defaultActual: activeEmailRate, unit: '%', owner: 'Team' },
-            { id: 'roi', category: 'Marketing', kpi: 'Campaign ROI', target: 300, defaultActual: roiRate, unit: '%', owner: 'Team' },
-            { id: 'webLeads', category: 'Marketing', kpi: 'Website Leads Captured', target: 40, defaultActual: leadsData.filter(l => String(l.source || '').toLowerCase() === 'website').length, unit: '', owner: 'Team' },
-            { id: 'sop', category: 'Team', kpi: 'SOP Daily Report Compliance', target: 100, defaultActual: (() => { const fups = typeof this.readStore === 'function' ? this.readStore('bezent_followups', []) : []; return fups.length > 0 ? 100 : 0; })(), unit: '%', owner: 'Team' },
-            { id: 'fup', category: 'Team', kpi: 'Follow-up Response Time', target: 4, defaultActual: 0, unit: 'h', owner: 'Team' }
-        ];
-
-        return DEFAULT_KPIS.map(k => {
-            const st = storedTargets[k.id] || {};
-            const target = st.target ?? k.target;
-            const actual = k.defaultActual;
-            let pct = target > 0 ? Math.round(actual / target * 100) : 0;
-            if (k.id === 'overdue' || k.id === 'fup') pct = target > 0 ? Math.round(target / actual * 100) : 100;
+        // Helper: build a KPI entry, applying user-overridden target if set
+        const kpi = (id, category, label, target, actual, unit, owner, lowerIsBetter = false) => {
+            const st = storedTargets[id] || {};
+            const tgt = st.target ?? target;
+            let pct = tgt > 0 ? Math.round(actual / tgt * 100) : (actual === 0 ? 100 : 0);
+            if (lowerIsBetter) pct = actual === 0 ? 100 : (actual <= tgt ? 100 : Math.round(tgt / actual * 100));
 
             let status = 'Critical';
             let trend = `-${Math.abs(100 - pct)}%`;
             if (pct >= 110) { status = 'Exceeded'; trend = `+${pct - 100}%`; }
-            else if (pct >= 90) { status = 'On Track'; trend = `+${pct - 100}%`; }
-            else if (pct >= 70) { status = 'At Risk'; }
+            else if (pct >= 90) { status = 'On Track'; trend = `+${Math.max(0, pct - 100)}%`; }
+            else if (pct >= 60) { status = 'At Risk'; }
 
-            if (k.id === 'overdue') {
-                if (actual === 0) { status = 'Exceeded'; pct = 100; trend = '+0%'; }
-                else if (actual <= target) { status = 'Exceeded'; pct = 100; trend = '+5%'; }
-                else if (actual <= target * 1.5) { status = 'At Risk'; pct = 70; trend = '-10%'; }
-                else { status = 'Critical'; pct = 40; trend = '-30%'; }
+            return { id, category, kpi: label, target: tgt, actual, unit, owner: owner || 'Team', status, trend, kpiId: id };
+        };
+
+        const rows = [];
+
+        // ── INVOICES: only if invoices exist ───────────────────────────────
+        if (invoicesData.length > 0) {
+            const paidInvs  = invoicesData.filter(i => String(i.status||'').toLowerCase() === 'paid');
+            const paidAmt   = paidInvs.reduce((s, i) => s + parse(i.amount), 0);
+            const totalAmt  = invoicesData.reduce((s, i) => s + parse(i.amount), 0);
+            const overdue   = invoicesData.filter(i => String(i.status||'').toLowerCase() === 'overdue').length;
+            const collectPct = totalAmt > 0 ? Math.round(paidAmt / totalAmt * 100) : 0;
+
+            rows.push(kpi('rev',     'Finance', 'Revenue Collected',       500000, paidAmt,     '₹',   'Team'));
+            rows.push(kpi('collect', 'Finance', 'Invoice Collection Rate', 95,     collectPct,  '%',   'Team'));
+            if (overdue > 0 || invoicesData.length >= 3) {
+                rows.push(kpi('overdue', 'Finance', 'Overdue Invoices', 2, overdue, ' no.', 'Team', true));
             }
-            if (k.id === 'fup') {
-                // Only apply special logic if there is actual data (actual=0 means no data yet)
-                if (actual === 0) { status = 'Critical'; pct = 0; trend = '—'; }
-                else if (actual <= target) { status = 'Exceeded'; pct = 100; trend = '+5%'; }
-                else if (actual <= target * 1.5) { status = 'At Risk'; pct = 70; trend = '-10%'; }
-                else { status = 'Critical'; pct = 40; trend = '-30%'; }
+        }
+
+        // ── LEADS: only if leads exist ─────────────────────────────────────
+        if (leadsData.length > 0) {
+            const wonLeads  = leadsData.filter(l => ['won','closed','po received','converted'].includes(String(l.stage||l.status||'').toLowerCase())).length;
+            const convRate  = Math.round(wonLeads / leadsData.length * 100);
+            const paidAmt   = invoicesData.filter(i => String(i.status||'').toLowerCase() === 'paid').reduce((s,i) => s + parse(i.amount), 0);
+            const avgDeal   = wonLeads > 0 ? Math.round(paidAmt / wonLeads) : 0;
+
+            rows.push(kpi('leads', 'Sales', 'Leads in System',       100, leadsData.length, '', 'Team'));
+            rows.push(kpi('conv',  'Sales', 'Lead Conversion Rate',  30,  convRate,          '%', 'Team'));
+            if (wonLeads > 0 && avgDeal > 0) {
+                rows.push(kpi('deal', 'Sales', 'Avg Deal Size', 85000, avgDeal, '₹', 'Team'));
             }
-            return { ...k, target, actual, status, trend, kpiId: k.id };
-        });
+
+            // Website leads only if any exist
+            const webLeads = leadsData.filter(l => String(l.source||'').toLowerCase().includes('website')).length;
+            if (webLeads > 0) {
+                rows.push(kpi('webLeads', 'Marketing', 'Website Leads Captured', 40, webLeads, '', 'Team'));
+            }
+        }
+
+        // ── PROJECTS: only if projects exist ──────────────────────────────
+        if (projectsData.length > 0) {
+            const onTime = projectsData.filter(p => {
+                const s = String(p?.status || p?.monitoring?.overallProjectStatus || '').toLowerCase();
+                return !s.includes('delay') && !s.includes('risk');
+            }).length;
+            const onTimePct   = Math.round(onTime / projectsData.length * 100);
+            const avgProgress = Math.round(projectsData.reduce((s, p) => s + parseInt(p.progress || 0), 0) / projectsData.length);
+
+            rows.push(kpi('ontime', 'Projects', 'Projects On Time',       90, onTimePct,   '%', 'Team'));
+            rows.push(kpi('comp',   'Projects', 'Avg Project Completion', 85, avgProgress, '%', 'Team'));
+
+            // Budget utilisation only if projects have budget set
+            const budgeted = projectsData.filter(p => parse(p.budget) > 0);
+            if (budgeted.length > 0) {
+                const spent  = budgeted.reduce((s, p) => s + parse(p.spent),  0);
+                const budget = budgeted.reduce((s, p) => s + parse(p.budget), 0);
+                const utilPct = Math.round(spent / budget * 100);
+                rows.push(kpi('budget', 'Finance', 'Budget Utilisation', 80, utilPct, '%', 'Team'));
+            }
+        }
+
+        // ── FEEDBACK: only if feedback exists ──────────────────────────────
+        const validFb = feedbackData.filter(f => parseFloat(f.avg || f.score || 0) > 0);
+        if (validFb.length > 0) {
+            const avg = parseFloat((validFb.reduce((s, f) => s + parseFloat(f.avg || f.score || 0), 0) / validFb.length).toFixed(1));
+            rows.push(kpi('csat', 'Projects', 'Client Satisfaction Score', 9, avg, '/10', 'Team'));
+        }
+
+        // ── CAMPAIGNS: only if sent/active campaigns exist ─────────────────
+        const activeCamp = campaignsData.filter(c => ['active','sent'].includes(String(c.status||'').toLowerCase()));
+        if (activeCamp.length > 0) {
+            const totalOpens     = activeCamp.reduce((s, c) => s + parseInt(c.opened    || c.open  || 0), 0);
+            const totalDelivered = activeCamp.reduce((s, c) => s + parseInt(c.delivered || c.audience || 0), 0);
+            const openRate = totalDelivered > 0 ? Math.round(totalOpens / totalDelivered * 100) : 0;
+            rows.push(kpi('email', 'Marketing', 'Email Open Rate', 28, openRate, '%', 'Team'));
+        }
+
+        // ── CLIENTS: only if clients exist ─────────────────────────────────
+        if (clientsData.length > 0) {
+            rows.push(kpi('clients', 'Sales', 'Total Clients', 50, clientsData.length, '', 'Team'));
+        }
+
+        return rows;
     }
 
     getReportsKpiTarget() {

@@ -1,6 +1,6 @@
 import { User, OtpCode } from '../models/Auth.js';
 import { signToken } from '../auth.js';
-import nodemailer from 'nodemailer';
+import { Resend } from 'resend';
 
 export const sendOtp = async (req, res) => {
     try {
@@ -27,33 +27,23 @@ export const sendOtp = async (req, res) => {
 
         console.log(`[OTP] ${email} → ${code}`); // visible in server console
 
-        const transporter = nodemailer.createTransport({
-            host: 'smtp.gmail.com',
-            port: 587,
-            secure: false, // use STARTTLS (not SSL on 465)
-            auth: { user: process.env.EMAIL_USER, pass: process.env.EMAIL_PASS },
-            tls: { rejectUnauthorized: false }
-        });
-
-        const mailOptions = {
-            from: '"BEZENT Server" <' + (process.env.EMAIL_USER || 'noreply') + '>',
-            to: email,
-            subject: 'Your Bezent Login OTP',
-            text: `Hello,\n\nYour BEZENT login OTP is: ${code}\n\nIt expires in 5 minutes.\n\nBest,\nBezent Team`
-        };
-
-        if (process.env.EMAIL_USER && process.env.EMAIL_PASS) {
+        if (process.env.RESEND_API_KEY) {
             try {
-                await transporter.sendMail(mailOptions);
+                const resend = new Resend(process.env.RESEND_API_KEY);
+                await resend.emails.send({
+                    from: 'BEZENT <onboarding@resend.dev>',
+                    to: email,
+                    subject: 'Your Bezent Login OTP',
+                    text: `Hello,\n\nYour BEZENT login OTP is: ${code}\n\nIt expires in 5 minutes.\n\nBest,\nBezent Team`
+                });
                 console.log(`[MAIL] Email sent successfully to ${email}`);
                 res.json({ ok: true, message: 'OTP sent to your email.' });
             } catch (mailErr) {
                 console.error(`[MAIL ERROR] Failed to send email to ${email}:`, mailErr.message);
-                // Still allow login via Render logs OTP, but tell client mail failed
                 res.json({ ok: true, message: `OTP generated (email delivery failed: ${mailErr.message}). Check server logs for OTP.` });
             }
         } else {
-            console.warn('[Bezent Mail] WARNING: Email not sent! Provide valid SMTP details in .env');
+            console.warn('[Bezent Mail] WARNING: Email not sent! Set RESEND_API_KEY in environment.');
             res.json({ ok: true, message: 'OTP mapped. (Check Server Terminal!)' });
         }
     } catch (e) { res.status(500).json({ error: e.message }); }

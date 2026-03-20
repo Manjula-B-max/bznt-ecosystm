@@ -778,17 +778,42 @@ class MarketFlowCRM {
         try { localStorage.setItem(key, JSON.stringify(value)); } catch (_) { }
         if (!this._apiCache) this._apiCache = {};
         this._apiCache[key] = value;
-        this._syncToApi(key, value).catch(e => console.warn('[bezent sync]', key, e.message));
+        // Track write timestamp for smart merge during reload
+        try {
+            const metaKey = '__bezent_meta_' + key;
+            const meta = { ts: Date.now(), count: Array.isArray(value) ? value.length : -1 };
+            localStorage.setItem(metaKey, JSON.stringify(meta));
+        } catch (_) { }
+        this._syncToApi(key, value).catch(e => {
+            // Queue for retry on next writeStore or page focus
+            if (!this._pendingSync) this._pendingSync = {};
+            this._pendingSync[key] = value;
+            console.warn('[bezent sync failed]', key, e.message);
+        });
     }
-
 
     async _syncToApi(key, value) {
         try {
             const token = localStorage.getItem('bezent_jwt');
             if (!token) return;
             const hdr = { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token };
-            await fetch('/api/kv/' + encodeURIComponent(key), { method: 'PUT', headers: hdr, body: JSON.stringify({ value }) });
-        } catch (e) { /* non-critical */ }
+            const res = await fetch('/api/kv/' + encodeURIComponent(key), { method: 'PUT', headers: hdr, body: JSON.stringify({ value }) });
+            if (!res.ok) throw new Error('Server returned ' + res.status);
+            // Clear from pending if successful
+            if (this._pendingSync) delete this._pendingSync[key];
+        } catch (e) {
+            throw e; // re-throw so writeStore can catch it
+        }
+    }
+
+    async _flushPendingSync() {
+        if (!this._pendingSync || Object.keys(this._pendingSync).length === 0) return;
+        const pending = { ...this._pendingSync };
+        for (const [key, value] of Object.entries(pending)) {
+            try {
+                await this._syncToApi(key, value);
+            } catch (_) { /* still offline */ }
+        }
     }
 
     async loadAllFromApi() {
@@ -801,24 +826,77 @@ class MarketFlowCRM {
             'bezent_projects', 'bezent_campaigns', 'bezent_followups',
             'bezent_quotations', 'bezent_contracts', 'bezent_visits',
             'bezent_greetings', 'bezent_feedback_submissions',
-            'bezent_workflow_rules', 'bezent_rfps'
+            'bezent_workflow_rules', 'bezent_rfps',
+            'bezent_tasks', 'bezent_smart_feedback', 'bezent_payment_followups',
+            'bezent_playbooks', 'bezent_renewal_plans', 'bezent_client_tags',
+            'bezent_engagement_log', 'bezent_greeting_reminders'
         ];
         
         await Promise.all(COLS.map(async (sk) => {
             try {
                 const res = await fetch('/api/kv/' + encodeURIComponent(sk), { headers: hdr });
                 if (!res.ok) return;
-                const d = await res.json();
-                if (d) {
-                    this._apiCache[sk] = d;
-                    localStorage.setItem(sk, JSON.stringify(d));
+                const serverData = await res.json();
+
+                // Smart merge: prefer whichever dataset has more records
+                // This protects against page reload wiping recent local changes
+                // that haven't synced yet
+                if (serverData !== null && serverData !== undefined) {
+                    const localRaw = localStorage.getItem(sk);
+                    let localData = null;
+                    try { localData = localRaw ? JSON.parse(localRaw) : null; } catch (_) { }
+
+                    // Read local write timestamp
+                    let localMeta = null;
+                    try {
+                        const metaRaw = localStorage.getItem('__bezent_meta_' + sk);
+                        localMeta = metaRaw ? JSON.parse(metaRaw) : null;
+                    } catch (_) { }
+
+                    const serverIsArray = Array.isArray(serverData);
+                    const localIsArray = Array.isArray(localData);
+
+                    let useServer = true;
+
+                    if (serverIsArray && localIsArray) {
+                        // If local has MORE records, it means user added data that might not
+                        // have synced yet — keep local to avoid data loss
+                        if (localData.length > serverData.length) {
+                            useServer = false;
+                            console.info(`[bezent] Keeping local ${sk}: local=${localData.length} > server=${serverData.length}`);
+                        } else if (localData.length === serverData.length && localMeta) {
+                            // Same count — trust whichever is newer by timestamp
+                            // Server is canonical if no local write was very recent (< 30s)
+                            const ageMs = Date.now() - (localMeta.ts || 0);
+                            if (ageMs < 30000) {
+                                useServer = false;
+                                console.info(`[bezent] Keeping recent local ${sk} (written ${Math.round(ageMs/1000)}s ago)`);
+                            }
+                        }
+                    }
+
+                    if (useServer) {
+                        this._apiCache[sk] = serverData;
+                        localStorage.setItem(sk, JSON.stringify(serverData));
+                    } else {
+                        // Push local data to server since it's newer
+                        this._apiCache[sk] = localData;
+                        this._syncToApi(sk, localData).catch(() => {});
+                    }
                 }
-            } catch (e) { }
+            } catch (e) {
+                console.warn('[bezent] Failed to load', sk, e.message);
+            }
         }));
+
         try {
             const res = await fetch('/api/kpi_targets', { headers: hdr });
             if (res.ok) this._apiCache['bezent_kpi_targets'] = await res.json();
         } catch (_) { }
+
+        // Flush any pending sync that failed earlier
+        await this._flushPendingSync().catch(() => {});
+
         console.log('[Bezent] ✅ API data loaded');
         this.renderContent();
         if (typeof this.initializeLucideIcons === 'function') this.initializeLucideIcons();
@@ -1171,6 +1249,36 @@ class MarketFlowCRM {
 
     getAllInvoices() {
         return [...this.getStoredInvoices()];
+    }
+
+    getStoredFollowups() {
+        const items = this.readStore('bezent_followups', []);
+        return Array.isArray(items) ? items : [];
+    }
+
+    saveFollowup(followup) {
+        const f = followup || {};
+        const client = String(f.client || '').trim();
+        if (!client) return { ok: false, message: 'Client is required.' };
+        const id = String(f.id || '').trim() || `FU-${Date.now()}`;
+        const items = this.getStoredFollowups();
+        const idx = items.findIndex(x => String(x?.id || '') === id);
+        const normalized = {
+            id,
+            client,
+            type: String(f.type || 'Call').trim(),
+            topic: String(f.topic || '').trim(),
+            scheduled_time: String(f.scheduled_time || f.scheduledTime || '').trim(),
+            priority: String(f.priority || 'Medium').trim(),
+            status: String(f.status || 'Pending').trim(),
+            done: Boolean(f.done),
+            notes: String(f.notes || '').trim(),
+            createdAt: f.createdAt || Date.now()
+        };
+        if (idx >= 0) items[idx] = { ...items[idx], ...normalized };
+        else items.unshift(normalized);
+        this.writeStore('bezent_followups', items);
+        return { ok: true, id };
     }
 
     getInvoiceSummaryByClient() {
@@ -4648,6 +4756,17 @@ class MarketFlowCRM {
         if (window.BezentAuth && window.BezentAuth.isLoggedIn()) {
             this.loadAllFromApi().catch(e => console.warn("[bezent] API load failed:", e.message));
         }
+
+        // Flush pending syncs when user returns to the tab or comes back online
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'visible') {
+                this._flushPendingSync().catch(() => {});
+            }
+        });
+        window.addEventListener('online', () => {
+            this._flushPendingSync().catch(() => {});
+            this.showToast('Back online — syncing your data...');
+        });
     }
 
     // Remove any auto-generated dummy leads that were seeded during development
@@ -5838,7 +5957,10 @@ class MarketFlowCRM {
                     
                     <div class="bg-gradient-to-br from-amber-500 to-amber-600 rounded-lg p-4 sm:p-6 text-white">
                         <i data-lucide="check-square" class="w-8 h-8 mb-3 opacity-80"></i>
-                        <div class="text-2xl sm:text-3xl font-semibold mb-1">${(this.getStoredFollowups ? this.getStoredFollowups() : []).filter(f => !f.done).length}</div>
+                        <div class="text-2xl sm:text-3xl font-semibold mb-1">${
+            (this.getStoredFollowups ? this.getStoredFollowups() : []).filter(f => !f.done).length +
+            (this.readStore('bezent_tasks', [])).filter(t => !t.completed).length
+        }</div>
                         <div class="text-sm opacity-90">Tasks Due Today</div>
                     </div>
                     
@@ -5896,21 +6018,45 @@ class MarketFlowCRM {
     }
 
     getTodayScheduleItems() {
-        // Build today's schedule from real follow-ups scheduled for today
-        const today = new Date().toISOString().slice(0, 10);
-        const iconFor = type => ({ call: 'phone', email: 'mail', meeting: 'users', visit: 'map-pin' }[String(type || '').toLowerCase()] || 'check-square');
+        // Build today's schedule from follow-ups AND tasks from Today's Work
+        const iconFor = type => ({ call: 'phone', email: 'mail', meeting: 'users', visit: 'map-pin', task: 'check-square' }[String(type || '').toLowerCase()] || 'check-square');
         const colorFor = (i) => ['sky', 'indigo', 'emerald', 'amber', 'purple', 'rose'][i % 6];
+
         const storedFollowups = this.getStoredFollowups ? this.getStoredFollowups() : [];
-        const items = storedFollowups
+        const followupItems = storedFollowups
             .filter(f => !f.done)
-            .slice(0, 5)
+            .slice(0, 4)
             .map((f, i) => ({
                 time: String(f.scheduled_time || f.scheduledTime || '—'),
                 title: `${String(f.type || 'Follow-up').replace(/\b\w/g, c => c.toUpperCase())} • ${String(f.client || 'Client')}`,
                 subtitle: String(f.topic || 'Follow-up task'),
                 icon: iconFor(f.type),
-                color: colorFor(i)
+                color: colorFor(i),
+                badge: String(f.priority || '')
             }));
+
+        // Also pull in tasks from Today's Work (bezent_tasks)
+        const storedTasks = (this.readStore('bezent_tasks', []))
+            .filter(t => !t.completed)
+            .slice(0, 4)
+            .map((t, i) => ({
+                time: '—',
+                title: `Task • ${String(t.text || 'Untitled task')}`,
+                subtitle: `Priority: ${String(t.priority || 'Medium')}`,
+                icon: 'check-square',
+                color: t.priority === 'High' ? 'rose' : t.priority === 'Low' ? 'emerald' : 'amber',
+                badge: String(t.priority || 'Medium')
+            }));
+
+        const items = [...followupItems, ...storedTasks].slice(0, 8);
+
+        if (!items.length) {
+            return `<div class="text-center py-8 text-slate-400">
+                <i data-lucide="calendar-check" class="w-10 h-10 mx-auto mb-2 opacity-30"></i>
+                <p class="text-sm font-medium">No tasks or follow-ups scheduled</p>
+                <p class="text-xs mt-1">Add tasks in <strong>Today's Work</strong> or follow-ups in <strong>Engagement</strong></p>
+            </div>`;
+        }
 
         return items.map(i => `
             <div class="flex items-center gap-4 p-4 bg-slate-50 rounded-lg hover:bg-slate-100 transition-colors">
@@ -5920,7 +6066,10 @@ class MarketFlowCRM {
                 <div class="flex-1 min-w-0">
                     <div class="flex items-center justify-between gap-3">
                         <div class="font-medium text-slate-900 truncate">${i.title}</div>
-                        <div class="text-xs font-semibold text-slate-500 flex-shrink-0">${i.time}</div>
+                        <div class="flex items-center gap-2 flex-shrink-0">
+                            ${i.badge ? `<span class="px-2 py-0.5 text-[10px] font-bold rounded-full ${i.badge === 'High' ? 'bg-rose-100 text-rose-700' : i.badge === 'Low' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}">${i.badge}</span>` : ''}
+                            <div class="text-xs font-semibold text-slate-500">${i.time}</div>
+                        </div>
                     </div>
                     <div class="text-sm text-slate-600 mt-1 truncate">${i.subtitle}</div>
                 </div>
@@ -13980,61 +14129,233 @@ class MarketFlowCRM {
     //  KRI Risk Monitor
     // ─────────────────────────────────────────────────────────────────────────
     getKRIData() {
-        // ── Compute actual values from real stores ──
+        // ── Fetch real data stores ──
         const invoices = typeof this.getAllInvoices === 'function' ? this.getAllInvoices() : [];
         let projects = [];
         try {
-            if (typeof this.getAllProjectsMerged === 'function') {
-                projects = this.getAllProjectsMerged([]);
-            } else if (typeof this.getStoredProjects === 'function') {
-                projects = this.getStoredProjects();
-            }
-        } catch (e) { }
-
-        const leads = typeof this.getStoredLeads === 'function' ? this.getStoredLeads() : [];
-        const clients = typeof this.getStoredClients === 'function' ? this.getStoredClients() : [];
+            projects = typeof this.getAllProjectsMerged === 'function'
+                ? this.getAllProjectsMerged([])
+                : (typeof this.getStoredProjects === 'function' ? this.getStoredProjects() : []);
+        } catch (_) {}
+        const leads    = typeof this.getStoredLeads  === 'function' ? this.getStoredLeads()  : [];
+        const clients  = typeof this.getStoredClients === 'function' ? this.getStoredClients() : [];
         const feedback = typeof this.readStore === 'function' ? this.readStore('bezent_feedback_submissions', []) : [];
-        const campaignsData = typeof this.readStore === 'function' ? this.readStore('bezent_campaigns', []) : [];
+        const campaigns = typeof this.readStore === 'function' ? this.readStore('bezent_campaigns', []) : [];
+        const fups     = typeof this.getStoredFollowups === 'function' ? this.getStoredFollowups() : [];
 
-        const overdueCount = invoices.filter(i => String(i?.status || '').toLowerCase() === 'overdue').length;
-        const totalLeads = leads.length;
-        const convertedLeads = leads.filter(l => ['closed', 'po received', 'converted', 'won'].includes(String(l.stage || l.status || '').toLowerCase())).length;
-        const convRate = totalLeads ? (convertedLeads / totalLeads) : 0;
-        const delayedProj = projects.filter(p => {
-            const stat = String(p?.status || p?.monitoring?.overallProjectStatus || '').toLowerCase();
-            return stat.includes('delay') || stat.includes('risk');
-        }).length;
-
-        let validFb = feedback.filter(f => parseFloat(f.avg || f.score || 0) > 0);
-        const avgFeedback = validFb.length ? parseFloat((validFb.reduce((s, f) => s + parseFloat(f.avg || f.score || 0), 0) / validFb.length).toFixed(1)) : 0;
-
-        const activeCampaigns = campaignsData.filter(c => String(c.status || '').toLowerCase() === 'active').length;
-
-        const scoreColor = (L, I) => {
-            const sc = L * I;
-            if (sc >= 15) return 'Breached';
-            if (sc >= 9) return 'Warning';
-            return 'Within';
+        const sc = (L, I) => {
+            const s = L * I;
+            return s >= 15 ? 'Breached' : s >= 9 ? 'Warning' : 'Within';
         };
+        const parse = v => this.parseCurrencyToNumber ? this.parseCurrencyToNumber(v) : parseFloat(String(v || '0').replace(/[^0-9.]/g, '')) || 0;
 
-        const rTgtLk = invoices.length === 0 ? 1 : 2;
-        const convLk = totalLeads === 0 ? 1 : (convRate < 0.2 ? 4 : convRate < 0.3 ? 3 : 1);
-        const fbLk = validFb.length === 0 ? 1 : (avgFeedback < 7 ? 4 : avgFeedback < 8 ? 2 : 1);
+        const kris = [];
+        let idSeq = 1;
+        const id = () => `KRI-${String(idSeq++).padStart(3, '0')}`;
 
-        return [
-            { id: 'KRI-001', category: 'Financial', risk: 'Revenue Target', likelihood: rTgtLk, impact: 5, threshold: 'Quarterly targets', current: invoices.length ? 'Tracked' : '—', status: scoreColor(rTgtLk, 5), trend: 'Stable', owner: 'Team', action: 'Monitor pipeline' },
-            { id: 'KRI-002', category: 'Financial', risk: 'Overdue Invoices', likelihood: overdueCount >= 3 ? 5 : overdueCount >= 1 ? 3 : 1, impact: 4, threshold: '< 3 invoices', current: `${overdueCount} overdue`, status: overdueCount >= 3 ? 'Breached' : overdueCount >= 1 ? 'Warning' : 'Within', trend: overdueCount >= 3 ? 'Worsening' : 'Stable', owner: 'Team', action: overdueCount >= 1 ? 'Escalate collection' : 'Good' },
-            { id: 'KRI-003', category: 'Financial', risk: 'Budget Overrun', likelihood: 1, impact: 4, threshold: '10% budget limit', current: '—', status: 'Within', trend: 'Stable', owner: 'Team', action: 'Track costs' },
-            { id: 'KRI-004', category: 'Operational', risk: 'Delivery Delays', likelihood: delayedProj > 2 ? 5 : delayedProj > 0 ? 3 : 1, impact: 5, threshold: '<15% delays', current: `${delayedProj} delayed`, status: delayedProj >= 2 ? 'Breached' : delayedProj >= 1 ? 'Warning' : 'Within', trend: delayedProj >= 2 ? 'Worsening' : 'Stable', owner: 'Team', action: delayedProj > 0 ? 'Expedite project' : 'On Track' },
-            { id: 'KRI-005', category: 'Operational', risk: 'SOP Compliance', likelihood: 1, impact: 3, threshold: '>90%', current: '—', status: 'Within', trend: 'Stable', owner: 'Team', action: 'Review checklists' },
-            { id: 'KRI-006', category: 'Operational', risk: 'Response Time', likelihood: 1, impact: 3, threshold: '<4h avg', current: '—', status: 'Within', trend: 'Stable', owner: 'Team', action: 'Set reminders' },
-            { id: 'KRI-007', category: 'Client', risk: 'Client Satisfaction', likelihood: fbLk, impact: 5, threshold: '>8/10', current: validFb.length ? `${avgFeedback}/10` : '—', status: scoreColor(fbLk, 5), trend: 'Stable', owner: 'Team', action: fbLk > 1 ? 'Follow up calls' : 'Maintain quality' },
-            { id: 'KRI-008', category: 'Client', risk: 'Client Churn Risk', likelihood: 1, impact: 5, threshold: '0 churns', current: '—', status: 'Within', trend: 'Stable', owner: 'Team', action: 'Proactive connect' },
-            { id: 'KRI-009', category: 'Client', risk: 'Conversion Rate', likelihood: convLk, impact: 4, threshold: '>30%', current: totalLeads ? `${Math.round(convRate * 100)}%` : '—', status: scoreColor(convLk, 4), trend: convLk > 1 ? 'Declining' : 'Stable', owner: 'Team', action: convLk > 1 ? 'Skill training' : 'Keep pitching' },
-            { id: 'KRI-010', category: 'Marketing', risk: 'Campaign ROI', likelihood: 1, impact: 3, threshold: '>280%', current: activeCampaigns ? `${activeCampaigns} campaigns` : '—', status: 'Within', trend: 'Stable', owner: 'Team', action: 'Optimize ads' },
-            { id: 'KRI-011', category: 'Marketing', risk: 'Lead Pipeline', likelihood: leads.length === 0 ? 1 : leads.length < 5 ? 4 : leads.length < 15 ? 3 : 1, impact: 4, threshold: '>100 leads', current: `${leads.length} leads`, status: leads.length > 0 && leads.length < 15 ? 'Warning' : 'Within', trend: leads.length > 0 && leads.length < 15 ? 'Worsening' : 'Stable', owner: 'Team', action: leads.length > 0 && leads.length < 15 ? 'Run new campaign' : 'Nurture' },
-            { id: 'KRI-012', category: 'Team', risk: 'Key Person Risk', likelihood: 1, impact: 5, threshold: 'Cross-trained staff', current: '—', status: 'Within', trend: 'Stable', owner: 'Team', action: 'Process docs' }
-        ];
+        // ── FINANCIAL: only if invoices exist ──────────────────────────────
+        if (invoices.length > 0) {
+            const overdueCount = invoices.filter(i => String(i?.status || '').toLowerCase() === 'overdue').length;
+            const paidCount    = invoices.filter(i => String(i?.status || '').toLowerCase() === 'paid').length;
+
+            // Revenue Target — shows how many invoices are paid vs total
+            const revLk = paidCount === 0 ? 3 : paidCount < invoices.length * 0.5 ? 2 : 1;
+            kris.push({
+                id: id(), category: 'Financial', risk: 'Revenue Collection',
+                likelihood: revLk, impact: 5,
+                threshold: '>50% invoices paid',
+                current: `${paidCount} paid / ${invoices.length} total`,
+                status: sc(revLk, 5),
+                trend: paidCount === 0 ? 'Declining' : paidCount >= invoices.length ? 'Improving' : 'Stable',
+                owner: 'Team',
+                action: paidCount === 0 ? 'Chase payment on all invoices' : paidCount < invoices.length ? 'Follow up pending invoices' : 'All collected'
+            });
+
+            // Overdue Invoices
+            const ovLk = overdueCount >= 3 ? 5 : overdueCount >= 1 ? 3 : 1;
+            kris.push({
+                id: id(), category: 'Financial', risk: 'Overdue Invoices',
+                likelihood: ovLk, impact: 4,
+                threshold: '< 3 overdue',
+                current: overdueCount > 0 ? `${overdueCount} overdue` : '0 overdue ✓',
+                status: overdueCount >= 3 ? 'Breached' : overdueCount >= 1 ? 'Warning' : 'Within',
+                trend: overdueCount >= 3 ? 'Worsening' : 'Stable',
+                owner: 'Team',
+                action: overdueCount >= 1 ? 'Escalate collection immediately' : 'All cleared'
+            });
+        }
+
+        // ── PROJECTS: only if projects exist ──────────────────────────────
+        if (projects.length > 0) {
+            const delayed = projects.filter(p => {
+                const s = String(p?.status || p?.monitoring?.overallProjectStatus || '').toLowerCase();
+                return s.includes('delay') || s.includes('risk');
+            }).length;
+            const delLk = delayed > 2 ? 5 : delayed > 0 ? 3 : 1;
+            kris.push({
+                id: id(), category: 'Operational', risk: 'Delivery Delays',
+                likelihood: delLk, impact: 5,
+                threshold: '0 delayed projects',
+                current: `${delayed} delayed / ${projects.length} total`,
+                status: delayed >= 2 ? 'Breached' : delayed >= 1 ? 'Warning' : 'Within',
+                trend: delayed >= 2 ? 'Worsening' : delayed === 1 ? 'Declining' : 'Stable',
+                owner: 'Team',
+                action: delayed > 0 ? 'Expedite delayed projects' : 'All on track'
+            });
+
+            // Budget Overrun: only if any project has a budget set
+            const budgetedProjs = projects.filter(p => parse(p.budget) > 0);
+            if (budgetedProjs.length > 0) {
+                const overBudget = budgetedProjs.filter(p => parse(p.spent) > parse(p.budget) * 1.1).length;
+                const bLk = overBudget >= 2 ? 4 : overBudget >= 1 ? 2 : 1;
+                kris.push({
+                    id: id(), category: 'Financial', risk: 'Budget Overrun',
+                    likelihood: bLk, impact: 4,
+                    threshold: '≤10% over budget',
+                    current: overBudget > 0 ? `${overBudget}/${budgetedProjs.length} over budget` : `All ${budgetedProjs.length} within budget`,
+                    status: overBudget >= 2 ? 'Breached' : overBudget >= 1 ? 'Warning' : 'Within',
+                    trend: overBudget > 0 ? 'Worsening' : 'Stable',
+                    owner: 'Team',
+                    action: overBudget > 0 ? 'Review project spend' : 'Track costs'
+                });
+            }
+
+            // Unassigned projects
+            const unassigned = projects.filter(p =>
+                !String(p?.identification?.projectLead || p.owner || '').trim() ||
+                String(p?.identification?.projectLead || p.owner || '').trim() === '—'
+            ).length;
+            if (unassigned > 0) {
+                const kLk = unassigned >= 3 ? 4 : 2;
+                kris.push({
+                    id: id(), category: 'Team', risk: 'Unassigned Projects',
+                    likelihood: kLk, impact: 4,
+                    threshold: 'All projects assigned',
+                    current: `${unassigned}/${projects.length} have no project lead`,
+                    status: unassigned >= 3 ? 'Breached' : 'Warning',
+                    trend: 'Worsening',
+                    owner: 'Team',
+                    action: 'Assign project leads immediately'
+                });
+            }
+        }
+
+        // ── LEADS: only if leads exist ──────────────────────────────────────
+        if (leads.length > 0) {
+            const converted = leads.filter(l =>
+                ['closed', 'po received', 'converted', 'won'].includes(String(l.stage || l.status || '').toLowerCase())
+            ).length;
+            const convRate = converted / leads.length;
+            const convLk = convRate < 0.1 ? 4 : convRate < 0.3 ? 2 : 1;
+            kris.push({
+                id: id(), category: 'Client', risk: 'Lead Conversion Rate',
+                likelihood: convLk, impact: 4,
+                threshold: '>30% conversion',
+                current: `${Math.round(convRate * 100)}% (${converted}/${leads.length} leads)`,
+                status: sc(convLk, 4),
+                trend: convLk > 2 ? 'Declining' : convLk > 1 ? 'Stable' : 'Improving',
+                owner: 'Team',
+                action: convRate < 0.3 ? 'Improve pitch & follow-up cadence' : 'Maintain momentum'
+            });
+        }
+
+        // ── CLIENTS: only if clients exist ──────────────────────────────────
+        if (clients.length > 0) {
+            const clientsWithProjects = new Set(projects.map(p => String(p.client || '').trim().toLowerCase()).filter(Boolean));
+            const churnRisk = clients.filter(c => !clientsWithProjects.has(String(c.name || '').trim().toLowerCase())).length;
+            if (churnRisk > 0) {
+                const chLk = churnRisk >= Math.ceil(clients.length * 0.5) ? 4 : churnRisk >= 2 ? 2 : 1;
+                kris.push({
+                    id: id(), category: 'Client', risk: 'Client Churn Risk',
+                    likelihood: chLk, impact: 5,
+                    threshold: 'All clients have active projects',
+                    current: `${churnRisk}/${clients.length} clients have no projects`,
+                    status: chLk >= 4 ? 'Breached' : chLk >= 2 ? 'Warning' : 'Within',
+                    trend: churnRisk > 0 ? 'Worsening' : 'Stable',
+                    owner: 'Team',
+                    action: 'Re-engage inactive clients'
+                });
+            }
+        }
+
+        // ── FEEDBACK: only if feedback exists ───────────────────────────────
+        const validFb = feedback.filter(f => parseFloat(f.avg || f.score || 0) > 0);
+        if (validFb.length > 0) {
+            const avg = parseFloat((validFb.reduce((s, f) => s + parseFloat(f.avg || f.score || 0), 0) / validFb.length).toFixed(1));
+            const fbLk = avg < 6 ? 4 : avg < 7.5 ? 2 : 1;
+            kris.push({
+                id: id(), category: 'Client', risk: 'Client Satisfaction',
+                likelihood: fbLk, impact: 5,
+                threshold: '>7.5/10 avg rating',
+                current: `${avg}/10 avg (${validFb.length} responses)`,
+                status: sc(fbLk, 5),
+                trend: avg >= 8 ? 'Improving' : avg >= 7 ? 'Stable' : 'Declining',
+                owner: 'Team',
+                action: avg < 7.5 ? 'Run satisfaction calls' : 'Maintain quality'
+            });
+        }
+
+        // ── FOLLOW-UPS: only if follow-ups exist ────────────────────────────
+        if (fups.length > 0) {
+            const stale = fups.filter(f => {
+                if (f.done) return false;
+                const age = Date.now() - Number(f.createdAt || 0);
+                return age > 24 * 60 * 60 * 1000;
+            }).length;
+            if (stale > 0) {
+                const rLk = stale >= 5 ? 4 : stale >= 2 ? 2 : 1;
+                kris.push({
+                    id: id(), category: 'Operational', risk: 'Stale Follow-ups',
+                    likelihood: rLk, impact: 3,
+                    threshold: 'All follow-ups actioned within 24h',
+                    current: `${stale} follow-up(s) pending >24h`,
+                    status: rLk >= 4 ? 'Breached' : 'Warning',
+                    trend: 'Worsening',
+                    owner: 'Team',
+                    action: 'Act on pending follow-ups now'
+                });
+            }
+        }
+
+        // ── CAMPAIGNS: only if campaigns exist ──────────────────────────────
+        if (campaigns.length > 0) {
+            const sent = campaigns.filter(c => String(c.status || '').toLowerCase() === 'sent').length;
+            const active = campaigns.filter(c => String(c.status || '').toLowerCase() === 'active').length;
+            if (sent > 0 || active > 0) {
+                kris.push({
+                    id: id(), category: 'Marketing', risk: 'Campaign Activity',
+                    likelihood: 1, impact: 2,
+                    threshold: 'Campaigns actively running',
+                    current: `${active} active, ${sent} sent`,
+                    status: 'Within',
+                    trend: active > 0 ? 'Improving' : 'Stable',
+                    owner: 'Team',
+                    action: active > 0 ? 'Monitor click-through rates' : 'Plan next campaign'
+                });
+            }
+        }
+
+        // ── SOP: only if checklist has been used today ───────────────────────
+        const todayKey = new Date().toISOString().slice(0, 10);
+        const sopSaved = typeof this.readStore === 'function' ? this.readStore(`bezent_sop_${todayKey}`, null) : null;
+        if (sopSaved && typeof sopSaved === 'object' && Object.keys(sopSaved).length > 0) {
+            const sopItems = ['sop_li', 'sop_conn', 'sop_outreach', 'sop_india', 'sop_crm', 'sop_compet', 'sop_quotes', 'sop_inv'];
+            const sopDone = sopItems.filter(k => sopSaved[k]).length;
+            const sopPct = Math.round(sopDone / sopItems.length * 100);
+            const sLk = sopPct < 50 ? 4 : sopPct < 80 ? 2 : 1;
+            kris.push({
+                id: id(), category: 'Operational', risk: 'SOP Compliance',
+                likelihood: sLk, impact: 3,
+                threshold: '>80% daily checklist',
+                current: `${sopPct}% done today (${sopDone}/${sopItems.length})`,
+                status: sLk >= 4 ? 'Breached' : sLk >= 2 ? 'Warning' : 'Within',
+                trend: sopPct >= 80 ? 'Stable' : 'Declining',
+                owner: 'Team',
+                action: sopPct < 80 ? 'Complete remaining SOP items' : 'Great discipline!'
+            });
+        }
+
+        return kris;
     }
 
     getReportsKriRisk() {

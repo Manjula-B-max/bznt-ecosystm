@@ -1,0 +1,66 @@
+diff --git a/client/app.js b/client/app.js
+index a7372e0..e75bb31 100644
+--- a/client/app.js
++++ b/client/app.js
+@@ -2782,7 +2782,7 @@ class MarketFlowCRM {
+                     this.showToast('Company is required.');
+                     return true;
+                 }
+-                const res = this.saveLead({ company, contact, source, assignedTo, nextAction, stage: 'New Lead', feedbackStatus: 'Pending' });
++                const res = this.saveLead({ company, contact, source, assignedTo, nextAction, stage: 'New Lead', feedbackStatus: 'Pending', email: emailEl?.value?.trim() || '', address: addressEl?.value?.trim() || '', locationUrl: locUrlEl?.value?.trim() || '', contactPersonMultiple: cpmEl?.value?.trim() || '' });
+                 if (res.ok) {
+                     this.showToast('Lead saved.');
+                     this.switchSection('leads');
+@@ -5290,6 +5290,52 @@ class MarketFlowCRM {
+         }
+     }
+ 
++    setupTableFilters() {
++        const inputs = document.querySelectorAll('.table-filter-input');
++        inputs.forEach(input => {            
++            // Remove previous listeners if we are re-rendering
++            const clone = input.cloneNode(true);
++            if(input.parentNode) {
++                input.parentNode.replaceChild(clone, input);
++                clone.addEventListener('input', (e) => {
++                    const table = clone.closest('table');
++                    if(table) {
++                        const trs = table.querySelectorAll('tbody tr');
++                        const filterKey = clone.dataset.filter;
++                        const attrKey = 'data-f-' + filterKey;
++                        const query = e.target.value.toLowerCase().trim();
++                        trs.forEach(tr => {
++                            const cell = tr.querySelector('[' + attrKey + ']');
++                            if(tr.closest('thead')) return;
++                            if (cell) {
++                                const content = cell.getAttribute(attrKey) || '';
++                                if (content.includes(query)) {
++                                    cell.dataset[filterKey + 'Hidden'] = 'false';
++                                } else {
++                                    cell.dataset[filterKey + 'Hidden'] = 'true';
++                                }
++                            }
++                        });
++                        trs.forEach(tr => {
++                             if(tr.closest('thead')) return; // do not hide thead
++                             let shouldHide = false;
++                             for(let i=0; i<tr.cells.length; i++){
++                                  const cell = tr.cells[i];
++                                  for (const key in cell.dataset) {
++                                      if (key.endsWith('Hidden') && cell.dataset[key] === 'true') {
++                                          shouldHide = true;
++                                      }
++                                  }
++                             }
++                             tr.style.display = shouldHide ? 'none' : '';
++                        });
++                    }
++                });
++                clone.addEventListener('click', e => e.stopPropagation());
++            }
++        });
++    }
++
+     setupClientDirectoryInteractions() {
+         const rows = document.querySelectorAll('tr[data-client-name]');
+         rows.forEach(row => {

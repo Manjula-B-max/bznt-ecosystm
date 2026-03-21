@@ -1,0 +1,160 @@
+7254:     getLeadDirectory() {
+7255:         const leads = this.getLeadsData();
+7256:         const selectedId = String(this.selectedLeadId || '').trim();
+7257:         const selected = selectedId
+7258:             ? (leads.find(l => String(l?.id || '').trim().toLowerCase() === selectedId.toLowerCase()) || null)
+7259:             : null;
+7260:         return `
+7261:             <div class="space-y-6 fade-in w-full">
+7262:                 <div class="flex flex-wrap items-start justify-between gap-3">
+7263:                     <div>
+7264:                         <h2 class="text-xl sm:text-2xl font-semibold text-slate-900">Lead Directory</h2>
+7265:                         <p class="text-sm text-slate-500">${leads.length} lead${leads.length !== 1 ? 's' : ''} registered</p>
+7266:                     </div>
+7267:                     <button data-action="nav:leads/lead_registration" class="px-4 py-2 text-sm font-medium bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">+ New Lead</button>
+7268:                 </div>
+7269: 
+7270:                 <div class="grid ${selected ? 'grid-cols-1 lg:grid-cols-3' : 'grid-cols-1'} gap-6">
+7271:                     <div class="${selected ? 'col-span-1 lg:col-span-2' : 'col-span-1'} bg-white rounded-lg border border-slate-200 overflow-hidden">
+7272:                         <div class="p-4 border-b border-slate-200 flex items-center justify-between">
+7273:                             <div class="text-sm font-medium text-slate-900">Leads</div>
+7274:                             <div class="text-xs text-slate-500">Showing ${leads.length}</div>
+7275:                         </div>
+7276:                         <div class="overflow-x-auto">
+7277:                             <table class="w-full text-sm" style="min-width: 800px;">
+7278:                                 <thead class="bg-slate-50 text-slate-600">
+7279:                                     <tr>
+7280:                                         <th class="text-left px-4 py-3 font-medium">Lead ID</th>
+7281:                                         <th class="text-left px-4 py-3 font-medium">Company</th>
+7282:                                         <th class="text-left px-4 py-3 font-medium">Contact</th>
+7283:                                         <th class="text-left px-4 py-3 font-medium">Source</th>
+7284:                                         <th class="text-left px-4 py-3 font-medium">Stage</th>
+7285:                                         <th class="text-left px-4 py-3 font-medium">Feedback Status</th>
+7286:                                         <th class="text-left px-4 py-3 font-medium">Convert</th>
+7287:                                         <th class="text-center px-4 py-3 font-medium">Actions</th>
+7288:                                     </tr>
+7289:                                 </thead>
+7290:                                  <tbody class="divide-y divide-slate-200">
+7291:                                     ${leads.length === 0 ? `
+7292:                                         <tr><td colspan="8" class="px-4 py-12 text-center">
+7293:                                             <div class="flex flex-col items-center gap-3">
+7294:                                                 <svg class="w-10 h-10 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M18 18.72a9.094 9.094 0 003.741-.479 3 3 0 00-4.682-2.72m.94 3.198l.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0112 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 016 18.719m12 0a5.971 5.971 0 00-.941-3.197m0 0A5.995 5.995 0 0012 12.75a5.995 5.995 0 00-5.058 2.772m0 0a3 3 0 00-4.681 2.72 8.986 8.986 0 003.74.477m.94-3.197a5.971 5.971 0 00-.94 3.197M15 6.75a3 3 0 11-6 0 3 3 0 016 0zm6 3a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0zm-13.5 0a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z"/></svg>
+7295:                                                 <p class="text-sm font-medium text-slate-500">No leads yet</p>
+7296:                                                 <p class="text-xs text-slate-400">Click <strong>+ New Lead</strong> to register your first lead</p>
+7297:                                             </div>
+7298:                                         </td></tr>` :
+7299:                 leads.map(l => {
+7300:                     const converted = String(l.status || '').toLowerCase() === 'converted';
+7301:                     const isSelected = selected && String(selected.id || '').trim().toLowerCase() === String(l.id || '').trim().toLowerCase();
+7302:                     return `
+7303:                                             <tr data-lead-id="${l.id}" class="hover:bg-slate-50 cursor-pointer ${isSelected ? 'bg-slate-50' : ''}">
+7304:                                                 <td class="px-4 py-3 font-medium text-slate-900">${l.id}</td>
+7305:                                                 <td class="px-4 py-3 text-slate-700">${l.company}</td>
+7306:                                                 <td class="px-4 py-3 text-slate-700">${l.contact || '—'}</td>
+7307:                                                 <td class="px-4 py-3 text-slate-700">${l.source || '—'}</td>
+7308:                                                 <td class="px-4 py-3 text-slate-700">${l.stage || '—'}</td>
+7309:                                                 <td class="px-4 py-3 text-slate-700">${l.feedbackStatus || '—'}</td>
+7310:                                                 <td class="px-4 py-3">
+7311:                                                     ${converted
+7312:                             ? `<span class="px-2 py-1 text-xs font-medium bg-emerald-50 text-emerald-700 rounded-full">Converted</span>`
+7313:                             : `<button data-action="lead:convert" data-lead-id="${l.id}" class="px-3 py-1.5 text-xs font-medium bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">Convert to Client</button>`
+7314:                         }
+7315:                                                 </td>
+7316:                                                 <td class="px-4 py-3 text-center">
+7317:                                                     <div class="flex items-center justify-center gap-2">
+7318:                                                         <button data-action="lead:edit" data-lead-id="${l.id}" class="p-1.5 text-slate-400 hover:text-purple-600 rounded transition flex-shrink-0" title="Edit Lead">
+7319:                                                             <i data-lucide="edit-2" class="w-4 h-4" style="width:16px;height:16px;"></i>
+7320:                                                         </button>
+7321:                                                         <button data-action="lead:delete" data-lead-id="${l.id}" class="p-1.5 text-slate-400 hover:text-red-600 rounded transition flex-shrink-0" title="Delete Lead" onclick="return confirm('Do you really want to delete this lead?')">
+7322:                                                             <i data-lucide="trash-2" class="w-4 h-4" style="width:16px;height:16px;"></i>
+7323:                                                         </button>
+7324:                                                     </div>
+7325:                                                 </td>
+7326:                                             </tr>
+7327:                                         `;
+7328:                 }).join('')}
+7329:                                 </tbody>
+7330:                             </table>
+7331:                         </div>
+7332:                     </div>
+7333: 
+7609:     getLeadsDirectory() {
+7610:         const clients = this.getClientsData();
+7611:         const selectedName = clients.some(c => c.name === this.selectedClientName) ? this.selectedClientName : null;
+7612:         const selected = selectedName ? (clients.find(c => c.name === selectedName) || null) : null;
+7613:         const detail = selected ? this.getClientDetailMock(selected.name) : null;
+7614:         const selectedInvoices = selected
+7615:             ? this.getAllInvoices().filter(i => String(i?.client || '').trim().toLowerCase() === String(selected.name || '').trim().toLowerCase())
+7616:             : [];
+7617:         const latestInvoices = selectedInvoices.slice(0, 3);
+7618:         return `
+7619:             <div class="space-y-6 fade-in" >
+7620:                 <div class="flex flex-wrap items-start justify-between gap-3">
+7621:                     <div>
+7622:                         <h2 class="text-xl sm:text-2xl font-semibold text-slate-900">Client Directory</h2>
+7623:                         <p class="text-sm text-slate-500">${clients.length} clients with status badges and quick insights</p>
+7624:                     </div>
+7625:                     <button data-action="nav:leads/client_registration" class="px-4 py-2 text-sm font-medium bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">+ New Client</button>
+7626:                 </div>
+7627: 
+7628:                 <div class="grid ${selected ? 'grid-cols-1 lg:grid-cols-3' : 'grid-cols-1'} gap-6">
+7629:                     <div class="${selected ? 'col-span-1 lg:col-span-2' : 'col-span-1'} bg-white rounded-lg border border-slate-200 overflow-hidden">
+7630:                         <div class="p-4 border-b border-slate-200 flex items-center justify-between">
+7631:                             <div class="text-sm font-medium text-slate-900">Clients</div>
+7632:                             <div class="text-xs text-slate-500">Showing ${clients.length}</div>
+7633:                         </div>
+7634:                         <div class="overflow-x-auto">
+7635:                             <table class="w-full text-sm" style="min-width: 800px;">
+7636:                                 <thead class="bg-slate-50 text-slate-600">
+7637:                                     <tr>
+7638:                                         <th class="text-left px-4 py-3 font-medium">Client</th>
+7639:                                         <th class="text-left px-4 py-3 font-medium">Owner</th>
+7640:                                         <th class="text-left px-4 py-3 font-medium">Status</th>
+7641:                                         <th class="text-right px-4 py-3 font-medium">Open Invoices</th>
+7642:                                         <th class="text-center px-4 py-3 font-medium">Actions</th>
+7643:                                     </tr>
+7644:                                 </thead>
+7645:                                 <tbody class="divide-y divide-slate-200">
+7646:                                     ${clients.map(c => `
+7647:                                         <tr data-client-name="${c.name}" class="hover:bg-slate-50 cursor-pointer ${c.name === selectedName ? 'bg-slate-50' : ''}">
+7648:                                             <td class="px-4 py-3">
+7649:                                                 <div class="font-medium text-slate-900">${c.name}</div>
+7650:                                                 <div class="text-xs text-slate-500">${c.city} • ${c.industry}</div>
+7651:                                             </td>
+7652:                                             <td class="px-4 py-3 text-slate-700">${c.owner}</td>
+7653:                                             <td class="px-4 py-3">${this.renderBadge(c.stage)}</td>
+7654:                                             <td class="px-4 py-3 text-right">
+7655:                                                 <span class="font-medium text-slate-900">${c.openInvoices}</span>
+7656:                                                 <span class="text-xs text-slate-500"> (${c.dueAmount})</span>
+7657:                                             </td>
+7658:                                             <td class="px-4 py-3 text-center">
+7659:                                                 <div class="flex items-center justify-center gap-2">
+7660:                                                     <button data-action="client:edit" data-client-name="${c.name}" class="p-1.5 text-slate-400 hover:text-purple-600 rounded transition flex-shrink-0" title="Edit Client">
+7661:                                                         <i data-lucide="edit-2" class="w-4 h-4" style="width:16px;height:16px;"></i>
+7662:                                                     </button>
+7663:                                                     <button data-action="client:delete" data-client-name="${c.name}" class="p-1.5 text-slate-400 hover:text-red-600 rounded transition flex-shrink-0" title="Delete Client" onclick="return confirm('Do you really want to delete this client?')">
+7664:                                                         <i data-lucide="trash-2" class="w-4 h-4" style="width:16px;height:16px;"></i>
+7665:                                                     </button>
+7666:                                                 </div>
+7667:                                             </td>
+7668:                                         </tr>
+7669:                                     `).join('')}
+7670:                                 </tbody>
+7671:                             </table>
+7672:                         </div>
+7673:                     </div>
+7674: 
+7675:                     ${selected ? `
+7676:                         <div class="bg-white rounded-lg border border-slate-200 p-6 shadow-lg lg:sticky lg:top-6 h-fit">
+7677:                             <div class="flex flex-wrap items-start justify-between gap-3">
+7678:                                 <div>
+7679:                                     <h3 class="text-lg font-semibold text-slate-900">Selected Client</h3>
+7680:                                     <p class="text-sm text-slate-500">${selected.name}</p>
+7681:                                 </div>
+7682:                                 <span class="px-2 py-1 text-xs font-medium bg-slate-100 text-slate-700 rounded-full">${selected.stage}</span>
+7683:                             </div>
+7684: 
+7685:                             <div class="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-2">
+7686:                                 <button data-action="client:edit" data-client-name="${selected.name}" class="px-3 py-2 text-sm font-medium bg-purple-50 text-purple-700 rounded-lg hover:bg-purple-100 transition-colors">Edit</button>
+7687:                                 <button data-action="client:delete" data-client-name="${selected.name}" class="px-3 py-2 text-sm font-medium bg-rose-50 text-rose-700 rounded-lg hover:bg-rose-100 transition-colors">Delete</button>
+7688:                             </div>

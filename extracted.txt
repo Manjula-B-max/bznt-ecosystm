@@ -1,0 +1,41 @@
+saveLead(lead) {
+        const l = lead || {};
+        const company = String(l.company || '').trim();
+        if (!company) return { ok: false, message: 'Company is required.' };
+
+        const id = String(l.id || '').trim() || `LD-${Date.now()}`;
+        const items = this.getStoredLeads();
+        const idx = items.findIndex(x => String(x?.id || '').trim().toLowerCase() === id.toLowerCase());
+
+        const normalized = {
+            id,
+            company,
+            contact: String(l.contact || '').trim(),
+            email: String(l.email || '').trim(),
+            address: String(l.address || '').trim(),
+            locationUrl: String(l.locationUrl || '').trim(),
+            contactPersonMultiple: String(l.contactPersonMultiple || '').trim(),
+            source: String(l.source || 'LinkedIn').trim() || 'LinkedIn',
+            stage: String(l.stage || 'New Lead').trim() || 'New Lead',
+            assignedTo: String(l.assignedTo || '—').trim() || '—',
+            nextAction: String(l.nextAction || 'Follow-up').trim() || 'Follow-up',
+            feedbackStatus: String(l.feedbackStatus || 'Pending').trim() || 'Pending',
+            status: String(l.status || 'Open').trim() || 'Open',
+            receivedAt: Number.isFinite(Number(l.receivedAt)) ? Number(l.receivedAt) : Date.now(),
+            firstResponseAt: Number.isFinite(Number(l.firstResponseAt)) ? Number(l.firstResponseAt) : null,
+            linkedClientName: String(l.linkedClientName || '').trim(),
+            history: Array.isArray(l.history) ? l.history : []
+        };
+
+        if (idx >= 0) items[idx] = { ...items[idx], ...normalized };
+        else items.unshift(normalized);
+        this.writeStore('bezent_leads', items);
+        return { ok: true, id };
+    }
+
+    convertLeadToClient(leadId) {
+        const id = String(leadId || '').trim();
+        if (!id) return { ok: false, message: 'Lead ID missing.' };
+
+        const leads = this.getStoredLeads();
+        const idx = leads.findIndex(l => Stri

@@ -22,6 +22,9 @@ app.use('/api', routes);
 // Health check
 app.get('/health', (_, res) => res.json({ ok: true, ts: new Date().toISOString() }));
 
+// Serve uploaded documents
+app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
+
 // Serve static frontend in production
 const clientBuildPath = path.join(__dirname, '../client/dist');
 app.use(express.static(clientBuildPath));

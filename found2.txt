@@ -1,0 +1,18 @@
+5291: this.setupClientDirectoryInteractions();
+5303: setupClientDirectoryInteractions() {
+5392: getLeadsRegistrationHub() {
+6597: container.innerHTML = this.getLeadsRegistrationHub();
+6600: container.innerHTML = this.getLeadsRegistration();
+6603: container.innerHTML = this.getLeadsDirectoryHub();
+6606: container.innerHTML = this.getLeadsDirectory();
+6607: this.setupClientDirectoryInteractions();
+6614: container.innerHTML = this.getLeadsDirectoryHub();
+6617: container.innerHTML = this.getLeadRegistration();
+6620: container.innerHTML = this.getLeadDirectory();
+6645: container.innerHTML = this.getLeadsDirectory();
+6646: this.setupClientDirectoryInteractions();
+7119: getLeadsDirectoryHub() {
+7158: getLeadRegistration(leadData = null) {
+7221: getLeadDirectory() {
+7465: getLeadsRegistration(clientData = null) {
+7548: getLeadsDirectory() {

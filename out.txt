@@ -1,0 +1,3 @@
+3224: const address = document.getElementById('clientAddress')?.value?.trim() || '';
+7789: <textarea id="clientAddress" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" rows="3" placeholder="Line 1&#10;Line 2&#10;Line 3">${clientData?.address || ''}</textarea>
+7817: <textarea id="clientAddress" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" rows="3" placeholder="Line 1&#10;Line 2&#10;Line 3">${clientData?.address || ''}</textarea>

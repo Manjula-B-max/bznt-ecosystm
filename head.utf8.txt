@@ -1,0 +1,150 @@
+// BEZENT — API auth helpers (injected)
+(function () {
+    var TK = 'bezent_jwt';
+    window.BezentAuth = {
+        getToken: function () { return localStorage.getItem(TK) || ''; },
+        setToken: function (t) { localStorage.setItem(TK, t); },
+        clearToken: function () { localStorage.clear(); }, // Clear ALL data on session expiry
+        isLoggedIn: function () { return Boolean(localStorage.getItem(TK)); }
+    };
+    window.apiFetch = function (p, o) {
+        o = o || {};
+        var hdr = { 'Content-Type': 'application/json' };
+        var tok = window.BezentAuth.getToken();
+        if (tok) hdr['Authorization'] = 'Bearer ' + tok;
+        if (o.headers) Object.assign(hdr, o.headers);
+        return fetch('/api' + p, Object.assign({}, o, { headers: hdr }))
+            .then(function (r) {
+                if (r.status === 401) { window.BezentAuth.clearToken(); location.replace('index.html'); return null; }
+                return r.json();
+            });
+    };
+})();
+
+// MarketFlow CRM Dashboard Application
+class MarketFlowCRM {
+    constructor() {
+        this.currentSection = 'dashboard';
+        this.currentSubSection = 'overview';
+        this.selectedClientName = null;
+        this.selectedLeadId = null;
+        this.isChatOpen = false;
+        this.chatMessages = this.getStoredChatMessages();
+        this.charts = {};
+        this._toastEl = null;
+        this._toastTimer = null;
+        this._modalEl = null;
+        this._chartAnimFrames = {};
+        this.init();
+    }
+
+    getLeadPipelineStages() {
+        return ['New Lead', 'Contacted', 'Missed Call', 'Follow-up', 'Demo', 'Quotation', 'Negotiation', 'Closed', 'PO Received'];
+    }
+
+    renderLeadPipelineProgress(currentStage) {
+        const stages = this.getLeadPipelineStages();
+        const curr = String(currentStage || '').trim().toLowerCase();
+        let currentIdx = stages.findIndex(s => String(s).toLowerCase() === curr);
+        if (currentIdx < 0) currentIdx = 0;
+
+        return `
+            <div class="mt-2">
+                <div class="flex flex-wrap items-start justify-between gap-3">
+                    ${stages.map((s, i) => {
+            const done = i <= currentIdx;
+            const isLast = i === stages.length - 1;
+            const dot = done ? 'bg-purple-600 text-white border-purple-600' : 'bg-white text-slate-500 border-slate-300';
+            const line = done ? 'bg-purple-600' : 'bg-slate-200';
+            return `
+                            <div class="flex items-center ${isLast ? '' : 'flex-1'}" title="${s}">
+                                <div class="w-6 h-6 rounded-full border ${dot} flex items-center justify-center text-[11px] font-semibold">${i + 1}</div>
+                                ${isLast ? '' : `<div class="h-0.5 flex-1 mx-2 ${line}"></div>`}
+                            </div>
+                        `;
+        }).join('')}
+                </div>
+                <div class="mt-2 flex items-center justify-between text-[10px] text-slate-500">
+                    <div class="font-medium">${stages[0]}</div>
+                    <div class="font-medium">${stages[stages.length - 1]}</div>
+                </div>
+            </div>
+        `;
+    }
+
+    getRfpTemplates() {
+        if (!this._rfpDraft) this._rfpDraft = this.getStoredRfpDraft() || this.getSampleRfpTemplate();
+        const draft = this.computeRfp(this._rfpDraft);
+        const esc = (v) => String(v ?? '').replace(/</g, '&lt;').replace(/"/g, '&quot;');
+
+        const client = draft.client || {};
+        const provider = {
+            ...(draft.provider || {}),
+            companyName: 'APJ 3D Solutions India Pvt Ltd',
+            headOffice: 'Regd: Ground floor HW2, Forge Factory, #3 KCT Tech Park, Athipalayam Road, Chinnavedampatti, Coimbatore District, Tamil Nadu - 641049 | Corp: CP3 & CP4, Sipcot Industrial Complex, Phase-II, Moranapalli, Hosur, Krishnagiri, Tamil Nadu - 635109'
+        };
+        const items = Array.isArray(draft.items) ? draft.items : [];
+        const bank = draft.bank || {};
+        const totals = draft.totals || {};
+
+        return `
+            <div class="space-y-6 fade-in w-full">
+                <div class="flex flex-wrap items-start justify-between gap-3">
+                    <div>
+                        <h2 class="text-xl sm:text-2xl font-semibold text-slate-900">RFP Templates</h2>
+                        <p class="text-sm text-slate-500">Fill RFP sections, reuse line-items quotation, then print</p>
+                    </div>
+                    <div class="flex gap-2">
+                        <button data-action="rfp:item:add" class="px-4 py-2 text-sm font-medium bg-purple-50 text-purple-700 rounded-lg hover:bg-purple-100 transition-colors">+ Add Line</button>
+                        <button data-action="rfp:print:current" class="px-4 py-2 text-sm font-medium bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">Print RFP</button>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-lg border border-slate-200 p-6 shadow-lg space-y-6">
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div>
+                            <div class="text-sm font-semibold text-slate-900">1. Company Information (Client)</div>
+                            <div class="mt-3 grid grid-cols-1 md:grid-cols-2 gap-3">
+                                <div class="md:col-span-2">
+                                    <label class="text-xs font-medium text-slate-600">Company Name</label>
+                                    <input data-rfp-field="client.companyName" value="${esc(client.companyName)}" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm" />
+                                </div>
+                                <div>
+                                    <label class="text-xs font-medium text-slate-600">Contact person</label>
+                                    <input data-rfp-field="client.contactPerson" value="${esc(client.contactPerson)}" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm" />
+                                </div>
+                                <div>
+                                    <label class="text-xs font-medium text-slate-600">Project Name</label>
+                                    <input data-rfp-field="client.projectName" value="${esc(client.projectName)}" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm" />
+                                </div>
+                                <div>
+                                    <label class="text-xs font-medium text-slate-600">GST Number</label>
+                                    <input data-rfp-field="client.gstNumber" value="${esc(client.gstNumber)}" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm" />
+                                </div>
+                                <div>
+                                    <label class="text-xs font-medium text-slate-600">Date of Request</label>
+                                    <input data-rfp-field="client.dateOfRequest" value="${esc(client.dateOfRequest)}" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm" />
+                                </div>
+                                <div class="md:col-span-2">
+                                    <label class="text-xs font-medium text-slate-600">Company Address</label>
+                                    <input data-rfp-field="client.companyAddress" value="${esc(client.companyAddress)}" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm" />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <div class="text-sm font-semibold text-slate-900">2. Service Provider</div>
+                            <div class="mt-3 grid grid-cols-1 md:grid-cols-2 gap-3">
+                                <div class="md:col-span-2">
+                                    <label class="text-xs font-medium text-slate-600">Logo</label>
+                                    <div class="mt-1 flex items-center gap-3">
+                                        <div class="h-12 w-12 rounded-md border border-slate-200 bg-white flex items-center justify-center overflow-hidden">
+                                            <img id="rfpLogoPreview" src="${esc(provider.logoDataUrl || '')}" alt="" style="max-width:100%;max-height:100%;${provider.logoDataUrl ? '' : 'display:none;'}" />
+                                        </div>
+                                        <input id="rfpLogoUpload" type="file" accept="image/*" class="block text-sm" />
+                                    </div>
+                                </div>
+                                <div class="md:col-span-2">
+                                    <label class="text-xs font-medium text-slate-600">Company Name</label>
+                                    <input data-rfp-field="provider.companyName" value="${esc(provider.companyName)}" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm" />
+                                </div>

@@ -21,6 +21,126 @@
     };
 })();
 
+// --- NEW GLOBAL HELPER FIXES START ---
+window.renderAddressLines = function(prefix, dataRecord) {
+    let addrParts = ["", "", ""];
+    if (dataRecord && dataRecord.address) {
+        let parts = dataRecord.address.split('\n');
+        addrParts[0] = parts[0] || "";
+        addrParts[1] = parts[1] || "";
+        addrParts[2] = parts[2] || "";
+    }
+    return `
+        <div class="flex flex-col gap-2 relative z-0">
+            <input id="${prefix}AddressLine1" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="Street / Building / Area" value="${window.esc(addrParts[0])}" />
+            <input id="${prefix}AddressLine2" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="City / District" value="${window.esc(addrParts[1])}" />
+            <input id="${prefix}AddressLine3" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="State / Pincode" value="${window.esc(addrParts[2])}" />
+        </div>
+    `;
+};
+
+window.renderContactsRows = function(contactDataString) {
+    let rowsHtml = '';
+    let contacts = [];
+    if (contactDataString) {
+        let lines = contactDataString.split('\n').filter(l => l.trim());
+        contacts = lines.map(line => {
+            let [name, email, dept] = line.split(',').map(s => s.trim());
+            return { name: name || '', email: email || '', dept: dept || '' };
+        });
+    }
+    if (contacts.length === 0) contacts.push({name:'', email:'', dept:''}); // default empty row
+    
+    contacts.forEach((ctx, index) => {
+        rowsHtml += window.createContactRowHtml(ctx.name, ctx.email, ctx.dept);
+    });
+    return rowsHtml;
+};
+
+window.createContactRowHtml = function(name='', email='', dept='') {
+    return `
+        <div class="flex items-center gap-2 mb-2 dynamic-contact-row">
+            <input type="text" class="flex-1 border border-slate-200 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 contact-name-inp" placeholder="Name" value="${window.esc(name)}">
+            <input type="email" class="flex-1 border border-slate-200 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 contact-email-inp" placeholder="Email" value="${window.esc(email)}">
+            <input type="text" class="flex-1 border border-slate-200 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 contact-dept-inp" placeholder="Dept/Role" value="${window.esc(dept)}">
+            <button type="button" onclick="this.parentElement.remove()" class="text-rose-500 hover:text-rose-600 p-1 w-8 h-8 rounded-full hover:bg-rose-50 flex items-center justify-center transition-colors">
+                <i data-lucide="x" style="width:16px;height:16px"></i>
+            </button>
+        </div>
+    `;
+};
+
+window.addContactRow = function(prefix) {
+    let containerId = prefix + 'ContactPersonsList';
+    let container = document.getElementById(containerId);
+    if (container) {
+        container.insertAdjacentHTML('beforeend', window.createContactRowHtml());
+        if(window.lucide && window.lucide.createIcons) {
+            window.lucide.createIcons();
+        }
+    }
+};
+
+window.compileContactsData = function(prefix) {
+    let containerId = prefix + 'ContactPersonsList';
+    let container = document.getElementById(containerId);
+    if (!container) return "";
+    let rows = container.querySelectorAll('.dynamic-contact-row');
+    let compiled = [];
+    rows.forEach(row => {
+        let n = row.querySelector('.contact-name-inp').value.trim();
+        let e = row.querySelector('.contact-email-inp').value.trim();
+        let d = row.querySelector('.contact-dept-inp').value.trim();
+        if (n || e || d) compiled.push([n,e,d].join(', '));
+    });
+    return compiled.join('\n');
+};
+
+window.compileAddressData = function(prefix) {
+    let l1 = document.getElementById(prefix + 'AddressLine1');
+    let l2 = document.getElementById(prefix + 'AddressLine2');
+    let l3 = document.getElementById(prefix + 'AddressLine3');
+    if(!l1) return "";
+    return [l1.value.trim(), l2.value.trim(), l3.value.trim()].join('\n');
+};
+
+window.esc = function(s) {
+    if(!s) return '';
+    return s.toString().replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+};
+
+window.handleDocumentsUpload = async function(resource, id, inputId) {
+    let inp = document.getElementById(inputId);
+    if (!inp || !inp.files || inp.files.length === 0) return;
+    let fd = new FormData();
+    for(let i=0; i<inp.files.length; i++) fd.append('documents', inp.files[i]);
+    
+    try {
+        let res = await fetch('/api/upload/' + resource + '/' + encodeURIComponent(id.trim().replace(/\s+/g,'_')), {method: 'POST', body: fd});
+        let data = await res.json();
+        if(data && data.success && data.files) {
+            let storeKey = resource === 'leads' ? 'bezent_leads' : 'bezent_clients';
+            let ls = localStorage.getItem(storeKey);
+            if(ls) {
+                let items = JSON.parse(ls);
+                let idx = items.findIndex(x => 
+                    String(x.id||'').toLowerCase() === String(id).toLowerCase() || 
+                    String(x.name||'').toLowerCase()===String(id).toLowerCase()
+                );
+                if(idx >= 0) {
+                    items[idx].documents = items[idx].documents || [];
+                    for (let f of data.files) if(!items[idx].documents.includes(f)) items[idx].documents.push(f);
+                    localStorage.setItem(storeKey, JSON.stringify(items));
+                    window.dispatchEvent(new Event('storage')); // UI sync if needed
+                }
+            }
+        }
+    } catch(e) { console.error('Doc upload failed:', e); }
+};
+
+// --- NEW GLOBAL HELPER FIXES END ---
+
+
 // MarketFlow CRM Dashboard Application
 class MarketFlowCRM {
     constructor() {
@@ -1039,6 +1159,10 @@ class MarketFlowCRM {
             id,
             company,
             contact: String(l.contact || '').trim(),
+            email: String(l.email || '').trim(),
+            address: String(l.address || '').trim(),
+            locationUrl: String(l.locationUrl || '').trim(),
+            contactPersonMultiple: String(l.contactPersonMultiple || '').trim(),
             source: String(l.source || 'LinkedIn').trim() || 'LinkedIn',
             stage: String(l.stage || 'New Lead').trim() || 'New Lead',
             assignedTo: String(l.assignedTo || '—').trim() || '—',
@@ -1110,6 +1234,12 @@ class MarketFlowCRM {
         const normalized = {
             name,
             city: String(c.city || '—').trim() || '—',
+            contactPersonMultiple: String(c.contactPersonMultiple || '').trim(),
+            industrySize: String(c.industrySize || '').trim(),
+            gstNumber: String(c.gstNumber || '').trim(),
+            gstStateCode: String(c.gstStateCode || '').trim(),
+            address: String(c.address || '').trim(),
+            locationUrl: String(c.locationUrl || '').trim(),
             industry: String(c.industry || '—').trim() || '—',
             owner: String(c.owner || '—').trim() || '—',
             stage: String(c.stage || 'Active').trim() || 'Active',
@@ -2702,6 +2832,13 @@ class MarketFlowCRM {
                 const locationEl = document.getElementById('clientLocation');
                 const vendorCodeEl = document.getElementById('clientVendorCode');
                 const notesEl = document.getElementById('clientNotes');
+                const indSizeEl = document.getElementById('clientIndustrySize');
+                const gstNumEl = document.getElementById('clientGstNumber');
+                const gstStateEl = document.getElementById('clientGstStateCode');
+                const locUrlEl = document.getElementById('clientLocationUrl');
+
+                const compiledAddress = window.compileAddressData('client');
+                const compiledContacts = window.compileContactsData('client');
 
                 if (!nameEl || !nameEl.value.trim()) {
                     this.showToast(registerMode === 'lead' ? 'Company is required.' : 'Client name is required.');
@@ -2720,6 +2857,7 @@ class MarketFlowCRM {
                         history: [{ at: Date.now(), type: 'create', note: notesEl?.value?.trim() || '' }]
                     });
                     if (leadRes.ok) {
+                        if (leadRes.id) window.handleDocumentsUpload('leads', leadRes.id, 'clientDocsUpload');
                         this.showToast('Lead saved.');
                         this.switchSection('leads');
                         this.switchSubSection('lead_directory');
@@ -2742,10 +2880,17 @@ class MarketFlowCRM {
                     vendorCode: vendorCodeEl?.value?.trim() || '',
                     notes: notesEl?.value?.trim() || '',
                     stage: 'Active',
-                    city: '—'
+                    city: '—',
+                    industrySize: indSizeEl?.value?.trim() || '',
+                    gstNumber: gstNumEl?.value?.trim() || '',
+                    gstStateCode: gstStateEl?.value?.trim() || '',
+                    address: compiledAddress,
+                    locationUrl: locUrlEl?.value?.trim() || '',
+                    contactPersonMultiple: compiledContacts
                 });
 
                 if (result.ok) {
+                    if (result.id) window.handleDocumentsUpload('clients', result.id, 'clientDocsUpload');
                     this.showToast('Client saved.');
                     this.switchSection('leads');
                     this.switchSubSection('client_directory');
@@ -2778,12 +2923,29 @@ class MarketFlowCRM {
                 const source = document.getElementById('leadSource')?.value || 'LinkedIn';
                 const assignedTo = document.getElementById('leadAssignedTo')?.value?.trim() || '';
                 const nextAction = document.getElementById('leadNextAction')?.value?.trim() || 'Follow-up';
+                const emailEl = document.getElementById('leadEmail');
+                const locUrlEl = document.getElementById('leadLocationUrl');
+                
+                const compiledAddress = window.compileAddressData('lead');
+                const compiledContacts = window.compileContactsData('lead');
+
                 if (!company) {
                     this.showToast('Company is required.');
                     return true;
                 }
-                const res = this.saveLead({ company, contact, source, assignedTo, nextAction, stage: 'New Lead', feedbackStatus: 'Pending' });
+                
+                const payload = { 
+                    company, contact, source, assignedTo, 
+                    nextAction, stage: 'New Lead', feedbackStatus: 'Pending', 
+                    email: emailEl?.value?.trim() || '', 
+                    address: compiledAddress, 
+                    locationUrl: locUrlEl?.value?.trim() || '', 
+                    contactPersonMultiple: compiledContacts 
+                };
+                
+                const res = this.saveLead(payload);
                 if (res.ok) {
+                    if (res.id) window.handleDocumentsUpload('leads', res.id, 'leadDocsUpload');
                     this.showToast('Lead saved.');
                     this.switchSection('leads');
                     this.switchSubSection('lead_directory');
@@ -5279,15 +5441,63 @@ class MarketFlowCRM {
 
         if (this.currentSection === 'leads' && this.currentSubSection === 'clients') {
             this.setupClientDirectoryInteractions();
+            this.setupTableFilters();
         }
 
         if (this.currentSection === 'leads' && this.currentSubSection === 'lead_directory') {
             this.setupLeadDirectoryInteractions();
+            this.setupTableFilters();
         }
 
         if (this.currentSection === 'leads' && this.currentSubSection === 'tracking') {
             this.setupContactsInteractions();
         }
+    }
+
+    setupTableFilters() {
+        const inputs = document.querySelectorAll('.table-filter-input');
+        inputs.forEach(input => {            
+            // Remove previous listeners if we are re-rendering
+            const clone = input.cloneNode(true);
+            if(input.parentNode) {
+                input.parentNode.replaceChild(clone, input);
+                clone.addEventListener('input', (e) => {
+                    const table = clone.closest('table');
+                    if(table) {
+                        const trs = table.querySelectorAll('tbody tr');
+                        const filterKey = clone.dataset.filter;
+                        const attrKey = 'data-f-' + filterKey;
+                        const query = e.target.value.toLowerCase().trim();
+                        trs.forEach(tr => {
+                            const cell = tr.querySelector('[' + attrKey + ']');
+                            if(tr.closest('thead')) return;
+                            if (cell) {
+                                const content = cell.getAttribute(attrKey) || '';
+                                if (content.includes(query)) {
+                                    cell.dataset[filterKey + 'Hidden'] = 'false';
+                                } else {
+                                    cell.dataset[filterKey + 'Hidden'] = 'true';
+                                }
+                            }
+                        });
+                        trs.forEach(tr => {
+                             if(tr.closest('thead')) return; // do not hide thead
+                             let shouldHide = false;
+                             for(let i=0; i<tr.cells.length; i++){
+                                  const cell = tr.cells[i];
+                                  for (const key in cell.dataset) {
+                                      if (key.endsWith('Hidden') && cell.dataset[key] === 'true') {
+                                          shouldHide = true;
+                                      }
+                                  }
+                             }
+                             tr.style.display = shouldHide ? 'none' : '';
+                        });
+                    }
+                });
+                clone.addEventListener('click', e => e.stopPropagation());
+            }
+        });
     }
 
     setupClientDirectoryInteractions() {
@@ -6634,6 +6844,7 @@ class MarketFlowCRM {
             default:
                 container.innerHTML = this.getLeadsDirectory();
                 this.setupClientDirectoryInteractions();
+            this.setupTableFilters();
         }
     }
 
@@ -7185,6 +7396,26 @@ class MarketFlowCRM {
                             <label class="block text-sm font-medium text-slate-700">Contact</label>
                             <input id="leadContact" type="text" class="mt-2 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="Phone / Email" value="${esc(leadData?.contact || '')}" />
                         </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700">Email</label>
+                            <input id="leadEmail" type="email" class="mt-2 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="e.g. john@acme.com" value="${leadData?.email || ''}" />
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700">Location URL</label>
+                            <input id="leadLocationUrl" class="mt-2 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="https://maps.google.com/..." value="${leadData?.locationUrl || ''}" />
+                        </div>
+                        <div class="col-span-1 sm:col-span-2">
+                            <label class="block text-sm font-medium text-slate-700">Address</label>
+                            ${window.renderAddressLines('lead', leadData)}
+                        </div>
+                        <div class="col-span-1 sm:col-span-2">
+                            <label class="block text-sm font-medium text-slate-700">Contact Persons</label>
+                            <div id="leadContactPersonsList">
+                                ${window.renderContactsRows(leadData?.contactPersonMultiple)}
+                            </div>
+                            <button type="button" onclick="window.addContactRow('lead')" class="mt-2 text-sm text-purple-600 hover:text-purple-700 font-medium flex items-center gap-1">+ Add Contact Person</button>
+                        </div>
+
                         <div class="col-span-1 sm:col-span-2">
                             <label class="block text-sm font-medium text-slate-700">Next Action</label>
                             <input id="leadNextAction" type="text" class="mt-2 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="e.g., Demo with Technical Team" />
@@ -7524,6 +7755,58 @@ class MarketFlowCRM {
                     <div>
                         <label class="text-xs font-medium text-slate-600">Vendor Code</label>
                         <input id="clientVendorCode" type="text" readonly class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm bg-slate-50 text-slate-700" placeholder="Auto-generated based on location" />
+                    </div>
+                    <div>
+                        <label class="text-xs font-medium text-slate-600">Industry Size</label>
+                        <select id="clientIndustrySize" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500">
+                            <option value="">Select Tier</option>
+                            <option value="Tier 1" ${(clientData?.industrySize === 'Tier 1') ? 'selected' : ''}>Tier 1</option>
+                            <option value="Tier 2" ${(clientData?.industrySize === 'Tier 2') ? 'selected' : ''}>Tier 2</option>
+                            <option value="Tier 3" ${(clientData?.industrySize === 'Tier 3') ? 'selected' : ''}>Tier 3</option>
+                            <option value="OEM" ${(clientData?.industrySize === 'OEM') ? 'selected' : ''}>OEM</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="text-xs font-medium text-slate-600">GST State Code</label>
+                        <select id="clientGstStateCode" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" onchange="let n=document.getElementById('clientGstNumber'); let cv=n.value; if(cv.length >= 2 && !isNaN(cv.substring(0,2))) { n.value = this.value + cv.substring(2); } else { n.value = this.value + cv; }">
+                            <option value="">Select Code</option>
+                            ${[
+                                {c:'01',n:'Jammu & Kashmir'},{c:'02',n:'Himachal Pradesh'},{c:'03',n:'Punjab'},{c:'04',n:'Chandigarh'},
+                                {c:'05',n:'Uttarakhand'},{c:'06',n:'Haryana'},{c:'07',n:'Delhi'},{c:'08',n:'Rajasthan'},
+                                {c:'09',n:'Uttar Pradesh'},{c:'10',n:'Bihar'},{c:'11',n:'Sikkim'},{c:'12',n:'Arunachal Pradesh'},
+                                {c:'13',n:'Nagaland'},{c:'14',n:'Manipur'},{c:'15',n:'Mizoram'},{c:'16',n:'Tripura'},
+                                {c:'17',n:'Meghalaya'},{c:'18',n:'Assam'},{c:'19',n:'West Bengal'},{c:'20',n:'Jharkhand'},
+                                {c:'21',n:'Odisha'},{c:'22',n:'Chhattisgarh'},{c:'23',n:'Madhya Pradesh'},{c:'24',n:'Gujarat'},
+                                {c:'25',n:'Daman & Diu'},{c:'26',n:'Dadra & Nagar Haveli'},{c:'27',n:'Maharashtra'},{c:'28',n:'Andhra (Old)'},
+                                {c:'29',n:'Karnataka'},{c:'30',n:'Goa'},{c:'31',n:'Lakshadweep'},{c:'32',n:'Kerala'},
+                                {c:'33',n:'Tamil Nadu'},{c:'34',n:'Puducherry'},{c:'35',n:'Andaman & Nicobar'},{c:'36',n:'Telangana'},
+                                {c:'37',n:'Andhra Pradesh'},{c:'38',n:'Ladakh'}
+                            ].map(s => '<option value="' + s.c + '" ' + ((clientData?.gstStateCode === s.c) ? 'selected' : '') + '>' + s.c + ' - ' + s.n + '</option>').join('')}
+                        </select>
+                    </div>
+                    <div>
+                        <label class="text-xs font-medium text-slate-600">GST Number</label>
+                        <input id="clientGstNumber" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="22AAAAA0000A1Z5" value="${clientData?.gstNumber || ''}" maxlength="15" oninput="if(this.value.length>=2 && !isNaN(this.value.substring(0,2))) { let s=document.getElementById('clientGstStateCode'); if(s) s.value = this.value.substring(0, 2); }" />
+                    </div>
+                    <div>
+                        <label class="text-xs font-medium text-slate-600">Location URL</label>
+                        <input id="clientLocationUrl" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="https://maps.google..." value="${clientData?.locationUrl || ''}" />
+                    </div>
+                    <div class="col-span-1 sm:col-span-2">
+                        <label class="text-xs font-medium text-slate-600">Address (3 lines)</label>
+                        ${window.renderAddressLines('client', clientData)}
+                    </div>
+                    <div class="col-span-1 sm:col-span-2">
+                        <label class="text-xs font-medium text-slate-600">Contact Persons</label>
+                        <div id="clientContactPersonsList">
+                            ${window.renderContactsRows(clientData?.contactPersonMultiple)}
+                        </div>
+                        <button type="button" onclick="window.addContactRow('client')" class="mt-2 text-sm text-purple-600 hover:text-purple-700 font-medium flex items-center gap-1">+ Add Contact Person</button>
+                    </div>
+                    <div class="col-span-1 sm:col-span-2">
+                        <label class="text-xs font-medium text-slate-600">Documents</label>
+                        <input id="clientDocsUpload" type="file" multiple class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" />
+                        <p class="text-xs text-slate-500 mt-1">Upload relevant documents instantly (they'll be saved securely to this Client).</p>
                     </div>
                     <div class="col-span-1 sm:col-span-2">
                         <label class="text-xs font-medium text-slate-600">Notes</label>

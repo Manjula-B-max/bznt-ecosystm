@@ -1,0 +1,9 @@
+2718: const addressEl = document.getElementById('clientAddress');
+2720: const cpmEl = document.getElementById('clientContactPersonMultiple');
+2805: const addressEl = document.getElementById('leadAddress');
+2807: const cpmEl = document.getElementById('leadContactPersonMultiple');
+3089: const address = document.getElementById('clientAddress')?.value?.trim() || '';
+7272: <textarea id="leadAddress" class="mt-2 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" rows="3" placeholder="Full address">${esc(leadData?.address || '')}</textarea>
+7276: <textarea id="leadContactPersonMultiple" class="mt-2 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" rows="3" placeholder="John, john@acme.com, Marketing&#10;Jane, jane@acme.com, Tech">${esc(leadData?.contactPersonMultiple || '')}</textarea>
+7649: <textarea id="clientContactPersonMultiple" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" rows="2" placeholder="Jane Doe, jane@email.com">${esc(clientData?.contactPersonMultiple || '')}</textarea>
+7673: <textarea id="clientAddress" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" rows="3" placeholder="Line 1&#10;Line 2&#10;Line 3">${esc(clientData?.address || '')}</textarea>

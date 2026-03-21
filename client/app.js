@@ -6282,10 +6282,10 @@ class MarketFlowCRM {
 
         const stages = [
             { name: 'Leads', count: leadCount, conversion: null },
-            { name: 'Contacted', count: qualifiedCount, conversion: leadCount ? Math.round(qualifiedCount / leadCount * 100) + '%' : '—' },
-            { name: 'Proposals', count: proposalCount, conversion: qualifiedCount ? Math.round(proposalCount / qualifiedCount * 100) + '%' : '—' },
-            { name: 'Deals', count: dealCount, conversion: proposalCount ? Math.round(dealCount / Math.max(proposalCount, 1) * 100) + '%' : '—' },
-            { name: 'Projects', count: projCount, conversion: dealCount ? Math.round(projCount / Math.max(dealCount, 1) * 100) + '%' : '—' }
+            { name: 'Contacted', count: qualifiedCount, conversion: leadCount ? Math.min(100, Math.round(qualifiedCount / leadCount * 100)) + '%' : '—' },
+            { name: 'Proposals', count: proposalCount, conversion: qualifiedCount ? Math.min(100, Math.round(proposalCount / qualifiedCount * 100)) + '%' : '—' },
+            { name: 'Deals', count: dealCount, conversion: proposalCount ? Math.min(100, Math.round(dealCount / Math.max(proposalCount, 1) * 100)) + '%' : '—' },
+            { name: 'Projects', count: projCount, conversion: dealCount ? Math.min(100, Math.round(projCount / Math.max(dealCount, 1) * 100)) + '%' : '—' }
         ];
 
         const colors = ['sky-500', 'indigo-500', 'emerald-500', 'amber-500', 'rose-500'];
@@ -7031,7 +7031,7 @@ class MarketFlowCRM {
         const total = leads.length || 1;
         const COLORS = ['purple', 'sky', 'emerald', 'amber', 'rose', 'indigo', 'teal', 'orange'];
         const converted = leads.filter(l => ['converted', 'closed won'].includes(String(l.stage || l.status || '').toLowerCase())).length;
-        const convRate = total ? Math.round(converted / total * 100) : 0;
+        const convRate = total ? Math.min(100, Math.round(converted / total * 100)) : 0;
         const topSource = sources[0]?.[0] || '—';
         const topCount = sources[0]?.[1] || 0;
 
@@ -15157,12 +15157,12 @@ class MarketFlowCRM {
 
         const kpis = [
             { label: 'Total Projects', val: total, sub: 'All registered', col: 'indigo', icon: 'folder' },
-            { label: 'On Track', val: onTrack, sub: `${total ? Math.round(onTrack / total * 100) : 0}% of total`, col: 'emerald', icon: 'check-circle' },
+            { label: 'On Track', val: onTrack, sub: `${total ? Math.min(100, Math.round(onTrack / total * 100)) : 0}% of total`, col: 'emerald', icon: 'check-circle' },
             { label: 'At Risk / Delayed', val: atRisk, sub: 'Needs attention', col: 'amber', icon: 'alert-triangle' },
             { label: 'Completed', val: completed, sub: 'Fully delivered', col: 'sky', icon: 'badge-check' },
             { label: 'Avg Progress', val: avgProgress + '%', sub: 'Across all projects', col: 'purple', icon: 'trending-up' },
             { label: 'Total Budget', val: fmtAmt(budgetTotal), sub: 'All PO values', col: 'slate', icon: 'indian-rupee' },
-            { label: 'Total Spent', val: fmtAmt(spentTotal), sub: `${budgetTotal ? Math.round(spentTotal / budgetTotal * 100) : 0}% utilised`, col: 'rose', icon: 'receipt' },
+            { label: 'Total Spent', val: fmtAmt(spentTotal), sub: `${budgetTotal ? Math.min(100, Math.round(spentTotal / budgetTotal * 100)) : 0}% utilised`, col: 'rose', icon: 'receipt' },
             { label: 'Delivered', val: deliveredCount + '/' + total, sub: 'Delivery confirmed', col: 'teal', icon: 'truck' }
         ];
 
@@ -16103,9 +16103,9 @@ class MarketFlowCRM {
                 type: 'bar',
                 data: {
                     labels: ['Email', 'WhatsApp', 'SMS', 'Call', 'Re-eng'],
-                    datasets: [{ label: 'Conv %', data: (() => { try { const f = this.getStoredFollowups ? this.getStoredFollowups() : []; const types = ['Email', 'WhatsApp', 'SMS', 'Call', 'Re-engagement']; return types.map(t => { const total = f.filter(x => String(x.type || '').toLowerCase() === t.toLowerCase()).length; const converted = f.filter(x => String(x.type || '').toLowerCase() === t.toLowerCase() && String(x.status || '').toLowerCase() === 'converted').length; return total > 0 ? parseFloat((converted / total * 100).toFixed(1)) : 0; }); } catch (_) { return [0, 0, 0, 0, 0]; } })(), backgroundColor: ['#0ea5e9', '#10b981', '#6366f1', '#f59e0b', '#f43f5e'] }]
+                    datasets: [{ label: 'Conv %', data: (() => { try { const f = this.getStoredFollowups ? this.getStoredFollowups() : []; const types = ['Email', 'WhatsApp', 'SMS', 'Call', 'Re-engagement']; return types.map(t => { const total = f.filter(x => String(x.type || '').toLowerCase() === t.toLowerCase()).length; const converted = f.filter(x => String(x.type || '').toLowerCase() === t.toLowerCase() && String(x.status || '').toLowerCase() === 'converted').length; return total > 0 ? Math.min(100, parseFloat((converted / total * 100).toFixed(1))) : 0; }); } catch (_) { return [0, 0, 0, 0, 0]; } })(), backgroundColor: ['#0ea5e9', '#10b981', '#6366f1', '#f59e0b', '#f43f5e'] }]
                 },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { grid: { display: false } }, y: { beginAtZero: true, max: 20 } } }
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { grid: { display: false } }, y: { beginAtZero: true, max: 100 } } }
             });
         }
         document.getElementById('campaignExportBtn')?.addEventListener('click', () => this.exportTableToExcel('campaignTable', 'Campaign_Report'));
@@ -16311,7 +16311,7 @@ class MarketFlowCRM {
                 ...['SEO Revamp', 'CRM Upgrade', 'Re-engagement Funnel', 'Performance Ads'].map((l, i) => [
                     l, budgetData[i], spentData[i],
                     budgetData[i] - spentData[i],
-                    Math.round(spentData[i] / budgetData[i] * 100) + '%'
+                    Math.min(100, Math.round(spentData[i] / budgetData[i] * 100)) + '%'
                 ])
             ];
             const wsChart = XLSX.utils.aoa_to_sheet(chartRows);

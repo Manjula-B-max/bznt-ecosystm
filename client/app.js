@@ -45,23 +45,24 @@ window.renderContactsRows = function(contactDataString) {
     if (contactDataString) {
         let lines = contactDataString.split('\n').filter(l => l.trim());
         contacts = lines.map(line => {
-            let [name, email, dept] = line.split(',').map(s => s.trim());
-            return { name: name || '', email: email || '', dept: dept || '' };
+            let [name, email, dept, phone] = line.split(',').map(s => s ? s.trim() : '');
+            return { name: name || '', email: email || '', dept: dept || '', phone: phone || '' };
         });
     }
-    if (contacts.length === 0) contacts.push({name:'', email:'', dept:''}); // default empty row
+    if (contacts.length === 0) contacts.push({name:'', email:'', dept:'', phone:''}); // default empty row
     
     contacts.forEach((ctx, index) => {
-        rowsHtml += window.createContactRowHtml(ctx.name, ctx.email, ctx.dept);
+        rowsHtml += window.createContactRowHtml(ctx.name, ctx.email, ctx.dept, ctx.phone);
     });
     return rowsHtml;
 };
 
-window.createContactRowHtml = function(name='', email='', dept='') {
+window.createContactRowHtml = function(name='', email='', dept='', phone='') {
     return `
         <div class="flex items-center gap-2 mb-2 dynamic-contact-row">
             <input type="text" class="flex-1 border border-slate-200 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 contact-name-inp" placeholder="Name" value="${window.esc(name)}">
             <input type="email" class="flex-1 border border-slate-200 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 contact-email-inp" placeholder="Email" value="${window.esc(email)}">
+            <input type="text" class="flex-1 border border-slate-200 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 contact-phone-inp" placeholder="Phone" value="${window.esc(phone)}">
             <input type="text" class="flex-1 border border-slate-200 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 contact-dept-inp" placeholder="Dept/Role" value="${window.esc(dept)}">
             <button type="button" onclick="this.parentElement.remove()" class="text-rose-500 hover:text-rose-600 p-1 w-8 h-8 rounded-full hover:bg-rose-50 flex items-center justify-center transition-colors">
                 <i data-lucide="x" style="width:16px;height:16px"></i>
@@ -90,8 +91,9 @@ window.compileContactsData = function(prefix) {
     rows.forEach(row => {
         let n = row.querySelector('.contact-name-inp').value.trim();
         let e = row.querySelector('.contact-email-inp').value.trim();
+        let p = row.querySelector('.contact-phone-inp').value.trim();
         let d = row.querySelector('.contact-dept-inp').value.trim();
-        if (n || e || d) compiled.push([n,e,d].join(', '));
+        if (n || e || d || p) compiled.push([n,e,d,p].join(', '));
     });
     return compiled.join('\n');
 };
@@ -139,6 +141,80 @@ window.handleDocumentsUpload = async function(resource, id, inputId) {
 };
 
 // --- NEW GLOBAL HELPER FIXES END ---
+
+window.applyContactsFilter = function() {
+    try {
+        const nameEl = document.getElementById('contactsFilterName');
+        const phoneEl = document.getElementById('contactsFilterPhone');
+        const emailEl = document.getElementById('contactsFilterEmail');
+        const deptEl = document.getElementById('contactsFilterDept');
+        const typeEl = document.getElementById('contactsFilterType');
+        const ownerEl = document.getElementById('contactsFilterOwner');
+        const sourceEl = document.getElementById('contactsFilterSource');
+
+        const rows = Array.from(document.querySelectorAll('tr[data-contact-row="1"]'));
+
+        const nameQ = String(nameEl?.value || '').trim().toLowerCase();
+        const phoneQ = String(phoneEl?.value || '').trim().toLowerCase();
+        const emailQ = String(emailEl?.value || '').trim().toLowerCase();
+        const deptQ = String(deptEl?.value || '').trim().toLowerCase();
+        const typeQ = String(typeEl?.value || 'All').trim().toLowerCase();
+        const ownerQ = String(ownerEl?.value || 'All').trim().toLowerCase();
+        const sourceQ = String(sourceEl?.value || 'All').trim().toLowerCase();
+
+        let visibleCount = 0;
+
+        rows.forEach(r => {
+            const n = String(r.dataset.name || '').toLowerCase();
+            const p = String(r.dataset.phone || '').toLowerCase();
+            const e = String(r.dataset.email || '').toLowerCase();
+            const d = String(r.dataset.dept || '').toLowerCase();
+            const t = String(r.dataset.type || '').toLowerCase();
+            const o = String(r.dataset.owner || '').toLowerCase();
+            const s = String(r.dataset.source || '').toLowerCase();
+
+            const okType = typeQ === 'all' || t === typeQ;
+            const okName = !nameQ || n.includes(nameQ);
+            const okPhone = !phoneQ || p.includes(phoneQ);
+            const okEmail = !emailQ || e.includes(emailQ);
+            const okDept = !deptQ || d.includes(deptQ);
+            const okOwner = ownerQ === 'all' || o.includes(ownerQ);
+            const okSource = sourceQ === 'all' || s.includes(sourceQ);
+
+            // Forcefully execute the display logic
+            if (okType && okOwner && okSource && okName && okPhone && okEmail && okDept) {
+                r.style.setProperty('display', '', 'important');
+                visibleCount++;
+            } else {
+                r.style.setProperty('display', 'none', 'important');
+            }
+        });
+
+        // Debug visual tracer on UI
+        if (nameEl) nameEl.placeholder = `Hits: ${visibleCount}/${rows.length} [t=${typeQ}, e=${emailQ}]`;
+
+    } catch (err) {
+        console.error('Contacts Filter Error:', err);
+        const nameEl = document.getElementById('contactsFilterName');
+        if (nameEl) nameEl.placeholder = `ERROR: ${err.message}`;
+    }
+};
+
+// Global Event Delegation for Dynamic DOM Filter nodes
+document.addEventListener('input', (e) => {
+    if (e.target && e.target.id && e.target.id.startsWith('contactsFilter')) {
+        window.applyContactsFilter();
+    }
+});
+document.addEventListener('change', (e) => {
+    if (e.target && e.target.id && e.target.id.startsWith('contactsFilter')) {
+        window.applyContactsFilter();
+    }
+});
+
+
+
+
 
 
 // MarketFlow CRM Dashboard Application
@@ -733,82 +809,100 @@ class MarketFlowCRM {
     }
 
     getAllContactsData() {
-        const clients = this.getClientsData().map(c => {
+        const contacts = [];
+
+        // Expand each client: primary + all contact persons
+        this.getClientsData().forEach(c => {
             const name = String(c?.name || '').trim();
-            return {
+            if (!name) return;
+            const owner = String(c?.owner || '').trim();
+            const source = String(c?.leadSource || '').trim();
+
+            // Primary client entry
+            contacts.push({
                 type: 'Client',
                 name,
                 phone: String(c?.phone || '').trim(),
                 email: String(c?.email || '').trim(),
-                owner: String(c?.owner || '').trim(),
-                source: String(c?.leadSource || '').trim(),
+                owner,
+                source,
+                dept: '',
                 key: `client:${name.toLowerCase()}`
-            };
-        }).filter(x => x.name);
+            });
 
-        const leads = this.getLeadsData().map(l => {
+            // Additional contact persons
+            if (c.contactPersonMultiple) {
+                c.contactPersonMultiple.split('\n').forEach((line, idx) => {
+                    const parts = line.split(',').map(s => s.trim());
+                    const pName = parts[0] || '';
+                    const pEmail = parts[1] || '';
+                    const pDept = parts[2] || '';
+                    const pPhone = parts[3] || '';
+                    if (!pName) return;
+                    contacts.push({
+                        type: 'Client',
+                        name: pName,
+                        phone: pPhone,
+                        email: pEmail,
+                        owner,
+                        source,
+                        dept: pDept,
+                        key: `client-contact:${name.toLowerCase()}:${idx}`
+                    });
+                });
+            }
+        });
+
+        // Expand each lead: company + all contact persons
+        this.getLeadsData().forEach(l => {
             const name = String(l?.company || '').trim();
-            return {
+            if (!name) return;
+            const owner = String(l?.assignedTo || '').trim();
+            const source = String(l?.source || '').trim();
+
+            // Primary lead entry
+            contacts.push({
                 type: 'Lead',
                 name,
                 phone: String(l?.contact || '').trim(),
-                email: '',
-                owner: String(l?.assignedTo || '').trim(),
-                source: String(l?.source || '').trim(),
+                email: String(l?.email || '').trim(),
+                owner,
+                source,
+                dept: '',
                 key: `lead:${String(l?.id || name).toLowerCase()}`
-            };
-        }).filter(x => x.name);
+            });
 
-        const merged = [...clients, ...leads];
-        merged.sort((a, b) => String(a.name).localeCompare(String(b.name)));
-        return merged;
+            // Additional contact persons
+            if (l.contactPersonMultiple) {
+                l.contactPersonMultiple.split('\n').forEach((line, idx) => {
+                    const parts = line.split(',').map(s => s.trim());
+                    const pName = parts[0] || '';
+                    const pEmail = parts[1] || '';
+                    const pDept = parts[2] || '';
+                    const pPhone = parts[3] || '';
+                    if (!pName) return;
+                    contacts.push({
+                        type: 'Lead',
+                        name: pName,
+                        phone: pPhone,
+                        email: pEmail,
+                        owner,
+                        source,
+                        dept: pDept,
+                        key: `lead-contact:${String(l?.id || name).toLowerCase()}:${idx}`
+                    });
+                });
+            }
+        });
+
+        contacts.sort((a, b) => String(a.name).localeCompare(String(b.name)));
+        return contacts;
     }
 
     setupContactsInteractions() {
-        const nameEl = document.getElementById('contactsFilterName');
-        const phoneEl = document.getElementById('contactsFilterPhone');
-        const emailEl = document.getElementById('contactsFilterEmail');
-        const typeEl = document.getElementById('contactsFilterType');
-        const ownerEl = document.getElementById('contactsFilterOwner');
-        const sourceEl = document.getElementById('contactsFilterSource');
-        const rows = Array.from(document.querySelectorAll('tr[data-contact-row="1"]'));
-
-        const apply = () => {
-            const nameQ = String(nameEl?.value || '').trim().toLowerCase();
-            const phoneQ = String(phoneEl?.value || '').trim().toLowerCase();
-            const emailQ = String(emailEl?.value || '').trim().toLowerCase();
-            const typeQ = String(typeEl?.value || 'All').trim().toLowerCase();
-            const ownerQ = String(ownerEl?.value || 'All').trim().toLowerCase();
-            const sourceQ = String(sourceEl?.value || 'All').trim().toLowerCase();
-
-            rows.forEach(r => {
-                const n = String(r.dataset.name || '').toLowerCase();
-                const p = String(r.dataset.phone || '').toLowerCase();
-                const e = String(r.dataset.email || '').toLowerCase();
-                const t = String(r.dataset.type || '').toLowerCase();
-                const o = String(r.dataset.owner || '').toLowerCase();
-                const s = String(r.dataset.source || '').toLowerCase();
-
-                const okType = typeQ === 'all' || t === typeQ;
-                const okName = !nameQ || n.includes(nameQ);
-                const okPhone = !phoneQ || p.includes(phoneQ);
-                const okEmail = !emailQ || e.includes(emailQ);
-                const okOwner = ownerQ === 'all' || o === ownerQ;
-                const okSource = sourceQ === 'all' || s === sourceQ;
-
-                r.style.display = (okType && okOwner && okSource && okName && okPhone && okEmail) ? '' : 'none';
-            });
-        };
-
-        [nameEl, phoneEl, emailEl].forEach(el => {
-            if (!el) return;
-            el.addEventListener('input', apply);
-        });
-        if (typeEl) typeEl.addEventListener('change', apply);
-        if (ownerEl) ownerEl.addEventListener('change', apply);
-        if (sourceEl) sourceEl.addEventListener('change', apply);
-
-        apply();
+        if (typeof window.applyContactsFilter === 'function') {
+            window.applyContactsFilter();
+        }
     }
 
     applyLoggedInUser() {
@@ -1172,7 +1266,8 @@ class MarketFlowCRM {
             receivedAt: Number.isFinite(Number(l.receivedAt)) ? Number(l.receivedAt) : Date.now(),
             firstResponseAt: Number.isFinite(Number(l.firstResponseAt)) ? Number(l.firstResponseAt) : null,
             linkedClientName: String(l.linkedClientName || '').trim(),
-            history: Array.isArray(l.history) ? l.history : []
+            history: Array.isArray(l.history) ? l.history : [],
+            documents: Array.isArray(l.documents) ? l.documents : (idx >= 0 && Array.isArray(items[idx]?.documents) ? items[idx].documents : [])
         };
 
         if (idx >= 0) items[idx] = { ...items[idx], ...normalized };
@@ -1250,7 +1345,8 @@ class MarketFlowCRM {
             leadSource: String(c.leadSource || '').trim(),
             location: String(c.location || '').trim(),
             vendorCode: String(c.vendorCode || '').trim(),
-            notes: String(c.notes || '').trim()
+            notes: String(c.notes || '').trim(),
+            documents: Array.isArray(c.documents) ? c.documents : (idx >= 0 && Array.isArray(items[idx]?.documents) ? items[idx].documents : [])
         };
         if (idx >= 0) items[idx] = { ...items[idx], ...normalized };
         else items.unshift(normalized);
@@ -2047,11 +2143,18 @@ class MarketFlowCRM {
     }
 
     getTemplateColumns(type) {
-        if (type === 'lead') {
-            return ['Company', 'Contact', 'Lead Source', 'Assigned To', 'Next Action'];
-        }
-        if (type === 'client') {
-            return ['Client Name', 'Email', 'Phone', 'Industry', 'Owner', 'Lead Source', 'City', 'Notes'];
+        if (type === 'lead' || type === 'client') {
+            return [
+                'Title (Mr/Ms/Dr)', 'First Name', 'Last Name',
+                'Email', 'Phone', 'Company', 'Job Title',
+                type === 'client' ? 'Client Type' : 'Lead Type',
+                'Industry', 'Industry Size', 'Source', 'Status', 'Priority',
+                'Tags', 'GSTIN', 'PAN Code', 'GST State Code',
+                'Address', 'Location URL', 'Owner', 'Stage',
+                'Amount', 'Follow Up Date', 'Notes',
+                'Contact 1 Name', 'Contact 1 Dept', 'Contact 1 Email', 'Contact 1 Phone',
+                'Contact 2 Name', 'Contact 2 Dept', 'Contact 2 Email', 'Contact 2 Phone'
+            ];
         }
         return [
             'Client', 'Project Name', 'Start Date', 'Duration', 'Budget', 'Assigned Team',
@@ -2182,18 +2285,51 @@ class MarketFlowCRM {
 
                 let saved = 0, failed = 0;
                 for (const row of rows) {
-                    const name = find(row, 'Client Name', 'Name', 'Company', 'Company Name');
-                    if (!name) { failed++; continue; }
+                    const firstName = find(row, 'First Name', 'Name', 'Client Name');
+                    const company = find(row, 'Company', 'Company Name', 'Business');
+                    
+                    // We require either First Name or Company to create a valid record
+                    if (!firstName && !company) { failed++; continue; }
+                    
+                    const contactPersonMultiple = [];
+                    for (let i = 1; i <= 2; i++) {
+                        const cpName = find(row, `Contact ${i} Name`, `CP${i} Name`);
+                        if (cpName) {
+                            contactPersonMultiple.push({
+                                name: cpName,
+                                dept: find(row, `Contact ${i} Dept`, `Contact ${i} Role`, `CP${i} Dept`),
+                                email: find(row, `Contact ${i} Email`, `CP${i} Email`),
+                                phone: find(row, `Contact ${i} Phone`, `CP${i} Phone`)
+                            });
+                        }
+                    }
+
                     const res = this.saveClient({
-                        name,
-                        owner: find(row, 'Owner', 'Account Owner', 'Sales Owner') || '',
-                        email: find(row, 'Email', 'Email ID', 'E-mail', 'Mail') || '',
-                        phone: find(row, 'Phone', 'Phone Number', 'Mobile', 'Contact', 'Contact Number') || '',
-                        industry: find(row, 'Industry', 'Sector') || '',
-                        leadSource: find(row, 'Lead Source', 'Source') || '',
-                        notes: find(row, 'Notes', 'Remarks', 'Comments') || '',
-                        stage: 'Active',
-                        city: find(row, 'City', 'Location') || '—'
+                        title: find(row, 'Title (Mr/Ms/Dr)', 'Title'),
+                        firstName,
+                        lastName: find(row, 'Last Name'),
+                        email: find(row, 'Email', 'Email ID', 'Mail'),
+                        phone: find(row, 'Phone', 'Mobile', 'Contact Number', 'Contact'),
+                        company,
+                        jobTitle: find(row, 'Job Title', 'Designation'),
+                        clientType: find(row, 'Client Type', 'Type'),
+                        industry: find(row, 'Industry', 'Sector'),
+                        industrySize: find(row, 'Industry Size', 'Size'),
+                        source: find(row, 'Source', 'Lead Source'),
+                        status: find(row, 'Status') || 'Active',
+                        priority: find(row, 'Priority') || 'Medium',
+                        tags: find(row, 'Tags'),
+                        notes: find(row, 'Notes', 'Remarks'),
+                        gstin: find(row, 'GSTIN', 'GST'),
+                        panCode: find(row, 'PAN Code', 'PAN'),
+                        gstStateCode: find(row, 'GST State Code', 'State Code'),
+                        address: find(row, 'Address', 'Location', 'City'),
+                        locationUrl: find(row, 'Location URL', 'Map URL', 'URL'),
+                        owner: find(row, 'Owner', 'Account Owner', 'Assigned To'),
+                        stage: find(row, 'Stage') || 'Active',
+                        amount: parseFloat(find(row, 'Amount', 'Value', 'Revenue')) || 0,
+                        followUpDate: find(row, 'Follow Up Date', 'Next Action'),
+                        contactPersonMultiple
                     });
                     if (res.ok) saved++; else failed++;
                 }
@@ -2235,16 +2371,50 @@ class MarketFlowCRM {
 
                 let saved = 0, failed = 0;
                 for (const row of rows) {
-                    const company = find(row, 'Company', 'Company Name', 'Name');
-                    if (!company) { failed++; continue; }
+                    const firstName = find(row, 'First Name', 'Name', 'Lead Name');
+                    const company = find(row, 'Company', 'Company Name', 'Business');
+                    
+                    if (!firstName && !company) { failed++; continue; }
+
+                    const contactPersonMultiple = [];
+                    for (let i = 1; i <= 2; i++) {
+                        const cpName = find(row, `Contact ${i} Name`, `CP${i} Name`);
+                        if (cpName) {
+                            contactPersonMultiple.push({
+                                name: cpName,
+                                dept: find(row, `Contact ${i} Dept`, `Contact ${i} Role`, `CP${i} Dept`),
+                                email: find(row, `Contact ${i} Email`, `CP${i} Email`),
+                                phone: find(row, `Contact ${i} Phone`, `CP${i} Phone`)
+                            });
+                        }
+                    }
+
                     const res = this.saveLead({
+                        title: find(row, 'Title (Mr/Ms/Dr)', 'Title'),
+                        firstName,
+                        lastName: find(row, 'Last Name'),
+                        email: find(row, 'Email', 'Email ID', 'Mail'),
+                        phone: find(row, 'Phone', 'Mobile', 'Contact Number', 'Contact'),
                         company,
-                        contact: find(row, 'Contact', 'Phone', 'Email', 'Contact Number') || '',
-                        source: find(row, 'Lead Source', 'Source') || 'LinkedIn',
-                        assignedTo: find(row, 'Assigned To', 'Assigned', 'Owner') || '',
-                        nextAction: find(row, 'Next Action', 'Action') || 'Follow-up',
-                        stage: 'New Lead',
-                        feedbackStatus: 'Pending'
+                        jobTitle: find(row, 'Job Title', 'Designation'),
+                        leadType: find(row, 'Lead Type', 'Type'),
+                        industry: find(row, 'Industry', 'Sector'),
+                        industrySize: find(row, 'Industry Size', 'Size'),
+                        source: find(row, 'Source', 'Lead Source'),
+                        status: find(row, 'Status') || 'New',
+                        priority: find(row, 'Priority') || 'Medium',
+                        tags: find(row, 'Tags'),
+                        notes: find(row, 'Notes', 'Remarks'),
+                        gstin: find(row, 'GSTIN', 'GST'),
+                        panCode: find(row, 'PAN Code', 'PAN'),
+                        gstStateCode: find(row, 'GST State Code', 'State Code'),
+                        address: find(row, 'Address', 'Location', 'City'),
+                        locationUrl: find(row, 'Location URL', 'Map URL', 'URL'),
+                        owner: find(row, 'Owner', 'Account Owner', 'Assigned To'),
+                        stage: find(row, 'Stage') || 'New Lead',
+                        amount: parseFloat(find(row, 'Amount', 'Value', 'Revenue')) || 0,
+                        followUpDate: find(row, 'Follow Up Date', 'Next Action'),
+                        contactPersonMultiple
                     });
                     if (res.ok) saved++; else failed++;
                 }
@@ -7487,11 +7657,16 @@ class MarketFlowCRM {
                 leads.map(l => {
                     const converted = String(l.status || '').toLowerCase() === 'converted';
                     const isSelected = selected && String(selected.id || '').trim().toLowerCase() === String(l.id || '').trim().toLowerCase();
+                    const primaryContact = l.contactPersonMultiple && l.contactPersonMultiple.trim() ? l.contactPersonMultiple.split('\n')[0].split(',')[0].trim() : (l.contact || '—');
+                    const city = l.address ? l.address.split('\n')[1] || '' : '';
                     return `
                                             <tr data-lead-id="${l.id}" class="hover:bg-slate-50 cursor-pointer ${isSelected ? 'bg-slate-50' : ''}">
                                                 <td class="px-4 py-3 font-medium text-slate-900">${l.id}</td>
-                                                <td class="px-4 py-3 text-slate-700">${l.company}</td>
-                                                <td class="px-4 py-3 text-slate-700">${l.contact || '—'}</td>
+                                                <td class="px-4 py-3">
+                                                    <div class="text-slate-700">${l.company}</div>
+                                                    <div class="text-xs text-slate-500">${city}</div>
+                                                </td>
+                                                <td class="px-4 py-3 text-slate-700">${primaryContact}</td>
                                                 <td class="px-4 py-3 text-slate-700">${l.source || '—'}</td>
                                                 <td class="px-4 py-3 text-slate-700">${l.stage || '—'}</td>
                                                 <td class="px-4 py-3 text-slate-700">${l.feedbackStatus || '—'}</td>
@@ -7542,6 +7717,33 @@ class MarketFlowCRM {
                                 <div>
                                     <div class="text-[11px] font-semibold text-slate-500">SLA Timer</div>
                                     <div class="text-sm font-medium text-slate-900 mt-1">${this.formatSlaTimer(selected.receivedAt)}</div>
+                                </div>
+                            </div>
+
+                            <div class="mt-4 bg-slate-50 p-3 rounded-lg border border-slate-100">
+                                <div class="grid grid-cols-1 gap-3 text-sm">
+                                    <div>
+                                        <div class="text-[11px] font-semibold text-slate-500">Address</div>
+                                        <div class="text-slate-800 mt-1">${String(selected.address || '—').replace(/\n/g, '<br/>')}</div>
+                                    </div>
+                                    <div>
+                                        <div class="text-[11px] font-semibold text-slate-500">Contact Persons</div>
+                                        <div class="text-slate-800 mt-1">
+                                            ${String(selected.contactPersonMultiple || '').split('\n').filter(Boolean).map(c => `<div class="truncate">• ${window.esc(c)}</div>`).join('') || '—'}
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <div class="text-[11px] font-semibold text-slate-500">Location URL</div>
+                                        <div class="text-slate-800 mt-1">
+                                            ${selected.locationUrl ? `<a href="${window.esc(selected.locationUrl)}" target="_blank" class="text-blue-600 underline truncate block">View Map Location</a>` : '—'}
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <div class="text-[11px] font-semibold text-slate-500">Uploaded Documents</div>
+                                        <div class="text-slate-800 mt-1">
+                                            ${(selected.documents && selected.documents.length > 0) ? selected.documents.map(d => `<a href="/uploads/leads/${selected.id}/${d}" target="_blank" class="text-purple-600 hover:text-purple-800 underline flex items-center gap-1 mb-1"><i data-lucide="file" style="width:14px;height:14px"></i>${d}</a>`).join('') : '<span class="text-slate-400 text-xs">No documents uploaded</span>'}
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
 
@@ -7855,11 +8057,13 @@ class MarketFlowCRM {
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y divide-slate-200">
-                                    ${clients.map(c => `
+                                    ${clients.map(c => {
+                                        const city = c.address ? c.address.split('\n')[1] || '' : '';
+                                        return `
                                         <tr data-client-name="${c.name}" class="hover:bg-slate-50 cursor-pointer ${c.name === selectedName ? 'bg-slate-50' : ''}">
                                             <td class="px-4 py-3">
                                                 <div class="font-medium text-slate-900">${c.name}</div>
-                                                <div class="text-xs text-slate-500">${c.city} • ${c.industry}</div>
+                                                <div class="text-xs text-slate-500">${city ? city + ' • ' : ''}${c.industry || '—'}</div>
                                             </td>
                                             <td class="px-4 py-3 text-slate-700">${c.owner}</td>
                                             <td class="px-4 py-3">${this.renderBadge(c.stage)}</td>
@@ -7878,7 +8082,8 @@ class MarketFlowCRM {
                                                 </div>
                                             </td>
                                         </tr>
-                                    `).join('')}
+                                    `;
+                                    }).join('')}
                                 </tbody>
                             </table>
                         </div>
@@ -7892,6 +8097,33 @@ class MarketFlowCRM {
                                     <p class="text-sm text-slate-500">${selected.name}</p>
                                 </div>
                                 <span class="px-2 py-1 text-xs font-medium bg-slate-100 text-slate-700 rounded-full">${selected.stage}</span>
+                            </div>
+                            
+                            <div class="mt-4 bg-slate-50 p-3 rounded-lg border border-slate-100">
+                                <div class="grid grid-cols-1 gap-3 text-sm">
+                                    <div>
+                                        <div class="text-[11px] font-semibold text-slate-500">Address</div>
+                                        <div class="text-slate-800 mt-1">${String(selected.address || '—').replace(/\n/g, '<br/>')}</div>
+                                    </div>
+                                    <div>
+                                        <div class="text-[11px] font-semibold text-slate-500">Contact Persons</div>
+                                        <div class="text-slate-800 mt-1">
+                                            ${String(selected.contactPersonMultiple || '').split('\n').filter(Boolean).map(c => `<div class="truncate">• ${window.esc(c)}</div>`).join('') || '—'}
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <div class="text-[11px] font-semibold text-slate-500">Location URL</div>
+                                        <div class="text-slate-800 mt-1">
+                                            ${selected.locationUrl ? `<a href="${window.esc(selected.locationUrl)}" target="_blank" class="text-blue-600 underline truncate block">View Map Location</a>` : '—'}
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <div class="text-[11px] font-semibold text-slate-500">Uploaded Documents</div>
+                                        <div class="text-slate-800 mt-1">
+                                            ${(selected.documents && selected.documents.length > 0) ? selected.documents.map(d => `<a href="/uploads/clients/${selected.id || window.esc(selected.name).replace(/\\s+/g,'_')}/${d}" target="_blank" class="text-purple-600 hover:text-purple-800 underline flex items-center gap-1 mb-1"><i data-lucide="file" style="width:14px;height:14px"></i>${d}</a>`).join('') : '<span class="text-slate-400 text-xs">No documents uploaded</span>'}
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
 
                             <div class="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -8066,6 +8298,7 @@ class MarketFlowCRM {
                                 <tr>
                                     <th class="text-left px-4 py-3 font-medium">Type</th>
                                     <th class="text-left px-4 py-3 font-medium">Name</th>
+                                    <th class="text-left px-4 py-3 font-medium">Dept/Role</th>
                                     <th class="text-left px-4 py-3 font-medium">Phone</th>
                                     <th class="text-left px-4 py-3 font-medium">Email</th>
                                     <th class="text-left px-4 py-3 font-medium">Owner</th>
@@ -8074,29 +8307,32 @@ class MarketFlowCRM {
                                 </tr>
                                 <tr class="bg-white">
                                     <th class="px-4 py-3">
-                                        <select id="contactsFilterType" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500">
+                                        <select id="contactsFilterType" onchange="window.applyContactsFilter()" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500">
                                             <option>All</option>
                                             <option>Client</option>
                                             <option>Lead</option>
                                         </select>
                                     </th>
                                     <th class="px-4 py-3">
-                                        <input id="contactsFilterName" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="Filter" />
+                                        <input id="contactsFilterName" oninput="window.applyContactsFilter()" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="Filter" />
                                     </th>
                                     <th class="px-4 py-3">
-                                        <input id="contactsFilterPhone" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="Filter" />
+                                        <input id="contactsFilterDept" oninput="window.applyContactsFilter()" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="Filter" />
                                     </th>
                                     <th class="px-4 py-3">
-                                        <input id="contactsFilterEmail" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="Filter" />
+                                        <input id="contactsFilterPhone" oninput="window.applyContactsFilter()" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="Filter" />
                                     </th>
                                     <th class="px-4 py-3">
-                                        <select id="contactsFilterOwner" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500">
+                                        <input id="contactsFilterEmail" oninput="window.applyContactsFilter()" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="Filter" />
+                                    </th>
+                                    <th class="px-4 py-3">
+                                        <select id="contactsFilterOwner" onchange="window.applyContactsFilter()" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500">
                                             <option>All</option>
                                             ${owners.map(o => `<option>${o}</option>`).join('')}
                                         </select>
                                     </th>
                                     <th class="px-4 py-3">
-                                        <select id="contactsFilterSource" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500">
+                                        <select id="contactsFilterSource" onchange="window.applyContactsFilter()" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500">
                                             <option>All</option>
                                             ${sources.map(s => `<option>${s}</option>`).join('')}
                                         </select>
@@ -8111,11 +8347,12 @@ class MarketFlowCRM {
                 ? '<span class="px-2 py-1 text-xs font-medium bg-emerald-50 text-emerald-700 rounded-full">Client</span>'
                 : '<span class="px-2 py-1 text-xs font-medium bg-amber-50 text-amber-700 rounded-full">Lead</span>';
             return `
-                                        <tr data-contact-row="1" data-type="${esc(c.type).toLowerCase()}" data-name="${esc(c.name)}" data-phone="${esc(c.phone)}" data-email="${esc(c.email)}" data-owner="${esc(c.owner).toLowerCase()}" data-source="${esc(c.source).toLowerCase()}" class="hover:bg-slate-50">
+                                        <tr data-contact-row="1" data-type="${esc(c.type).toLowerCase()}" data-name="${esc(c.name)}" data-phone="${esc(c.phone)}" data-email="${esc(c.email)}" data-owner="${esc(c.owner).toLowerCase()}" data-source="${esc(c.source).toLowerCase()}" data-dept="${esc(c.dept).toLowerCase()}" class="hover:bg-slate-50">
                                             <td class="px-4 py-3">${typeChip}</td>
                                             <td class="px-4 py-3">
                                                 <div class="font-medium text-slate-900">${esc(c.name)}</div>
                                             </td>
+                                            <td class="px-4 py-3 text-slate-500 text-xs">${esc(c.dept) || '—'}</td>
                                             <td class="px-4 py-3 text-slate-700">${esc(c.phone) || '—'}</td>
                                             <td class="px-4 py-3 text-slate-700">${esc(c.email) || '—'}</td>
                                             <td class="px-4 py-3 text-slate-700">${esc(c.owner) || '—'}</td>

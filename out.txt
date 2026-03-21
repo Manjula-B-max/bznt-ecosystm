@@ -1,3 +1,40 @@
-3224: const address = document.getElementById('clientAddress')?.value?.trim() || '';
-7789: <textarea id="clientAddress" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" rows="3" placeholder="Line 1&#10;Line 2&#10;Line 3">${clientData?.address || ''}</textarea>
-7817: <textarea id="clientAddress" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" rows="3" placeholder="Line 1&#10;Line 2&#10;Line 3">${clientData?.address || ''}</textarea>
+2114: this.switchSubSection('client_directory');
+2271: this.switchSubSection('client_directory');
+2322: this.switchSubSection('lead_directory');
+2460: this.switchSubSection('active');
+2497: this.switchSubSection('active');
+2543: this.switchSubSection('email');
+2602: this.switchSubSection('invoices');
+2645: if (subsection) this.switchSubSection(subsection);
+2838: this.switchSubSection('clients');
+2851: this.switchSubSection('invoices');
+2858: this.switchSubSection('followup_log');
+2865: this.switchSubSection('overdue_risk');
+2872: this.switchSubSection('payments');
+2932: this.switchSubSection('lead_directory');
+2965: this.switchSubSection('client_directory');
+3020: this.switchSubSection('lead_directory');
+3209: this.switchSubSection('active');
+3224: this.switchSubSection('invoices');
+3232: this.switchSubSection('active');
+3239: this.switchSubSection('client_directory');
+3301: this.switchSubSection('client_directory');
+3368: this.switchSubSection('lead_directory');
+4470: this.switchSubSection(subSection);
+4498: this.switchSubSection('overview');
+4505: this.switchSubSection('weekly');
+4512: this.switchSubSection('daily');
+4526: this.switchSubSection('pipeline');
+4534: this.switchSubSection('email');
+4548: this.switchSubSection('client_registration');
+4555: this.switchSubSection('sms');
+4582: this.switchSubSection('health');
+4606: this.switchSubSection('followups');
+4613: this.switchSubSection('work');
+4620: this.switchSubSection('lead_registration');
+5062: switchSubSection(subSection) {
+5266: const goContacts = () => this.switchSubSection('contacts_directory');
+5267: const goAlerts = () => this.switchSubSection('alert_gmass');
+16541: this.switchSubSection(subSection);
+16623: this.switchSubSection(subsection);
+16679: this.switchSubSection(item.subsection);

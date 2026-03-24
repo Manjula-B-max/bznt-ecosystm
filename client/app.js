@@ -58,17 +58,56 @@ window.renderContactsRows = function(contactDataString) {
 };
 
 window.createContactRowHtml = function(name='', email='', dept='', phone='') {
+    // Strip +91 prefix for display in the 10-digit input
+    let phoneDigits = String(phone || '').replace(/^\+91\s*/, '').replace(/\D/g, '').slice(0, 10);
     return `
         <div class="flex items-center gap-2 mb-2 dynamic-contact-row">
             <input type="text" class="flex-1 border border-slate-200 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 contact-name-inp" placeholder="Name" value="${window.esc(name)}">
-            <input type="email" class="flex-1 border border-slate-200 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 contact-email-inp" placeholder="Email" value="${window.esc(email)}">
-            <input type="text" class="flex-1 border border-slate-200 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 contact-phone-inp" placeholder="Phone" value="${window.esc(phone)}">
+            <input type="email" class="flex-1 border border-slate-200 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 contact-email-inp" placeholder="Email (e.g. name@domain.com)" value="${window.esc(email)}" oninput="window.validateEmailInput(this)">
+            <div class="flex-1 flex items-center border border-slate-200 rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-purple-500">
+                <span class="px-2 py-1.5 text-sm bg-slate-100 text-slate-600 border-r border-slate-200 select-none whitespace-nowrap">+91</span>
+                <input type="tel" class="flex-1 px-2 py-1.5 text-sm focus:outline-none contact-phone-inp" placeholder="10-digit number" value="${window.esc(phoneDigits)}" maxlength="10" oninput="this.value=this.value.replace(/\\D/g,'').slice(0,10)">
+            </div>
             <input type="text" class="flex-1 border border-slate-200 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 contact-dept-inp" placeholder="Dept/Role" value="${window.esc(dept)}">
             <button type="button" onclick="this.parentElement.remove()" class="text-rose-500 hover:text-rose-600 p-1 w-8 h-8 rounded-full hover:bg-rose-50 flex items-center justify-center transition-colors">
                 <i data-lucide="x" style="width:16px;height:16px"></i>
             </button>
         </div>
     `;
+};
+
+// Global phone validator: strips non-digits, limits to 10 digits
+window.validatePhoneInput = function(inp) {
+    inp.value = inp.value.replace(/\D/g, '').slice(0, 10);
+};
+
+// Global email validator: shows red border if format is invalid
+window.validateEmailInput = function(inp) {
+    const val = inp.value.trim();
+    if (!val) { inp.style.borderColor = ''; return; }
+    const ok = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val);
+    inp.style.borderColor = ok ? '' : '#ef4444';
+    inp.title = ok ? '' : 'Please enter a valid email (e.g. name@domain.com)';
+};
+
+// Validate all contact phone inputs in a container (returns error message or null)
+window.validateContactPersons = function(prefix) {
+    const containerId = prefix + 'ContactPersonsList';
+    const container = document.getElementById(containerId);
+    if (!container) return null;
+    const rows = container.querySelectorAll('.dynamic-contact-row');
+    for (const row of rows) {
+        const phone = row.querySelector('.contact-phone-inp');
+        const emailInp = row.querySelector('.contact-email-inp');
+        if (phone && phone.value.trim() && phone.value.trim().length !== 10) {
+            return 'Phone number must be exactly 10 digits (after +91).';
+        }
+        if (emailInp && emailInp.value.trim()) {
+            const ok = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailInp.value.trim());
+            if (!ok) return 'Please enter a valid email address (e.g. name@domain.com).';
+        }
+    }
+    return null;
 };
 
 window.addContactRow = function(prefix) {
@@ -91,7 +130,8 @@ window.compileContactsData = function(prefix) {
     rows.forEach(row => {
         let n = row.querySelector('.contact-name-inp').value.trim();
         let e = row.querySelector('.contact-email-inp').value.trim();
-        let p = row.querySelector('.contact-phone-inp').value.trim();
+        let rawPhone = row.querySelector('.contact-phone-inp').value.replace(/\D/g, '').slice(0, 10);
+        let p = rawPhone ? '+91 ' + rawPhone : '';
         let d = row.querySelector('.contact-dept-inp').value.trim();
         if (n || e || d || p) compiled.push([n,e,d,p].join(', '));
     });
@@ -519,157 +559,6 @@ class MarketFlowCRM {
                 </div>
             </div>
         `;
-    }
-
-    editClientViaModal(client) {
-        const c = client || {};
-        const name = String(c.name || '').trim();
-        if (!name) {
-            this.showToast('Select a client first.');
-            return;
-        }
-
-        const esc = (v) => String(v ?? '').replace(/</g, '&lt;');
-
-        this.openModal('Edit Client', `
-            <div>
-                <label style="display:block;font-size:12px;font-weight:700;color:#475569;">Client Name</label>
-                <input name="name" required style="margin-top:6px;width:100%;border:1px solid #e2e8f0;border-radius:12px;padding:10px 12px;font-size:14px;" value="${esc(name)}" />
-            </div>
-            <div style="display:grid;grid-template-columns:1fr;gap:10px;" class="sm-grid-2col">
-                <div>
-                    <label style="display:block;font-size:12px;font-weight:700;color:#475569;">Owner</label>
-                    <input name="owner" style="margin-top:6px;width:100%;border:1px solid #e2e8f0;border-radius:12px;padding:10px 12px;font-size:14px;" value="${esc(c.owner || '')}" />
-                </div>
-                <div>
-                    <label style="display:block;font-size:12px;font-weight:700;color:#475569;">Industry</label>
-                    <input name="industry" style="margin-top:6px;width:100%;border:1px solid #e2e8f0;border-radius:12px;padding:10px 12px;font-size:14px;" value="${esc(c.industry || '')}" />
-                </div>
-            </div>
-            <div style="display:grid;grid-template-columns:1fr;gap:10px;" class="sm-grid-2col">
-                <div>
-                    <label style="display:block;font-size:12px;font-weight:700;color:#475569;">Email</label>
-                    <input name="email" style="margin-top:6px;width:100%;border:1px solid #e2e8f0;border-radius:12px;padding:10px 12px;font-size:14px;" value="${esc(c.email || '')}" />
-                </div>
-                <div>
-                    <label style="display:block;font-size:12px;font-weight:700;color:#475569;">Phone</label>
-                    <input name="phone" style="margin-top:6px;width:100%;border:1px solid #e2e8f0;border-radius:12px;padding:10px 12px;font-size:14px;" value="${esc(c.phone || '')}" />
-                </div>
-            </div>
-            <div>
-                <label style="display:block;font-size:12px;font-weight:700;color:#475569;">City</label>
-                <input name="city" style="margin-top:6px;width:100%;border:1px solid #e2e8f0;border-radius:12px;padding:10px 12px;font-size:14px;" value="${esc(c.city || '')}" />
-            </div>
-            <div>
-                <label style="display:block;font-size:12px;font-weight:700;color:#475569;">Notes</label>
-                <textarea name="notes" rows="3" style="margin-top:6px;width:100%;border:1px solid #e2e8f0;border-radius:12px;padding:10px 12px;font-size:14px;">${esc(c.notes || '')}</textarea>
-            </div>
-        `, {
-            submitLabel: 'Save Changes',
-            onSubmit: (form) => {
-                const data = new FormData(form);
-                const nextName = String(data.get('name') || '').trim();
-                if (!nextName) {
-                    this.showToast('Client name is required.');
-                    return;
-                }
-                // If renamed: delete old, then save new
-                if (nextName.toLowerCase() !== name.toLowerCase()) {
-                    this.deleteClientByName(name);
-                }
-                const res = this.saveClient({
-                    name: nextName,
-                    owner: data.get('owner'),
-                    industry: data.get('industry'),
-                    email: data.get('email'),
-                    phone: data.get('phone'),
-                    city: data.get('city') || '—',
-                    notes: data.get('notes'),
-                    stage: String(c.stage || 'Active')
-                });
-                if (!res.ok) {
-                    this.showToast(res.message || 'Unable to save client.');
-                    return;
-                }
-                this.closeModal();
-                this.selectedClientName = nextName;
-                this.renderContent();
-                this.initializeLucideIcons();
-                this.showToast('Client updated.');
-            }
-        });
-    }
-
-
-    editLeadViaModal(lead) {
-        const l = lead || {};
-        const id = String(l.id || '').trim();
-        if (!id) {
-            this.showToast('Select a lead first.');
-            return;
-        }
-
-        const esc = (v) => String(v ?? '').replace(/</g, '&lt;');
-
-        this.openModal('Edit Lead', `
-            <div>
-                <label style="display:block;font-size:12px;font-weight:700;color:#475569;">Company Name</label>
-                <input name="company" required style="margin-top:6px;width:100%;border:1px solid #e2e8f0;border-radius:12px;padding:10px 12px;font-size:14px;" value="${esc(l.company || '')}" />
-            </div>
-            <div style="display:grid;grid-template-columns:1fr;gap:10px;" class="sm-grid-2col">
-                <div>
-                    <label style="display:block;font-size:12px;font-weight:700;color:#475569;">Contact</label>
-                    <input name="contact" style="margin-top:6px;width:100%;border:1px solid #e2e8f0;border-radius:12px;padding:10px 12px;font-size:14px;" value="${esc(l.contact || '')}" />
-                </div>
-                <div>
-                    <label style="display:block;font-size:12px;font-weight:700;color:#475569;">Assigned To</label>
-                    <input name="assignedTo" style="margin-top:6px;width:100%;border:1px solid #e2e8f0;border-radius:12px;padding:10px 12px;font-size:14px;" value="${esc(l.assignedTo || '')}" />
-                </div>
-            </div>
-            <div style="display:grid;grid-template-columns:1fr;gap:10px;" class="sm-grid-2col">
-                <div>
-                    <label style="display:block;font-size:12px;font-weight:700;color:#475569;">Source</label>
-                    <select name="source" style="margin-top:6px;width:100%;border:1px solid #e2e8f0;border-radius:12px;padding:10px 12px;font-size:14px;">
-                        <option value="Exhibition" ${(l.source === 'Exhibition') ? 'selected' : ''}>Exhibition</option>
-                        <option value="IndiaMART" ${(l.source === 'IndiaMART') ? 'selected' : ''}>IndiaMART</option>
-                        <option value="LinkedIn" ${(l.source === 'LinkedIn') ? 'selected' : ''}>LinkedIn</option>
-                        <option value="Field Visit" ${(l.source === 'Field Visit') ? 'selected' : ''}>Field Visit</option>
-                        <option value="Referral" ${(l.source === 'Referral') ? 'selected' : ''}>Referral</option>
-                    </select>
-                </div>
-                <div>
-                    <label style="display:block;font-size:12px;font-weight:700;color:#475569;">Stage</label>
-                    <input name="stage" style="margin-top:6px;width:100%;border:1px solid #e2e8f0;border-radius:12px;padding:10px 12px;font-size:14px;" value="${esc(l.stage || 'New Lead')}" />
-                </div>
-            </div>
-            <input type="hidden" name="id" value="${esc(id)}" />
-        `, {
-            submitLabel: 'Save Changes',
-            onSubmit: (form) => {
-                const data = new FormData(form);
-                const nextCompany = String(data.get('company') || '').trim();
-                if (!nextCompany) {
-                    this.showToast('Company name is required.');
-                    return;
-                }
-                const res = this.saveLead({
-                    id: data.get('id'),
-                    company: nextCompany,
-                    contact: data.get('contact'),
-                    assignedTo: data.get('assignedTo'),
-                    source: data.get('source'),
-                    stage: data.get('stage')
-                });
-                if (!res.ok) {
-                    this.showToast(res.message || 'Unable to update lead.');
-                    return;
-                }
-                this.closeModal();
-                this.renderContent();
-                this.initializeLucideIcons();
-                this.showToast('Lead updated.');
-            }
-        });
     }
 
     editProjectViaModal(project) {
@@ -2143,17 +2032,57 @@ class MarketFlowCRM {
     }
 
     getTemplateColumns(type) {
-        if (type === 'lead' || type === 'client') {
+        if (type === 'lead') {
             return [
-                'Title (Mr/Ms/Dr)', 'First Name', 'Last Name',
-                'Email', 'Phone', 'Company', 'Job Title',
-                type === 'client' ? 'Client Type' : 'Lead Type',
-                'Industry', 'Industry Size', 'Source', 'Status', 'Priority',
-                'Tags', 'GSTIN', 'PAN Code', 'GST State Code',
-                'Address', 'Location URL', 'Owner', 'Stage',
-                'Amount', 'Follow Up Date', 'Notes',
-                'Contact 1 Name', 'Contact 1 Dept', 'Contact 1 Email', 'Contact 1 Phone',
-                'Contact 2 Name', 'Contact 2 Dept', 'Contact 2 Email', 'Contact 2 Phone'
+                // --- Lead Identity ---
+                'Company',
+                'Lead Source',
+                'Lead Acquired By',
+                // --- Location & Address ---
+                'Location',
+                'Location URL',
+                'Address Line 1',
+                'Address Line 2 (City)',
+                'Address Line 3 (State/Pincode)',
+                // --- Industry ---
+                'Industry',
+                'Industry Size',
+                // --- Next Action ---
+                'Next Action',
+                'Stage',
+                'Notes',
+                // --- Contact Persons (up to 3) ---
+                'Contact 1 Name', 'Contact 1 Email', 'Contact 1 Phone (+91 10 digits)', 'Contact 1 Dept/Role',
+                'Contact 2 Name', 'Contact 2 Email', 'Contact 2 Phone (+91 10 digits)', 'Contact 2 Dept/Role',
+                'Contact 3 Name', 'Contact 3 Email', 'Contact 3 Phone (+91 10 digits)', 'Contact 3 Dept/Role'
+            ];
+        }
+        if (type === 'client') {
+            return [
+                // --- Client Identity ---
+                'Client Name',
+                'Owner',
+                // --- Industry & Source ---
+                'Industry',
+                'Lead Source',
+                'Industry Size',
+                // --- Location ---
+                'Location',
+                'Client Code',
+                'Location URL',
+                // --- GST ---
+                'GST State Code',
+                'GST Number',
+                // --- Address ---
+                'Address Line 1',
+                'Address Line 2 (City)',
+                'Address Line 3 (State/Pincode)',
+                // --- Contact Persons (up to 3) ---
+                'Contact 1 Name', 'Contact 1 Email', 'Contact 1 Phone (+91 10 digits)', 'Contact 1 Dept/Role',
+                'Contact 2 Name', 'Contact 2 Email', 'Contact 2 Phone (+91 10 digits)', 'Contact 2 Dept/Role',
+                'Contact 3 Name', 'Contact 3 Email', 'Contact 3 Phone (+91 10 digits)', 'Contact 3 Dept/Role',
+                // --- Optional ---
+                'Notes'
             ];
         }
         return [
@@ -2285,50 +2214,50 @@ class MarketFlowCRM {
 
                 let saved = 0, failed = 0;
                 for (const row of rows) {
-                    const firstName = find(row, 'First Name', 'Name', 'Client Name');
-                    const company = find(row, 'Company', 'Company Name', 'Business');
-                    
-                    // We require either First Name or Company to create a valid record
-                    if (!firstName && !company) { failed++; continue; }
-                    
+                    const name = find(row, 'Client Name', 'First Name', 'Name', 'Company');
+
+                    // Client name is required
+                    if (!name) { failed++; continue; }
+
+                    // Build address from 3 lines
+                    const addrLine1 = find(row, 'Address Line 1', 'Address');
+                    const addrLine2 = find(row, 'Address Line 2', 'City');
+                    const addrLine3 = find(row, 'Address Line 3', 'State');
+                    const address = [addrLine1, addrLine2, addrLine3].filter(Boolean).join('\n');
+
                     const contactPersonMultiple = [];
-                    for (let i = 1; i <= 2; i++) {
+                    for (let i = 1; i <= 3; i++) {
                         const cpName = find(row, `Contact ${i} Name`, `CP${i} Name`);
                         if (cpName) {
+                            const rawPhone = find(row, `Contact ${i} Phone`, `Contact ${i} Phone (+91 10 digits)`, `CP${i} Phone`);
+                            // Normalise phone: strip +91 prefix, keep digits only up to 10
+                            const digits = rawPhone.replace(/\D/g, '').replace(/^91/, '').slice(0, 10);
                             contactPersonMultiple.push({
                                 name: cpName,
-                                dept: find(row, `Contact ${i} Dept`, `Contact ${i} Role`, `CP${i} Dept`),
+                                dept: find(row, `Contact ${i} Dept/Role`, `Contact ${i} Dept`, `Contact ${i} Role`, `CP${i} Dept`),
                                 email: find(row, `Contact ${i} Email`, `CP${i} Email`),
-                                phone: find(row, `Contact ${i} Phone`, `CP${i} Phone`)
+                                phone: digits ? `+91${digits}` : ''
                             });
                         }
                     }
 
                     const res = this.saveClient({
-                        title: find(row, 'Title (Mr/Ms/Dr)', 'Title'),
-                        firstName,
-                        lastName: find(row, 'Last Name'),
-                        email: find(row, 'Email', 'Email ID', 'Mail'),
-                        phone: find(row, 'Phone', 'Mobile', 'Contact Number', 'Contact'),
-                        company,
-                        jobTitle: find(row, 'Job Title', 'Designation'),
-                        clientType: find(row, 'Client Type', 'Type'),
+                        name,
+                        owner: find(row, 'Owner', 'Account Owner'),
+                        email: '',
+                        phone: '',
                         industry: find(row, 'Industry', 'Sector'),
+                        leadSource: find(row, 'Lead Source', 'Source'),
+                        location: find(row, 'Location'),
+                        vendorCode: find(row, 'Client Code', 'Vendor Code'),
                         industrySize: find(row, 'Industry Size', 'Size'),
-                        source: find(row, 'Source', 'Lead Source'),
-                        status: find(row, 'Status') || 'Active',
-                        priority: find(row, 'Priority') || 'Medium',
-                        tags: find(row, 'Tags'),
-                        notes: find(row, 'Notes', 'Remarks'),
-                        gstin: find(row, 'GSTIN', 'GST'),
-                        panCode: find(row, 'PAN Code', 'PAN'),
                         gstStateCode: find(row, 'GST State Code', 'State Code'),
-                        address: find(row, 'Address', 'Location', 'City'),
+                        gstNumber: find(row, 'GST Number', 'GSTIN', 'GST'),
                         locationUrl: find(row, 'Location URL', 'Map URL', 'URL'),
-                        owner: find(row, 'Owner', 'Account Owner', 'Assigned To'),
+                        address,
+                        notes: find(row, 'Notes', 'Remarks'),
                         stage: find(row, 'Stage') || 'Active',
-                        amount: parseFloat(find(row, 'Amount', 'Value', 'Revenue')) || 0,
-                        followUpDate: find(row, 'Follow Up Date', 'Next Action'),
+                        city: '\u2014',
                         contactPersonMultiple
                     });
                     if (res.ok) saved++; else failed++;
@@ -2371,50 +2300,49 @@ class MarketFlowCRM {
 
                 let saved = 0, failed = 0;
                 for (const row of rows) {
-                    const firstName = find(row, 'First Name', 'Name', 'Lead Name');
-                    const company = find(row, 'Company', 'Company Name', 'Business');
-                    
-                    if (!firstName && !company) { failed++; continue; }
+                    const company = find(row, 'Company', 'Company Name', 'Business', 'Name', 'Lead Name');
+
+                    // Company is required for a lead
+                    if (!company) { failed++; continue; }
+
+                    // Build address from 3 lines
+                    const addrLine1 = find(row, 'Address Line 1', 'Address');
+                    const addrLine2 = find(row, 'Address Line 2', 'City');
+                    const addrLine3 = find(row, 'Address Line 3', 'State');
+                    const address = [addrLine1, addrLine2, addrLine3].filter(Boolean).join('\n');
 
                     const contactPersonMultiple = [];
-                    for (let i = 1; i <= 2; i++) {
+                    for (let i = 1; i <= 3; i++) {
                         const cpName = find(row, `Contact ${i} Name`, `CP${i} Name`);
                         if (cpName) {
+                            const rawPhone = find(row, `Contact ${i} Phone`, `Contact ${i} Phone (+91 10 digits)`, `CP${i} Phone`);
+                            const digits = rawPhone.replace(/\D/g, '').replace(/^91/, '').slice(0, 10);
                             contactPersonMultiple.push({
                                 name: cpName,
-                                dept: find(row, `Contact ${i} Dept`, `Contact ${i} Role`, `CP${i} Dept`),
+                                dept: find(row, `Contact ${i} Dept/Role`, `Contact ${i} Dept`, `Contact ${i} Role`, `CP${i} Dept`),
                                 email: find(row, `Contact ${i} Email`, `CP${i} Email`),
-                                phone: find(row, `Contact ${i} Phone`, `CP${i} Phone`)
+                                phone: digits ? `+91${digits}` : ''
                             });
                         }
                     }
 
                     const res = this.saveLead({
-                        title: find(row, 'Title (Mr/Ms/Dr)', 'Title'),
-                        firstName,
-                        lastName: find(row, 'Last Name'),
-                        email: find(row, 'Email', 'Email ID', 'Mail'),
-                        phone: find(row, 'Phone', 'Mobile', 'Contact Number', 'Contact'),
                         company,
-                        jobTitle: find(row, 'Job Title', 'Designation'),
-                        leadType: find(row, 'Lead Type', 'Type'),
+                        source: find(row, 'Lead Source', 'Source'),
+                        assignedTo: find(row, 'Lead Acquired By', 'Assigned To', 'Owner'),
+                        location: find(row, 'Location'),
+                        locationUrl: find(row, 'Location URL', 'Map URL', 'URL'),
+                        address,
                         industry: find(row, 'Industry', 'Sector'),
                         industrySize: find(row, 'Industry Size', 'Size'),
-                        source: find(row, 'Source', 'Lead Source'),
-                        status: find(row, 'Status') || 'New',
-                        priority: find(row, 'Priority') || 'Medium',
-                        tags: find(row, 'Tags'),
-                        notes: find(row, 'Notes', 'Remarks'),
-                        gstin: find(row, 'GSTIN', 'GST'),
-                        panCode: find(row, 'PAN Code', 'PAN'),
-                        gstStateCode: find(row, 'GST State Code', 'State Code'),
-                        address: find(row, 'Address', 'Location', 'City'),
-                        locationUrl: find(row, 'Location URL', 'Map URL', 'URL'),
-                        owner: find(row, 'Owner', 'Account Owner', 'Assigned To'),
+                        nextAction: find(row, 'Next Action', 'Follow Up Date'),
                         stage: find(row, 'Stage') || 'New Lead',
-                        amount: parseFloat(find(row, 'Amount', 'Value', 'Revenue')) || 0,
-                        followUpDate: find(row, 'Follow Up Date', 'Next Action'),
-                        contactPersonMultiple
+                        feedbackStatus: 'Pending',
+                        notes: find(row, 'Notes', 'Remarks'),
+                        contact: '',
+                        email: '',
+                        contactPersonMultiple,
+                        history: [{ at: Date.now(), type: 'create', note: 'Bulk import' }]
                     });
                     if (res.ok) saved++; else failed++;
                 }
@@ -2995,8 +2923,6 @@ class MarketFlowCRM {
                 const registerMode = document.getElementById('registerMode')?.value || 'client';
                 const nameEl = document.getElementById('clientName');
                 const ownerEl = document.getElementById('clientOwner');
-                const emailEl = document.getElementById('clientEmail');
-                const phoneEl = document.getElementById('clientPhone');
                 const industryEl = document.getElementById('clientIndustry');
                 const leadSourceEl = document.getElementById('clientLeadSource');
                 const locationEl = document.getElementById('clientLocation');
@@ -3019,7 +2945,7 @@ class MarketFlowCRM {
                     const leadRes = this.saveLead({
                         company: nameEl.value.trim(),
                         assignedTo: ownerEl?.value?.trim() || '',
-                        contact: phoneEl?.value?.trim() || '',
+                        contact: '',
                         source: leadSourceEl?.value?.trim() || 'LinkedIn',
                         stage: 'New Lead',
                         nextAction: 'Follow-up',
@@ -3039,23 +2965,38 @@ class MarketFlowCRM {
                     return true;
                 }
 
+                if (!ownerEl?.value?.trim()) return !!this.showToast('Owner is required.');
+                if (!industryEl?.value?.trim()) return !!this.showToast('Industry is required.');
+                if (!leadSourceEl?.value?.trim()) return !!this.showToast('Lead Source is required.');
+                if (!locationEl?.value?.trim()) return !!this.showToast('Location is required.');
+                if (!vendorCodeEl?.value?.trim()) return !!this.showToast('Client Code is required.');
+                if (!indSizeEl?.value?.trim()) return !!this.showToast('Industry Size is required.');
+                if (!gstStateEl?.value?.trim()) return !!this.showToast('GST State Code is required.');
+                if (!gstNumEl?.value?.trim()) return !!this.showToast('GST Number is required.');
+                if (!locUrlEl?.value?.trim()) return !!this.showToast('Location URL is required.');
+                const addrParts = compiledAddress.split('\n').filter(s => s.trim());
+                if (addrParts.length === 0) return !!this.showToast('Address is required.');
+                if (!compiledContacts || !compiledContacts.trim()) return !!this.showToast('At least one Contact Person is required.');
+                const contactErr = window.validateContactPersons('client');
+                if (contactErr) return !!this.showToast(contactErr);
+
                 const result = this.saveClient({
                     name: nameEl.value.trim(),
-                    owner: ownerEl?.value?.trim() || '',
-                    email: emailEl?.value?.trim() || '',
-                    phone: phoneEl?.value?.trim() || '',
-                    industry: industryEl?.value?.trim() || '',
-                    leadSource: leadSourceEl?.value?.trim() || '',
-                    location: locationEl?.value?.trim() || '',
-                    vendorCode: vendorCodeEl?.value?.trim() || '',
+                    owner: ownerEl.value.trim(),
+                    email: '',
+                    phone: '',
+                    industry: industryEl.value.trim(),
+                    leadSource: leadSourceEl.value.trim(),
+                    location: locationEl.value.trim(),
+                    vendorCode: vendorCodeEl.value.trim(),
                     notes: notesEl?.value?.trim() || '',
                     stage: 'Active',
                     city: '—',
-                    industrySize: indSizeEl?.value?.trim() || '',
-                    gstNumber: gstNumEl?.value?.trim() || '',
-                    gstStateCode: gstStateEl?.value?.trim() || '',
+                    industrySize: indSizeEl.value.trim(),
+                    gstNumber: gstNumEl.value.trim(),
+                    gstStateCode: gstStateEl.value.trim(),
                     address: compiledAddress,
-                    locationUrl: locUrlEl?.value?.trim() || '',
+                    locationUrl: locUrlEl.value.trim(),
                     contactPersonMultiple: compiledContacts
                 });
 
@@ -3089,27 +3030,50 @@ class MarketFlowCRM {
 
             if (a === 'lead:register') {
                 const company = document.getElementById('leadCompany')?.value?.trim() || '';
-                const contact = document.getElementById('leadContact')?.value?.trim() || '';
-                const source = document.getElementById('leadSource')?.value || 'LinkedIn';
+                const source = document.getElementById('leadSource')?.value?.trim() || '';
                 const assignedTo = document.getElementById('leadAssignedTo')?.value?.trim() || '';
-                const nextAction = document.getElementById('leadNextAction')?.value?.trim() || 'Follow-up';
-                const emailEl = document.getElementById('leadEmail');
+                const nextAction = document.getElementById('leadNextAction')?.value?.trim() || '';
                 const locUrlEl = document.getElementById('leadLocationUrl');
+                const locationUrl = locUrlEl?.value?.trim() || '';
                 
                 const compiledAddress = window.compileAddressData('lead');
                 const compiledContacts = window.compileContactsData('lead');
 
+                // Mandatory field validation
+                if (!source) {
+                    this.showToast('Lead Source is required.');
+                    return true;
+                }
                 if (!company) {
-                    this.showToast('Company is required.');
+                    this.showToast('Company name is required.');
+                    return true;
+                }
+                const addrParts = compiledAddress.split('\n').filter(s => s.trim());
+                if (addrParts.length === 0) {
+                    this.showToast('Address is required.');
+                    return true;
+                }
+                if (!locationUrl) {
+                    this.showToast('Location URL is required.');
+                    return true;
+                }
+                if (!compiledContacts || !compiledContacts.trim()) {
+                    this.showToast('At least one Contact Person is required.');
+                    return true;
+                }
+                // Validate phone & email in contact persons
+                const contactErr = window.validateContactPersons('lead');
+                if (contactErr) {
+                    this.showToast(contactErr);
                     return true;
                 }
                 
                 const payload = { 
-                    company, contact, source, assignedTo, 
+                    company, contact: '', source, assignedTo, 
                     nextAction, stage: 'New Lead', feedbackStatus: 'Pending', 
-                    email: emailEl?.value?.trim() || '', 
+                    email: '', 
                     address: compiledAddress, 
-                    locationUrl: locUrlEl?.value?.trim() || '', 
+                    locationUrl, 
                     contactPersonMultiple: compiledContacts 
                 };
                 
@@ -3349,8 +3313,11 @@ class MarketFlowCRM {
                 const btn = this._lastActionButton;
                 const clientName = btn?.dataset?.clientName;
                 const clients = this.getClientsData();
-                const c = clients.find(x => String(x?.name || '').trim() === String(clientName || '').trim());
-                this.editClientViaModal(c || { name: clientName });
+                this._editingClientData = clients.find(x => String(x?.name || '').trim() === String(clientName || '').trim());
+                this.switchSection('leads');
+                this.switchSubSection('client_registration');
+                this.renderContent();
+                this.initializeLucideIcons();
                 return true;
             }
 
@@ -3358,8 +3325,11 @@ class MarketFlowCRM {
                 const btn = this._lastActionButton;
                 const leadId = btn?.dataset?.leadId;
                 const leads = this.getStoredLeads();
-                const l = leads.find(x => String(x.id) === String(leadId));
-                this.editLeadViaModal(l);
+                this._editingLeadData = leads.find(x => String(x.id) === String(leadId));
+                this.switchSection('leads');
+                this.switchSubSection('lead_registration');
+                this.renderContent();
+                this.initializeLucideIcons();
                 return true;
             }
 
@@ -3386,18 +3356,58 @@ class MarketFlowCRM {
             }
             if (a.startsWith('client:update:')) {
                 const name = a.slice('client:update:'.length).replace(/&quot;/g, '"');
-                const owner = document.getElementById('clientOwner')?.value?.trim() || '';
-                const email = document.getElementById('clientEmail')?.value?.trim() || '';
-                const phone = document.getElementById('clientPhone')?.value?.trim() || '';
-                const industry = document.getElementById('clientIndustry')?.value?.trim() || '';
-                const city = document.getElementById('clientCity')?.value?.trim() || '';
-                const address = document.getElementById('clientAddress')?.value?.trim() || '';
-                const gstin = document.getElementById('clientGstin')?.value?.trim() || '';
+                const ownerEl = document.getElementById('clientOwner');
+                const industryEl = document.getElementById('clientIndustry');
+                const leadSourceEl = document.getElementById('clientLeadSource');
+                const locationEl = document.getElementById('clientLocation');
+                const vendorCodeEl = document.getElementById('clientVendorCode');
+                const notesEl = document.getElementById('clientNotes');
+                const indSizeEl = document.getElementById('clientIndustrySize');
+                const gstNumEl = document.getElementById('clientGstNumber');
+                const gstStateEl = document.getElementById('clientGstStateCode');
+                const locUrlEl = document.getElementById('clientLocationUrl');
 
-                const res = this.saveClient({ name, owner, email, phone, industry, city, address, gstin });
+                const compiledAddress = window.compileAddressData('client');
+                const compiledContacts = window.compileContactsData('client');
+
+                if (!ownerEl?.value?.trim()) return !!this.showToast('Owner is required.');
+                if (!industryEl?.value?.trim()) return !!this.showToast('Industry is required.');
+                if (!leadSourceEl?.value?.trim()) return !!this.showToast('Lead Source is required.');
+                if (!locationEl?.value?.trim()) return !!this.showToast('Location is required.');
+                if (!vendorCodeEl?.value?.trim()) return !!this.showToast('Client Code is required.');
+                if (!indSizeEl?.value?.trim()) return !!this.showToast('Industry Size is required.');
+                if (!gstStateEl?.value?.trim()) return !!this.showToast('GST State Code is required.');
+                if (!gstNumEl?.value?.trim()) return !!this.showToast('GST Number is required.');
+                if (!locUrlEl?.value?.trim()) return !!this.showToast('Location URL is required.');
+                const addrParts = compiledAddress.split('\n').filter(s => s.trim());
+                if (addrParts.length === 0) return !!this.showToast('Address is required.');
+                if (!compiledContacts || !compiledContacts.trim()) return !!this.showToast('At least one Contact Person is required.');
+                const contactErr = window.validateContactPersons('client');
+                if (contactErr) return !!this.showToast(contactErr);
+
+                const res = this.saveClient({
+                    name,
+                    owner: ownerEl.value.trim(),
+                    email: '',
+                    phone: '',
+                    industry: industryEl.value.trim(),
+                    leadSource: leadSourceEl.value.trim(),
+                    location: locationEl.value.trim(),
+                    vendorCode: vendorCodeEl.value.trim(),
+                    notes: notesEl?.value?.trim() || '',
+                    stage: 'Active',
+                    city: '—',
+                    industrySize: indSizeEl.value.trim(),
+                    gstNumber: gstNumEl.value.trim(),
+                    gstStateCode: gstStateEl.value.trim(),
+                    address: compiledAddress,
+                    locationUrl: locUrlEl.value.trim(),
+                    contactPersonMultiple: compiledContacts
+                });
+
                 if (res.ok) {
                     this.showToast('Client updated.');
-                    this._editingClient = null;
+                    this._editingClientData = null;
                     this.switchSection('leads');
                     this.switchSubSection('client_directory');
                     this.renderContent();
@@ -3454,17 +3464,41 @@ class MarketFlowCRM {
                 const id = a.slice('lead:update:'.length);
                 const company = document.getElementById('leadCompany')?.value?.trim();
                 const assignedTo = document.getElementById('leadAssignedTo')?.value?.trim();
-                const contact = document.getElementById('leadContact')?.value?.trim();
-                const source = document.getElementById('leadSource')?.value?.trim() || 'LinkedIn';
+                const source = document.getElementById('leadSource')?.value?.trim() || '';
+                const locationUrl = document.getElementById('leadLocationUrl')?.value?.trim() || '';
+                const compiledAddress = window.compileAddressData('lead');
+                const compiledContacts = window.compileContactsData('lead');
 
-                if (!company) {
-                    this.showToast('Company is required.');
+                if (!source) {
+                    this.showToast('Lead Source is required.');
                     return true;
                 }
-                const res = this.saveLead({ id, company, assignedTo, contact, source });
+                if (!company) {
+                    this.showToast('Company name is required.');
+                    return true;
+                }
+                const addrParts = compiledAddress.split('\n').filter(s => s.trim());
+                if (addrParts.length === 0) {
+                    this.showToast('Address is required.');
+                    return true;
+                }
+                if (!locationUrl) {
+                    this.showToast('Location URL is required.');
+                    return true;
+                }
+                if (!compiledContacts || !compiledContacts.trim()) {
+                    this.showToast('At least one Contact Person is required.');
+                    return true;
+                }
+                const contactErr = window.validateContactPersons('lead');
+                if (contactErr) {
+                    this.showToast(contactErr);
+                    return true;
+                }
+                const res = this.saveLead({ id, company, assignedTo, contact: '', source, locationUrl, address: compiledAddress, contactPersonMultiple: compiledContacts });
                 if (res.ok) {
                     this.showToast('Lead updated.');
-                    this._editingLead = null;
+                    this._editingLeadData = null;
                     this.switchSection('leads');
                     this.switchSubSection('lead_directory');
                     this.renderContent();
@@ -3636,6 +3670,8 @@ class MarketFlowCRM {
             // ── Cross-tab navigation ──
             if (a && a.startsWith('nav:')) {
                 const path = a.slice(4); // e.g. 'leads/lead_sources'
+                if (path === 'leads/client_registration') this._editingClientData = null;
+                if (path === 'leads/lead_registration') this._editingLeadData = null;
                 const [section, sub] = path.split('/');
                 if (section) {
                     this.currentSection = section;
@@ -5673,7 +5709,9 @@ class MarketFlowCRM {
     setupClientDirectoryInteractions() {
         const rows = document.querySelectorAll('tr[data-client-name]');
         rows.forEach(row => {
-            row.addEventListener('click', () => {
+            row.addEventListener('click', (e) => {
+                const target = e.target;
+                if (target instanceof Element && target.closest('button, a')) return;
                 const name = row.dataset.clientName;
                 if (!name) return;
                 this.selectedClientName = name;
@@ -5688,7 +5726,7 @@ class MarketFlowCRM {
         rows.forEach(row => {
             row.addEventListener('click', (e) => {
                 const target = e.target;
-                if (target instanceof Element && target.closest('button[data-action="lead:convert"]')) return;
+                if (target instanceof Element && target.closest('button, a')) return;
                 const id = row.dataset.leadId;
                 if (!id) return;
                 this.selectedLeadId = id;
@@ -6967,7 +7005,7 @@ class MarketFlowCRM {
                 container.innerHTML = this.getLeadsRegistrationHub();
                 break;
             case 'client_registration':
-                container.innerHTML = this.getLeadsRegistration();
+                container.innerHTML = this.getLeadsRegistration(this._editingClientData || null);
                 break;
             case 'clients':
                 container.innerHTML = this.getLeadsDirectoryHub();
@@ -6984,7 +7022,7 @@ class MarketFlowCRM {
                 container.innerHTML = this.getLeadsDirectoryHub();
                 break;
             case 'lead_registration':
-                container.innerHTML = this.getLeadRegistration();
+                container.innerHTML = this.getLeadRegistration(this._editingLeadData || null);
                 break;
             case 'lead_directory':
                 container.innerHTML = this.getLeadDirectory();
@@ -7545,17 +7583,18 @@ class MarketFlowCRM {
                 <div class="bg-white rounded-lg border border-slate-200 p-4 sm:p-6 shadow-lg">
                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                         <div>
-                            <label class="block text-sm font-medium text-slate-700">Lead Source</label>
+                            <label class="block text-sm font-medium text-slate-700">Lead Source <span class="text-rose-500">*</span></label>
                             <select id="leadSource" class="mt-2 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500">
+                                <option value="">-- Select Source --</option>
                                 <option ${leadData?.source === 'Exhibition' ? 'selected' : ''}>Exhibition</option>
                                 <option ${leadData?.source === 'IndiaMART' ? 'selected' : ''}>IndiaMART</option>
-                                <option ${(!leadData || leadData?.source === 'LinkedIn') ? 'selected' : ''}>LinkedIn</option>
+                                <option ${leadData?.source === 'LinkedIn' ? 'selected' : ''}>LinkedIn</option>
                                 <option ${leadData?.source === 'Field Visit' ? 'selected' : ''}>Field Visit</option>
                                 <option ${leadData?.source === 'Referral' ? 'selected' : ''}>Referral</option>
                             </select>
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-slate-700">Assigned To</label>
+                            <label class="block text-sm font-medium text-slate-700">Lead Acquired By <span class="text-xs text-slate-500">(Brought by / Sourced by)</span></label>
                             <input id="leadAssignedTo" type="text" class="mt-2 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="e.g., Team Member" value="${esc(leadData?.assignedTo || '')}" />
                         </div>
                         <div>
@@ -7563,23 +7602,16 @@ class MarketFlowCRM {
                             <input id="leadCompany" type="text" class="mt-2 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="e.g., Acme Corp" value="${esc(leadData?.company || '')}" />
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-slate-700">Contact</label>
-                            <input id="leadContact" type="text" class="mt-2 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="Phone / Email" value="${esc(leadData?.contact || '')}" />
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-slate-700">Email</label>
-                            <input id="leadEmail" type="email" class="mt-2 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="e.g. john@acme.com" value="${leadData?.email || ''}" />
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-slate-700">Location URL</label>
-                            <input id="leadLocationUrl" class="mt-2 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="https://maps.google.com/..." value="${leadData?.locationUrl || ''}" />
+                            <label class="block text-sm font-medium text-slate-700">Location URL <span class="text-rose-500">*</span></label>
+                            <input id="leadLocationUrl" class="mt-2 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="https://maps.google.com/..." value="${esc(leadData?.locationUrl || '')}" />
                         </div>
                         <div class="col-span-1 sm:col-span-2">
-                            <label class="block text-sm font-medium text-slate-700">Address</label>
+                            <label class="block text-sm font-medium text-slate-700">Address <span class="text-rose-500">*</span></label>
                             ${window.renderAddressLines('lead', leadData)}
                         </div>
                         <div class="col-span-1 sm:col-span-2">
-                            <label class="block text-sm font-medium text-slate-700">Contact Persons</label>
+                            <label class="block text-sm font-medium text-slate-700">Contact Persons <span class="text-rose-500">*</span> <span class="text-xs text-slate-500">(at least one required)</span></label>
+                            <p class="text-xs text-slate-400 mb-2">Phone: +91 followed by 10 digits &nbsp;|&nbsp; Email must be in format name@domain.com</p>
                             <div id="leadContactPersonsList">
                                 ${window.renderContactsRows(leadData?.contactPersonMultiple)}
                             </div>
@@ -7588,7 +7620,7 @@ class MarketFlowCRM {
 
                         <div class="col-span-1 sm:col-span-2">
                             <label class="block text-sm font-medium text-slate-700">Next Action</label>
-                            <input id="leadNextAction" type="text" class="mt-2 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="e.g., Demo with Technical Team" />
+                            <input id="leadNextAction" type="text" class="mt-2 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="e.g., Demo with Technical Team" value="${window.esc(leadData?.nextAction || '')}" />
                         </div>
                     </div>
                 </div>
@@ -7695,116 +7727,140 @@ class MarketFlowCRM {
                     </div>
 
                     ${selected ? `
-                        <div class="bg-white rounded-lg border border-slate-200 p-6 shadow-lg lg:sticky lg:top-6 h-fit">
-                            <div class="flex flex-wrap items-start justify-between gap-3">
-                                <div>
-                                    <h3 class="text-lg font-semibold text-slate-900">Selected Lead</h3>
-                                    <div class="text-xs text-slate-500 mt-1">${selected.id}</div>
-                                </div>
-                                <button id="clearLeadSelection" class="px-3 py-2 text-xs font-medium bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 transition-colors">Close</button>
-                            </div>
+                        <div class="bg-white rounded-lg border border-slate-200 shadow-lg lg:sticky lg:top-6 h-fit overflow-hidden">
 
-                            <div class="mt-4">
-                                <div class="text-sm font-medium text-slate-900">${selected.company || '—'}</div>
-                                <div class="text-xs text-slate-500">${selected.contact || '—'}</div>
-                            </div>
-
-                            <div style="margin-top:1.25rem;display:grid;grid-template-columns:1fr 1fr;gap:0.5rem;">
-                                <div>
-                                    <div class="text-[11px] font-semibold text-slate-500">Source</div>
-                                    <div class="text-sm font-medium text-slate-900 mt-1">${selected.source || '—'}</div>
+                            <!-- Header -->
+                            <div class="bg-gradient-to-r from-purple-600 to-violet-600 px-5 py-4">
+                                <div class="flex items-start justify-between gap-3">
+                                    <div>
+                                        <div class="text-white font-semibold text-base leading-tight">${window.esc(selected.company || '—')}</div>
+                                        <div class="text-purple-200 text-xs mt-0.5">${window.esc(selected.id || '')}</div>
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        ${this.renderLeadStageBadge ? this.renderLeadStageBadge(selected.stage) : `<span class="px-2 py-1 text-xs font-semibold bg-white/20 text-white rounded-full">${window.esc(selected.stage || 'New Lead')}</span>`}
+                                        <button id="clearLeadSelection" class="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white transition-colors" title="Close"><i data-lucide="x" style="width:14px;height:14px"></i></button>
+                                    </div>
                                 </div>
-                                <div>
-                                    <div class="text-[11px] font-semibold text-slate-500">SLA Timer</div>
-                                    <div class="text-sm font-medium text-slate-900 mt-1">${this.formatSlaTimer(selected.receivedAt)}</div>
+                                <!-- Quick stats row -->
+                                <div class="mt-3 flex flex-wrap gap-3">
+                                    <div class="text-xs text-purple-200"><span class="font-semibold text-white">${window.esc(selected.source || '—')}</span><br/>Source</div>
+                                    <div class="text-xs text-purple-200"><span class="font-semibold text-white">${window.esc(selected.assignedTo || '—')}</span><br/>Acquired By</div>
+                                    <div class="text-xs text-purple-200"><span class="font-semibold text-white">${this.formatSlaTimer(selected.receivedAt)}</span><br/>SLA Timer</div>
                                 </div>
                             </div>
 
-                            <div class="mt-4 bg-slate-50 p-3 rounded-lg border border-slate-100">
-                                <div class="grid grid-cols-1 gap-3 text-sm">
-                                    <div>
-                                        <div class="text-[11px] font-semibold text-slate-500">Address</div>
-                                        <div class="text-slate-800 mt-1">${String(selected.address || '—').replace(/\n/g, '<br/>')}</div>
-                                    </div>
-                                    <div>
-                                        <div class="text-[11px] font-semibold text-slate-500">Contact Persons</div>
-                                        <div class="text-slate-800 mt-1">
-                                            ${String(selected.contactPersonMultiple || '').split('\n').filter(Boolean).map(c => `<div class="truncate">• ${window.esc(c)}</div>`).join('') || '—'}
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <div class="text-[11px] font-semibold text-slate-500">Location URL</div>
-                                        <div class="text-slate-800 mt-1">
-                                            ${selected.locationUrl ? `<a href="${window.esc(selected.locationUrl)}" target="_blank" class="text-blue-600 underline truncate block">View Map Location</a>` : '—'}
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <div class="text-[11px] font-semibold text-slate-500">Uploaded Documents</div>
-                                        <div class="text-slate-800 mt-1">
-                                            ${(selected.documents && selected.documents.length > 0) ? selected.documents.map(d => `<a href="/uploads/leads/${selected.id}/${d}" target="_blank" class="text-purple-600 hover:text-purple-800 underline flex items-center gap-1 mb-1"><i data-lucide="file" style="width:14px;height:14px"></i>${d}</a>`).join('') : '<span class="text-slate-400 text-xs">No documents uploaded</span>'}
-                                        </div>
-                                    </div>
-                                </div>
+                            <!-- Action Buttons -->
+                            <div class="px-4 py-3 border-b border-slate-100 flex flex-wrap gap-2">
+                                <button data-action="lead:edit" data-lead-id="${selected.id}" class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">
+                                    <i data-lucide="edit-2" style="width:12px;height:12px"></i> Edit
+                                </button>
+                                <button data-action="lead:delete" data-lead-id="${selected.id}" class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-rose-50 text-rose-700 rounded-lg hover:bg-rose-100 transition-colors">
+                                    <i data-lucide="trash-2" style="width:12px;height:12px"></i> Delete
+                                </button>
+                                ${String(selected.status || '').toLowerCase() === 'converted'
+                                    ? `<button data-action="nav:leads/client_directory" class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-emerald-50 text-emerald-700 rounded-lg hover:bg-emerald-100 transition-colors"><i data-lucide="user-check" style="width:12px;height:12px"></i> Open Client</button>`
+                                    : `<button data-action="lead:convert" data-lead-id="${selected.id}" class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-slate-900 text-white rounded-lg hover:bg-slate-800 transition-colors"><i data-lucide="arrow-right-circle" style="width:12px;height:12px"></i> Convert</button>`
+                                }
                             </div>
 
-                            <div class="mt-4 grid gap-3">
-                                <input type="hidden" id="leadDetailId" value="${String(selected.id || '').replace(/</g, '&lt;')}" />
+                            <div class="px-4 py-4 space-y-4">
 
+                                <!-- Address -->
+                                <div class="rounded-lg border border-slate-100 bg-slate-50 p-3">
+                                    <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Address</div>
+                                    <div class="text-sm text-slate-800 leading-relaxed">${String(selected.address || '—').replace(/\n/g, '<br/>')}</div>
+                                    ${selected.locationUrl ? `<a href="${window.esc(selected.locationUrl)}" target="_blank" class="mt-2 inline-flex items-center gap-1 text-xs text-blue-600 hover:text-blue-700 font-medium"><i data-lucide="map-pin" style="width:12px;height:12px"></i> View on Map</a>` : ''}
+                                </div>
+
+                                <!-- Contact Persons -->
+                                <div class="rounded-lg border border-slate-100 bg-slate-50 p-3">
+                                    <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Contact Persons</div>
+                                    <div class="space-y-2">
+                                        ${(() => {
+                                            const persons = String(selected.contactPersonMultiple || '').split('\n').filter(Boolean);
+                                            if (!persons.length) return '<div class="text-sm text-slate-400">—</div>';
+                                            return persons.map(cp => {
+                                                const parts = cp.split(',').map(s => s.trim());
+                                                const name = parts[0] || '';
+                                                const email = parts[1] || '';
+                                                const dept = parts[2] || '';
+                                                const phone = parts[3] || '';
+                                                return `<div class="bg-white rounded-lg border border-slate-200 p-2.5">
+                                                    <div class="font-semibold text-slate-900 text-sm">${window.esc(name)}</div>
+                                                    ${dept ? `<div class="text-xs text-slate-500 mt-0.5">${window.esc(dept)}</div>` : ''}
+                                                    <div class="mt-1.5 flex flex-col gap-1">
+                                                        ${phone ? `<div class="flex items-center gap-1.5 text-xs text-slate-700"><i data-lucide="phone" style="width:11px;height:11px;color:#6366f1"></i><span class="font-medium">${window.esc(phone)}</span></div>` : ''}
+                                                        ${email ? `<div class="flex items-center gap-1.5 text-xs text-slate-700"><i data-lucide="mail" style="width:11px;height:11px;color:#6366f1"></i><span>${window.esc(email)}</span></div>` : ''}
+                                                    </div>
+                                                </div>`;
+                                            }).join('');
+                                        })()}
+                                    </div>
+                                </div>
+
+                                <!-- Documents -->
+                                <div class="rounded-lg border border-slate-100 bg-slate-50 p-3">
+                                    <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Documents</div>
+                                    ${(selected.documents && selected.documents.length > 0)
+                                        ? selected.documents.map(d => `<a href="/uploads/leads/${selected.id}/${d}" target="_blank" class="flex items-center gap-1.5 text-xs text-purple-700 hover:text-purple-900 font-medium mb-1"><i data-lucide="file" style="width:12px;height:12px"></i>${d}</a>`).join('')
+                                        : '<div class="text-xs text-slate-400">No documents uploaded</div>'}
+                                </div>
+
+                                <!-- Pipeline Stage & Quick Update -->
                                 <div>
-                                    <label class="text-xs font-medium text-slate-600">Pipeline Stage</label>
+                                    <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Pipeline Stage</div>
                                     ${this.renderLeadPipelineProgress(selected.stage)}
-                                    <select id="leadDetailStage" class="mt-3 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500">
-                                        ${this.getLeadPipelineStages().map(s => `
-                                            <option ${String(selected.stage || '').trim().toLowerCase() === String(s).toLowerCase() ? 'selected' : ''}>${s}</option>
-                                        `).join('')}
+                                    <input type="hidden" id="leadDetailId" value="${String(selected.id || '').replace(/</g, '&lt;')}" />
+                                    <select id="leadDetailStage" class="mt-2 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500">
+                                        ${this.getLeadPipelineStages().map(s => `<option ${String(selected.stage || '').trim().toLowerCase() === String(s).toLowerCase() ? 'selected' : ''}>${s}</option>`).join('')}
                                     </select>
                                 </div>
 
-                                <div>
-                                    <label class="text-xs font-medium text-slate-600">Assigned To</label>
-                                    <input id="leadDetailAssignedTo" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" value="${String(selected.assignedTo || '').replace(/</g, '&lt;')}" />
-                                </div>
-
-                                <div>
-                                    <label class="text-xs font-medium text-slate-600">Next Action</label>
-                                    <input id="leadDetailNextAction" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" value="${String(selected.nextAction || '').replace(/</g, '&lt;')}" />
-                                </div>
-
-                                <div>
-                                    <label class="text-xs font-medium text-slate-600">Feedback Status</label>
-                                    <input id="leadDetailFeedback" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" value="${String(selected.feedbackStatus || '').replace(/</g, '&lt;')}" />
-                                </div>
-
-                                <div>
-                                    <label class="text-xs font-medium text-slate-600">Update Note</label>
-                                    <textarea id="leadDetailNote" rows="2" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="What changed? (optional)"></textarea>
-                                </div>
-
-                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                                    <button data-action="lead:update" class="px-3 py-2 text-sm font-medium bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">Save</button>
-                                    ${String(selected.status || '').toLowerCase() === 'converted'
-                    ? `<button data-action="nav:leads/client_directory" class="px-3 py-2 text-sm font-medium bg-emerald-50 text-emerald-700 rounded-lg hover:bg-emerald-100 transition-colors">Open Client</button>`
-                    : `<button data-action="lead:convert" data-lead-id="${selected.id}" class="px-3 py-2 text-sm font-medium bg-slate-900 text-white rounded-lg hover:bg-slate-800 transition-colors">Convert</button>`
-                }
-                                </div>
-
-                                <div class="mt-2">
-                                    <div class="text-xs font-semibold text-slate-600 mb-2">History</div>
-                                    <div class="space-y-2">
-                                        ${(Array.isArray(selected.history) ? selected.history.slice().reverse() : []).slice(0, 6).map(h => `
-                                            <div class="p-3 bg-slate-50 rounded-lg">
-                                                <div class="flex flex-wrap items-start justify-between gap-3">
-                                                    <div class="text-xs font-semibold text-slate-700">${String(h?.type || 'update')}</div>
-                                                    <div class="text-[11px] text-slate-500">${h?.at ? new Date(h.at).toLocaleString() : '—'}</div>
-                                                </div>
-                                                <div class="text-xs text-slate-600 mt-1">${String(h?.note || '').replace(/</g, '&lt;') || '—'}</div>
-                                            </div>
-                                        `).join('') || '<div class="text-xs text-slate-500">No history yet</div>'}
+                                <!-- Quick Update Fields -->
+                                <div class="grid grid-cols-1 gap-2">
+                                    <div>
+                                        <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Lead Acquired By</label>
+                                        <input id="leadDetailAssignedTo" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" value="${String(selected.assignedTo || '').replace(/</g, '&lt;')}" />
                                     </div>
+                                    <div>
+                                        <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Next Action</label>
+                                        <input id="leadDetailNextAction" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" value="${String(selected.nextAction || '').replace(/</g, '&lt;')}" />
+                                    </div>
+                                    <div>
+                                        <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Feedback Status</label>
+                                        <input id="leadDetailFeedback" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" value="${String(selected.feedbackStatus || '').replace(/</g, '&lt;')}" />
+                                    </div>
+                                    <div>
+                                        <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Update Note</label>
+                                        <textarea id="leadDetailNote" rows="2" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="What changed? (optional)"></textarea>
+                                    </div>
+                                    <button data-action="lead:update" class="w-full px-3 py-2 text-sm font-semibold bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">Save Changes</button>
                                 </div>
+
+                                <!-- History -->
+                                ${(() => {
+                                    const hist = Array.isArray(selected.history) ? selected.history.slice().reverse().slice(0,5) : [];
+                                    if (!hist.length) return '';
+                                    return `<div>
+                                        <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Recent History</div>
+                                        <div class="space-y-1.5">${hist.map(h => `
+                                            <div class="rounded-lg bg-slate-50 border border-slate-100 px-3 py-2">
+                                                <div class="flex items-center justify-between">
+                                                    <span class="text-xs font-semibold text-slate-700">${String(h?.type || 'update')}</span>
+                                                    <span class="text-[10px] text-slate-400">${h?.at ? new Date(h.at).toLocaleString('en-IN', {day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}) : '—'}</span>
+                                                </div>
+                                                ${h?.note ? `<div class="text-xs text-slate-600 mt-0.5">${String(h.note).replace(/</g,'&lt;')}</div>` : ''}
+                                            </div>`).join('')}
+                                        </div>
+                                    </div>`;
+                                })()}
+
                             </div>
                         </div>
                     ` : ''}
+
+
+
                 </div>
             </div>
         `;
@@ -7906,60 +7962,55 @@ class MarketFlowCRM {
                     <input type="hidden" id="registerMode" value="client" />
                     <div>
                         <label class="text-xs font-medium text-slate-600">Client Name <span class="text-rose-500">*</span></label>
-                        <input id="clientName" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="e.g., Acme Private Limited" />
+                        <input id="clientName" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="e.g., Acme Private Limited" value="${window.esc(clientData?.name || '')}" ${clientData ? 'readonly title="Cannot change client name"' : ''} />
                     </div>
                     <div>
-                        <label class="text-xs font-medium text-slate-600">Owner</label>
+                        <label class="text-xs font-medium text-slate-600">Owner <span class="text-rose-500">*</span></label>
                         <select id="clientOwner" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500">
-                            <option>Marketing User</option>
-                            <option>Sales User</option>
-                            <option>Accounts User</option>
+                            <option value="">-- Select Owner --</option>
+                            <option ${(clientData?.owner === 'Marketing User') ? 'selected' : ''}>Marketing User</option>
+                            <option ${(clientData?.owner === 'Sales User') ? 'selected' : ''}>Sales User</option>
+                            <option ${(clientData?.owner === 'Accounts User') ? 'selected' : ''}>Accounts User</option>
                         </select>
                     </div>
                     <div>
-                        <label class="text-xs font-medium text-slate-600">Email <span class="text-rose-500">*</span></label>
-                        <input id="clientEmail" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="client@company.com" />
-                    </div>
-                    <div>
-                        <label class="text-xs font-medium text-slate-600">Phone <span class="text-rose-500">*</span></label>
-                        <input id="clientPhone" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="+91 9XXXXXXXXX" />
-                    </div>
-                    <div>
-                        <label class="text-xs font-medium text-slate-600">Industry</label>
+                        <label class="text-xs font-medium text-slate-600">Industry <span class="text-rose-500">*</span></label>
                         <select id="clientIndustry" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500">
-                            <option>IT Services</option>
-                            <option>Manufacturing</option>
-                            <option>Education</option>
-                            <option>Retail</option>
-                            <option>Healthcare</option>
+                            <option value="">-- Select Industry --</option>
+                            <option ${(clientData?.industry === 'IT Services') ? 'selected' : ''}>IT Services</option>
+                            <option ${(clientData?.industry === 'Manufacturing') ? 'selected' : ''}>Manufacturing</option>
+                            <option ${(clientData?.industry === 'Education') ? 'selected' : ''}>Education</option>
+                            <option ${(clientData?.industry === 'Retail') ? 'selected' : ''}>Retail</option>
+                            <option ${(clientData?.industry === 'Healthcare') ? 'selected' : ''}>Healthcare</option>
                         </select>
                     </div>
                     <div>
-                        <label class="text-xs font-medium text-slate-600">Lead Source</label>
+                        <label class="text-xs font-medium text-slate-600">Lead Source <span class="text-rose-500">*</span></label>
                         <select id="clientLeadSource" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500">
-                            <option>Referral</option>
-                            <option>Inbound</option>
-                            <option>Campaign</option>
-                            <option>Outbound</option>
+                            <option value="">-- Select Source --</option>
+                            <option ${(clientData?.leadSource === 'Referral') ? 'selected' : ''}>Referral</option>
+                            <option ${(clientData?.leadSource === 'Inbound') ? 'selected' : ''}>Inbound</option>
+                            <option ${(clientData?.leadSource === 'Campaign') ? 'selected' : ''}>Campaign</option>
+                            <option ${(clientData?.leadSource === 'Outbound') ? 'selected' : ''}>Outbound</option>
                         </select>
                     </div>
                     <div>
-                        <label class="text-xs font-medium text-slate-600">Location</label>
+                        <label class="text-xs font-medium text-slate-600">Location <span class="text-rose-500">*</span></label>
                         <select id="clientLocation" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500">
                             <option value="">Select</option>
-                            <option value="CHN">Chennai</option>
-                            <option value="HSR">Hosur</option>
-                            <option value="OST">Other state</option>
-                            <option value="KAK">Karnataka</option>
-                            <option value="OTN">Other Tamil Nadu</option>
+                            <option value="CHN" ${(clientData?.location === 'CHN') ? 'selected' : ''}>Chennai</option>
+                            <option value="HSR" ${(clientData?.location === 'HSR') ? 'selected' : ''}>Hosur</option>
+                            <option value="OST" ${(clientData?.location === 'OST') ? 'selected' : ''}>Other state</option>
+                            <option value="KAK" ${(clientData?.location === 'KAK') ? 'selected' : ''}>Karnataka</option>
+                            <option value="OTN" ${(clientData?.location === 'OTN') ? 'selected' : ''}>Other Tamil Nadu</option>
                         </select>
                     </div>
                     <div>
-                        <label class="text-xs font-medium text-slate-600">Vendor Code</label>
-                        <input id="clientVendorCode" type="text" readonly class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm bg-slate-50 text-slate-700" placeholder="Auto-generated based on location" />
+                        <label class="text-xs font-medium text-slate-600">Client Code <span class="text-rose-500">*</span></label>
+                        <input id="clientVendorCode" type="text" readonly class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm bg-slate-50 text-slate-700" placeholder="Auto-generated based on location" value="${clientData?.vendorCode || ''}" />
                     </div>
                     <div>
-                        <label class="text-xs font-medium text-slate-600">Industry Size</label>
+                        <label class="text-xs font-medium text-slate-600">Industry Size <span class="text-rose-500">*</span></label>
                         <select id="clientIndustrySize" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500">
                             <option value="">Select Tier</option>
                             <option value="Tier 1" ${(clientData?.industrySize === 'Tier 1') ? 'selected' : ''}>Tier 1</option>
@@ -7969,7 +8020,7 @@ class MarketFlowCRM {
                         </select>
                     </div>
                     <div>
-                        <label class="text-xs font-medium text-slate-600">GST State Code</label>
+                        <label class="text-xs font-medium text-slate-600">GST State Code <span class="text-rose-500">*</span></label>
                         <select id="clientGstStateCode" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" onchange="let n=document.getElementById('clientGstNumber'); let cv=n.value; if(cv.length >= 2 && !isNaN(cv.substring(0,2))) { n.value = this.value + cv.substring(2); } else { n.value = this.value + cv; }">
                             <option value="">Select Code</option>
                             ${[
@@ -7987,19 +8038,19 @@ class MarketFlowCRM {
                         </select>
                     </div>
                     <div>
-                        <label class="text-xs font-medium text-slate-600">GST Number</label>
+                        <label class="text-xs font-medium text-slate-600">GST Number <span class="text-rose-500">*</span></label>
                         <input id="clientGstNumber" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="22AAAAA0000A1Z5" value="${clientData?.gstNumber || ''}" maxlength="15" oninput="if(this.value.length>=2 && !isNaN(this.value.substring(0,2))) { let s=document.getElementById('clientGstStateCode'); if(s) s.value = this.value.substring(0, 2); }" />
                     </div>
                     <div>
-                        <label class="text-xs font-medium text-slate-600">Location URL</label>
+                        <label class="text-xs font-medium text-slate-600">Location URL <span class="text-rose-500">*</span></label>
                         <input id="clientLocationUrl" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="https://maps.google..." value="${clientData?.locationUrl || ''}" />
                     </div>
                     <div class="col-span-1 sm:col-span-2">
-                        <label class="text-xs font-medium text-slate-600">Address (3 lines)</label>
+                        <label class="text-xs font-medium text-slate-600">Address (3 lines) <span class="text-rose-500">*</span></label>
                         ${window.renderAddressLines('client', clientData)}
                     </div>
                     <div class="col-span-1 sm:col-span-2">
-                        <label class="text-xs font-medium text-slate-600">Contact Persons</label>
+                        <label class="text-xs font-medium text-slate-600">Contact Persons <span class="text-rose-500">*</span></label>
                         <div id="clientContactPersonsList">
                             ${window.renderContactsRows(clientData?.contactPersonMultiple)}
                         </div>
@@ -8090,179 +8141,140 @@ class MarketFlowCRM {
                     </div>
 
                     ${selected ? `
-                        <div class="bg-white rounded-lg border border-slate-200 p-6 shadow-lg lg:sticky lg:top-6 h-fit">
-                            <div class="flex flex-wrap items-start justify-between gap-3">
-                                <div>
-                                    <h3 class="text-lg font-semibold text-slate-900">Selected Client</h3>
-                                    <p class="text-sm text-slate-500">${selected.name}</p>
+                        <div class="bg-white rounded-lg border border-slate-200 shadow-lg lg:sticky lg:top-6 h-fit overflow-hidden">
+
+                            <!-- Header -->
+                            <div class="bg-gradient-to-r from-emerald-600 to-teal-600 px-5 py-4">
+                                <div class="flex items-start justify-between gap-3">
+                                    <div>
+                                        <div class="text-white font-semibold text-base leading-tight">${window.esc(selected.name || '—')}</div>
+                                        <div class="text-emerald-200 text-xs mt-0.5">${window.esc(selected.vendorCode || '')} • ${window.esc(selected.owner || '')}</div>
+                                    </div>
+                                    ${this.renderBadge(selected.stage)}
                                 </div>
-                                <span class="px-2 py-1 text-xs font-medium bg-slate-100 text-slate-700 rounded-full">${selected.stage}</span>
-                            </div>
-                            
-                            <div class="mt-4 bg-slate-50 p-3 rounded-lg border border-slate-100">
-                                <div class="grid grid-cols-1 gap-3 text-sm">
-                                    <div>
-                                        <div class="text-[11px] font-semibold text-slate-500">Address</div>
-                                        <div class="text-slate-800 mt-1">${String(selected.address || '—').replace(/\n/g, '<br/>')}</div>
-                                    </div>
-                                    <div>
-                                        <div class="text-[11px] font-semibold text-slate-500">Contact Persons</div>
-                                        <div class="text-slate-800 mt-1">
-                                            ${String(selected.contactPersonMultiple || '').split('\n').filter(Boolean).map(c => `<div class="truncate">• ${window.esc(c)}</div>`).join('') || '—'}
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <div class="text-[11px] font-semibold text-slate-500">Location URL</div>
-                                        <div class="text-slate-800 mt-1">
-                                            ${selected.locationUrl ? `<a href="${window.esc(selected.locationUrl)}" target="_blank" class="text-blue-600 underline truncate block">View Map Location</a>` : '—'}
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <div class="text-[11px] font-semibold text-slate-500">Uploaded Documents</div>
-                                        <div class="text-slate-800 mt-1">
-                                            ${(selected.documents && selected.documents.length > 0) ? selected.documents.map(d => `<a href="/uploads/clients/${selected.id || window.esc(selected.name).replace(/\\s+/g,'_')}/${d}" target="_blank" class="text-purple-600 hover:text-purple-800 underline flex items-center gap-1 mb-1"><i data-lucide="file" style="width:14px;height:14px"></i>${d}</a>`).join('') : '<span class="text-slate-400 text-xs">No documents uploaded</span>'}
-                                        </div>
-                                    </div>
+                                <!-- Quick stats row -->
+                                <div class="mt-3 flex flex-wrap gap-4">
+                                    <div class="text-xs text-emerald-200"><span class="font-semibold text-white">${window.esc(selected.industry || '—')}</span><br/>Industry</div>
+                                    <div class="text-xs text-emerald-200"><span class="font-semibold text-white">${window.esc(selected.industrySize || '—')}</span><br/>Tier</div>
+                                    <div class="text-xs text-emerald-200"><span class="font-semibold text-white">${window.esc(selected.leadSource || '—')}</span><br/>Source</div>
                                 </div>
                             </div>
 
-                            <div class="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-2">
-                                <button data-action="client:edit" data-client-name="${selected.name}" class="px-3 py-2 text-sm font-medium bg-purple-50 text-purple-700 rounded-lg hover:bg-purple-100 transition-colors">Edit</button>
-                                <button data-action="client:delete" data-client-name="${selected.name}" class="px-3 py-2 text-sm font-medium bg-rose-50 text-rose-700 rounded-lg hover:bg-rose-100 transition-colors">Delete</button>
+                            <!-- Action Buttons -->
+                            <div class="px-4 py-3 border-b border-slate-100 flex flex-wrap gap-2">
+                                <button data-action="client:edit" data-client-name="${selected.name}" class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors">
+                                    <i data-lucide="edit-2" style="width:12px;height:12px"></i> Edit
+                                </button>
+                                <button data-action="client:delete" data-client-name="${selected.name}" class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-rose-50 text-rose-700 rounded-lg hover:bg-rose-100 transition-colors">
+                                    <i data-lucide="trash-2" style="width:12px;height:12px"></i> Delete
+                                </button>
+                                <button data-action="client:createInvoice" data-client-name="${selected.name}" class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">
+                                    <i data-lucide="file-plus" style="width:12px;height:12px"></i> Invoice
+                                </button>
+                                <button data-action="task:create" class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 transition-colors">
+                                    <i data-lucide="clipboard-list" style="width:12px;height:12px"></i> Task
+                                </button>
                             </div>
 
-                            <div class="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-2">
-                                <button data-action="client:createInvoice" data-client-name="${selected.name}" class="px-3 py-2 text-sm font-medium bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">Create Invoice</button>
-                                <button data-action="task:create" class="px-3 py-2 text-sm font-medium bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 transition-colors">Create Task</button>
-                            </div>
+                            <div class="px-4 py-4 space-y-4">
 
-                            <div class="mt-4 p-3 bg-slate-50 rounded-lg">
-                                <div class="flex flex-wrap items-start justify-between gap-3">
-                                    <div>
-                                        <div class="text-xs text-slate-500">Latest invoices</div>
-                                        <div class="text-sm font-medium text-slate-900">${latestInvoices.length ? `${latestInvoices.length} shown • ${selectedInvoices.length} total` : 'No invoices yet'}</div>
+                                <!-- Key Info Grid -->
+                                <div class="grid grid-cols-2 gap-2">
+                                    <div class="rounded-lg bg-slate-50 border border-slate-100 px-3 py-2">
+                                        <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Client Code</div>
+                                        <div class="text-sm font-semibold text-slate-900 mt-0.5">${window.esc(selected.vendorCode || '—')}</div>
                                     </div>
-                                    <button data-action="nav:billing/invoices" data-invoice-client-filter="${selected.name}" class="px-3 py-2 text-xs font-medium bg-white border border-slate-200 text-slate-700 rounded-lg hover:bg-slate-50 transition-colors">View in Billing</button>
-                                </div>
-
-                                ${latestInvoices.length ? `
-                                    <div class="mt-3 space-y-2">
-                                        ${latestInvoices.map(i => `
-                                            <div class="flex items-center justify-between gap-2 p-2 bg-white border border-slate-200 rounded-lg">
-                                                <div>
-                                                    <div class="text-sm font-semibold text-slate-900">${i.no || '—'}</div>
-                                                    <div class="text-xs text-slate-600">${i.amount || '—'} • ${i.status || '—'}</div>
-                                                </div>
-                                                <div class="flex items-center gap-2">
-                                                    <button
-                                                        data-action="invoice:preview"
-                                                        data-invoice-no="${i.no}"
-                                                        data-invoice-client="${i.client}"
-                                                        data-invoice-amount="${i.amount}"
-                                                        data-invoice-due="${i.due}"
-                                                        data-invoice-status="${i.status}"
-                                                        data-invoice-color="${i.color}"
-                                                        class="px-2 py-1 text-xs font-medium bg-purple-50 text-purple-700 rounded-lg hover:bg-purple-100 transition-colors"
-                                                    >Preview</button>
-                                                    ${String(i.status || '').trim().toLowerCase() !== 'paid' ? `
-                                                        <button
-                                                            data-action="invoice:markPaid"
-                                                            data-invoice-no="${i.no}"
-                                                            data-invoice-client="${i.client}"
-                                                            data-invoice-amount="${i.amount}"
-                                                            data-invoice-due="${i.due}"
-                                                            data-invoice-status="${i.status}"
-                                                            data-invoice-color="${i.color}"
-                                                            class="px-2 py-1 text-xs font-medium bg-emerald-50 text-emerald-700 rounded-lg hover:bg-emerald-100 transition-colors"
-                                                        >Mark Paid</button>
-                                                    ` : ``}
-                                                </div>
-                                            </div>
-                                        `).join('')}
+                                    <div class="rounded-lg bg-slate-50 border border-slate-100 px-3 py-2">
+                                        <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Lead Source</div>
+                                        <div class="text-sm font-semibold text-slate-900 mt-0.5">${window.esc(selected.leadSource || '—')}</div>
                                     </div>
-                                ` : ``}
-                            </div>
-
-                            <div class="mt-4 space-y-3">
-                                <div class="p-3 bg-slate-50 rounded-lg">
-                                    <div class="text-xs text-slate-500">Client Name</div>
-                                    <div class="text-sm font-medium text-slate-900">${selected.name || '—'}</div>
-                                </div>
-                                <div class="p-3 bg-slate-50 rounded-lg">
-                                    <div class="text-xs text-slate-500">Owner</div>
-                                    <div class="text-sm font-medium text-slate-900">${selected.owner || '—'}</div>
-                                </div>
-                                <div class="p-3 bg-slate-50 rounded-lg">
-                                    <div class="text-xs text-slate-500">Email</div>
-                                    <div class="text-sm font-medium text-slate-900">${selected.email || detail?.contact?.email || '—'}</div>
-                                </div>
-                                <div class="p-3 bg-slate-50 rounded-lg">
-                                    <div class="text-xs text-slate-500">Phone</div>
-                                    <div class="text-sm font-medium text-slate-900">${selected.phone || detail?.contact?.phone || '—'}</div>
-                                </div>
-                                <div class="p-3 bg-slate-50 rounded-lg">
-                                    <div class="text-xs text-slate-500">Industry</div>
-                                    <div class="text-sm font-medium text-slate-900">${selected.industry || '—'}</div>
-                                </div>
-                                <div class="p-3 bg-slate-50 rounded-lg">
-                                    <div class="text-xs text-slate-500">Lead Source</div>
-                                    <div class="text-sm font-medium text-slate-900">${selected.leadSource || '—'}</div>
-                                </div>
-                                <div class="p-3 bg-slate-50 rounded-lg">
-                                    <div class="text-xs text-slate-500">Location</div>
-                                    <div class="text-sm font-medium text-slate-900">${this.getLocationName(selected.location) || '—'}</div>
-                                </div>
-                                <div class="p-3 bg-slate-50 rounded-lg">
-                                    <div class="text-xs text-slate-500">Vendor Code</div>
-                                    <div class="text-sm font-medium text-slate-900">${selected.vendorCode || '—'}</div>
-                                </div>
-                                <div class="p-3 bg-slate-50 rounded-lg">
-                                    <div class="text-xs text-slate-500">City</div>
-                                    <div class="text-sm font-medium text-slate-900">${selected.city || '—'}</div>
-                                </div>
-                                ${selected.notes ? `
-                                    <div class="p-3 bg-slate-50 rounded-lg">
-                                        <div class="text-xs text-slate-500">Notes</div>
-                                        <div class="text-sm font-medium text-slate-900 whitespace-pre-wrap">${selected.notes}</div>
+                                    <div class="rounded-lg bg-slate-50 border border-slate-100 px-3 py-2">
+                                        <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Industry</div>
+                                        <div class="text-sm font-semibold text-slate-900 mt-0.5">${window.esc(selected.industry || '—')}</div>
                                     </div>
-                                ` : ''}
-                                <div class="p-3 bg-slate-50 rounded-lg">
-                                    <div class="text-xs text-slate-500">Primary Contact</div>
-                                    <div class="text-sm font-medium text-slate-900">${detail?.contact?.name || selected.owner || '—'}</div>
-                                    <div class="text-xs text-slate-600">${selected.email || detail?.contact?.email || '—'} • ${selected.phone || detail?.contact?.phone || '—'}</div>
-                                </div>
-                                <div class="p-3 bg-slate-50 rounded-lg">
-                                    <div class="text-xs text-slate-500">Current Project</div>
-                                    <div class="text-sm font-medium text-slate-900">${detail?.project?.name || '—'}</div>
-                                    <div class="mt-2 w-full bg-slate-200 rounded-full h-2">
-                                        <div class="bg-${detail?.project?.color || 'slate'}-600 h-2 rounded-full" style="width: ${detail?.project?.progress ?? 0}%"></div>
+                                    <div class="rounded-lg bg-slate-50 border border-slate-100 px-3 py-2">
+                                        <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Size / Tier</div>
+                                        <div class="text-sm font-semibold text-slate-900 mt-0.5">${window.esc(selected.industrySize || '—')}</div>
                                     </div>
-                                    <div class="text-xs text-slate-600 mt-1">${detail?.project?.progress ?? 0}% complete • ETA: ${detail?.project?.eta || '—'}</div>
+                                    <div class="rounded-lg bg-slate-50 border border-slate-100 px-3 py-2">
+                                        <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">GST State Code</div>
+                                        <div class="text-sm font-semibold text-slate-900 mt-0.5">${window.esc(selected.gstStateCode || '—')}</div>
+                                    </div>
+                                    <div class="rounded-lg bg-slate-50 border border-slate-100 px-3 py-2">
+                                        <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">GST Number</div>
+                                        <div class="text-sm font-semibold text-slate-900 mt-0.5">${window.esc(selected.gstNumber || '—')}</div>
+                                    </div>
                                 </div>
 
-                                ${detail?.alert ? `
-                                    <div class="p-3 bg-rose-50 rounded-lg border border-rose-100">
-                                        <div class="flex items-start gap-3">
-                                            <i data-lucide="alert-triangle" class="w-4 h-4 text-rose-700 mt-0.5"></i>
-                                            <div>
-                                                <div class="text-sm font-medium text-rose-900">${detail.alert.title}</div>
-                                                <div class="text-xs text-rose-800">${detail.alert.amount} • ${detail.alert.due}</div>
-                                            </div>
+                                <!-- Address -->
+                                <div class="rounded-lg border border-slate-100 bg-slate-50 p-3">
+                                    <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Address</div>
+                                    <div class="text-sm text-slate-800 leading-relaxed">${String(selected.address || '—').replace(/\n/g, '<br/>')}</div>
+                                    ${selected.locationUrl ? `<a href="${window.esc(selected.locationUrl)}" target="_blank" class="mt-2 inline-flex items-center gap-1 text-xs text-blue-600 hover:text-blue-700 font-medium"><i data-lucide="map-pin" style="width:12px;height:12px"></i> View on Map</a>` : ''}
+                                </div>
+
+                                <!-- Contact Persons -->
+                                <div class="rounded-lg border border-slate-100 bg-slate-50 p-3">
+                                    <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Contact Persons</div>
+                                    <div class="space-y-2">
+                                        ${(() => {
+                                            const persons = String(selected.contactPersonMultiple || '').split('\n').filter(Boolean);
+                                            if (!persons.length) return '<div class="text-sm text-slate-400">—</div>';
+                                            return persons.map(cp => {
+                                                const parts = cp.split(',').map(s => s.trim());
+                                                const name = parts[0] || '';
+                                                const email = parts[1] || '';
+                                                const dept = parts[2] || '';
+                                                const phone = parts[3] || '';
+                                                return `<div class="bg-white rounded-lg border border-slate-200 p-2.5">
+                                                    <div class="font-semibold text-slate-900 text-sm">${window.esc(name)}</div>
+                                                    ${dept ? `<div class="text-xs text-slate-500 mt-0.5">${window.esc(dept)}</div>` : ''}
+                                                    <div class="mt-1.5 flex flex-col gap-1">
+                                                        ${phone ? `<div class="flex items-center gap-1.5 text-xs text-slate-700"><i data-lucide="phone" style="width:11px;height:11px;color:#10b981"></i><span class="font-semibold text-slate-900">${window.esc(phone)}</span></div>` : ''}
+                                                        ${email ? `<div class="flex items-center gap-1.5 text-xs text-slate-700"><i data-lucide="mail" style="width:11px;height:11px;color:#10b981"></i><span>${window.esc(email)}</span></div>` : ''}
+                                                    </div>
+                                                </div>`;
+                                            }).join('');
+                                        })()}
+                                    </div>
+                                </div>
+
+                                <!-- Documents -->
+                                <div class="rounded-lg border border-slate-100 bg-slate-50 p-3">
+                                    <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Documents</div>
+                                    ${(selected.documents && selected.documents.length > 0)
+                                        ? selected.documents.map(d => `<a href="/uploads/clients/${selected.id || window.esc(selected.name).replace(/\\s+/g,'_')}/${d}" target="_blank" class="flex items-center gap-1.5 text-xs text-purple-700 hover:text-purple-900 font-medium mb-1"><i data-lucide="file" style="width:12px;height:12px"></i>${d}</a>`).join('')
+                                        : '<div class="text-xs text-slate-400">No documents uploaded</div>'}
+                                </div>
+
+                                ${selected.notes ? `<div class="rounded-lg border border-slate-100 bg-amber-50 p-3">
+                                    <div class="text-[10px] font-bold text-amber-600 uppercase tracking-wider mb-1">Notes</div>
+                                    <div class="text-sm text-slate-800 whitespace-pre-wrap">${window.esc(selected.notes)}</div>
+                                </div>` : ''}
+
+                                <!-- Latest Invoices -->
+                                <div class="rounded-lg border border-slate-100 bg-slate-50 p-3">
+                                    <div class="flex items-center justify-between mb-2">
+                                        <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Latest Invoices</div>
+                                        <button data-action="nav:billing/invoices" data-invoice-client-filter="${selected.name}" class="text-xs text-purple-600 hover:text-purple-800 font-medium">View All →</button>
+                                    </div>
+                                    ${latestInvoices.length ? `
+                                        <div class="space-y-1.5">
+                                            ${latestInvoices.map(i => `
+                                                <div class="flex items-center justify-between gap-2 p-2 bg-white border border-slate-200 rounded-lg">
+                                                    <div>
+                                                        <div class="text-xs font-semibold text-slate-900">${i.no || '—'}</div>
+                                                        <div class="text-[10px] text-slate-500">${i.amount || '—'} • ${i.status || '—'}</div>
+                                                    </div>
+                                                    <div class="flex items-center gap-1.5">
+                                                        <button data-action="invoice:preview" data-invoice-no="${i.no}" data-invoice-client="${i.client}" data-invoice-amount="${i.amount}" data-invoice-due="${i.due}" data-invoice-status="${i.status}" data-invoice-color="${i.color}" class="px-2 py-1 text-[10px] font-semibold bg-purple-50 text-purple-700 rounded-lg hover:bg-purple-100 transition-colors">Preview</button>
+                                                        ${String(i.status || '').trim().toLowerCase() !== 'paid' ? `<button data-action="invoice:markPaid" data-invoice-no="${i.no}" data-invoice-client="${i.client}" data-invoice-amount="${i.amount}" data-invoice-due="${i.due}" data-invoice-status="${i.status}" data-invoice-color="${i.color}" class="px-2 py-1 text-[10px] font-semibold bg-emerald-50 text-emerald-700 rounded-lg hover:bg-emerald-100 transition-colors">Mark Paid</button>` : ''}
+                                                    </div>
+                                                </div>`).join('')}
                                         </div>
-                                        <button data-action="client:followup" class="mt-3 w-full px-3 py-2 text-sm font-medium bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">Resolve / Follow up</button>
-                                    </div>
-                                ` : `
-                                    <div class="p-3 bg-emerald-50 rounded-lg border border-emerald-100">
-                                        <div class="flex items-start gap-3">
-                                            <i data-lucide="check-circle" class="w-4 h-4 text-emerald-700 mt-0.5"></i>
-                                            <div>
-                                                <div class="text-sm font-medium text-emerald-900">No urgent alerts</div>
-                                                <div class="text-xs text-emerald-800">Engagement and billing are stable</div>
-                                            </div>
-                                        </div>
-                                        <button data-action="client:note" class="mt-3 w-full px-3 py-2 text-sm font-medium bg-purple-50 text-purple-700 rounded-lg hover:bg-purple-100 transition-colors">Log a note</button>
-                                    </div>
-                                `}
+                                    ` : '<div class="text-xs text-slate-400">No invoices yet</div>'}
+                                </div>
+
                             </div>
                         </div>
                     ` : ``}
@@ -10843,7 +10855,7 @@ class MarketFlowCRM {
                         </button>
                         <button id="emailCampOpenAlerts" class="px-4 py-2 text-sm font-medium bg-amber-50 text-amber-700 rounded-lg hover:bg-amber-100 transition-colors flex items-center gap-1.5">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-                            Alerts &amp; GMass
+                            Alerts &amp; Mails
                         </button>
                         <button data-action="campaign:create" class="px-4 py-2 text-sm font-semibold bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors shadow-sm">+ New Campaign</button>
                     </div>
@@ -10911,7 +10923,7 @@ class MarketFlowCRM {
                                     <div class="w-9 h-9 rounded-xl bg-white/10 flex items-center justify-center">
                                         <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
                                     </div>
-                                    <span class="text-xs font-semibold text-amber-200 uppercase tracking-widest">Alerts &amp; GMass</span>
+                                    <span class="text-xs font-semibold text-amber-200 uppercase tracking-widest">Alerts &amp; Mails</span>
                                 </div>
                                 <div class="text-3xl font-extrabold text-white">${totalTriggers}</div>
                                 <div class="text-sm text-amber-200 mt-1">Active trigger alerts</div>
@@ -10938,7 +10950,7 @@ class MarketFlowCRM {
                             </div>
                         </div>
                         <div class="mt-4 flex items-center justify-between">
-                            <div class="text-xs text-amber-200">Auto-emails ready to send via GMass</div>
+                            <div class="text-xs text-amber-200">Auto-emails ready to send via Gmail</div>
                             <div class="flex items-center gap-1 text-xs font-semibold text-white/80 group-hover:text-white transition-colors">
                                 Open Alerts
                                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg>
@@ -11369,13 +11381,11 @@ class MarketFlowCRM {
 
     getEmailCampaignAlerts() {
         const esc = (v) => String(v ?? '').replace(/</g, '&lt;').replace(/"/g, '&quot;');
-        const now = Date.now();
         const fmt = (ts) => ts ? new Date(ts).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : '—';
 
-        // Pull live data for alerts
+        // Pull live data
         const clients = this.getClientsData();
         const leads = this.getLeadsData();
-        // Use stored projects only for alert triggers
         const storedProjects = this.getStoredProjects ? this.getStoredProjects() : [];
         const seenProj = new Set();
         const projects = [];
@@ -11383,7 +11393,6 @@ class MarketFlowCRM {
             const key = String((p.identification?.projectName || p.name || '')).trim().toLowerCase();
             if (!key || seenProj.has(key)) return;
             seenProj.add(key);
-            // Normalize shape: stored projects use nested identification/monitoring/payment
             projects.push({
                 name: p.identification?.projectName || p.name || '—',
                 client: p.identification?.clientName || p.client || '—',
@@ -11392,306 +11401,308 @@ class MarketFlowCRM {
             });
         });
 
-        // Build alert items categorized
-        const alerts = [];
+        // Helper: get primary contact email for a company name
+        const getEmail = (name) => {
+            const c = clients.find(c => c.name === name);
+            if (c) {
+                // Try contact persons first
+                if (c.contactPersonMultiple) {
+                    const lines = String(c.contactPersonMultiple).split('\n');
+                    for (const l of lines) {
+                        const m = l.match(/[\w.-]+@[\w.-]+\.[a-z]{2,}/i);
+                        if (m) return m[0];
+                    }
+                }
+                if (c.email && c.email.includes('@')) return c.email;
+            }
+            return '';
+        };
 
-        // Payment overdue alerts from projects
+        // ── Build categorised mail items ─────────────────────────────────────
+
+        // 1. LEAD FOLLOW-UP
+        const leadFollowup = [];
+        leads.filter(l => ['Follow-up', 'Quotation', 'Negotiation', 'New Lead', 'Prospect'].includes(l.stage)).forEach(l => {
+            leadFollowup.push({
+                id: `lead_fu_${l.id || l.company}`,
+                title: `Follow-up — ${l.company}`,
+                subtitle: `Stage: ${l.stage} | Source: ${l.source || '—'} | Acquired By: ${l.assignedTo || '—'}`,
+                recipient: getEmail(l.company),
+                subject: `Following Up on Your Enquiry — ${l.company}`,
+                body: `Dear ${l.company},\n\nThank you for your interest in APJ 3D Solutions. We wanted to follow up on your enquiry which is currently at the \'${l.stage}\' stage.\n\nOur team is eager to understand your requirements better and present the best-fit solution.\n\nCould you spare a few minutes for a call or a meeting to discuss the next steps?\n\nLooking forward to connecting with you.\n\nWarm regards,\nAPJ 3D Solutions Team`
+            });
+        });
+
+        // 2. PAYMENT
+        const paymentMails = [];
         projects.forEach(p => {
             const pay = p.payment || {};
             const bal = String(pay.balancePaymentAmount || '').trim();
             const due = String(pay.paymentDueDate || '').trim();
             const ovr = String(pay.overdueStatus || '').trim();
             if (ovr && ovr !== 'Paid' && bal) {
-                alerts.push({
-                    id: `pay_${p.name}_${p.client}`,
-                    category: 'Payment',
-                    categoryColor: 'rose',
-                    icon: 'credit-card',
-                    title: `Payment Overdue – ${p.name}`,
-                    subtitle: `Client: ${p.client || '—'} | Due: ${fmt(due ? Date.parse(due) : null)} | Balance: ₹${bal}`,
-                    status: ovr,
-                    statusColor: ovr.includes('90') ? 'rose' : ovr.includes('60') ? 'orange' : 'amber',
-                    trigger: 'payment_overdue',
-                    recipient: String(clients.find(c => c.name === p.client)?.email || ''),
-                    clientName: p.client || '—',
-                    draftSubject: `Payment Reminder – ${p.name} [${ovr}]`,
-                    draftBody: `Dear ${p.client || 'Client'},\n\nThis is a reminder regarding the pending payment of ₹${bal} for project "${p.name}".\nDue Date: ${fmt(due ? Date.parse(due) : null)} | Status: ${ovr}\n\nKindly ensure timely payment to avoid further delays.\n\nWarm regards,\nAPJ 3D Solutions Team`
+                paymentMails.push({
+                    id: `pay_proj_${p.name}`,
+                    title: `Payment Overdue — ${p.name}`,
+                    subtitle: `Client: ${p.client} | Balance: ₹${bal} | Due: ${fmt(due ? Date.parse(due) : null)} | Status: ${ovr}`,
+                    recipient: getEmail(p.client),
+                    subject: `Payment Reminder — ${p.name} [${ovr}]`,
+                    body: `Dear ${p.client},\n\nThis is a friendly reminder regarding the pending payment of ₹${bal} for project \'${p.name}\'.\n\nDue Date: ${fmt(due ? Date.parse(due) : null)}\nOverdue Status: ${ovr}\n\nKindly arrange for payment at your earliest convenience to avoid any service disruptions.\n\nFor any payment queries, please contact our accounts team directly.\n\nThank you for your prompt attention.\n\nWarm regards,\nAPJ 3D Solutions — Accounts Team`
                 });
             }
         });
-
-        // Project update alerts (delayed projects)
-        projects.forEach(p => {
-            const mon = p.monitoring || {};
-            const status = String(mon.overallProjectStatus || '').trim();
-            if (status === 'Pending / Delayed') {
-                alerts.push({
-                    id: `proj_${p.name}_${p.client}`,
-                    category: 'Project Update',
-                    categoryColor: 'amber',
-                    icon: 'folder-clock',
-                    title: `Project Delayed – ${p.name}`,
-                    subtitle: `Client: ${p.client || '—'} | Status: ${status}`,
-                    status: 'Delayed',
-                    statusColor: 'amber',
-                    trigger: 'project_delayed',
-                    recipient: String(clients.find(c => c.name === p.client)?.email || ''),
-                    clientName: p.client || '—',
-                    draftSubject: `Project Update – ${p.name} – Status: Delayed`,
-                    draftBody: `Dear ${p.client || 'Client'},\n\nWe wanted to inform you that the project "${p.name}" is currently experiencing delays.\nOur team is working diligently to get back on track and will provide you with an updated timeline shortly.\n\nWe apologize for any inconvenience caused.\n\nBest regards,\nAPJ 3D Solutions Team`
-                });
-            }
-        });
-
-        // Completed project follow-up
-        projects.forEach(p => {
-            const mon = p.monitoring || {};
-            const status = String(mon.overallProjectStatus || '').trim();
-            if (status === 'Completed') {
-                alerts.push({
-                    id: `comp_${p.name}_${p.client}`,
-                    category: 'Follow-up',
-                    categoryColor: 'emerald',
-                    icon: 'check-circle',
-                    title: `Project Completed – ${p.name}`,
-                    subtitle: `Client: ${p.client || '—'} | Gather feedback & upsell`,
-                    status: 'Completed',
-                    statusColor: 'emerald',
-                    trigger: 'project_completed',
-                    recipient: String(clients.find(c => c.name === p.client)?.email || ''),
-                    clientName: p.client || '—',
-                    draftSubject: `Your Project "${p.name}" is Complete! – Feedback Request`,
-                    draftBody: `Dear ${p.client || 'Client'},\n\nWe are pleased to inform you that project "${p.name}" has been successfully completed!\n\nWe would love to hear your feedback. Please feel free to share your experience with us.\nAlso, if you need any additional services, our team is ready to assist.\n\nThank you for choosing APJ 3D Solutions.\n\nWarm regards,\nAPJ 3D Solutions Team`
-                });
-            }
-        });
-
-        // Lead follow-up alerts (high priority leads)
-        leads.filter(l => ['Follow-up', 'Quotation', 'Negotiation'].includes(l.stage)).slice(0, 4).forEach(l => {
-            alerts.push({
-                id: `lead_${l.id}`,
-                category: 'Lead Follow-up',
-                categoryColor: 'indigo',
-                icon: 'user-plus',
-                title: `Follow-up Required – ${l.company}`,
-                subtitle: `Stage: ${l.stage} | Assigned: ${l.assignedTo || '—'} | Source: ${l.source}`,
-                status: l.stage,
-                statusColor: 'indigo',
-                trigger: 'lead_followup',
-                recipient: '',
-                clientName: l.company,
-                draftSubject: `Following Up – ${l.company} – ${l.stage} Stage`,
-                draftBody: `Dear ${l.company},\n\nThank you for your interest in APJ 3D Solutions.\n\nWe wanted to follow up regarding your inquiry which is currently at the "${l.stage}" stage. Our team is eager to move forward and ensure we can meet your requirements.\n\nWould you be available for a brief call or meeting to discuss next steps?\n\nLooking forward to hearing from you.\n\nBest regards,\nAPJ 3D Solutions Team`
-            });
-        });
-
-        // Overdue client alerts (dueAmount != 0)
-        clients.filter(c => c.dueAmount && c.dueAmount !== '₹0' && c.dueAmount !== '—').slice(0, 3).forEach(c => {
-            alerts.push({
-                id: `clientdue_${c.name}`,
-                category: 'Payment',
-                categoryColor: 'rose',
-                icon: 'alert-circle',
-                title: `Outstanding Balance – ${c.name}`,
+        clients.filter(c => c.dueAmount && c.dueAmount !== '₹0' && c.dueAmount !== '—').forEach(c => {
+            paymentMails.push({
+                id: `pay_client_${c.name}`,
+                title: `Outstanding Balance — ${c.name}`,
                 subtitle: `Amount Due: ${c.dueAmount} | ${c.openInvoices} open invoice(s)`,
-                status: 'Outstanding',
-                statusColor: 'rose',
-                trigger: 'payment_overdue',
-                recipient: String(c.email || ''),
-                clientName: c.name,
-                draftSubject: `Payment Reminder – Outstanding Balance of ${c.dueAmount}`,
-                draftBody: `Dear ${c.name},\n\nThis is a gentle reminder that you have an outstanding balance of ${c.dueAmount} with ${c.openInvoices} open invoice(s).\n\nKindly arrange for payment at your earliest convenience to avoid any service disruptions.\n\nFor payment assistance, please contact our accounts team.\n\nThank you for your prompt attention.\n\nBest regards,\nAPJ 3D Solutions Team`
+                recipient: getEmail(c.name),
+                subject: `Payment Reminder — Outstanding Balance of ${c.dueAmount}`,
+                body: `Dear ${c.name},\n\nWe hope this finds you well. We'd like to bring to your attention an outstanding balance of ${c.dueAmount} across ${c.openInvoices} open invoice(s).\n\nWe kindly request you to arrange payment at the earliest convenience to keep our engagement running smoothly.\n\nPlease reach out to our accounts team if you need a detailed statement or have any queries.\n\nThank you!\n\nWarm regards,\nAPJ 3D Solutions — Accounts Team`
             });
         });
 
-        const triggerLabels = {
-            payment_overdue: { label: 'Payment Overdue', color: 'rose' },
-            project_delayed: { label: 'Project Delayed', color: 'amber' },
-            project_completed: { label: 'Project Completed', color: 'emerald' },
-            lead_followup: { label: 'Lead Follow-up', color: 'indigo' }
+        // 3. CLIENT INTERACTION
+        const clientInteraction = [];
+        clients.slice(0, 8).forEach(c => {
+            clientInteraction.push({
+                id: `ci_${c.name}`,
+                title: `Check-in — ${c.name}`,
+                subtitle: `Industry: ${c.industry || '—'} | Owner: ${c.owner || '—'} | Stage: ${c.stage || 'Active'}`,
+                recipient: getEmail(c.name),
+                subject: `Checking In — How Are Things Going, ${c.name}?`,
+                body: `Dear ${c.name},\n\nWe hope you are doing well!\n\nWe wanted to reach out and check in to see how things are progressing on your end and whether there is anything more we can do to support you.\n\nAt APJ 3D Solutions, our goal is always to ensure our clients receive the highest level of service and satisfaction.\n\nIf you have any upcoming requirements, new projects, or feedback you\'d like to share, we\'d love to hear from you.\n\nLooking forward to staying connected!\n\nWarm regards,\nAPJ 3D Solutions Team`
+            });
+        });
+
+        // 4. PROJECT UPDATES
+        const projectUpdates = [];
+        projects.forEach(p => {
+            const status = String(p.monitoring?.overallProjectStatus || '').trim();
+            if (!status || status === 'Completed') return;
+            projectUpdates.push({
+                id: `pu_${p.name}`,
+                title: `Project Update — ${p.name}`,
+                subtitle: `Client: ${p.client} | Status: ${status || '—'}`,
+                recipient: getEmail(p.client),
+                subject: `Project Update — ${p.name} — Current Status: ${status}`,
+                body: `Dear ${p.client},\n\nWe wanted to provide you with a current update on your project \'${p.name}\'.\n\nCurrent Status: ${status}\n\nOur team is actively working to ensure the project meets the agreed timeline and quality standards. We will keep you informed as the project progresses.\n\nIf you have any questions or specific requirements, please don\'t hesitate to reach out.\n\nBest regards,\nAPJ 3D Solutions Team`
+            });
+        });
+        // Delayed projects get their own card
+        projects.filter(p => String(p.monitoring?.overallProjectStatus || '').includes('Delayed')).forEach(p => {
+            const exists = projectUpdates.some(x => x.id === `pu_${p.name}`);
+            if (!exists) projectUpdates.push({
+                id: `pu_del_${p.name}`,
+                title: `Delay Notice — ${p.name}`,
+                subtitle: `Client: ${p.client} | Status: Delayed`,
+                recipient: getEmail(p.client),
+                subject: `Project Delay Notice — ${p.name}`,
+                body: `Dear ${p.client},\n\nWe sincerely apologise for informing you that project \'${p.name}\' is currently experiencing a delay.\n\nOur team is working diligently to resolve the issues and get back on track. We will share an updated timeline as soon as possible.\n\nWe deeply regret any inconvenience caused and appreciate your patience and understanding.\n\nBest regards,\nAPJ 3D Solutions Team`
+            });
+        });
+
+        // 5. RE-ENGAGEMENT
+        const reengagement = [];
+        // Leads stuck in cold stages
+        leads.filter(l => ['Lost', 'Cold', 'Not Interested', 'On Hold'].includes(l.stage)).forEach(l => {
+            reengagement.push({
+                id: `reeng_lead_${l.id || l.company}`,
+                title: `Re-engage — ${l.company}`,
+                subtitle: `Stage: ${l.stage} | Source: ${l.source || '—'}`,
+                recipient: getEmail(l.company),
+                subject: `We\'d Love to Reconnect — ${l.company}`,
+                body: `Dear ${l.company},\n\nWe hope you\'re doing well! We noticed that we haven\'t connected in a while and wanted to reach out.\n\nWe\'ve been working on some exciting new capabilities and offerings at APJ 3D Solutions that we believe could be highly relevant to your business.\n\nWould you be open to a quick call to explore if there\'s a fit? We\'d love the opportunity to reconnect and understand your current needs.\n\nLooking forward to hearing from you!\n\nWarm regards,\nAPJ 3D Solutions Team`
+            });
+        });
+        // Completed projects — upsell opportunity
+        projects.filter(p => String(p.monitoring?.overallProjectStatus || '') === 'Completed').forEach(p => {
+            reengagement.push({
+                id: `reeng_comp_${p.name}`,
+                title: `Upsell Opportunity — ${p.client} (${p.name} Completed)`,
+                subtitle: `Project: ${p.name} completed — ideal time to pitch next engagement`,
+                recipient: getEmail(p.client),
+                subject: `Great News — ${p.name} Complete! What\'s Next?`,
+                body: `Dear ${p.client},\n\nWe are thrilled to share that your project \'${p.name}\' has been successfully completed! It was a pleasure working with you.\n\nAs you continue to grow, we\'d love to be your partner for upcoming projects. We have expanded our service offerings and would be happy to discuss how we can add further value.\n\nWould you be available for a brief meeting or call to explore upcoming opportunities?\n\nThank you once again for trusting us with this project.\n\nWarm regards,\nAPJ 3D Solutions Team`
+            });
+        });
+
+        // 6. FOLLOW-UP (general — post-meeting / post-quotation)
+        const generalFollowup = [];
+        leads.filter(l => ['Quotation', 'Negotiation', 'Proposal Sent'].includes(l.stage)).forEach(l => {
+            generalFollowup.push({
+                id: `gfu_${l.id || l.company}`,
+                title: `Post-Quotation Follow-up — ${l.company}`,
+                subtitle: `Stage: ${l.stage} | Acquired By: ${l.assignedTo || '—'}`,
+                recipient: getEmail(l.company),
+                subject: `Follow-up on Quotation — ${l.company}`,
+                body: `Dear ${l.company},\n\nThank you for giving us the opportunity to present our proposal.\n\nWe wanted to follow up and check whether you had a chance to review the quotation we sent across. We are happy to answer any questions, adjust the scope, or schedule a clarification call at your convenience.\n\nWe look forward to the possibility of working together.\n\nBest regards,\nAPJ 3D Solutions Team`
+            });
+        });
+        clients.slice(0, 5).forEach(c => {
+            generalFollowup.push({
+                id: `gfu_client_${c.name}`,
+                title: `Relationship Follow-up — ${c.name}`,
+                subtitle: `Owner: ${c.owner || '—'} | Stage: ${c.stage || 'Active'}`,
+                recipient: getEmail(c.name),
+                subject: `Following Up — ${c.name}`,
+                body: `Dear ${c.name},\n\nHope this message finds you well.\n\nWe wanted to follow up and check in on your experience with our services. Your feedback is invaluable in helping us improve.\n\nIf there is anything we can assist you with or if you have any upcoming requirements, please don\'t hesitate to reach out.\n\nThank you for your continued support!\n\nWarm regards,\nAPJ 3D Solutions Team`
+            });
+        });
+
+        const TABS = [
+            { id: 'lead_followup', label: 'Lead Follow-up', icon: 'user-plus', color: 'indigo', items: leadFollowup },
+            { id: 'payment', label: 'Payment', icon: 'credit-card', color: 'rose', items: paymentMails },
+            { id: 'client_interaction', label: 'Client Interaction', icon: 'message-circle', color: 'purple', items: clientInteraction },
+            { id: 'project_updates', label: 'Project Updates', icon: 'folder-open', color: 'amber', items: projectUpdates },
+            { id: 'reengagement', label: 'Re-engagement', icon: 'refresh-cw', color: 'emerald', items: reengagement },
+            { id: 'followup', label: 'Follow-up', icon: 'send', color: 'sky', items: generalFollowup }
+        ];
+
+        const renderMailCards = (items, color) => {
+            if (!items.length) return `<div class="text-sm text-slate-400 py-10 text-center">No emails in this category right now — data will populate as leads, clients, and projects are added.</div>`;
+            return items.map(m => `
+                <div class="am-mail-card bg-white rounded-xl border border-slate-200 shadow-sm p-5 transition-all hover:shadow-md" data-mail-id="${esc(m.id)}">
+                    <div class="flex flex-col md:flex-row gap-4">
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-center gap-2 flex-wrap mb-1">
+                                <span class="px-2 py-0.5 text-xs font-bold bg-${color}-50 text-${color}-700 rounded-full">${esc(m.title.split('—')[0].trim())}</span>
+                            </div>
+                            <div class="text-sm font-bold text-slate-900 mt-1 truncate">${esc(m.title)}</div>
+                            <div class="text-xs text-slate-500 mt-0.5">${esc(m.subtitle)}</div>
+                            <div class="mt-3 bg-slate-50 border border-slate-200 rounded-lg p-3">
+                                <div class="text-xs text-slate-500">To: <span class="font-semibold text-slate-800">${esc(m.recipient || '(no email — update contact record)')}</span></div>
+                                <div class="text-xs text-slate-500 mt-1">Subject: <span class="font-semibold text-slate-800">${esc(m.subject)}</span></div>
+                                <textarea id="amBody_${esc(m.id)}" rows="4" class="mt-2 w-full text-xs bg-white border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-400 resize-y">${esc(m.body)}</textarea>
+                            </div>
+                        </div>
+                        <div class="flex flex-col gap-2 min-w-[150px] md:justify-start">
+                            <button class="am-open-gmail px-4 py-2 text-sm font-semibold bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+                                    data-mail-id="${esc(m.id)}" data-recipient="${esc(m.recipient)}" data-subject="${esc(m.subject)}">
+                                Open in Gmail
+                            </button>
+                            <button class="am-copy-body px-4 py-2 text-sm font-semibold bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 transition-colors"
+                                    data-mail-id="${esc(m.id)}">
+                                Copy Body
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
         };
+
+        const totalMails = TABS.reduce((s, t) => s + t.items.length, 0);
 
         return `
             <div class="space-y-5 fade-in w-full">
                 <div class="flex flex-wrap items-start justify-between gap-3">
                     <div>
-                        <h2 class="text-xl sm:text-2xl font-semibold text-slate-900">Alerts &amp; GMass</h2>
-                        <p class="text-sm text-slate-500">${alerts.length} active triggers — auto-generate emails &amp; send via GMass</p>
+                        <h2 class="text-xl sm:text-2xl font-semibold text-slate-900">Alerts &amp; Mails</h2>
+                        <p class="text-sm text-slate-500">${totalMails} auto-generated emails across ${TABS.length} categories — open in Gmail or copy the body</p>
                     </div>
-                    <div class="flex gap-2">
-                        <button id="agSendAllGmass" class="px-4 py-2 text-sm font-medium bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">Send All to GMass</button>
-                        <button id="agRecheckTriggers" class="px-4 py-2 text-sm font-medium bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 transition-colors">Re-check Triggers</button>
-                    </div>
+                    <button id="amRecheckTriggers" class="px-4 py-2 text-sm font-medium bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 transition-colors">Re-check Triggers</button>
                 </div>
 
-                <!-- Trigger Stats -->
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    ${Object.entries(triggerLabels).map(([k, v]) => {
-            const cnt = alerts.filter(a => a.trigger === k).length;
-            return `
-                        <div class="bg-white rounded-xl border border-${v.color}-200 p-4 shadow-sm">
-                            <div class="text-xs font-semibold text-${v.color}-700 uppercase tracking-wide">${esc(v.label)}</div>
-                            <div class="text-3xl font-extrabold text-slate-900 mt-2">${cnt}</div>
-                            <div class="text-xs text-slate-500 mt-1">${cnt === 1 ? 'alert pending' : 'alerts pending'}</div>
-                        </div>`;
-        }).join('')}
-                </div>
-
-                <!-- Filter Bar -->
-                <div class="bg-white rounded-xl border border-slate-200 p-4 shadow-sm flex flex-wrap gap-3 items-center">
-                    <select id="agFilterCategory" class="border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400">
-                        <option>All Categories</option>
-                        <option>Payment</option>
-                        <option>Project Update</option>
-                        <option>Follow-up</option>
-                        <option>Lead Follow-up</option>
-                    </select>
-                    <input id="agFilterSearch" type="text" placeholder="Search alerts…" class="border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400 flex-1" />
-                    <span id="agFilterCount" class="text-sm text-slate-500">Showing ${alerts.length} of ${alerts.length}</span>
-                </div>
-
-                <!-- Alert Cards -->
-                <div id="agAlertsList" class="space-y-3">
-                    ${alerts.map(a => `
-                        <div class="ag-alert-card bg-white rounded-xl border border-${a.statusColor}-200 p-5 shadow-sm transition-all"
-                             data-category="${esc(a.category.toLowerCase())}"
-                             data-title="${esc(a.title.toLowerCase())}">
-                            <div class="flex flex-col md:flex-row md:items-start gap-4">
-                                <div class="flex-1">
-                                    <div class="flex items-center gap-3 flex-wrap">
-                                        <span class="px-2 py-0.5 text-xs font-bold bg-${a.categoryColor}-50 text-${a.categoryColor}-700 rounded-full uppercase tracking-wide">${esc(a.category)}</span>
-                                        <span class="px-2 py-0.5 text-xs font-semibold bg-${a.statusColor}-100 text-${a.statusColor}-700 rounded-full">${esc(a.status)}</span>
-                                        <span class="text-[11px] text-slate-400">Trigger: <strong class="text-slate-600">${esc(a.trigger.replace(/_/g, ' '))}</strong></span>
-                                    </div>
-                                    <div class="mt-2 text-sm font-bold text-slate-900">${esc(a.title)}</div>
-                                    <div class="text-xs text-slate-500 mt-1">${esc(a.subtitle)}</div>
-                                    <div class="mt-3 font-semibold text-xs text-slate-700">Auto-Generated Email Preview:</div>
-                                    <div class="mt-1 bg-slate-50 border border-slate-200 rounded-lg p-3">
-                                        <div class="text-xs font-semibold text-slate-500">To: <span class="text-slate-800">${esc(a.recipient || '(email not set — update client record)')}</span></div>
-                                        <div class="text-xs font-semibold text-slate-500 mt-1">Subject: <span class="text-slate-800">${esc(a.draftSubject)}</span></div>
-                                        <textarea id="agBody_${esc(a.id)}" rows="4" class="mt-2 w-full text-xs bg-white border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-400 resize-y">${esc(a.draftBody)}</textarea>
-                                    </div>
-                                </div>
-                                <div class="flex flex-col gap-2 min-w-[140px]">
-                                    <button class="ag-trigger-gmass px-4 py-2 text-sm font-semibold bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
-                                            data-alert-id="${esc(a.id)}"
-                                            data-recipient="${esc(a.recipient)}"
-                                            data-subject="${esc(a.draftSubject)}">
-                                        Send via GMass
-                                    </button>
-                                    <button class="ag-trigger-draft px-4 py-2 text-sm font-semibold bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 transition-colors"
-                                            data-alert-id="${esc(a.id)}"
-                                            data-recipient="${esc(a.recipient)}"
-                                            data-subject="${esc(a.draftSubject)}">
-                                        Open in Gmail
-                                    </button>
-                                    <button class="ag-copy-body px-4 py-2 text-sm font-semibold bg-emerald-50 text-emerald-700 rounded-lg hover:bg-emerald-100 transition-colors"
-                                            data-alert-id="${esc(a.id)}">
-                                        Copy Body
-                                    </button>
-                                </div>
-                            </div>
+                <!-- Stats Row -->
+                <div class="grid grid-cols-3 md:grid-cols-6 gap-3">
+                    ${TABS.map(t => `
+                        <div class="bg-white rounded-xl border border-${t.color}-200 p-3 shadow-sm text-center cursor-pointer am-stat-tab hover:bg-${t.color}-50 transition-colors" data-tab-target="${t.id}">
+                            <div class="text-2xl font-extrabold text-${t.color}-600">${t.items.length}</div>
+                            <div class="text-[11px] font-semibold text-slate-500 mt-0.5 leading-tight">${t.label}</div>
                         </div>
                     `).join('')}
+                </div>
+
+                <!-- Tab Navigation -->
+                <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                    <div class="flex overflow-x-auto border-b border-slate-200" id="amTabNav">
+                        ${TABS.map((t, i) => `
+                            <button class="am-tab-btn flex-shrink-0 px-5 py-3 text-sm font-semibold transition-colors whitespace-nowrap
+                                ${i === 0 ? `border-b-2 border-${t.color}-500 text-${t.color}-700 bg-${t.color}-50` : 'text-slate-500 hover:text-slate-800 hover:bg-slate-50'}"
+                                    data-tab="${t.id}" data-color="${t.color}">
+                                ${t.label}
+                                <span class="ml-1.5 inline-flex items-center justify-center w-5 h-5 rounded-full text-[10px] font-bold
+                                    ${i === 0 ? `bg-${t.color}-100 text-${t.color}-700` : 'bg-slate-100 text-slate-600'}">${t.items.length}</span>
+                            </button>
+                        `).join('')}
+                    </div>
+
+                    <!-- Tab Content -->
+                    <div class="p-5 space-y-4" id="amTabContent">
+                        ${TABS.map((t, i) => `
+                            <div id="amTab_${t.id}" class="am-tab-panel space-y-4" style="${i !== 0 ? 'display:none;' : ''}">
+                                ${renderMailCards(t.items, t.color)}
+                            </div>
+                        `).join('')}
+                    </div>
                 </div>
             </div>
         `;
     }
 
     setupAlertGmassInteractions() {
-        const categoryEl = document.getElementById('agFilterCategory');
-        const searchEl = document.getElementById('agFilterSearch');
-        const countEl = document.getElementById('agFilterCount');
-        const cards = () => Array.from(document.querySelectorAll('.ag-alert-card'));
+        // Tab switching
+        const tabBtns = document.querySelectorAll('.am-tab-btn');
+        const tabPanels = document.querySelectorAll('.am-tab-panel');
+        const statTabs = document.querySelectorAll('.am-stat-tab');
 
-        const applyFilters = () => {
-            const catQ = (categoryEl?.value || 'All Categories').toLowerCase();
-            const srchQ = (searchEl?.value || '').trim().toLowerCase();
-            let vis = 0;
-            cards().forEach(card => {
-                const cat = (card.dataset.category || '').toLowerCase();
-                const title = (card.dataset.title || '').toLowerCase();
-                const catOk = catQ === 'all categories' || cat.includes(catQ);
-                const srchOk = !srchQ || title.includes(srchQ) || cat.includes(srchQ);
-                card.style.display = (catOk && srchOk) ? '' : 'none';
-                if (catOk && srchOk) vis++;
+        const activateTab = (targetId) => {
+            tabBtns.forEach(btn => {
+                const isActive = btn.dataset.tab === targetId;
+                const color = btn.dataset.color;
+                if (isActive) {
+                    btn.className = `am-tab-btn flex-shrink-0 px-5 py-3 text-sm font-semibold transition-colors whitespace-nowrap border-b-2 border-${color}-500 text-${color}-700 bg-${color}-50`;
+                    const badge = btn.querySelector('span');
+                    if (badge) badge.className = `ml-1.5 inline-flex items-center justify-center w-5 h-5 rounded-full text-[10px] font-bold bg-${color}-100 text-${color}-700`;
+                } else {
+                    btn.className = 'am-tab-btn flex-shrink-0 px-5 py-3 text-sm font-semibold transition-colors whitespace-nowrap text-slate-500 hover:text-slate-800 hover:bg-slate-50';
+                    const badge = btn.querySelector('span');
+                    if (badge) badge.className = 'ml-1.5 inline-flex items-center justify-center w-5 h-5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-600';
+                }
             });
-            const total = cards().length;
-            if (countEl) countEl.textContent = `Showing ${vis} of ${total}`;
+            tabPanels.forEach(panel => {
+                panel.style.display = panel.id === `amTab_${targetId}` ? '' : 'none';
+            });
         };
 
-        categoryEl?.addEventListener('change', applyFilters);
-        searchEl?.addEventListener('input', applyFilters);
+        tabBtns.forEach(btn => btn.addEventListener('click', () => activateTab(btn.dataset.tab)));
+        statTabs.forEach(s => s.addEventListener('click', () => activateTab(s.dataset.tabTarget)));
 
-        const openGmassEmail = (recipient, subject, bodyId) => {
-            const bodyEl = document.getElementById(`agBody_${bodyId}`);
-            const body = bodyEl ? bodyEl.value : '';
-            // GMass trigger URL via Gmail compose with cc to gmass
-            const gmassUrl = `https://mail.google.com/mail/u/0/?view=cm&fs=1&to=${encodeURIComponent(recipient)}&cc=${encodeURIComponent('send@gmass.co')}&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-            if (!recipient || !recipient.includes('@')) {
-                this.showToast('No email found for this contact. Please update the client email record and try again.');
-                return;
-            }
-            window.open(gmassUrl, '_blank');
-            this.showToast('Opened GMass compose window.');
-        };
-
-        const openGmailDraft = (recipient, subject, bodyId) => {
-            const bodyEl = document.getElementById(`agBody_${bodyId}`);
-            const body = bodyEl ? bodyEl.value : '';
-            const gmailUrl = `https://mail.google.com/mail/u/0/?view=cm&fs=1&to=${encodeURIComponent(recipient)}&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-            if (!recipient || !recipient.includes('@')) {
-                this.showToast('No email found for this contact. Please update the client email record.');
-                return;
-            }
-            window.open(gmailUrl, '_blank');
-            this.showToast('Opened Gmail draft.');
-        };
-
-        document.querySelectorAll('.ag-trigger-gmass').forEach(btn => {
+        // Open in Gmail
+        document.querySelectorAll('.am-open-gmail').forEach(btn => {
             btn.addEventListener('click', () => {
-                const alertId = btn.dataset.alertId;
+                const id = btn.dataset.mailId;
                 const recipient = btn.dataset.recipient;
                 const subject = btn.dataset.subject;
-                openGmassEmail(recipient, subject, alertId);
+                const bodyEl = document.getElementById(`amBody_${id}`);
+                const body = bodyEl ? bodyEl.value : '';
+                if (!recipient || !recipient.includes('@')) {
+                    this.showToast('No email found for this contact — please update the contact\'s email in their record.');
+                    return;
+                }
+                const url = `https://mail.google.com/mail/u/0/?view=cm&fs=1&to=${encodeURIComponent(recipient)}&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+                window.open(url, '_blank');
+                this.showToast('Opened Gmail compose window.');
             });
         });
 
-        document.querySelectorAll('.ag-trigger-draft').forEach(btn => {
+        // Copy body
+        document.querySelectorAll('.am-copy-body').forEach(btn => {
             btn.addEventListener('click', () => {
-                const alertId = btn.dataset.alertId;
-                const recipient = btn.dataset.recipient;
-                const subject = btn.dataset.subject;
-                openGmailDraft(recipient, subject, alertId);
-            });
-        });
-
-        document.querySelectorAll('.ag-copy-body').forEach(btn => {
-            btn.addEventListener('click', () => {
-                const bodyEl = document.getElementById(`agBody_${btn.dataset.alertId}`);
+                const bodyEl = document.getElementById(`amBody_${btn.dataset.mailId}`);
                 if (!bodyEl) return;
-                navigator.clipboard.writeText(bodyEl.value).then(() => {
-                    this.showToast('Email body copied to clipboard.');
-                }).catch(() => this.showToast('Copy failed.'));
+                navigator.clipboard.writeText(bodyEl.value)
+                    .then(() => this.showToast('Email body copied to clipboard.'))
+                    .catch(() => this.showToast('Copy failed.'));
             });
         });
 
-        document.getElementById('agSendAllGmass')?.addEventListener('click', () => {
-            this.showToast('Opening GMass for all alerts — check popup blocker if nothing opens.');
-            const btns = document.querySelectorAll('.ag-trigger-gmass');
-            if (btns.length === 0) { this.showToast('No alerts available.'); return; }
-            // Open only first to avoid popup block (user can send others one by one)
-            btns[0].click();
-            this.showToast(`Triggered GMass for first alert. Send remaining ${btns.length - 1} individually.`);
-        });
-
-        document.getElementById('agRecheckTriggers')?.addEventListener('click', () => {
+        // Re-check triggers
+        document.getElementById('amRecheckTriggers')?.addEventListener('click', () => {
             this.renderContent();
             this.initializeLucideIcons();
             this.showToast('Triggers re-evaluated from live data.');
         });
-
-        applyFilters();
     }
 
     getSmsWhatsappCampaigns() {

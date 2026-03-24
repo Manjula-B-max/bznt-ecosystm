@@ -184,6 +184,7 @@ window.handleDocumentsUpload = async function(resource, id, inputId) {
 
 window.applyContactsFilter = function() {
     try {
+        const companyEl = document.getElementById('contactsFilterCompany');
         const nameEl = document.getElementById('contactsFilterName');
         const phoneEl = document.getElementById('contactsFilterPhone');
         const emailEl = document.getElementById('contactsFilterEmail');
@@ -194,6 +195,7 @@ window.applyContactsFilter = function() {
 
         const rows = Array.from(document.querySelectorAll('tr[data-contact-row="1"]'));
 
+        const compQ = String(companyEl?.value || '').trim().toLowerCase();
         const nameQ = String(nameEl?.value || '').trim().toLowerCase();
         const phoneQ = String(phoneEl?.value || '').trim().toLowerCase();
         const emailQ = String(emailEl?.value || '').trim().toLowerCase();
@@ -205,6 +207,7 @@ window.applyContactsFilter = function() {
         let visibleCount = 0;
 
         rows.forEach(r => {
+            const c = String(r.dataset.company || '').toLowerCase();
             const n = String(r.dataset.name || '').toLowerCase();
             const p = String(r.dataset.phone || '').toLowerCase();
             const e = String(r.dataset.email || '').toLowerCase();
@@ -214,6 +217,7 @@ window.applyContactsFilter = function() {
             const s = String(r.dataset.source || '').toLowerCase();
 
             const okType = typeQ === 'all' || t === typeQ;
+            const okComp = !compQ || c.includes(compQ);
             const okName = !nameQ || n.includes(nameQ);
             const okPhone = !phoneQ || p.includes(phoneQ);
             const okEmail = !emailQ || e.includes(emailQ);
@@ -222,7 +226,7 @@ window.applyContactsFilter = function() {
             const okSource = sourceQ === 'all' || s.includes(sourceQ);
 
             // Forcefully execute the display logic
-            if (okType && okOwner && okSource && okName && okPhone && okEmail && okDept) {
+            if (okType && okOwner && okSource && okComp && okName && okPhone && okEmail && okDept) {
                 r.style.setProperty('display', '', 'important');
                 visibleCount++;
             } else {
@@ -231,7 +235,7 @@ window.applyContactsFilter = function() {
         });
 
         // Debug visual tracer on UI
-        if (nameEl) nameEl.placeholder = `Hits: ${visibleCount}/${rows.length} [t=${typeQ}, e=${emailQ}]`;
+        if (companyEl) companyEl.placeholder = `Hits: ${visibleCount}/${rows.length}`;
 
     } catch (err) {
         console.error('Contacts Filter Error:', err);
@@ -700,91 +704,65 @@ class MarketFlowCRM {
     getAllContactsData() {
         const contacts = [];
 
-        // Expand each client: primary + all contact persons
         this.getClientsData().forEach(c => {
-            const name = String(c?.name || '').trim();
-            if (!name) return;
+            const companyName = String(c?.name || '').trim();
+            if (!companyName) return;
             const owner = String(c?.owner || '').trim();
             const source = String(c?.leadSource || '').trim();
 
-            // Primary client entry
+            let pName = '', pEmail = String(c?.email || '').trim(), pDept = '', pPhone = String(c?.phone || '').trim();
+
+            if (c.contactPersonMultiple) {
+                const parts = c.contactPersonMultiple.split('\n')[0].split(',').map(s => s.trim());
+                if (parts[0]) pName = parts[0];
+                if (parts[1]) pEmail = parts[1];
+                if (parts[2]) pDept = parts[2];
+                if (parts[3]) pPhone = parts[3];
+            }
+
             contacts.push({
                 type: 'Client',
-                name,
-                phone: String(c?.phone || '').trim(),
-                email: String(c?.email || '').trim(),
+                companyName,
+                personName: pName || '—',
+                phone: pPhone,
+                email: pEmail,
                 owner,
                 source,
-                dept: '',
-                key: `client:${name.toLowerCase()}`
+                dept: pDept || '—',
+                key: `client:${companyName.toLowerCase()}`
             });
-
-            // Additional contact persons
-            if (c.contactPersonMultiple) {
-                c.contactPersonMultiple.split('\n').forEach((line, idx) => {
-                    const parts = line.split(',').map(s => s.trim());
-                    const pName = parts[0] || '';
-                    const pEmail = parts[1] || '';
-                    const pDept = parts[2] || '';
-                    const pPhone = parts[3] || '';
-                    if (!pName) return;
-                    contacts.push({
-                        type: 'Client',
-                        name: pName,
-                        phone: pPhone,
-                        email: pEmail,
-                        owner,
-                        source,
-                        dept: pDept,
-                        key: `client-contact:${name.toLowerCase()}:${idx}`
-                    });
-                });
-            }
         });
 
-        // Expand each lead: company + all contact persons
         this.getLeadsData().forEach(l => {
-            const name = String(l?.company || '').trim();
-            if (!name) return;
+            const companyName = String(l?.company || '').trim();
+            if (!companyName) return;
             const owner = String(l?.assignedTo || '').trim();
             const source = String(l?.source || '').trim();
 
-            // Primary lead entry
+            let pName = '', pEmail = String(l?.email || '').trim(), pDept = '', pPhone = String(l?.contact || '').trim();
+
+            if (l.contactPersonMultiple) {
+                const parts = l.contactPersonMultiple.split('\n')[0].split(',').map(s => s.trim());
+                if (parts[0]) pName = parts[0];
+                if (parts[1]) pEmail = parts[1];
+                if (parts[2]) pDept = parts[2];
+                if (parts[3]) pPhone = parts[3];
+            }
+
             contacts.push({
                 type: 'Lead',
-                name,
-                phone: String(l?.contact || '').trim(),
-                email: String(l?.email || '').trim(),
+                companyName,
+                personName: pName || '—',
+                phone: pPhone,
+                email: pEmail,
                 owner,
                 source,
-                dept: '',
-                key: `lead:${String(l?.id || name).toLowerCase()}`
+                dept: pDept || '—',
+                key: `lead:${companyName.toLowerCase()}`
             });
-
-            // Additional contact persons
-            if (l.contactPersonMultiple) {
-                l.contactPersonMultiple.split('\n').forEach((line, idx) => {
-                    const parts = line.split(',').map(s => s.trim());
-                    const pName = parts[0] || '';
-                    const pEmail = parts[1] || '';
-                    const pDept = parts[2] || '';
-                    const pPhone = parts[3] || '';
-                    if (!pName) return;
-                    contacts.push({
-                        type: 'Lead',
-                        name: pName,
-                        phone: pPhone,
-                        email: pEmail,
-                        owner,
-                        source,
-                        dept: pDept,
-                        key: `lead-contact:${String(l?.id || name).toLowerCase()}:${idx}`
-                    });
-                });
-            }
         });
 
-        contacts.sort((a, b) => String(a.name).localeCompare(String(b.name)));
+        contacts.sort((a, b) => String(a.companyName).localeCompare(String(b.companyName)));
         return contacts;
     }
 
@@ -8309,8 +8287,9 @@ class MarketFlowCRM {
                             <thead class="bg-slate-50 text-slate-600">
                                 <tr>
                                     <th class="text-left px-4 py-3 font-medium">Type</th>
-                                    <th class="text-left px-4 py-3 font-medium">Name</th>
-                                    <th class="text-left px-4 py-3 font-medium">Dept/Role</th>
+                                    <th class="text-left px-4 py-3 font-medium">Company</th>
+                                    <th class="text-left px-4 py-3 font-medium">Primary Contact</th>
+                                    <th class="text-left px-4 py-3 font-medium">Role</th>
                                     <th class="text-left px-4 py-3 font-medium">Phone</th>
                                     <th class="text-left px-4 py-3 font-medium">Email</th>
                                     <th class="text-left px-4 py-3 font-medium">Owner</th>
@@ -8324,6 +8303,9 @@ class MarketFlowCRM {
                                             <option>Client</option>
                                             <option>Lead</option>
                                         </select>
+                                    </th>
+                                    <th class="px-4 py-3">
+                                        <input id="contactsFilterCompany" oninput="window.applyContactsFilter()" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="Filter" />
                                     </th>
                                     <th class="px-4 py-3">
                                         <input id="contactsFilterName" oninput="window.applyContactsFilter()" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="Filter" />
@@ -8356,23 +8338,28 @@ class MarketFlowCRM {
                                 ${contacts.map(c => {
             const esc = (v) => String(v ?? '').replace(/</g, '&lt;');
             const typeChip = String(c.type || '').toLowerCase() === 'client'
-                ? '<span class="px-2 py-1 text-xs font-medium bg-emerald-50 text-emerald-700 rounded-full">Client</span>'
-                : '<span class="px-2 py-1 text-xs font-medium bg-amber-50 text-amber-700 rounded-full">Lead</span>';
+                ? '<span class="px-2 py-1 text-[11px] font-semibold tracking-wide bg-emerald-50 text-emerald-700 rounded-full border border-emerald-100">Client</span>'
+                : '<span class="px-2 py-1 text-[11px] font-semibold tracking-wide bg-amber-50 text-amber-700 rounded-full border border-amber-100">Lead</span>';
             return `
-                                        <tr data-contact-row="1" data-type="${esc(c.type).toLowerCase()}" data-name="${esc(c.name)}" data-phone="${esc(c.phone)}" data-email="${esc(c.email)}" data-owner="${esc(c.owner).toLowerCase()}" data-source="${esc(c.source).toLowerCase()}" data-dept="${esc(c.dept).toLowerCase()}" class="hover:bg-slate-50">
+                                        <tr data-contact-row="1" data-type="${esc(c.type).toLowerCase()}" data-company="${esc(c.companyName).toLowerCase()}" data-name="${esc(c.personName).toLowerCase()}" data-phone="${esc(c.phone)}" data-email="${esc(c.email).toLowerCase()}" data-owner="${esc(c.owner).toLowerCase()}" data-source="${esc(c.source).toLowerCase()}" data-dept="${esc(c.dept).toLowerCase()}" class="hover:bg-slate-50 transition-colors">
                                             <td class="px-4 py-3">${typeChip}</td>
                                             <td class="px-4 py-3">
-                                                <div class="font-medium text-slate-900">${esc(c.name)}</div>
+                                                <div class="font-semibold text-slate-800">${esc(c.companyName)}</div>
                                             </td>
-                                            <td class="px-4 py-3 text-slate-500 text-xs">${esc(c.dept) || '—'}</td>
-                                            <td class="px-4 py-3 text-slate-700">${esc(c.phone) || '—'}</td>
-                                            <td class="px-4 py-3 text-slate-700">${esc(c.email) || '—'}</td>
-                                            <td class="px-4 py-3 text-slate-700">${esc(c.owner) || '—'}</td>
-                                            <td class="px-4 py-3 text-slate-700">${esc(c.source) || '—'}</td>
+                                            <td class="px-4 py-3">
+                                                <div class="font-medium text-slate-700">${esc(c.personName)}</div>
+                                            </td>
+                                            <td class="px-4 py-3">
+                                                <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-slate-100 text-slate-600">${esc(c.dept) || '—'}</span>
+                                            </td>
+                                            <td class="px-4 py-3 text-slate-700 font-medium">${esc(c.phone) || '—'}</td>
+                                            <td class="px-4 py-3 text-slate-600">${esc(c.email) || '—'}</td>
+                                            <td class="px-4 py-3 text-slate-600">${esc(c.owner) || '—'}</td>
+                                            <td class="px-4 py-3 text-slate-600">${esc(c.source) || '—'}</td>
                                             <td class="px-4 py-3">
                                                 <div class="flex items-center gap-2">
-                                                    ${c.phone ? `<a href="tel:${esc(c.phone)}" title="Call ${esc(c.phone)}" style="display:inline-flex;align-items:center;gap:4px;padding:5px 11px;font-size:12px;font-weight:700;background:#15803d;color:#fff;border-radius:8px;text-decoration:none;white-space:nowrap;transition:background 150ms;" onmouseover="this.style.background='#166534'" onmouseout="this.style.background='#15803d'"><i data-lucide="phone" style="width:12px;height:12px;"></i>Call</a>` : '<span style="color:#cbd5e1;font-size:12px;">—</span>'}
-                                                    ${c.email ? `<a href="mailto:${esc(c.email)}" title="Email ${esc(c.email)}" style="display:inline-flex;align-items:center;gap:4px;padding:5px 11px;font-size:12px;font-weight:700;background:#7c3aed;color:#fff;border-radius:8px;text-decoration:none;white-space:nowrap;transition:background 150ms;" onmouseover="this.style.background='#6d28d9'" onmouseout="this.style.background='#7c3aed'"><i data-lucide="mail" style="width:12px;height:12px;"></i>Email</a>` : ''}
+                                                    ${c.phone ? `<a href="tel:${esc(c.phone)}" title="Call ${esc(c.phone)}" class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-emerald-50 text-emerald-600 hover:bg-emerald-100 hover:text-emerald-700 transition-colors"><i data-lucide="phone" style="width:14px;height:14px;"></i></a>` : '<span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-slate-50 text-slate-300">—</span>'}
+                                                    ${c.email ? `<a href="mailto:${esc(c.email)}" title="Email ${esc(c.email)}" class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-purple-50 text-purple-600 hover:bg-purple-100 hover:text-purple-700 transition-colors"><i data-lucide="mail" style="width:14px;height:14px;"></i></a>` : ''}
                                                 </div>
                                             </td>
                                         </tr>

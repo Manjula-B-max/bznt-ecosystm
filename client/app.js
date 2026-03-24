@@ -11032,12 +11032,20 @@ class MarketFlowCRM {
         };
 
         const clients = this.getClientsData().map(c => {
-            const ep = parseEmail(String(c.email || '').trim());
+            let pName = '', pEmail = String(c?.email || '').trim(), pPhone = String(c?.phone || '').trim();
+            if (c.contactPersonMultiple) {
+                const parts = c.contactPersonMultiple.split('\n')[0].split(',').map(s => s.trim());
+                if (parts[0]) pName = parts[0];
+                if (parts[1]) pEmail = parts[1];
+                if (parts[3]) pPhone = parts[3];
+            }
+            const ep = parseEmail(pEmail);
             return {
                 type: 'Client', typeColor: 'emerald',
-                name: String(c.name || '').trim(),
+                companyName: String(c.name || '').trim(),
+                personName: pName || '—',
                 emailFull: ep.full, emailUser: ep.user, emailDomain: ep.domain, emailTld: ep.tld,
-                phone: String(c.phone || '').trim() || '—',
+                phone: pPhone || '—',
                 city: String(c.city || '').trim() || '—',
                 industry: String(c.industry || '').trim() || '—',
                 owner: String(c.owner || '').trim() || '—',
@@ -11046,22 +11054,33 @@ class MarketFlowCRM {
                 vendorCode: String(c.vendorCode || '').trim() || '—',
                 dueAmount: String(c.dueAmount || '₹0').trim()
             };
-        }).filter(x => x.name);
+        }).filter(x => x.companyName);
 
-        const leads = this.getLeadsData().map(l => ({
-            type: 'Lead', typeColor: 'indigo',
-            name: String(l.company || '').trim(),
-            emailFull: '—', emailUser: '—', emailDomain: '—', emailTld: '—',
-            phone: String(l.contact || '').trim() || '—',
-            city: '—', industry: '—',
-            owner: String(l.assignedTo || '').trim() || '—',
-            stage: String(l.stage || 'New Lead').trim(),
-            source: String(l.source || '').trim() || '—',
-            vendorCode: '—', dueAmount: '—'
-        })).filter(x => x.name);
+        const leads = this.getLeadsData().map(l => {
+            let pName = '', pEmail = String(l?.email || '').trim(), pPhone = String(l?.contact || '').trim();
+            if (l.contactPersonMultiple) {
+                const parts = l.contactPersonMultiple.split('\n')[0].split(',').map(s => s.trim());
+                if (parts[0]) pName = parts[0];
+                if (parts[1]) pEmail = parts[1];
+                if (parts[3]) pPhone = parts[3];
+            }
+            const ep = parseEmail(pEmail);
+            return {
+                type: 'Lead', typeColor: 'indigo',
+                companyName: String(l.company || '').trim(),
+                personName: pName || '—',
+                emailFull: ep.full, emailUser: ep.user, emailDomain: ep.domain, emailTld: ep.tld,
+                phone: pPhone || '—',
+                city: '—', industry: '—',
+                owner: String(l.assignedTo || '').trim() || '—',
+                stage: String(l.stage || 'New Lead').trim(),
+                source: String(l.source || '').trim() || '—',
+                vendorCode: '—', dueAmount: '—'
+            };
+        }).filter(x => x.companyName);
 
         const all = [...clients, ...leads];
-        all.sort((a, b) => String(a.name).localeCompare(String(b.name)));
+        all.sort((a, b) => String(a.companyName).localeCompare(String(b.companyName)));
 
         const uniq = (arr) => [...new Set(arr.filter(Boolean).map(v => String(v)))].sort();
         const allTypes = ['All', 'Client', 'Lead'];
@@ -11106,8 +11125,12 @@ class MarketFlowCRM {
                                         <select id="cdFilterType" style="width:100%; padding:3px 6px; font-size:11px; border:1px solid #e2e8f0; border-radius:5px; outline:none; background:#fff; box-sizing:border-box;">${allTypes.map(v => `<option>${esc(v)}</option>`).join('')}</select>
                                     </th>
                                     <th style="width:155px; padding:6px 10px; text-align:left; vertical-align:top; border-bottom:2px solid #e2e8f0; background:#f8fafc;">
-                                        <div style="font-size:10px; font-weight:700; color:#475569; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Name</div>
-                                        <input id="cdFilterName" type="text" placeholder="Search…" style="width:100%; padding:3px 6px; font-size:11px; border:1px solid #e2e8f0; border-radius:5px; outline:none; background:#fff; box-sizing:border-box;" />
+                                        <div style="font-size:10px; font-weight:700; color:#475569; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Company</div>
+                                        <input id="cdFilterCompany" type="text" placeholder="Search…" style="width:100%; padding:3px 6px; font-size:11px; border:1px solid #e2e8f0; border-radius:5px; outline:none; background:#fff; box-sizing:border-box;" />
+                                    </th>
+                                    <th style="width:130px; padding:6px 10px; text-align:left; vertical-align:top; border-bottom:2px solid #e2e8f0; background:#f8fafc;">
+                                        <div style="font-size:10px; font-weight:700; color:#475569; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Contact</div>
+                                        <div style="height:21px;"></div><!-- Spacer since no filter -->
                                     </th>
                                     <th style="width:120px; padding:6px 10px; text-align:left; vertical-align:top; border-bottom:2px solid #e2e8f0; background:#f8fafc;">
                                         <div style="font-size:10px; font-weight:700; color:#475569; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Email User</div>
@@ -11145,8 +11168,8 @@ class MarketFlowCRM {
                                         <div style="font-size:10px; font-weight:700; color:#475569; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Source</div>
                                         <select id="cdFilterSource" style="width:100%; padding:3px 6px; font-size:11px; border:1px solid #e2e8f0; border-radius:5px; outline:none; background:#fff; box-sizing:border-box;">${allSources.map(v => `<option>${esc(v)}</option>`).join('')}</select>
                                     </th>
-                                    <th style="width:75px; padding:6px 10px; text-align:left; vertical-align:top; border-bottom:2px solid #e2e8f0; background:#f8fafc;">
-                                        <div style="font-size:10px; font-weight:700; color:#475569; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Vendor</div>
+                                    <th style="width:95px; padding:6px 10px; text-align:left; vertical-align:top; border-bottom:2px solid #e2e8f0; background:#f8fafc;">
+                                        <div style="font-size:10px; font-weight:700; color:#475569; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Client Code</div>
                                     </th>
                                     <th style="width:90px; padding:6px 10px; text-align:left; vertical-align:top; border-bottom:2px solid #e2e8f0; background:#f8fafc;">
                                         <div style="font-size:10px; font-weight:700; color:#475569; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Due Amt</div>
@@ -11156,7 +11179,7 @@ class MarketFlowCRM {
                             <tbody class="divide-y divide-slate-100" id="cdTableBody">
                                 ${all.map(r => `
                                     <tr data-cd-row="1"
-                                        data-name="${esc(r.name.toLowerCase())}"
+                                        data-company="${esc(r.companyName.toLowerCase())}"
                                         data-emailuser="${esc(r.emailUser.toLowerCase())}"
                                         data-domain="${esc(r.emailDomain.toLowerCase())}"
                                         data-tld="${esc(r.emailTld.toLowerCase())}"
@@ -11170,13 +11193,14 @@ class MarketFlowCRM {
                                         class="hover:bg-purple-50/30 transition-colors">
                                         <td class="px-3 py-2.5">
                                             <input type="checkbox" class="cd-row-check rounded border-slate-300"
-                                                data-contact-name="${esc(r.name)}"
+                                                data-contact-name="${esc(r.companyName)}"
                                                 data-contact-email="${esc(r.emailFull)}" />
                                         </td>
                                         <td class="px-3 py-2.5">
                                             <span class="px-2 py-0.5 text-[10px] font-bold bg-${r.typeColor}-50 text-${r.typeColor}-700 rounded-full">${esc(r.type)}</span>
                                         </td>
-                                        <td class="px-3 py-2.5 font-semibold text-slate-900 whitespace-nowrap">${esc(r.name)}</td>
+                                        <td class="px-3 py-2.5 font-semibold text-slate-800 whitespace-nowrap">${esc(r.companyName)}</td>
+                                        <td class="px-3 py-2.5 font-medium text-slate-600 whitespace-nowrap">${esc(r.personName)}</td>
                                         <td class="px-3 py-2.5 text-slate-600 font-mono text-xs">${r.emailUser !== '—' ? esc(r.emailUser) : '<span class="text-slate-300">—</span>'}</td>
                                         <td class="px-3 py-2.5 text-indigo-600 font-mono text-xs font-medium">${r.emailDomain !== '—' ? esc(r.emailDomain) : '<span class="text-slate-300">—</span>'}</td>
                                         <td class="px-3 py-2.5 text-slate-500 font-mono text-xs">${r.emailTld !== '—' ? esc(r.emailTld) : '<span class="text-slate-300">—</span>'}</td>
@@ -11219,7 +11243,7 @@ class MarketFlowCRM {
 
     setupCampaignContactsInteractions() {
         const g = id => document.getElementById(id);
-        const nameEl = g('cdFilterName');
+        const companyEl = g('cdFilterCompany');
         const userEl = g('cdFilterEmailUser');
         const domainEl = g('cdFilterDomain');
         const tldEl = g('cdFilterTld');
@@ -11251,7 +11275,7 @@ class MarketFlowCRM {
         };
 
         const applyFilters = () => {
-            const nQ = (nameEl?.value || '').trim().toLowerCase();
+            const compQ = (companyEl?.value || '').trim().toLowerCase();
             const uQ = (userEl?.value || '').trim().toLowerCase();
             const dQ = (domainEl?.value || 'All').toLowerCase();
             const tQ = (tldEl?.value || 'All').toLowerCase();
@@ -11267,7 +11291,7 @@ class MarketFlowCRM {
             rows().forEach(r => {
                 const d = r.dataset;
                 const ok =
-                    (!nQ || d.name.includes(nQ)) &&
+                    (!compQ || d.company.includes(compQ)) &&
                     (!uQ || d.emailuser.includes(uQ)) &&
                     (dQ === 'all' || d.domain === dQ) &&
                     (tQ === 'all' || d.tld === tQ) &&
@@ -11285,14 +11309,14 @@ class MarketFlowCRM {
         };
 
         // Text inputs
-        [nameEl, userEl, phoneEl].forEach(el => el?.addEventListener('input', applyFilters));
+        [companyEl, userEl, phoneEl].forEach(el => el?.addEventListener('input', applyFilters));
         // Selects
         [domainEl, tldEl, typeEl, ownerEl, sourceEl, stageEl, industryEl, cityEl]
             .forEach(el => el?.addEventListener('change', applyFilters));
 
         // Clear all filters
         g('cdClearFilters')?.addEventListener('click', () => {
-            [nameEl, userEl, phoneEl].forEach(el => { if (el) el.value = ''; });
+            [companyEl, userEl, phoneEl].forEach(el => { if (el) el.value = ''; });
             [domainEl, tldEl, typeEl, ownerEl, sourceEl, stageEl, industryEl, cityEl]
                 .forEach(el => { if (el) el.selectedIndex = 0; });
             applyFilters();
@@ -11350,7 +11374,7 @@ class MarketFlowCRM {
         // Export CSV (includes email user + domain + tld columns)
         g('cdExportCsv')?.addEventListener('click', () => {
             const visible = rows().filter(r => r.style.display !== 'none');
-            const headers = ['Type', 'Name', 'Email User', 'Domain', 'TLD', 'Phone', 'City', 'Industry', 'Owner', 'Stage', 'Source', 'Vendor Code', 'Due Amount'];
+            const headers = ['Type', 'Company', 'Contact', 'Email User', 'Domain', 'TLD', 'Phone', 'City', 'Industry', 'Owner', 'Stage', 'Source', 'Client Code', 'Due Amount'];
             const csvRows = [headers.join(',')];
             visible.forEach(r => {
                 const cells = Array.from(r.querySelectorAll('td')).slice(1);
@@ -11358,7 +11382,7 @@ class MarketFlowCRM {
             });
             const a = document.createElement('a');
             a.href = URL.createObjectURL(new Blob([csvRows.join('\n')], { type: 'text/csv' }));
-            a.download = 'contacts_directory.csv';
+            a.download = 'campaigns_directory.csv';
             a.click();
             this.showToast('CSV exported.');
         });

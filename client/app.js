@@ -2236,7 +2236,7 @@ class MarketFlowCRM {
                         notes: find(row, 'Notes', 'Remarks'),
                         stage: find(row, 'Stage') || 'Active',
                         city: '\u2014',
-                        contactPersonMultiple
+                        contactPersonMultiple: JSON.stringify(contactPersonMultiple)
                     });
                     if (res.ok) saved++; else failed++;
                 }
@@ -2317,9 +2317,8 @@ class MarketFlowCRM {
                         stage: find(row, 'Stage') || 'New Lead',
                         feedbackStatus: 'Pending',
                         notes: find(row, 'Notes', 'Remarks'),
-                        contact: '',
                         email: '',
-                        contactPersonMultiple,
+                        contactPersonMultiple: JSON.stringify(contactPersonMultiple),
                         history: [{ at: Date.now(), type: 'create', note: 'Bulk import' }]
                     });
                     if (res.ok) saved++; else failed++;

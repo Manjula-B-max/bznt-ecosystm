@@ -6191,10 +6191,14 @@ class MarketFlowCRM {
         let pendingAmount = 0;
         openInvoices.forEach(inv => { pendingAmount += this.parseCurrencyToNumber(inv.amount); });
         const overdueCount = invoices.filter(i => String(i?.status || '').toLowerCase() === 'overdue').length;
-
-        // KPI 5: Client Retention (clients with active/completed projects / total clients)
-        const clientsWithProjects = new Set(projects.map(p => String(p?.client || '').trim().toLowerCase()).filter(Boolean));
-        const retentionPct = clients.length ? Math.round((clientsWithProjects.size / Math.max(clients.length, 1)) * 100) : 0;
+        // KPI 5: Client Retention (registered clients with active/completed projects / total clients)
+        const registeredClientNames = new Set(clients.map(c => String(c?.name || '').trim().toLowerCase()).filter(Boolean));
+        const activeProjectClientNames = new Set(projects.map(p => String(p?.client || '').trim().toLowerCase()).filter(Boolean));
+        let retainedCount = 0;
+        registeredClientNames.forEach(name => {
+            if (activeProjectClientNames.has(name)) retainedCount++;
+        });
+        const retentionPct = clients.length ? Math.min(100, Math.round((retainedCount / Math.max(clients.length, 1)) * 100)) : 0;
 
         const fmtINR = (n) => {
             if (!n) return '₹0';
@@ -6253,7 +6257,7 @@ class MarketFlowCRM {
                         </div>
                         <div class="text-2xl font-semibold text-slate-900 mb-1">${retentionPct}%</div>
                         <div class="text-sm text-slate-600">Client Retention</div>
-                        <div class="text-xs text-slate-500 mt-2">${clientsWithProjects.size} of ${clients.length} have projects</div>
+                        <div class="text-xs text-slate-500 mt-2">${retainedCount} of ${clients.length} have projects</div>
                     </div>
                 </div>
 

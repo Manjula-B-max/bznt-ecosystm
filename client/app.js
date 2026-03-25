@@ -2064,12 +2064,12 @@ class MarketFlowCRM {
             ];
         }
         return [
-            'Client', 'Project Name', 'Start Date', 'Duration', 'Budget', 'Assigned Team',
-            'Project Code', 'Service Code', 'Vendor Code', 'Company Name', 'Location', 'Quantity',
-            'Project Lead', 'Assigned By', 'Assigned To', 'Project Description', 'Part Description',
+            'Client', 'Project Name', 'Start Date', 'End Date', 'Duration (Hours)', 'Budget (\u20b9)', 'Assigned Team',
+            'Project Code', 'Service Code', 'Vendor Code', 'Company Name', 'Location', 'Quantity (QTY)',
+            'Project Lead', 'Assigned By', 'Assigned To (Employee)', 'Project Description', 'Part Description',
             '2D Model Status', '3D Model Status', '3D Scan Status', 'FEA Status',
-            'QC Inspection Status', 'Approval Status', 'GL Approval Status',
-            'Revision Status', 'Delivery Report Status', 'SOP Daily Report Status',
+            'QC / Inspection Status', 'Approval Status', 'GL Approval Status',
+            'Correction / Revision Status', 'Delivery Report Status', 'SOP-Based Daily Report Status',
             'Project Roadmap Submitted', 'Dashboard Updated', 'Daily Report Updated',
             'Photo Attached', 'Overall Project Status', 'Post Completion Status', 'Physical Part Status',
             'DC Date', 'DC Number', 'Delivery Status', 'Delivery Date', 'Delivery Confirmation',
@@ -2080,7 +2080,7 @@ class MarketFlowCRM {
             'Payment Received Date', 'Payment Received Amount',
             'Balance Payment Due Date', 'Balance Payment Amount',
             'Client Rating', 'Job Rating', 'Quality Rating', 'Service Rating',
-            'Performance Rating', 'Feedback Comments', 'Additional Notes'
+            'Performance Rating', 'Feedback / Comments', 'Additional Notes'
         ];
     }
 
@@ -2360,10 +2360,34 @@ class MarketFlowCRM {
                     return '';
                 };
 
-                let saved = 0, failed = 0;
+                // Build a lookup map of stored clients for fuzzy matching
+                const storedClients = this.getStoredClients ? this.getStoredClients() : [];
+                const clientLookup = new Map();
+                storedClients.forEach(c => {
+                    if (c.name) clientLookup.set(normalize(c.name), c);
+                });
+
+                // Fuzzy match: exact first, then partial substring
+                const matchClient = (rawName) => {
+                    if (!rawName) return null;
+                    const nk = normalize(rawName);
+                    if (clientLookup.has(nk)) return clientLookup.get(nk);
+                    for (const [key, client] of clientLookup) {
+                        if (nk.includes(key) || key.includes(nk)) return client;
+                    }
+                    return null;
+                };
+
+                let saved = 0, failed = 0, unmatched = 0;
                 for (const row of rows) {
                     const name = find(row, 'Project Name', 'Name', 'Project');
                     if (!name) { failed++; continue; }
+
+                    // Client matching â€” fuzzy match against client directory
+                    const rawClientName = find(row, 'Client', 'Client Name', 'Company');
+                    const matchedClient = matchClient(rawClientName);
+                    const resolvedClientName = matchedClient ? matchedClient.name : rawClientName;
+                    if (!matchedClient && rawClientName) unmatched++;
 
                     const tracking = {
                         model2dStatus: find(row, '2D Model Status') || 'Pending',
@@ -2430,11 +2454,16 @@ class MarketFlowCRM {
                         additionalNotes: find(row, 'Additional Notes') || ''
                     };
 
+                    // Resolve vendor code: prefer Excel value, fall back to matched client record
+                    const resolvedVendorCode = find(row, 'Vendor Code') ||
+                        (matchedClient ? (matchedClient.vendorCode || '') : '');
+
                     const res = this.saveProject({
-                        client: find(row, 'Client', 'Client Name', 'Company') || '',
+                        client: resolvedClientName,
                         name,
                         startDate: find(row, 'Start Date') || '',
-                        duration: find(row, 'Duration') || '',
+                        endDate: find(row, 'End Date') || '',
+                        duration: find(row, 'Duration (Hours)', 'Duration') || '',
                         budget: find(row, 'Budget') || '',
                         team: find(row, 'Team', 'Assigned Team') || '',
                         progress: 0,
@@ -2443,11 +2472,11 @@ class MarketFlowCRM {
                         identification: {
                             projectCode: find(row, 'Project Code') || '',
                             serviceCode: find(row, 'Service Code') || '',
-                            vendorCode: find(row, 'Vendor Code') || '',
-                            companyName: find(row, 'Company Name', 'Company') || '',
+                            vendorCode: resolvedVendorCode,
+                            companyName: find(row, 'Company Name', 'Company') || resolvedClientName,
                             projectDescription: find(row, 'Project Description', 'Description') || '',
                             partDescription: find(row, 'Part Description') || '',
-                            location: find(row, 'Location') || '',
+                            location: find(row, 'Location') || (matchedClient ? matchedClient.location || '' : ''),
                             qty: find(row, 'Quantity', 'QTY', 'Qty') || '',
                             projectLead: find(row, 'Project Lead') || '',
                             assignedBy: find(row, 'Assigned By') || '',
@@ -2460,9 +2489,44 @@ class MarketFlowCRM {
                         payment,
                         ratings
                     });
-                    if (res.ok) saved++; else failed++;
+
+                    if (res.ok) {
+                        saved++;
+                        // Auto-create invoice entry so analytics/billing work same as manual entry
+                        if (payment.invoiceAmount && resolvedClientName) {
+                            try {
+                                const invoiceNo = payment.invoiceNumber || ('INV-BULK-' + Date.now() + '-' + saved);
+                                const existingInvoices = this.readStore('bezent_invoices', []);
+                                const alreadyExists = existingInvoices.some(i => String(i.no || '').toLowerCase() === invoiceNo.toLowerCase());
+                                if (!alreadyExists) {
+                                    const paymentReceivedAmt = parseFloat(String(payment.paymentReceivedAmount || '0').replace(/[^0-9.]/g, '')) || 0;
+                                    const invoiceAmt = parseFloat(String(payment.invoiceAmount || '0').replace(/[^0-9.]/g, '')) || 0;
+                                    const invoiceStatus = paymentReceivedAmt >= invoiceAmt && invoiceAmt > 0 ? 'Paid'
+                                        : (payment.paymentDueDate && new Date(payment.paymentDueDate) < new Date()) ? 'Overdue'
+                                        : 'Pending';
+                                    existingInvoices.push({
+                                        id: 'inv_bulk_' + Date.now() + '_' + saved,
+                                        no: invoiceNo,
+                                        client: resolvedClientName,
+                                        amount: '\u20b9' + payment.invoiceAmount,
+                                        due: payment.paymentDueDate || payment.balancePaymentDueDate || '\u2014',
+                                        status: invoiceStatus,
+                                        color: invoiceStatus === 'Paid' ? 'emerald' : invoiceStatus === 'Overdue' ? 'rose' : 'amber',
+                                        service: find(row, 'Service Code') || 'Bulk Import',
+                                        createdAt: Date.now(),
+                                        source: 'bulk_import'
+                                    });
+                                    this.writeStore('bezent_invoices', existingInvoices);
+                                }
+                            } catch (_) { /* invoice creation is best-effort */ }
+                        }
+                    } else {
+                        failed++;
+                    }
                 }
-                this.showToast(`Uploaded: ${saved} projects created${failed ? `, ${failed} skipped` : ''}.`);
+
+                const unmatchedMsg = unmatched > 0 ? (' (' + unmatched + ' client(s) not found in directory \u2014 saved as-is)') : '';
+                this.showToast('Uploaded: ' + saved + ' projects created' + (failed ? (', ' + failed + ' skipped') : '') + unmatchedMsg + '.');
                 this.switchSection('projects');
                 this.switchSubSection('active');
                 this.renderContent();
@@ -2474,7 +2538,6 @@ class MarketFlowCRM {
         };
         reader.readAsArrayBuffer(file);
     }
-
     saveProjectFromCurrentForm() {
         const client = document.getElementById('projectClient')?.value || '';
         const name = document.getElementById('projectName')?.value || '';
@@ -9672,12 +9735,12 @@ class MarketFlowCRM {
                                 <input id="projectStartDate" type="date" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" value="${esc(projectData?.startDate || '')}" />
                             </div>
                             <div>
-                                <label class="text-xs font-medium text-slate-600">Duration <span class="text-rose-500">*</span></label>
-                                <select id="projectDuration" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500">
-                                    <option>1-3 months</option>
-                                    <option>3-6 months</option>
-                                    <option>6-12 months</option>
-                                </select>
+                                <label class="text-xs font-medium text-slate-600">End Date <span class="text-rose-500">*</span></label>
+                                <input id="projectEndDate" type="date" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" value="${esc(projectData?.endDate || '')}" />
+                            </div>
+                            <div>
+                                <label class="text-xs font-medium text-slate-600">Duration (Hours) <span class="text-rose-500">*</span></label>
+                                <input id="projectDuration" type="number" min="1" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="e.g., 20" value="${esc(projectData?.duration || '')}" />
                             </div>
                             <div>
                                 <label class="text-xs font-medium text-slate-600">Budget (₹) <span class="text-rose-500">*</span></label>
@@ -9687,23 +9750,7 @@ class MarketFlowCRM {
                                 <label class="text-xs font-medium text-slate-600">Assigned Team</label>
                                 <input id="projectTeam" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="SEO + Content + Ads" />
                             </div>
-                            <div class="col-span-1 sm:col-span-2">
-                                <label class="text-xs font-medium text-slate-600">Milestones</label>
-                                <div class="mt-2 grid grid-cols-1 sm:grid-cols-3 gap-3">
-                                    <div class="p-3 bg-slate-50 rounded-lg">
-                                        <div class="text-sm font-medium text-slate-900">Discovery</div>
-                                        <div class="text-xs text-slate-500">Week 1</div>
-                                    </div>
-                                    <div class="p-3 bg-slate-50 rounded-lg">
-                                        <div class="text-sm font-medium text-slate-900">Execution</div>
-                                        <div class="text-xs text-slate-500">Weeks 2-6</div>
-                                    </div>
-                                    <div class="p-3 bg-slate-50 rounded-lg">
-                                        <div class="text-sm font-medium text-slate-900">Reporting</div>
-                                        <div class="text-xs text-slate-500">Week 7+</div>
-                                    </div>
-                                </div>
-                            </div>
+
 
                             <div class="col-span-1 sm:col-span-2 mt-4 space-y-4">
                                 <details open class="group">

@@ -2210,12 +2210,12 @@ class MarketFlowCRM {
                             const rawPhone = find(row, `Contact ${i} Phone`, `Contact ${i} Phone (+91 10 digits)`, `CP${i} Phone`);
                             // Normalise phone: strip +91 prefix, keep digits only up to 10
                             const digits = rawPhone.replace(/\D/g, '').replace(/^91/, '').slice(0, 10);
-                            contactPersonMultiple.push({
-                                name: cpName,
-                                dept: find(row, `Contact ${i} Dept/Role`, `Contact ${i} Dept`, `Contact ${i} Role`, `CP${i} Dept`),
-                                email: find(row, `Contact ${i} Email`, `CP${i} Email`),
-                                phone: digits ? `+91${digits}` : ''
-                            });
+                            contactPersonMultiple.push([
+                                cpName,
+                                find(row, `Contact ${i} Email`, `CP${i} Email`),
+                                find(row, `Contact ${i} Dept/Role`, `Contact ${i} Dept`, `Contact ${i} Role`, `CP${i} Dept`),
+                                digits ? `+91 ${digits}` : ''
+                            ].join(', '));
                         }
                     }
 
@@ -2236,7 +2236,7 @@ class MarketFlowCRM {
                         notes: find(row, 'Notes', 'Remarks'),
                         stage: find(row, 'Stage') || 'Active',
                         city: '\u2014',
-                        contactPersonMultiple: JSON.stringify(contactPersonMultiple)
+                        contactPersonMultiple: contactPersonMultiple.join('\n')
                     });
                     if (res.ok) saved++; else failed++;
                 }
@@ -2295,12 +2295,12 @@ class MarketFlowCRM {
                         if (cpName) {
                             const rawPhone = find(row, `Contact ${i} Phone`, `Contact ${i} Phone (+91 10 digits)`, `CP${i} Phone`);
                             const digits = rawPhone.replace(/\D/g, '').replace(/^91/, '').slice(0, 10);
-                            contactPersonMultiple.push({
-                                name: cpName,
-                                dept: find(row, `Contact ${i} Dept/Role`, `Contact ${i} Dept`, `Contact ${i} Role`, `CP${i} Dept`),
-                                email: find(row, `Contact ${i} Email`, `CP${i} Email`),
-                                phone: digits ? `+91${digits}` : ''
-                            });
+                            contactPersonMultiple.push([
+                                cpName,
+                                find(row, `Contact ${i} Email`, `CP${i} Email`),
+                                find(row, `Contact ${i} Dept/Role`, `Contact ${i} Dept`, `Contact ${i} Role`, `CP${i} Dept`),
+                                digits ? `+91 ${digits}` : ''
+                            ].join(', '));
                         }
                     }
 
@@ -2318,7 +2318,7 @@ class MarketFlowCRM {
                         feedbackStatus: 'Pending',
                         notes: find(row, 'Notes', 'Remarks'),
                         email: '',
-                        contactPersonMultiple: JSON.stringify(contactPersonMultiple),
+                        contactPersonMultiple: contactPersonMultiple.join('\n'),
                         history: [{ at: Date.now(), type: 'create', note: 'Bulk import' }]
                     });
                     if (res.ok) saved++; else failed++;

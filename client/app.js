@@ -151,6 +151,34 @@ window.esc = function(s) {
     return s.toString().replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 };
 
+// Parses contactPersonMultiple stored in either:
+//   OLD format: JSON array of {name,email,dept,phone} objects
+//   NEW format: newline-separated "Name, Email, Dept, Phone" strings
+// Always returns an array of {name,email,dept,phone} plain objects.
+window.parseContactPersons = function(raw) {
+    const s = String(raw || '').trim();
+    if (!s) return [];
+    // Try JSON array of objects
+    if (s.startsWith('[')) {
+        try {
+            const arr = JSON.parse(s);
+            if (Array.isArray(arr)) {
+                return arr.map(o => ({
+                    name:  String(o.name  || o[0] || '').trim(),
+                    email: String(o.email || o[1] || '').trim(),
+                    dept:  String(o.dept  || o[2] || '').trim(),
+                    phone: String(o.phone || o[3] || '').trim()
+                })).filter(o => o.name || o.email || o.dept || o.phone);
+            }
+        } catch(e) { /* fall through */ }
+    }
+    // New format: "Name, Email, Dept, Phone" per line
+    return s.split('\n').filter(Boolean).map(line => {
+        const p = line.split(',').map(x => x.trim());
+        return { name: p[0]||'', email: p[1]||'', dept: p[2]||'', phone: p[3]||'' };
+    }).filter(o => o.name || o.email || o.dept || o.phone);
+};
+
 window.handleDocumentsUpload = async function(resource, id, inputId) {
     let inp = document.getElementById(inputId);
     if (!inp || !inp.files || inp.files.length === 0) return;
@@ -7821,14 +7849,9 @@ class MarketFlowCRM {
                                     <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Contact Persons</div>
                                     <div class="space-y-2">
                                         ${(() => {
-                                            const persons = String(selected.contactPersonMultiple || '').split('\n').filter(Boolean);
+                                            const persons = window.parseContactPersons(selected.contactPersonMultiple);
                                             if (!persons.length) return '<div class="text-sm text-slate-400">—</div>';
-                                            return persons.map(cp => {
-                                                const parts = cp.split(',').map(s => s.trim());
-                                                const name = parts[0] || '';
-                                                const email = parts[1] || '';
-                                                const dept = parts[2] || '';
-                                                const phone = parts[3] || '';
+                                            return persons.map(({ name, email, dept, phone }) => {
                                                 return `<div class="bg-white rounded-lg border border-slate-200 p-2.5">
                                                     <div class="font-semibold text-slate-900 text-sm">${window.esc(name)}</div>
                                                     ${dept ? `<div class="text-xs text-slate-500 mt-0.5">${window.esc(dept)}</div>` : ''}
@@ -8262,14 +8285,9 @@ class MarketFlowCRM {
                                     <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Contact Persons</div>
                                     <div class="space-y-2">
                                         ${(() => {
-                                            const persons = String(selected.contactPersonMultiple || '').split('\n').filter(Boolean);
+                                            const persons = window.parseContactPersons(selected.contactPersonMultiple);
                                             if (!persons.length) return '<div class="text-sm text-slate-400">—</div>';
-                                            return persons.map(cp => {
-                                                const parts = cp.split(',').map(s => s.trim());
-                                                const name = parts[0] || '';
-                                                const email = parts[1] || '';
-                                                const dept = parts[2] || '';
-                                                const phone = parts[3] || '';
+                                            return persons.map(({ name, email, dept, phone }) => {
                                                 return `<div class="bg-white rounded-lg border border-slate-200 p-2.5">
                                                     <div class="font-semibold text-slate-900 text-sm">${window.esc(name)}</div>
                                                     ${dept ? `<div class="text-xs text-slate-500 mt-0.5">${window.esc(dept)}</div>` : ''}

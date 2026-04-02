@@ -1775,8 +1775,19 @@ class MarketFlowCRM {
     generateVendorCode(location) {
         if (!location) return '';
         const clients = this.getStoredClients();
-        const locationClients = clients.filter(c => String(c.location || '').trim() === location);
-        const nextNumber = (locationClients.length + 1).toString().padStart(3, '0');
+        const prefix = location.toUpperCase();
+        // Find the highest sequence number across ALL stored vendor codes that start with this prefix,
+        // regardless of how the client's `location` field is stored (full name vs code).
+        let maxSeq = 0;
+        clients.forEach(c => {
+            const vc = String(c.vendorCode || '').trim().toUpperCase();
+            if (vc.startsWith(prefix)) {
+                const suffix = vc.slice(prefix.length);
+                const num = parseInt(suffix, 10);
+                if (Number.isFinite(num) && num > maxSeq) maxSeq = num;
+            }
+        });
+        const nextNumber = (maxSeq + 1).toString().padStart(3, '0');
         return `${location}${nextNumber}`;
     }
 
@@ -5310,7 +5321,7 @@ class MarketFlowCRM {
             campaigns: { email: 'mail', sms: 'message-square', wishes: 'calendar-heart', reengagement: 'refresh-cw', marketing_hub: 'globe', seo: 'search', content_library: 'library', maps_reviews: 'map-pin', linkedin_leads: 'linkedin' },
             billing: { invoices: 'file-text', quotations: 'file-text', contracts: 'file-signature', payments: 'credit-card', followup_log: 'clipboard-list', overdue_risk: 'alert-triangle' },
             engagement: { followups: 'phone-call', surveys: 'clipboard-check', health: 'heart-pulse', reengagement: 'sparkles', field_visits: 'map', route_map: 'route', mobile_sync: 'smartphone', followup_sla: 'timer' },
-            reports: { funnel: 'filter', roi: 'line-chart', ltv: 'badge-dollar-sign', sop_monthly: 'calendar', kpi_target: 'target', kri_risk: 'shield-alert', project_roadmap: 'milestone' },
+            reports: { funnel: 'filter', region_analytics: 'map-pin', quotation_conversion: 'arrow-right-circle', roi: 'line-chart', ltv: 'badge-dollar-sign', sop_monthly: 'calendar', kpi_target: 'target', kri_risk: 'shield-alert', project_roadmap: 'milestone' },
             access: { whitelist: 'shield' }
 
         };
@@ -5393,6 +5404,8 @@ class MarketFlowCRM {
             ],
             reports: [
                 { id: 'funnel', label: 'Funnel Reports' },
+                { id: 'region_analytics', label: 'Regional Analytics' },
+                { id: 'quotation_conversion', label: 'Quotation → Project' },
                 { id: 'roi', label: 'Campaign ROI' },
                 { id: 'ltv', label: 'Client Lifetime Value' },
                 { id: 'sop_monthly', label: 'SOP Monthly Report' },
@@ -5711,6 +5724,18 @@ class MarketFlowCRM {
 
         if (this.currentSection === 'reports' && this.currentSubSection === 'kri_risk') {
             this.initializeKriRiskCharts();
+        }
+
+        if (this.currentSection === 'reports' && this.currentSubSection === 'region_analytics') {
+            this.initializeRegionAnalyticsCharts();
+        }
+
+        if (this.currentSection === 'reports' && this.currentSubSection === 'quotation_conversion') {
+            this.initializeQuotationConversionCharts();
+        }
+
+        if (this.currentSection === 'reports' && this.currentSubSection === 'ltv') {
+            this.initializeLtvChart();
         }
 
         if (this.currentSection === 'leads' && this.currentSubSection === 'clients') {
@@ -6122,6 +6147,43 @@ class MarketFlowCRM {
                         <button data-action="nav:campaigns/campaigns_list" class="ml-auto text-xs text-purple-700 font-semibold hover:underline">Go →</button>
                     </div>
                 </div>
+
+                <!-- Regional Snapshot -->
+                ${(() => {
+                    const regionMap = {};
+                    clients.forEach(c => {
+                        const r = this._extractRegion ? this._extractRegion(c) : (String(c.location||'').trim() || 'Unknown');
+                        if (!regionMap[r]) regionMap[r] = { clients: 0, revenue: 0 };
+                        regionMap[r].clients++;
+                        invoices.filter(i => String(i.client||'').trim().toLowerCase() === String(c.name||'').trim().toLowerCase())
+                            .forEach(inv => { regionMap[r].revenue += this.parseCurrencyToNumber(inv.amount); });
+                    });
+                    const regions = Object.entries(regionMap).sort((a,b) => b[1].clients - a[1].clients).slice(0, 6);
+                    if (!regions.length || regions.every(([r]) => r === 'Unknown')) return '';
+                    const maxC = Math.max(...regions.map(([,d]) => d.clients), 1);
+                    const COLS = ['purple','sky','emerald','amber','rose','indigo'];
+                    return `<div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="text-sm font-semibold text-slate-900">Clients by Region</div>
+                            <button data-action="nav:reports/region_analytics" class="text-xs text-purple-600 hover:underline">Full report →</button>
+                        </div>
+                        <div class="space-y-2.5">
+                            ${regions.map(([region, d], i) => {
+                                const pct = Math.round(d.clients / maxC * 100);
+                                const col = COLS[i % COLS.length];
+                                return `<div>
+                                    <div class="flex items-center justify-between text-xs mb-1">
+                                        <span class="font-medium text-slate-700">${String(region).replace(/</g,'&lt;')}</span>
+                                        <span class="text-slate-500">${d.clients} clients &nbsp;·&nbsp; ${this.formatINR(d.revenue)}</span>
+                                    </div>
+                                    <div class="w-full bg-slate-100 rounded-full h-2">
+                                        <div class="bg-${col}-500 h-2 rounded-full" style="width:${pct}%"></div>
+                                    </div>
+                                </div>`;
+                            }).join('')}
+                        </div>
+                    </div>`;
+                })()}
             </div>`;
 
     }
@@ -14433,6 +14495,12 @@ class MarketFlowCRM {
             case 'funnel':
                 container.innerHTML = this.getReportsFunnel();
                 break;
+            case 'region_analytics':
+                container.innerHTML = this.getReportsRegionalAnalytics();
+                break;
+            case 'quotation_conversion':
+                container.innerHTML = this.getReportsQuotationConversion();
+                break;
             case 'roi':
                 container.innerHTML = this.getReportsCampaigns();
                 break;
@@ -14454,6 +14522,570 @@ class MarketFlowCRM {
             default:
                 container.innerHTML = this.getReportsFunnel();
         }
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    //  REGIONAL ANALYTICS REPORT
+    // ─────────────────────────────────────────────────────────────────────────
+    _extractRegion(record) {
+        // Try location field first (clients), then address first line, then vendorCode prefix
+        const loc = String(record.location || record.city || '').trim();
+        if (loc) return loc;
+        const addr = String(record.address || '').split('\n')[0].trim();
+        if (addr) return addr;
+        // Extract from vendorCode like "CBE-001" → "CBE"
+        const vc = String(record.vendorCode || '').trim();
+        const vcMatch = vc.match(/^([A-Z]{2,6})-/i);
+        if (vcMatch) return vcMatch[1].toUpperCase();
+        return 'Unknown';
+    }
+
+    getReportsRegionalAnalytics() {
+        const clients = this.getStoredClients ? this.getStoredClients() : [];
+        const leads   = this.getStoredLeads   ? this.getStoredLeads()   : [];
+        const projects= this.getStoredProjects? this.getStoredProjects(): [];
+        const invoices= this.getAllInvoices   ? this.getAllInvoices()   : [];
+        const esc = v => String(v ?? '').replace(/</g, '&lt;');
+
+        // Build region map for clients
+        const regionMap = {};
+        const ensureRegion = (r) => {
+            if (!regionMap[r]) regionMap[r] = { region: r, clients: 0, leads: 0, projects: 0, revenue: 0, quotations: 0, deals: 0, quotationsStopped: 0, totalInvoices: 0 };
+        };
+
+        clients.forEach(c => {
+            const r = this._extractRegion(c);
+            ensureRegion(r);
+            regionMap[r].clients++;
+            // Revenue from invoices for this client
+            invoices.filter(i => String(i.client||'').trim().toLowerCase() === String(c.name||'').trim().toLowerCase())
+                .forEach(inv => {
+                    regionMap[r].revenue += this.parseCurrencyToNumber(inv.amount);
+                    regionMap[r].totalInvoices++;
+                });
+        });
+
+        leads.forEach(l => {
+            const r = this._extractRegion({ location: l.location || l.city || '', address: l.address || '', vendorCode: '' });
+            ensureRegion(r);
+            regionMap[r].leads++;
+            const st = String(l.stage || l.status || '').toLowerCase();
+            if (['quotation','negotiation'].includes(st)) regionMap[r].quotations++;
+            if (['closed','po received','won'].includes(st)) regionMap[r].deals++;
+            // Quotation stopped = was at quotation stage but NOT converted
+            if (st === 'quotation') regionMap[r].quotationsStopped++;
+        });
+
+        projects.forEach(p => {
+            const clientRec = clients.find(c => String(c.name||'').trim().toLowerCase() === String(p.client||'').trim().toLowerCase());
+            const r = clientRec ? this._extractRegion(clientRec) : this._extractRegion({ location: p.identification?.location || '' });
+            ensureRegion(r);
+            regionMap[r].projects++;
+        });
+
+        const regions = Object.values(regionMap).sort((a,b) => b.clients - a.clients);
+        const totalClients = regions.reduce((s,r) => s+r.clients, 0) || 1;
+        const totalLeads   = regions.reduce((s,r) => s+r.leads, 0) || 1;
+        const COLORS = ['purple','sky','emerald','amber','rose','indigo','teal','orange'];
+
+        if (!regions.length || regions.every(r => r.region === 'Unknown')) {
+            return `<div class="space-y-6 fade-in w-full">
+                <div><h2 class="text-xl sm:text-2xl font-semibold text-slate-900">Regional Analytics</h2>
+                <p class="text-sm text-slate-500 mt-1">Breakdown by client and lead location</p></div>
+                <div class="flex flex-col items-center justify-center py-16 text-center bg-white rounded-xl border border-slate-200 shadow-sm">
+                    <div class="w-14 h-14 rounded-full bg-purple-50 flex items-center justify-center mb-4"><i data-lucide="map-pin" class="w-7 h-7 text-purple-400"></i></div>
+                    <div class="text-base font-semibold text-slate-700 mb-1">No location data yet</div>
+                    <p class="text-sm text-slate-400 max-w-xs">Set the <strong>Location</strong> field when registering clients or leads to see regional breakdowns here.</p>
+                </div></div>`;
+        }
+
+        const topRegion = regions[0];
+        const totalRevenue = regions.reduce((s,r)=>s+r.revenue,0);
+
+        // Build chart data (stored in hidden element for JS to read)
+        const chartData = JSON.stringify(regions.slice(0,8).map((r,i) => ({ label: r.region, clients: r.clients, leads: r.leads, revenue: r.revenue, color: COLORS[i%COLORS.length] })));
+
+        return `<div class="space-y-6 fade-in w-full">
+            <!-- Header -->
+            <div class="flex flex-wrap items-start justify-between gap-3">
+                <div>
+                    <h2 class="text-xl sm:text-2xl font-semibold text-slate-900">Regional Analytics</h2>
+                    <p class="text-sm text-slate-500">Clients, leads, projects and revenue broken down by location / region</p>
+                </div>
+                <button id="regionExportBtn" class="flex items-center gap-2 px-4 py-2 text-sm font-medium bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors">
+                    <i data-lucide="download" class="w-4 h-4"></i> Export CSV
+                </button>
+            </div>
+
+            <!-- KPI Cards -->
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
+                    <div class="text-xs font-semibold text-slate-500 uppercase tracking-wide">Regions Active</div>
+                    <div class="text-3xl font-bold text-purple-700 mt-2">${regions.length}</div>
+                    <div class="text-xs text-slate-500 mt-1">unique locations</div>
+                </div>
+                <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
+                    <div class="text-xs font-semibold text-slate-500 uppercase tracking-wide">Top Region</div>
+                    <div class="text-xl font-bold text-sky-700 mt-2">${esc(topRegion.region)}</div>
+                    <div class="text-xs text-slate-500 mt-1">${topRegion.clients} clients · ${topRegion.leads} leads</div>
+                </div>
+                <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
+                    <div class="text-xs font-semibold text-slate-500 uppercase tracking-wide">Total Revenue</div>
+                    <div class="text-xl font-bold text-emerald-700 mt-2">${this.formatINR(totalRevenue)}</div>
+                    <div class="text-xs text-slate-500 mt-1">across all regions</div>
+                </div>
+                <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
+                    <div class="text-xs font-semibold text-slate-500 uppercase tracking-wide">Clients Tracked</div>
+                    <div class="text-3xl font-bold text-amber-700 mt-2">${totalClients}</div>
+                    <div class="text-xs text-slate-500 mt-1">${totalLeads} leads total</div>
+                </div>
+            </div>
+
+            <!-- Charts row -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
+                    <h3 class="text-sm font-semibold text-slate-900 mb-1">Clients by Region</h3>
+                    <p class="text-xs text-slate-500 mb-3">Distribution of registered clients per location</p>
+                    <div class="h-64"><div class="relative w-full h-full"><canvas id="regionClientChart"></canvas></div></div>
+                </div>
+                <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
+                    <h3 class="text-sm font-semibold text-slate-900 mb-1">Revenue by Region</h3>
+                    <p class="text-xs text-slate-500 mb-3">Total invoiced amount per location</p>
+                    <div class="h-64"><div class="relative w-full h-full"><canvas id="regionRevenueChart"></canvas></div></div>
+                </div>
+            </div>
+
+            <!-- Leads progress bars by region -->
+            <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
+                <h3 class="text-sm font-semibold text-slate-900 mb-4">Leads by Region</h3>
+                ${regions.map((r,i) => {
+                    const pct = Math.round(r.leads / totalLeads * 100);
+                    const col = COLORS[i % COLORS.length];
+                    return `<div class="mb-3">
+                        <div class="flex items-center justify-between mb-1">
+                            <span class="text-sm font-medium text-slate-700">${esc(r.region)}</span>
+                            <span class="text-sm text-slate-500">${r.leads} leads · ${pct}%</span>
+                        </div>
+                        <div class="w-full bg-slate-100 rounded-full h-3">
+                            <div class="bg-${col}-500 h-3 rounded-full transition-all" style="width:${pct}%"></div>
+                        </div>
+                    </div>`;
+                }).join('')}
+            </div>
+
+            <!-- Detailed Table -->
+            <div class="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">
+                <div class="p-4 border-b border-slate-100">
+                    <div class="text-sm font-semibold text-slate-900">Region-wise Breakdown Table</div>
+                    <div class="text-xs text-slate-500 mt-0.5">Full data across ${regions.length} regions</div>
+                </div>
+                <div class="overflow-x-auto">
+                    <table id="regionTable" class="w-full text-sm" style="min-width:900px">
+                        <thead class="bg-slate-50 text-slate-500 text-xs uppercase tracking-wide">
+                            <tr>
+                                <th class="text-left px-4 py-3">Region / Location</th>
+                                <th class="text-right px-4 py-3">Clients</th>
+                                <th class="text-right px-4 py-3">Leads</th>
+                                <th class="text-right px-4 py-3">Projects</th>
+                                <th class="text-right px-4 py-3">Quotations</th>
+                                <th class="text-right px-4 py-3">Deals Won</th>
+                                <th class="text-right px-4 py-3">Conv. Rate</th>
+                                <th class="text-right px-4 py-3">Revenue</th>
+                                <th class="text-left px-4 py-3">Client Share</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100">
+                            ${regions.map((r,i) => {
+                                const convRate = r.leads > 0 ? (r.deals/r.leads*100).toFixed(1)+'%' : '—';
+                                const sharePct = Math.round(r.clients/totalClients*100);
+                                const col = COLORS[i%COLORS.length];
+                                return `<tr class="hover:bg-slate-50">
+                                    <td class="px-4 py-3 font-semibold text-slate-900">
+                                        <div class="flex items-center gap-2">
+                                            <div class="w-2.5 h-2.5 rounded-full bg-${col}-500"></div>
+                                            ${esc(r.region)}
+                                        </div>
+                                    </td>
+                                    <td class="px-4 py-3 text-right font-medium text-slate-800">${r.clients}</td>
+                                    <td class="px-4 py-3 text-right text-slate-600">${r.leads}</td>
+                                    <td class="px-4 py-3 text-right text-slate-600">${r.projects}</td>
+                                    <td class="px-4 py-3 text-right text-amber-700 font-medium">${r.quotations}</td>
+                                    <td class="px-4 py-3 text-right text-emerald-700 font-semibold">${r.deals}</td>
+                                    <td class="px-4 py-3 text-right"><span class="px-2 py-0.5 text-xs font-bold rounded-full bg-purple-50 text-purple-700">${convRate}</span></td>
+                                    <td class="px-4 py-3 text-right font-semibold text-slate-900">${this.formatINR(r.revenue)}</td>
+                                    <td class="px-4 py-3">
+                                        <div class="flex items-center gap-2">
+                                            <div class="flex-1 bg-slate-100 rounded-full h-2">
+                                                <div class="bg-${col}-500 h-2 rounded-full" style="width:${sharePct}%"></div>
+                                            </div>
+                                            <span class="text-xs text-slate-500 w-8">${sharePct}%</span>
+                                        </div>
+                                    </td>
+                                </tr>`;
+                            }).join('')}
+                        </tbody>
+                        <tfoot class="bg-slate-50 border-t border-slate-200 font-semibold text-slate-800">
+                            <tr>
+                                <td class="px-4 py-3">Total</td>
+                                <td class="px-4 py-3 text-right">${regions.reduce((s,r)=>s+r.clients,0)}</td>
+                                <td class="px-4 py-3 text-right">${regions.reduce((s,r)=>s+r.leads,0)}</td>
+                                <td class="px-4 py-3 text-right">${regions.reduce((s,r)=>s+r.projects,0)}</td>
+                                <td class="px-4 py-3 text-right">${regions.reduce((s,r)=>s+r.quotations,0)}</td>
+                                <td class="px-4 py-3 text-right text-emerald-700">${regions.reduce((s,r)=>s+r.deals,0)}</td>
+                                <td class="px-4 py-3 text-right"></td>
+                                <td class="px-4 py-3 text-right">${this.formatINR(totalRevenue)}</td>
+                                <td class="px-4 py-3"></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Hidden data for charts -->
+            <script id="regionChartData" type="application/json">${chartData}</script>
+        </div>`;
+    }
+
+    initializeRegionAnalyticsCharts() {
+        const dataEl = document.getElementById('regionChartData');
+        let data = [];
+        try { data = JSON.parse(dataEl?.textContent || '[]'); } catch(_) {}
+        if (!data.length) return;
+
+        const labels   = data.map(d => d.label);
+        const clients  = data.map(d => d.clients);
+        const revenues = data.map(d => d.revenue);
+        const palette  = ['#7c3aed','#0ea5e9','#10b981','#f59e0b','#f43f5e','#6366f1','#14b8a6','#f97316'];
+        const bgColors = data.map((_,i) => palette[i % palette.length] + 'CC');
+        const bdColors = data.map((_,i) => palette[i % palette.length]);
+
+        const ctxC = document.getElementById('regionClientChart');
+        if (ctxC) {
+            if (this.charts.regionClientChart) { try { this.charts.regionClientChart.destroy(); } catch(_) {} }
+            this.charts.regionClientChart = new Chart(ctxC, {
+                type: 'doughnut',
+                data: { labels, datasets: [{ data: clients, backgroundColor: bgColors, borderColor: bdColors, borderWidth: 2, hoverOffset: 8 }] },
+                options: { responsive: true, maintainAspectRatio: false, cutout: '60%',
+                    plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11 } } } } }
+            });
+        }
+
+        const ctxR = document.getElementById('regionRevenueChart');
+        if (ctxR) {
+            if (this.charts.regionRevenueChart) { try { this.charts.regionRevenueChart.destroy(); } catch(_) {} }
+            this.charts.regionRevenueChart = new Chart(ctxR, {
+                type: 'bar',
+                data: { labels, datasets: [{ label: 'Revenue (₹)', data: revenues, backgroundColor: bgColors, borderColor: bdColors, borderWidth: 1.5, borderRadius: 6 }] },
+                options: { responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: { x: { grid: { display: false } }, y: { beginAtZero: true, ticks: { callback: v => v >= 100000 ? '₹'+(v/100000).toFixed(1)+'L' : '₹'+v.toLocaleString('en-IN'), font: { size: 10 } } } } }
+            });
+        }
+
+        // Export CSV
+        const btn = document.getElementById('regionExportBtn');
+        if (btn) btn.onclick = () => {
+            const regions = this.getStoredClients ? (() => {
+                const map = {};
+                this.getStoredClients().forEach(c => {
+                    const r = this._extractRegion(c);
+                    if (!map[r]) map[r] = { region:r, clients:0, leads:0, projects:0, revenue:0 };
+                    map[r].clients++;
+                    this.getAllInvoices().filter(i => String(i.client||'').toLowerCase()===String(c.name||'').toLowerCase()).forEach(inv => { map[r].revenue += this.parseCurrencyToNumber(inv.amount); });
+                });
+                return Object.values(map);
+            })() : [];
+            const rows = [['Region','Clients','Leads','Projects','Revenue'], ...regions.map(r => [r.region,r.clients,r.leads,r.projects,r.revenue])];
+            const csv = rows.map(r => r.map(c => `"${c}"`).join(',')).join('\n');
+            const a = document.createElement('a'); a.href = 'data:text/csv;charset=utf-8,'+encodeURIComponent(csv); a.download = 'Regional_Analytics.csv'; a.click();
+        };
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    //  QUOTATION → PROJECT CONVERSION REPORT
+    // ─────────────────────────────────────────────────────────────────────────
+    getReportsQuotationConversion() {
+        const leads   = this.getStoredLeads   ? this.getStoredLeads()   : [];
+        const clients = this.getStoredClients ? this.getStoredClients() : [];
+        const projects= this.getStoredProjects? this.getStoredProjects(): [];
+        const quotations = this.readStore ? this.readStore('bezent_quotations', []) : [];
+        const esc = v => String(v ?? '').replace(/</g, '&lt;');
+
+        // Stage flow: leads at/past Quotation stage
+        const atQuotation   = leads.filter(l => ['quotation'].includes(String(l.stage||'').toLowerCase()));
+        const atNegotiation = leads.filter(l => ['negotiation'].includes(String(l.stage||'').toLowerCase()));
+        const atClosed      = leads.filter(l => ['closed','po received','won'].includes(String(l.stage||'').toLowerCase()));
+        // All leads that ever had quotation (approximation: at quotation or beyond)
+        const quotationAndBeyond = leads.filter(l => ['quotation','negotiation','closed','po received','won'].includes(String(l.stage||l.status||'').toLowerCase()));
+        
+        // Conversion rates
+        const totalLeads           = leads.length || 1;
+        const quotationCount       = quotationAndBeyond.length;
+        const convertedToProject   = atClosed.length;
+        const stoppedAtQuotation   = atQuotation.length;
+        const stoppedAtNegotiation = atNegotiation.length;
+        const quotationToClose     = quotationCount > 0 ? (convertedToProject/quotationCount*100).toFixed(1) : '0.0';
+        const leadToQuotation      = (quotationCount/totalLeads*100).toFixed(1);
+
+        // Cross-reference with clients (quotation → became registered client)
+        const clientNames = new Set(clients.map(c => String(c.name||'').trim().toLowerCase()));
+        const quotationBecameClient = quotationAndBeyond.filter(l => clientNames.has(String(l.company||'').trim().toLowerCase())).length;
+
+        // Project connection: leads who became clients AND have a project
+        const projectClientNames = new Set(projects.map(p => String(p.client||'').trim().toLowerCase()));
+        const quotationGotProject = quotationAndBeyond.filter(l => projectClientNames.has(String(l.company||'').trim().toLowerCase())).length;
+
+        // Breakdown table: each lead at/past quotation
+        const tableRows = quotationAndBeyond.map(l => {
+            const st = String(l.stage||l.status||'New Lead');
+            const isClosed = ['closed','po received','won'].includes(st.toLowerCase());
+            const isClient = clientNames.has(String(l.company||'').trim().toLowerCase());
+            const hasProject = projectClientNames.has(String(l.company||'').trim().toLowerCase());
+            const region = this._extractRegion({ location: l.location||l.city||'', address: l.address||'', vendorCode:'' });
+            const statusColor = isClosed ? 'emerald' : st.toLowerCase()==='negotiation' ? 'amber' : 'sky';
+            return { company: l.company||l.contact||'—', stage: st, statusColor, isClient, hasProject, region, owner: l.assignedTo||l.owner||'—', source: l.source||l.leadSource||'—' };
+        });
+
+        // Stopped at quotation table (never progressed)
+        const stoppedRows = atQuotation.map(l => ({
+            company: l.company||l.contact||'—',
+            owner: l.assignedTo||l.owner||'—',
+            source: l.source||l.leadSource||'—',
+            region: this._extractRegion({ location: l.location||l.city||'', address: l.address||'' })
+        }));
+
+        // Regional breakdown of conversion
+        const regionConvMap = {};
+        quotationAndBeyond.forEach(l => {
+            const r = this._extractRegion({ location: l.location||l.city||'', address: l.address||'' });
+            if (!regionConvMap[r]) regionConvMap[r] = { region:r, quotations:0, converted:0 };
+            regionConvMap[r].quotations++;
+            if (['closed','po received','won'].includes(String(l.stage||'').toLowerCase())) regionConvMap[r].converted++;
+        });
+        const regionConvRows = Object.values(regionConvMap).sort((a,b) => b.quotations-a.quotations);
+
+        const chartData = JSON.stringify({
+            funnelLabels: ['All Leads', 'Sent Quotation', 'Negotiation', 'Closed / Won'],
+            funnelData: [totalLeads, quotationCount, stoppedAtNegotiation + convertedToProject, convertedToProject],
+            regionLabels: regionConvRows.map(r => r.region),
+            regionQuotations: regionConvRows.map(r => r.quotations),
+            regionConverted: regionConvRows.map(r => r.converted)
+        });
+
+        return `<div class="space-y-6 fade-in w-full">
+            <!-- Header -->
+            <div class="flex flex-wrap items-start justify-between gap-3">
+                <div>
+                    <h2 class="text-xl sm:text-2xl font-semibold text-slate-900">Quotation → Project Conversion</h2>
+                    <p class="text-sm text-slate-500">Track which leads moved from Quotation to closed deals vs those that stalled</p>
+                </div>
+                <button id="quotConvExportBtn" class="flex items-center gap-2 px-4 py-2 text-sm font-medium bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors">
+                    <i data-lucide="download" class="w-4 h-4"></i> Export CSV
+                </button>
+            </div>
+
+            <!-- Summary KPIs -->
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
+                    <div class="text-xs font-semibold text-slate-500 uppercase tracking-wide">Quotations Sent</div>
+                    <div class="text-3xl font-bold text-sky-700 mt-2">${quotationCount}</div>
+                    <div class="text-xs text-slate-500 mt-1">${leadToQuotation}% of all leads</div>
+                </div>
+                <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
+                    <div class="text-xs font-semibold text-slate-500 uppercase tracking-wide">Converted to Deal</div>
+                    <div class="text-3xl font-bold text-emerald-700 mt-2">${convertedToProject}</div>
+                    <div class="text-xs text-emerald-600 mt-1">${quotationToClose}% conversion rate</div>
+                </div>
+                <div class="bg-amber-50 rounded-xl border border-amber-200 p-5 shadow-sm">
+                    <div class="text-xs font-semibold text-amber-600 uppercase tracking-wide">Stopped at Quotation</div>
+                    <div class="text-3xl font-bold text-amber-700 mt-2">${stoppedAtQuotation}</div>
+                    <div class="text-xs text-amber-700 mt-1">No further progress</div>
+                </div>
+                <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
+                    <div class="text-xs font-semibold text-slate-500 uppercase tracking-wide">Became Registered Client</div>
+                    <div class="text-3xl font-bold text-purple-700 mt-2">${quotationBecameClient}</div>
+                    <div class="text-xs text-slate-500 mt-1">${quotationGotProject} got a project</div>
+                </div>
+            </div>
+
+            <!-- Charts -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
+                    <h3 class="text-sm font-semibold text-slate-900 mb-1">Conversion Funnel</h3>
+                    <p class="text-xs text-slate-500 mb-3">Drop-off from lead to closed deal</p>
+                    <div class="h-64"><div class="relative w-full h-full"><canvas id="quotConvFunnelChart"></canvas></div></div>
+                </div>
+                <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
+                    <h3 class="text-sm font-semibold text-slate-900 mb-1">Quotation Conversion by Region</h3>
+                    <p class="text-xs text-slate-500 mb-3">Which regions convert quotations better</p>
+                    <div class="h-64"><div class="relative w-full h-full"><canvas id="quotConvRegionChart"></canvas></div></div>
+                </div>
+            </div>
+
+            <!-- Stopped at Quotation (needs follow-up) -->
+            ${stoppedRows.length ? `
+            <div class="bg-amber-50 rounded-xl border border-amber-200 shadow-sm overflow-hidden">
+                <div class="p-4 border-b border-amber-200 bg-amber-100 flex items-center gap-3">
+                    <i data-lucide="alert-triangle" class="w-5 h-5 text-amber-600"></i>
+                    <div>
+                        <div class="text-sm font-semibold text-amber-900">Stalled at Quotation Stage — Action Required</div>
+                        <div class="text-xs text-amber-700 mt-0.5">${stoppedRows.length} lead(s) sent a quotation but have not progressed further</div>
+                    </div>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm" style="min-width:600px">
+                        <thead class="bg-amber-100 text-amber-800 text-xs uppercase tracking-wide">
+                            <tr>
+                                <th class="text-left px-4 py-3">Company</th>
+                                <th class="text-left px-4 py-3">Region</th>
+                                <th class="text-left px-4 py-3">Source</th>
+                                <th class="text-left px-4 py-3">Owner</th>
+                                <th class="text-left px-4 py-3">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-amber-100">
+                            ${stoppedRows.map(r => `<tr class="hover:bg-amber-50/80">
+                                <td class="px-4 py-3 font-semibold text-slate-900">${esc(r.company)}</td>
+                                <td class="px-4 py-3 text-slate-600">${esc(r.region)}</td>
+                                <td class="px-4 py-3 text-slate-600">${esc(r.source)}</td>
+                                <td class="px-4 py-3 text-slate-600">${esc(r.owner)}</td>
+                                <td class="px-4 py-3">
+                                    <button data-action="nav:leads/lead_directory" class="px-3 py-1.5 text-xs font-semibold bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition-colors">Follow Up →</button>
+                                </td>
+                            </tr>`).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            </div>` : ''}
+
+            <!-- All Quotation+ leads table -->
+            <div class="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">
+                <div class="p-4 border-b border-slate-100">
+                    <div class="text-sm font-semibold text-slate-900">All Leads at Quotation Stage or Beyond</div>
+                    <div class="text-xs text-slate-500 mt-0.5">${tableRows.length} leads tracked</div>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm" style="min-width:800px">
+                        <thead class="bg-slate-50 text-slate-500 text-xs uppercase tracking-wide">
+                            <tr>
+                                <th class="text-left px-4 py-3">Company</th>
+                                <th class="text-left px-4 py-3">Stage</th>
+                                <th class="text-left px-4 py-3">Region</th>
+                                <th class="text-left px-4 py-3">Source</th>
+                                <th class="text-left px-4 py-3">Owner</th>
+                                <th class="text-center px-4 py-3">Client?</th>
+                                <th class="text-center px-4 py-3">Project?</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100">
+                            ${tableRows.map(r => `<tr class="hover:bg-slate-50">
+                                <td class="px-4 py-3 font-semibold text-slate-900">${esc(r.company)}</td>
+                                <td class="px-4 py-3">
+                                    <span class="px-2 py-0.5 text-xs font-bold rounded-full bg-${r.statusColor}-100 text-${r.statusColor}-700">${esc(r.stage)}</span>
+                                </td>
+                                <td class="px-4 py-3 text-slate-600">${esc(r.region)}</td>
+                                <td class="px-4 py-3 text-slate-600">${esc(r.source)}</td>
+                                <td class="px-4 py-3 text-slate-600">${esc(r.owner)}</td>
+                                <td class="px-4 py-3 text-center">
+                                    ${r.isClient ? '<span class="text-emerald-600 font-bold text-xs">✓ Yes</span>' : '<span class="text-slate-400 text-xs">No</span>'}
+                                </td>
+                                <td class="px-4 py-3 text-center">
+                                    ${r.hasProject ? '<span class="text-purple-600 font-bold text-xs">✓ Yes</span>' : '<span class="text-rose-500 text-xs">No</span>'}
+                                </td>
+                            </tr>`).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Regional conversion rates -->
+            ${regionConvRows.length ? `
+            <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
+                <h3 class="text-sm font-semibold text-slate-900 mb-4">Conversion Rate by Region</h3>
+                ${regionConvRows.map((r,i) => {
+                    const rate = r.quotations > 0 ? Math.round(r.converted/r.quotations*100) : 0;
+                    const col = rate >= 60 ? 'emerald' : rate >= 30 ? 'amber' : 'rose';
+                    return `<div class="mb-3">
+                        <div class="flex items-center justify-between mb-1">
+                            <span class="text-sm font-medium text-slate-700">${esc(r.region)}</span>
+                            <span class="text-xs text-slate-500">${r.converted}/${r.quotations} converted &nbsp;·&nbsp; <strong class="text-${col}-600">${rate}%</strong></span>
+                        </div>
+                        <div class="w-full bg-slate-100 rounded-full h-2.5">
+                            <div class="bg-${col}-500 h-2.5 rounded-full" style="width:${rate}%"></div>
+                        </div>
+                    </div>`;
+                }).join('')}
+            </div>` : ''}
+
+            <!-- Hidden chart data -->
+            <script id="quotConvChartData" type="application/json">${chartData}</script>
+        </div>`;
+    }
+
+    initializeQuotationConversionCharts() {
+        const dataEl = document.getElementById('quotConvChartData');
+        let data = {};
+        try { data = JSON.parse(dataEl?.textContent || '{}'); } catch(_) {}
+
+        // Funnel chart
+        const ctxF = document.getElementById('quotConvFunnelChart');
+        if (ctxF && data.funnelLabels) {
+            if (this.charts.quotConvFunnelChart) { try { this.charts.quotConvFunnelChart.destroy(); } catch(_) {} }
+            this.charts.quotConvFunnelChart = new Chart(ctxF, {
+                type: 'bar',
+                data: {
+                    labels: data.funnelLabels,
+                    datasets: [{
+                        label: 'Count',
+                        data: data.funnelData,
+                        backgroundColor: ['rgba(14,165,233,0.7)','rgba(99,102,241,0.7)','rgba(245,158,11,0.7)','rgba(16,185,129,0.85)'],
+                        borderRadius: 8, borderSkipped: false
+                    }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false, indexAxis: 'y',
+                    plugins: { legend: { display: false } },
+                    scales: { x: { beginAtZero: true, grid: { display: false } }, y: { grid: { display: false } } }
+                }
+            });
+        }
+
+        // Region grouped bar chart
+        const ctxR = document.getElementById('quotConvRegionChart');
+        if (ctxR && data.regionLabels && data.regionLabels.length) {
+            if (this.charts.quotConvRegionChart) { try { this.charts.quotConvRegionChart.destroy(); } catch(_) {} }
+            this.charts.quotConvRegionChart = new Chart(ctxR, {
+                type: 'bar',
+                data: {
+                    labels: data.regionLabels,
+                    datasets: [
+                        { label: 'Quotations Sent', data: data.regionQuotations, backgroundColor: 'rgba(99,102,241,0.65)', borderRadius: 5 },
+                        { label: 'Converted to Deal', data: data.regionConverted, backgroundColor: 'rgba(16,185,129,0.75)', borderRadius: 5 }
+                    ]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11 } } } },
+                    scales: { x: { grid: { display: false } }, y: { beginAtZero: true, ticks: { precision: 0 } } }
+                }
+            });
+        }
+
+        // Export CSV
+        const btn = document.getElementById('quotConvExportBtn');
+        if (btn) btn.onclick = () => {
+            const leads  = this.getStoredLeads ? this.getStoredLeads() : [];
+            const qLeads = leads.filter(l => ['quotation','negotiation','closed','po received','won'].includes(String(l.stage||'').toLowerCase()));
+            const clients = new Set((this.getStoredClients ? this.getStoredClients() : []).map(c => String(c.name||'').toLowerCase()));
+            const projects = new Set((this.getStoredProjects ? this.getStoredProjects() : []).map(p => String(p.client||'').toLowerCase()));
+            const rows = [['Company','Stage','Region','Source','Owner','Registered Client','Has Project'],
+                ...qLeads.map(l => [l.company||'',l.stage||'',l.location||'',l.source||'',l.assignedTo||'',
+                    clients.has(String(l.company||'').toLowerCase()) ? 'Yes':'No',
+                    projects.has(String(l.company||'').toLowerCase()) ? 'Yes':'No'
+                ])];
+            const csv = rows.map(r => r.map(c => `"${c}"`).join(',')).join('\n');
+            const a = document.createElement('a'); a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv); a.download='Quotation_Conversion.csv'; a.click();
+        };
     }
 
 
@@ -15902,90 +16534,239 @@ class MarketFlowCRM {
         </div>`;
     }
     getReportsLtv() {
-
         const storedClients = this.getStoredClients();
-        const invoices = this.getAllInvoices();
+        const storedProjects = this.getStoredProjects ? this.getStoredProjects() : [];
+        const billingInvoices = this.getAllInvoices ? this.getAllInvoices() : [];
         const esc = v => String(v ?? '').replace(/</g, '&lt;');
 
-        // Build LTV map from invoices
-        const clientMap = {};
-        invoices.forEach(inv => {
+        // ── Helper: parse any currency string to a number ──
+        const toNum = (v) => {
+            if (!v) return 0;
+            const s = String(v).replace(/[₹,\s]/g, '').replace(/[^0-9.]/g, '');
+            return parseFloat(s) || 0;
+        };
+
+        // ── Build per-client map ──
+        const map = {};
+        const ensure = (name) => {
+            if (!name) return null;
+            const k = name.trim().toLowerCase();
+            if (!map[k]) map[k] = {
+                name: name.trim(),
+                revenue: 0,          // total invoiced
+                collected: 0,        // actually received
+                projectCount: 0,
+                invoiceCount: 0,
+                paidCount: 0,
+                lastActivity: 0
+            };
+            return map[k];
+        };
+
+        // 1) Billing invoices (bezent_invoices store)
+        billingInvoices.forEach(inv => {
             const name = String(inv.client || '').trim();
-            if (!name) return;
-            if (!clientMap[name]) clientMap[name] = { name, total: 0, invoiceCount: 0, paidCount: 0 };
-            clientMap[name].total += this.parseCurrencyToNumber(inv.amount);
-            clientMap[name].invoiceCount++;
-            if (String(inv.status || '').toLowerCase() === 'paid') clientMap[name].paidCount++;
+            const r = ensure(name);
+            if (!r) return;
+            const amt = toNum(inv.amount);
+            r.revenue += amt;
+            r.invoiceCount++;
+            const status = String(inv.status || '').toLowerCase();
+            if (status === 'paid') { r.collected += amt; r.paidCount++; }
+            const ts = inv.createdAt || inv.date || 0;
+            if (ts > r.lastActivity) r.lastActivity = ts;
         });
+
+        // 2) Project payment data (the primary data source for most users)
+        storedProjects.forEach(p => {
+            const name = String(p.client || p.identification?.companyName || '').trim();
+            const r = ensure(name);
+            if (!r) return;
+            r.projectCount++;
+
+            const pay = p.payment || {};
+
+            // Invoice amount from project
+            const invAmt = toNum(pay.invoiceAmount || pay.pastInvoiceAmount || 0);
+            if (invAmt > 0) {
+                r.revenue += invAmt;
+                r.invoiceCount++;
+            }
+
+            // Payment received
+            const recvAmt = toNum(pay.paymentReceivedAmount || 0);
+            if (recvAmt > 0) {
+                r.collected += recvAmt;
+                r.paidCount++;
+            }
+
+            // Balance still owed (add to revenue if not already counted via invoice)
+            const balance = toNum(pay.balancePaymentAmount || 0);
+            if (balance > 0 && invAmt === 0) {
+                // Only use balance as revenue indicator if no invoice amount stored
+                r.revenue += balance;
+            }
+
+            // PO value as fallback revenue indicator
+            const poVal = toNum(p.purchase?.poValue || 0);
+            if (poVal > 0 && invAmt === 0 && recvAmt === 0) {
+                r.revenue += poVal;
+            }
+
+            const ts = p.startDate ? Date.parse(p.startDate) : (p.createdAt || 0);
+            if (ts > r.lastActivity) r.lastActivity = ts;
+        });
+
+        // 3) Ensure all stored clients appear (even with 0 revenue)
         storedClients.forEach(c => {
             const name = String(c.name || c.company || '').trim();
-            if (name && !clientMap[name]) clientMap[name] = { name, total: 0, invoiceCount: 0, paidCount: 0 };
+            ensure(name);
         });
 
-        const rawClients = Object.values(clientMap);
-        const clients = rawClients.sort((a, b) => b.total - a.total).slice(0, 12).map(c => {
-            const score = Math.min(Math.round(40 + (c.total / 15000) + (c.paidCount * 8)), 100);
-            const color = score >= 80 ? 'emerald' : score >= 60 ? 'sky' : score >= 40 ? 'amber' : 'rose';
-            const renewalScore = score >= 80 ? 'High' : score >= 60 ? 'Medium' : 'Low';
-            return { ...c, score, color, renewalScore };
-        });
+        // ── Sort by revenue descending, top 15 ──
+        const rawClients = Object.values(map);
+        const clients = rawClients
+            .sort((a, b) => b.revenue - a.revenue)
+            .slice(0, 15)
+            .map(c => {
+                // LTV Score: weighted by revenue + payment discipline + project repeat
+                const revenueScore = Math.min(c.revenue / 50000 * 30, 40);  // up to 40 pts
+                const payScore = c.invoiceCount > 0
+                    ? Math.min((c.paidCount / c.invoiceCount) * 30, 30)      // up to 30 pts
+                    : 0;
+                const repeatScore = Math.min(c.projectCount * 5, 20);       // up to 20 pts
+                const recencyScore = c.lastActivity > 0
+                    ? Math.min(((Date.now() - c.lastActivity) < 90 * 86400000 ? 10 : 5), 10)
+                    : 0;
+                const score = Math.round(revenueScore + payScore + repeatScore + recencyScore);
+                const color = score >= 75 ? 'emerald' : score >= 50 ? 'sky' : score >= 30 ? 'amber' : 'rose';
+                const tier = score >= 75 ? 'High Value' : score >= 50 ? 'Growing' : score >= 30 ? 'Developing' : 'New';
+                const renewalScore = score >= 75 ? 'High' : score >= 50 ? 'Medium' : 'Low';
+                return { ...c, score, color, tier, renewalScore };
+            });
 
-        const totalLtv = clients.reduce((s, c) => s + c.total, 0);
+        const totalLtv = clients.reduce((s, c) => s + c.revenue, 0);
+        const totalCollected = clients.reduce((s, c) => s + c.collected, 0);
         const avgLtv = clients.length ? Math.round(totalLtv / clients.length) : 0;
-        const highValue = clients.filter(c => c.score >= 80).length;
+        const highValue = clients.filter(c => c.tier === 'High Value').length;
+        const collectionRate = totalLtv > 0 ? Math.round(totalCollected / totalLtv * 100) : 0;
+
+        // ── Chart data: top 8 by revenue ──
+        const chartClients = clients.slice(0, 8);
+        const chartLabels = JSON.stringify(chartClients.map(c => c.name.length > 14 ? c.name.slice(0, 14) + '…' : c.name));
+        const chartRevenue = JSON.stringify(chartClients.map(c => c.revenue));
+        const chartCollected = JSON.stringify(chartClients.map(c => c.collected));
 
         return `
             <div class="space-y-6 fade-in w-full">
+                <!-- Header -->
                 <div class="flex flex-wrap items-start justify-between gap-3">
                     <div>
                         <h2 class="text-xl sm:text-2xl font-semibold text-slate-900">Client Lifetime Value</h2>
-                        <p class="text-sm text-slate-500">LTV, invoice history, and renewal readiness — computed from real data</p>
+                        <p class="text-sm text-slate-500">Revenue, collection rate and renewal readiness — aggregated from projects &amp; billing</p>
                     </div>
-                    <button data-action="table:exportCsv" class="px-4 py-2 text-sm font-medium bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">Export CSV</button>
+                    <button data-action="table:exportCsv" class="flex items-center gap-2 px-4 py-2 text-sm font-medium bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">
+                        <i data-lucide="download" class="w-4 h-4"></i> Export CSV
+                    </button>
                 </div>
 
-                <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                    <div class="bg-white rounded-xl border p-4"><div class="text-xs text-slate-500">Total Clients</div><div class="text-2xl font-bold text-slate-900 mt-1">${clients.length}</div></div>
-                    <div class="bg-white rounded-xl border p-4"><div class="text-xs text-slate-500">Total LTV</div><div class="text-xl font-bold text-purple-700 mt-1">${this.formatINR(totalLtv)}</div></div>
-                    <div class="bg-white rounded-xl border p-4"><div class="text-xs text-slate-500">Avg LTV / Client</div><div class="text-xl font-bold text-sky-700 mt-1">${this.formatINR(avgLtv)}</div></div>
-                    <div class="bg-white rounded-xl border p-4"><div class="text-xs text-slate-500">High-Value Clients</div><div class="text-2xl font-bold text-emerald-700 mt-1">${highValue}</div></div>
+                <!-- KPI Cards -->
+                <div class="grid grid-cols-2 lg:grid-cols-5 gap-4">
+                    <div class="bg-white rounded-xl border border-slate-200 p-4 shadow-sm">
+                        <div class="text-xs text-slate-500 mb-1">Total Clients</div>
+                        <div class="text-2xl font-bold text-slate-900">${clients.length}</div>
+                        <div class="text-xs text-slate-400 mt-1">In this report</div>
+                    </div>
+                    <div class="bg-white rounded-xl border border-slate-200 p-4 shadow-sm">
+                        <div class="text-xs text-slate-500 mb-1">Total Revenue</div>
+                        <div class="text-xl font-bold text-purple-700">${this.formatINR(totalLtv)}</div>
+                        <div class="text-xs text-slate-400 mt-1">All invoiced</div>
+                    </div>
+                    <div class="bg-white rounded-xl border border-slate-200 p-4 shadow-sm">
+                        <div class="text-xs text-slate-500 mb-1">Total Collected</div>
+                        <div class="text-xl font-bold text-emerald-700">${this.formatINR(totalCollected)}</div>
+                        <div class="text-xs ${collectionRate >= 80 ? 'text-emerald-600' : 'text-amber-600'} mt-1">${collectionRate}% collection rate</div>
+                    </div>
+                    <div class="bg-white rounded-xl border border-slate-200 p-4 shadow-sm">
+                        <div class="text-xs text-slate-500 mb-1">Avg LTV / Client</div>
+                        <div class="text-xl font-bold text-sky-700">${this.formatINR(avgLtv)}</div>
+                        <div class="text-xs text-slate-400 mt-1">Per client avg</div>
+                    </div>
+                    <div class="bg-white rounded-xl border border-slate-200 p-4 shadow-sm">
+                        <div class="text-xs text-slate-500 mb-1">High-Value Clients</div>
+                        <div class="text-2xl font-bold text-emerald-700">${highValue}</div>
+                        <div class="text-xs text-slate-400 mt-1">Score ≥ 75</div>
+                    </div>
                 </div>
 
-                <div class="bg-white rounded-xl border overflow-hidden shadow-sm">
-                    <div class="overflow-x-auto"><table class="w-full text-sm" style="min-width:700px">
-                        <thead class="bg-slate-50 text-slate-600"><tr>
-                            <th class="text-left px-5 py-3 font-medium">#</th>
-                            <th class="text-left px-5 py-3 font-medium">Client</th>
-                            <th class="text-right px-5 py-3 font-medium">Lifetime Value</th>
-                            <th class="text-right px-5 py-3 font-medium">Invoices</th>
-                            <th class="text-left px-5 py-3 font-medium">LTV Score</th>
-                            <th class="text-left px-5 py-3 font-medium">Renewal</th>
-                            <th class="text-left px-5 py-3 font-medium">Action</th>
-                        </tr></thead>
-                        <tbody class="divide-y divide-slate-100">
-                        ${clients.map((c, i) => `
-                            <tr class="hover:bg-slate-50">
-                                <td class="px-5 py-3 text-slate-400 font-medium">${i + 1}</td>
-                                <td class="px-5 py-3 font-semibold text-slate-900">${esc(c.name)}</td>
-                                <td class="px-5 py-3 text-right font-bold text-slate-900">${this.formatINR(c.total)}</td>
-                                <td class="px-5 py-3 text-right text-slate-600">${c.invoiceCount} total / ${c.paidCount} paid</td>
-                                <td class="px-5 py-3">
-                                    <div class="flex items-center gap-2">
-                                        <div class="flex-1 bg-slate-100 rounded-full h-2"><div class="bg-${c.color}-500 h-2 rounded-full" style="width:${c.score}%"></div>
-                                        <span class="text-xs font-bold text-${c.color}-700">${c.score}</span>
-                                    </div>
-                                </td>
-                                <td class="px-5 py-3"><span class="px-2 py-1 text-xs font-medium bg-${c.color}-50 text-${c.color}-700 rounded-full">${c.renewalScore}</span></td>
-                                <td class="px-5 py-3">
-                                    <button data-action="billing:goToClient" data-client-name="${esc(c.name)}" class="px-3 py-1.5 text-xs font-medium bg-purple-50 text-purple-700 rounded-lg hover:bg-purple-100">View →</button>
-                                </td>
-                            </tr>`).join('')}
-                        </tbody>
-                    </table></div>
+                <!-- Chart -->
+                <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
+                    <div class="flex items-center justify-between mb-3">
+                        <div>
+                            <div class="text-sm font-semibold text-slate-900">Revenue vs Collected — Top 8 Clients</div>
+                            <div class="text-xs text-slate-500">Invoiced amount vs actual payment received</div>
+                        </div>
+                        <div class="flex items-center gap-3 text-xs text-slate-500">
+                            <span class="flex items-center gap-1"><span class="inline-block w-3 h-3 rounded-sm bg-purple-500"></span> Invoiced</span>
+                            <span class="flex items-center gap-1"><span class="inline-block w-3 h-3 rounded-sm bg-emerald-500"></span> Collected</span>
+                        </div>
+                    </div>
+                    <div class="h-64 relative"><canvas id="ltvBarChart"></canvas></div>
+                    <script type="application/json" id="ltvChartData">{"labels":${chartLabels},"revenue":${chartRevenue},"collected":${chartCollected}}</script>
+                </div>
+
+                <!-- Table -->
+                <div class="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">
+                    <div class="p-4 border-b border-slate-100">
+                        <div class="text-sm font-semibold text-slate-900">Client LTV Breakdown</div>
+                        <div class="text-xs text-slate-500 mt-0.5">Score = revenue + payment discipline + project repeat + recency</div>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table id="ltvTable" class="w-full text-sm" style="min-width:820px">
+                            <thead class="bg-slate-50 text-slate-500 text-xs uppercase tracking-wide">
+                                <tr>
+                                    <th class="text-left px-5 py-3">#</th>
+                                    <th class="text-left px-5 py-3">Client</th>
+                                    <th class="text-right px-5 py-3">Revenue</th>
+                                    <th class="text-right px-5 py-3">Collected</th>
+                                    <th class="text-right px-5 py-3">Projects</th>
+                                    <th class="text-right px-5 py-3">Invoices</th>
+                                    <th class="text-left px-5 py-3">LTV Score</th>
+                                    <th class="text-left px-5 py-3">Tier</th>
+                                    <th class="text-left px-5 py-3">Renewal</th>
+                                    <th class="text-left px-5 py-3">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-100">
+                            ${clients.map((c, i) => `
+                                <tr class="hover:bg-slate-50">
+                                    <td class="px-5 py-3 text-slate-400 font-medium">${i + 1}</td>
+                                    <td class="px-5 py-3 font-semibold text-slate-900">${esc(c.name)}</td>
+                                    <td class="px-5 py-3 text-right font-bold text-slate-900">${this.formatINR(c.revenue)}</td>
+                                    <td class="px-5 py-3 text-right font-semibold text-emerald-700">${this.formatINR(c.collected)}</td>
+                                    <td class="px-5 py-3 text-right text-slate-600">${c.projectCount}</td>
+                                    <td class="px-5 py-3 text-right text-slate-600">${c.invoiceCount} total / ${c.paidCount} paid</td>
+                                    <td class="px-5 py-3">
+                                        <div class="flex items-center gap-2">
+                                            <div class="flex-1 bg-slate-100 rounded-full h-2" style="min-width:60px">
+                                                <div class="bg-${c.color}-500 h-2 rounded-full" style="width:${c.score}%"></div>
+                                            </div>
+                                            <span class="text-xs font-bold text-${c.color}-700 w-6 text-right">${c.score}</span>
+                                        </div>
+                                    </td>
+                                    <td class="px-5 py-3"><span class="px-2 py-1 text-xs font-semibold bg-${c.color}-50 text-${c.color}-700 rounded-full">${c.tier}</span></td>
+                                    <td class="px-5 py-3"><span class="px-2 py-1 text-xs font-medium bg-${c.color}-50 text-${c.color}-700 rounded-full">${c.renewalScore}</span></td>
+                                    <td class="px-5 py-3">
+                                        <button data-action="billing:goToClient" data-client-name="${esc(c.name)}" class="px-3 py-1.5 text-xs font-medium bg-purple-50 text-purple-700 rounded-lg hover:bg-purple-100">View →</button>
+                                    </td>
+                                </tr>`).join('')}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>`;
-
     }
+
 
     getReportsSopMonthly() {
         // ── Build monthly summary from real stored data ──
@@ -16170,6 +16951,63 @@ class MarketFlowCRM {
             });
         }
         document.getElementById('funnelExportBtn')?.addEventListener('click', () => this.exportTableToExcel('funnelTable', 'Funnel_Report'));
+    }
+
+    initializeLtvChart() {
+        const raw = document.getElementById('ltvChartData')?.textContent || '{}';
+        let chartData = {};
+        try { chartData = JSON.parse(raw); } catch (_) { }
+        const labels = chartData.labels || [];
+        const revenue = chartData.revenue || [];
+        const collected = chartData.collected || [];
+        const ctx = document.getElementById('ltvBarChart');
+        if (!ctx || !labels.length) return;
+        this.charts.ltvBarChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels,
+                datasets: [
+                    {
+                        label: 'Revenue (Invoiced)',
+                        data: revenue,
+                        backgroundColor: 'rgba(139,92,246,0.75)',
+                        borderRadius: 4
+                    },
+                    {
+                        label: 'Collected',
+                        data: collected,
+                        backgroundColor: 'rgba(16,185,129,0.75)',
+                        borderRadius: 4
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'bottom', labels: { font: { size: 11 } } },
+                    tooltip: {
+                        callbacks: {
+                            label: (ctx) => {
+                                const v = ctx.raw || 0;
+                                return ` ${ctx.dataset.label}: ₹${v >= 100000 ? (v / 100000).toFixed(1) + 'L' : v.toLocaleString('en-IN')}`;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: { grid: { display: false }, ticks: { font: { size: 11 } } },
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: v => v >= 100000 ? '₹' + (v / 100000).toFixed(1) + 'L' : '₹' + v.toLocaleString('en-IN'),
+                            font: { size: 11 }
+                        }
+                    }
+                }
+            }
+        });
+        document.getElementById('ltvTable') && document.querySelector('[data-action="table:exportCsv"]')?.setAttribute('data-table-id', 'ltvTable');
     }
 
     initializeCampaignReportCharts() {

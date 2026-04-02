@@ -16623,11 +16623,10 @@ class MarketFlowCRM {
             ensure(name);
         });
 
-        // ── Sort by revenue descending, top 15 ──
+        // ── Sort by revenue descending, show all clients ──
         const rawClients = Object.values(map);
         const clients = rawClients
             .sort((a, b) => b.revenue - a.revenue)
-            .slice(0, 15)
             .map(c => {
                 // LTV Score: weighted by revenue + payment discipline + project repeat
                 const revenueScore = Math.min(c.revenue / 50000 * 30, 40);  // up to 40 pts

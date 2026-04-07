@@ -6,7 +6,8 @@ const UserSchema = new mongoose.Schema({
   password_hash: String,
   company: { type: String, default: 'My Company' },
   role: { type: String, default: 'user' },
-  marketflow_access: { type: Boolean, default: false }
+  marketflow_access: { type: Boolean, default: false },
+  projectflow_access: { type: Boolean, default: false }
 }, { timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' } });
 
 UserSchema.set('toJSON', {

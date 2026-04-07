@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Control - BEZENT</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        .toggle-checkbox:checked { transform: translateX(100%); border-color: #10b981; }
+        .toggle-checkbox:checked + .toggle-label { background-color: #10b981; }
+    </style>
+</head>
+<body class="bg-slate-50 font-sans min-h-screen">
+    
+    <!-- Top Nav -->
+    <header class="bg-purple-900 text-white border-b border-purple-800 shadow-sm sticky top-0 z-50">
+        <div class="flex items-center justify-between px-6 py-4">
+            <div class="flex items-center gap-6">
+                <div class="flex items-center gap-3">
+                    <div class="bg-purple-600 p-2 rounded-lg">
+                        <i data-lucide="shield-check" class="w-6 h-6"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-xl font-bold tracking-wide">Admin Control</h1>
+                        <p class="text-purple-300 text-xs" id="header-subtitle">Admin Panel</p>
+                    </div>
+                </div>
+                <div id="moduleLinks" class="hidden sm:flex border-l border-purple-700 pl-6 gap-4">
+                </div>
+            </div>
+            
+            <button onclick="logout()" class="flex items-center gap-2 px-4 py-2 hover:bg-purple-800 rounded-lg text-sm font-medium transition cursor-pointer">
+                <i data-lucide="log-out" class="w-4 h-4"></i> Sign out
+            </button>
+        </div>
+    </header>
+
+    <main class="max-w-6xl mx-auto p-6 mt-6">
+        
+        <div class="mb-6 bg-white rounded-xl shadow-sm border border-slate-200 p-6 flex flex-col sm:flex-row gap-4 justify-between items-center w-full">
+            <div>
+                 <h3 class="text-sm font-bold text-slate-800 mb-1">Add New User</h3>
+                 <p class="text-xs text-slate-500" id="addUserDesc">Create a new user on the platform.</p>
+            </div>
+            <div class="flex w-full sm:w-auto gap-2">
+                 <input type="email" id="newUserEmail" placeholder="user@company.com" class="px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent w-full sm:w-64">
+                 <button onclick="addUser()" id="addUserBtn" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition whitespace-nowrap">Add User</button>
+            </div>
+        </div>
+
+        <div class="mb-4 flex justify-between items-end">
+            <div>
+                <h2 class="text-xl font-bold text-slate-800">User Management</h2>
+                <p class="text-slate-500 mt-1" id="manageUserDesc">Control access and roles across all registered accounts.</p>
+            </div>
+            
+            <div class="relative w-64">
+                <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"></i>
+                <input type="text" id="userSearch" placeholder="Search missing users..." class="pl-10 pr-4 py-2 border border-slate-200 rounded-lg text-sm w-full focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+            </div>
+        </div>
+
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left" id="usersTable">
+                    <thead id="userTableHeader">
+                    </thead>
+                    <tbody id="userTableBody" class="divide-y divide-slate-100">
+                        <tr>
+                            <td colspan="3" class="px-6 py-8 text-center text-slate-400 text-sm">
+                                <i data-lucide="loader" class="w-6 h-6 mx-auto mb-2 animate-spin"></i> Loading users...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        lucide.createIcons();
+
+        let currentUser = null;
+        const TK = 'bezent_jwt';
+        if (!localStorage.getItem(TK)) window.location.replace('index.html');
+        
+        const userStr = localStorage.getItem('bezent_user');
+        if (userStr) {
+            try {
+                currentUser = JSON.parse(userStr);
+                if (currentUser.role !== 'super_admin') {
+                    window.location.replace('index.html');
+                }
+                document.addEventListener('DOMContentLoaded', () => {
+                    const subtitle = document.getElementById('header-subtitle');
+                    const addUserDesc = document.getElementById('addUserDesc');
+                    const manageUserDesc = document.getElementById('manageUserDesc');
+                    
+                    if (subtitle) subtitle.textContent = 'Super Admin Panel';
+                    if (addUserDesc) addUserDesc.textContent = 'Register a new user to the platform.';
+                    if (manageUserDesc) manageUserDesc.textContent = 'Manage admin privileges across the platform.';
+                });
+            } catch(e) { window.location.replace('index.html'); }
+        } else {
+            window.location.replace('index.html');
+        }
+
+        const getToken = () => localStorage.getItem(TK) || '';
+
+        const apiFetch = async (path, options = {}) => {
+            const h = { 'Content-Type': 'application/json' };
+            const tok = getToken();
+            if (tok) h['Authorization'] = 'Bearer ' + tok;
+            if (options.headers) Object.assign(h, options.headers);
+            
+            const res = await fetch('/api' + path, { ...options, headers: h });
+            if (res.status === 401) {
+                localStorage.clear();
+                window.location.replace('index.html');
+                return null;
+            }
+            try {
+                return await res.json();
+            } catch(err) {
+                return { error: 'Invalid JSON response from server (Status: ' + res.status + ')' };
+            }
+        };
+
+        let allUsers = [];
+
+        async function loadUsers() {
+            const res = await apiFetch('/auth/users');
+            if (res && Array.isArray(res)) {
+                allUsers = res;
+                renderUsers(allUsers);
+            }
+        }
+
+        function renderUsers(users) {
+            const thead = document.getElementById('userTableHeader');
+            const tbody = document.getElementById('userTableBody');
+            
+            // Build Headers
+            thead.innerHTML = `
+                <tr class="bg-slate-50 border-b border-slate-200 text-slate-500 text-xs uppercase tracking-wider">
+                    <th class="px-6 py-4 font-semibold">User Details</th>
+                    <th class="px-6 py-4 font-semibold">Admin Privileges</th>
+                    <th class="px-6 py-4 font-semibold text-right">Actions</th>
+                </tr>
+            `;
+
+            if (!users.length) {
+                tbody.innerHTML = `<tr><td colspan="5" class="px-6 py-8 text-center text-slate-500 text-sm">No other users found.</td></tr>`;
+                lucide.createIcons();
+                return;
+            }
+
+            tbody.innerHTML = users.map(u => {
+                const columns = `
+                    <td class="px-6 py-4">
+                        <div class="flex items-center gap-3">
+                            <div class="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in">
+                                <input type="checkbox" id="admin-tgl-${u.id}" class="toggle-checkbox absolute block w-5 h-5 rounded-full bg-white border-4 outline-none appearance-none cursor-pointer z-10 top-0 left-0 transition-all duration-200" ${u.role === 'admin' ? 'checked' : ''} onchange="updateRole('${u.email}', this.checked ? 'admin' : 'user', '${u.id}')" />
+                                <label for="admin-tgl-${u.id}" class="toggle-label block overflow-hidden h-5 rounded-full bg-slate-300 cursor-pointer transition-colors duration-200"></label>
+                            </div>
+                            <span class="text-sm font-medium ${u.role === 'admin' ? 'text-emerald-600' : 'text-slate-500'} w-16">
+                                ${u.role === 'admin' ? 'Admin' : 'User'}
+                            </span>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 text-right">
+                        ${u.role === 'super_admin' ? '' : `<button onclick="deleteUser('${u.email}')" class="text-slate-400 hover:text-red-500 hover:bg-red-50 p-2 rounded-lg transition-colors inline-block" title="Delete User"><i data-lucide="trash-2" class="w-4 h-4"></i></button>`}
+                    </td>
+                `;
+
+                return `
+                    <tr class="hover:bg-slate-50/50 transition-colors">
+                        <td class="px-6 py-4">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center font-bold text-sm">
+                                    ${String(u.email || '').charAt(0).toUpperCase()}
+                                </div>
+                                <div>
+                                    <div class="font-semibold text-slate-800 text-sm">${String(u.email).replace(/</g, '&lt;')}</div>
+                                    <div class="text-xs text-slate-500 mt-0.5">ID: ${u.id.substring(0, 8)}...</div>
+                                </div>
+                            </div>
+                        </td>
+                        ${columns}
+                    </tr>
+                `;
+            }).join('');
+            lucide.createIcons();
+        }
+
+        async function updateRole(email, newRole, id) {
+            const res = await apiFetch('/auth/users/' + encodeURIComponent(email) + '/role', {
+                method: 'PUT',
+                body: JSON.stringify({ role: newRole })
+            });
+
+            if (res && res.ok) {
+                const u = allUsers.find(x => x.email === email);
+                if (u) u.role = newRole;
+            } else {
+                alert(res?.error || 'Failed to update role. Please reload and try again.');
+                renderUsers(allUsers); // re-render to revert
+            }
+        }
+
+
+
+        async function deleteUser(email) {
+            if (!confirm('Are you strictly sure you want to permanently delete user ' + email + '?')) return;
+            
+            const res = await apiFetch('/auth/users/' + encodeURIComponent(email), {
+                method: 'DELETE'
+            });
+
+            if (res && res.ok) {
+                allUsers = allUsers.filter(u => u.email !== email);
+                renderUsers(allUsers);
+            } else {
+                alert(res?.error || 'Failed to delete user');
+            }
+        }
+
+        async function addUser() {
+            const emailInput = document.getElementById('newUserEmail');
+            const btn = document.getElementById('addUserBtn');
+            const email = emailInput.value.trim();
+            
+            if (!email) return alert('Please enter an email address');
+            
+            btn.disabled = true;
+            btn.textContent = 'Adding...';
+            
+            const res = await apiFetch('/auth/users', {
+                method: 'POST',
+                body: JSON.stringify({ email })
+            });
+            
+            btn.disabled = false;
+            btn.textContent = 'Add User';
+            
+            if (res && res.ok) {
+                // Prepend the new user to the list
+                allUsers.unshift({
+                    id: res.id,
+                    email: res.email,
+                    role: res.role,
+                    marketflow_access: res.marketflow_access
+                });
+                renderUsers(allUsers);
+                emailInput.value = '';
+            } else {
+                alert(res?.error || 'Failed to add user');
+            }
+        }
+
+        document.getElementById('userSearch').addEventListener('input', (e) => {
+            const q = e.target.value.toLowerCase();
+            const filtered = allUsers.filter(u => u.email.toLowerCase().includes(q));
+            renderUsers(filtered);
+        });
+
+        function logout() {
+            localStorage.clear();
+            window.location.replace('index.html');
+        }
+
+        loadUsers();
+    </script>
+</body>
+</html>

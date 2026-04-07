@@ -504,6 +504,11 @@
                             <div id="profileRole" class="text-xs text-slate-500">Administrator</div>
                         </div>
                         <div class="p-2">
+                            <a id="adminPanelLink" href="admin.html" style="display:none;"
+                                class="w-full text-left px-3 py-2 text-sm font-medium rounded-lg hover:bg-slate-50 text-slate-700 flex items-center gap-2">
+                                <i data-lucide="shield" class="w-4 h-4 text-slate-500"></i>
+                                Admin Panel
+                            </a>
                             <button id="logoutBtn"
                                 class="w-full text-left px-3 py-2 text-sm font-medium rounded-lg hover:bg-slate-50 text-slate-700 flex items-center gap-2">
                                 <i data-lucide="log-out" class="w-4 h-4 text-slate-500"></i>
@@ -548,14 +553,14 @@
                 var userStr = localStorage.getItem('bezent_user');
                 if (userStr) {
                     var userObj = JSON.parse(userStr);
-                    if (!userObj.marketflow_access && userObj.email !== 'bhujasrisadhanand@gmail.com') {
+                    if (!userObj.marketflow_access && userObj.role !== 'super_admin') {
                         // Unauthorized or revoked — boot out silently instead of redirecting
                         localStorage.clear();
                         location.replace('index.html');
                         return;
                     }
-                    if (userObj.email === 'bhujasrisadhanand@gmail.com') {
-                        location.replace('admin.html');
+                    if (userObj.role === 'super_admin') {
+                        location.replace('super-admin.html');
                         return;
                     }
                 } else {

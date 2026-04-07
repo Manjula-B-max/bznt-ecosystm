@@ -832,7 +832,13 @@ class MarketFlowCRM {
 
         if (avatarBtn) avatarBtn.textContent = initials;
         if (nameEl) nameEl.textContent = displayName;
-        if (roleEl) roleEl.textContent = role || 'Administrator';
+        if (roleEl) roleEl.textContent = role || 'user';
+        
+        const adminBtn = document.getElementById('adminPanelLink');
+        if (adminBtn && ['super_admin', 'admin'].includes(role)) {
+            adminBtn.href = role === 'super_admin' ? 'super-admin.html' : 'admin.html';
+            adminBtn.style.display = 'flex';
+        }
     }
 
     showToast(message) { console.trace('showToast', message); if (message === 'Client is required.') { const ob = new MutationObserver(m => console.log('Main content mutated!', m)); ob.observe(document.getElementById('main-content'), {childList: true, subtree: true, attributes: true, characterData: true}); }  console.trace('showToast called with', message); if (message === 'Client is required.') { console.log('Client invalid branch'); }

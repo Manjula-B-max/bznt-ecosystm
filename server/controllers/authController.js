@@ -10,8 +10,14 @@ export const sendOtp = async (req, res) => {
 
         if (email !== 'bhujasrisadhanand@gmail.com') {
             const existingUser = await User.findOne({ email });
-            if (!existingUser || !existingUser.marketflow_access) {
-                return res.status(403).json({ error: 'Access denied. You do not have permission to access MarketFlow.' });
+            if (!existingUser) {
+                return res.status(403).json({ error: 'Access denied. You do not have an account on this platform.' });
+            }
+            const hasAccess = ['super_admin', 'admin'].includes(existingUser.role)
+                || existingUser.marketflow_access
+                || existingUser.projectflow_access;
+            if (!hasAccess) {
+                return res.status(403).json({ error: 'Access denied. You do not have permission to access this platform.' });
             }
         }
 
@@ -85,8 +91,8 @@ export const verifyOtp = async (req, res) => {
             if (email === 'bhujasrisadhanand@gmail.com' && userDoc.role !== 'super_admin') {
                 userDoc.role = 'super_admin';
                 await userDoc.save();
-            } else if (email !== 'bhujasrisadhanand@gmail.com' && !userDoc.marketflow_access) {
-                return res.status(403).json({ error: 'Access denied. You do not have permission to access MarketFlow.' });
+            } else if (email !== 'bhujasrisadhanand@gmail.com' && !userDoc.marketflow_access && !userDoc.projectflow_access && userDoc.role !== 'admin') {
+                return res.status(403).json({ error: 'Access denied. You do not have permissions.' });
             }
         }
 
@@ -122,17 +128,20 @@ export const updateMe = async (req, res) => {
 export const listUsers = async (req, res) => {
     try {
         const user = await User.findById(req.userId);
-        if (!user || user.role !== 'super_admin') return res.status(403).json({ error: 'Forbidden' });
+        if (!user || !['super_admin', 'admin'].includes(user.role)) return res.status(403).json({ error: 'Forbidden' });
 
-        const users = await User.find({ role: { $ne: 'super_admin' } }).sort({ created_at: -1 }).lean();
-        res.json(users.map(u => ({ id: u._id.toString(), email: u.email, role: u.role, marketflow_access: !!u.marketflow_access })));
+        const users = await User.find({ 
+            role: { $ne: 'super_admin' },
+            _id: { $ne: user._id }
+        }).sort({ created_at: -1 }).lean();
+        res.json(users.map(u => ({ id: u._id.toString(), email: u.email, role: u.role, marketflow_access: !!u.marketflow_access, projectflow_access: !!u.projectflow_access })));
     } catch (e) { res.status(500).json({ error: e.message }); }
 };
 
 export const createUser = async (req, res) => {
     try {
         const adminUser = await User.findById(req.userId);
-        if (!adminUser || adminUser.role !== 'super_admin') return res.status(403).json({ error: 'Forbidden' });
+        if (!adminUser || !['super_admin', 'admin'].includes(adminUser.role)) return res.status(403).json({ error: 'Forbidden' });
 
         const email = (req.body.email || '').toLowerCase().trim();
         if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
@@ -142,19 +151,19 @@ export const createUser = async (req, res) => {
         if (userDoc) return res.status(400).json({ error: 'User already exists' });
 
         const name = email.split('@')[0].replace(/[._-]/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
-        userDoc = await User.create({ email, name, role: 'user', marketflow_access: true });
+        userDoc = await User.create({ email, name, role: 'user', marketflow_access: false, projectflow_access: false });
 
-        res.json({ ok: true, email: userDoc.email, id: userDoc._id, marketflow_access: true, role: 'user' });
+        res.json({ ok: true, email: userDoc.email, id: userDoc._id, marketflow_access: false, projectflow_access: false, role: 'user' });
     } catch (e) { res.status(500).json({ error: e.message }); }
 };
 
 export const updateUserAccess = async (req, res) => {
     try {
         const adminUser = await User.findById(req.userId);
-        if (!adminUser || adminUser.role !== 'super_admin') return res.status(403).json({ error: 'Forbidden' });
+        if (!adminUser || !['super_admin', 'admin'].includes(adminUser.role)) return res.status(403).json({ error: 'Forbidden' });
 
         const targetEmail = (req.params.email || '').toLowerCase().trim();
-        const { marketflow_access } = req.body;
+        const { marketflow_access, projectflow_access } = req.body;
         
         if (!targetEmail) return res.status(400).json({ error: 'Email required' });
         
@@ -162,23 +171,57 @@ export const updateUserAccess = async (req, res) => {
         if (!targetUser) return res.status(404).json({ error: 'User not found' });
         if (targetUser.role === 'super_admin') return res.status(400).json({ error: 'Cannot modify super admin' });
 
-        targetUser.marketflow_access = !!marketflow_access;
+        if (marketflow_access !== undefined) targetUser.marketflow_access = !!marketflow_access;
+        if (projectflow_access !== undefined) targetUser.projectflow_access = !!projectflow_access;
+        
         await targetUser.save();
         
-        res.json({ ok: true, email: targetUser.email, marketflow_access: targetUser.marketflow_access });
+        res.json({ ok: true, email: targetUser.email, marketflow_access: targetUser.marketflow_access, projectflow_access: targetUser.projectflow_access });
     } catch (e) { res.status(500).json({ error: e.message }); }
 };
 
 export const deleteUser = async (req, res) => {
     try {
         const adminUser = await User.findById(req.userId);
-        if (!adminUser || adminUser.role !== 'super_admin') return res.status(403).json({ error: 'Forbidden' });
+        if (!adminUser || !['super_admin', 'admin'].includes(adminUser.role)) return res.status(403).json({ error: 'Forbidden' });
 
         const targetEmail = (req.params.email || '').toLowerCase().trim();
         if (!targetEmail) return res.status(400).json({ error: 'Email required' });
         if (targetEmail === 'bhujasrisadhanand@gmail.com') return res.status(400).json({ error: 'Cannot delete super admin' });
 
+        const targetUser = await User.findOne({ email: targetEmail });
+        if (!targetUser) return res.status(404).json({ error: 'User not found' });
+        if (targetUser.role === 'admin' && adminUser.role !== 'super_admin' && targetEmail !== adminUser.email) {
+            return res.status(403).json({ error: 'Cannot delete another admin' });
+        }
+
         await User.deleteOne({ email: targetEmail });
         res.json({ ok: true, email: targetEmail });
+    } catch (e) { res.status(500).json({ error: e.message }); }
+};
+
+export const updateUserRole = async (req, res) => {
+    try {
+        const adminUser = await User.findById(req.userId);
+        if (!adminUser || !['super_admin', 'admin'].includes(adminUser.role)) return res.status(403).json({ error: 'Forbidden' });
+
+        const targetEmail = (req.params.email || '').toLowerCase().trim();
+        const { role } = req.body;
+        
+        if (!targetEmail) return res.status(400).json({ error: 'Email required' });
+        
+        const targetUser = await User.findOne({ email: targetEmail });
+        if (!targetUser) return res.status(404).json({ error: 'User not found' });
+        if (targetUser.role === 'super_admin') return res.status(400).json({ error: 'Cannot modify super admin role' });
+        if (adminUser.role === 'admin' && targetUser.role === 'admin' && targetUser.email !== adminUser.email) return res.status(403).json({ error: 'Cannot modify another admin role' });
+
+        const allowedRoles = ['user', 'admin', 'manager', 'employee']; // Expanded roles for project flow
+
+        if(role && allowedRoles.includes(role)) {
+            targetUser.role = role;
+            await targetUser.save();
+        }
+        
+        res.json({ ok: true, email: targetUser.email, role: targetUser.role });
     } catch (e) { res.status(500).json({ error: e.message }); }
 };

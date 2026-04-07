@@ -3,258 +3,332 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Super Admin Control - BEZENT</title>
+    <title>Admin Panel – BEZENT</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
-        .toggle-checkbox:checked { transform: translateX(100%); border-color: #10b981; }
-        .toggle-checkbox:checked + .toggle-label { background-color: #10b981; }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        * { font-family: 'Inter', sans-serif; }
+        .toggle-checkbox:checked { transform: translateX(100%); border-color: #7c3aed; }
+        .toggle-checkbox:checked + .toggle-label { background-color: #7c3aed; }
+        .toggle-checkbox:disabled + .toggle-label { opacity: 0.4; cursor: not-allowed; }
+        .user-row { animation: fadeIn 0.2s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
     </style>
 </head>
-<body class="bg-slate-50 font-sans min-h-screen">
-    
-    <!-- Top Nav -->
-    <header class="bg-purple-900 text-white border-b border-purple-800 shadow-sm sticky top-0 z-50">
-        <div class="flex items-center justify-between px-6 py-4">
-            <div class="flex items-center gap-3">
-                <div class="bg-purple-600 p-2 rounded-lg">
-                    <i data-lucide="shield-check" class="w-6 h-6"></i>
+<body class="bg-gray-50 min-h-screen">
+
+    <!-- Nav -->
+    <header class="bg-purple-900 text-white shadow-lg">
+        <div class="max-w-5xl mx-auto flex items-center justify-between px-6 py-4">
+            <div class="flex items-center gap-8">
+                <div class="flex items-center gap-3">
+                    <div class="bg-purple-600 p-1.5 rounded-lg">
+                        <i data-lucide="shield-check" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <h1 class="font-bold text-base leading-none">Admin Control</h1>
+                        <p class="text-purple-300 text-xs mt-0.5">Normal Admin Panel</p>
+                    </div>
                 </div>
-                <div>
-                    <h1 class="text-xl font-bold tracking-wide">Admin Control</h1>
-                    <p class="text-purple-300 text-xs">Super Admin Panel</p>
-                </div>
+                <div class="hidden sm:flex gap-2" id="moduleLinks"></div>
             </div>
-            
-            <button onclick="logout()" class="flex items-center gap-2 px-4 py-2 hover:bg-purple-800 rounded-lg text-sm font-medium transition cursor-pointer">
+            <button onclick="logout()" class="flex items-center gap-1.5 text-sm text-purple-200 hover:text-white transition-colors">
                 <i data-lucide="log-out" class="w-4 h-4"></i> Sign out
             </button>
         </div>
     </header>
 
-    <main class="max-w-6xl mx-auto p-6 mt-6">
-        
-        <div class="mb-6 bg-white rounded-xl shadow-sm border border-slate-200 p-6 flex flex-col sm:flex-row gap-4 justify-between items-center w-full">
+    <main class="max-w-5xl mx-auto px-6 py-8">
+
+        <!-- Add User -->
+        <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 mb-6 flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
             <div>
-                 <h3 class="text-sm font-bold text-slate-800 mb-1">Add New User</h3>
-                 <p class="text-xs text-slate-500">Create a new user and automatically grant them MarketFlow access.</p>
+                <h2 class="font-semibold text-gray-800">Add New User</h2>
+                <p class="text-xs text-gray-500 mt-0.5">Enter their email to create an account and assign access.</p>
             </div>
-            <div class="flex w-full sm:w-auto gap-2">
-                 <input type="email" id="newUserEmail" placeholder="user@company.com" class="px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent w-full sm:w-64">
-                 <button onclick="addUser()" id="addUserBtn" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition whitespace-nowrap">Add User</button>
+            <div class="flex gap-2 w-full sm:w-auto">
+                <input type="email" id="newUserEmail" placeholder="user@company.com"
+                    class="flex-1 sm:w-64 px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                <button onclick="addUser()" id="addUserBtn"
+                    class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition whitespace-nowrap flex items-center gap-1.5">
+                    <i data-lucide="user-plus" class="w-4 h-4"></i> Add User
+                </button>
             </div>
         </div>
 
-        <div class="mb-4 flex justify-between items-end">
-            <div>
-                <h2 class="text-xl font-bold text-slate-800">User Management</h2>
-                <p class="text-slate-500 mt-1">Control access to MarketFlow across all registered accounts.</p>
-            </div>
-            
-            <div class="relative w-64">
-                <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"></i>
-                <input type="text" id="userSearch" placeholder="Search missing users..." class="pl-10 pr-4 py-2 border border-slate-200 rounded-lg text-sm w-full focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+        <!-- Search -->
+        <div class="flex items-center justify-between mb-3">
+            <h3 class="font-semibold text-gray-700 text-sm">Users <span id="userCount" class="text-gray-400 font-normal"></span></h3>
+            <div class="relative">
+                <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400"></i>
+                <input type="text" id="userSearch" placeholder="Search users..."
+                    class="pl-8 pr-3 py-1.5 border border-gray-200 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-purple-500 w-48">
             </div>
         </div>
 
-        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-            <div class="overflow-x-auto">
-                <table class="w-full text-left" id="usersTable">
-                    <thead>
-                        <tr class="bg-slate-50 border-b border-slate-200 text-slate-500 text-xs uppercase tracking-wider">
-                            <th class="px-6 py-4 font-semibold">User Details</th>
-                            <th class="px-6 py-4 font-semibold">Role</th>
-                            <th class="px-6 py-4 font-semibold">MarketFlow Access</th>
-                            <th class="px-6 py-4 font-semibold text-right">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody id="userTableBody" class="divide-y divide-slate-100">
-                        <tr>
-                            <td colspan="3" class="px-6 py-8 text-center text-slate-400 text-sm">
-                                <i data-lucide="loader" class="w-6 h-6 mx-auto mb-2 animate-spin"></i> Loading users...
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+        <!-- User List -->
+        <div class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+            <!-- Header row -->
+            <div class="grid grid-cols-[1fr_160px_120px_100px_36px] gap-3 px-5 py-3 bg-gray-50 border-b border-gray-100 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                <span>User</span>
+                <span>Module</span>
+                <span>Access</span>
+                <span>Role</span>
+                <span></span>
+            </div>
+            <div id="userList">
+                <div class="flex items-center justify-center py-12 text-gray-400 text-sm gap-2">
+                    <i data-lucide="loader" class="w-4 h-4 animate-spin"></i> Loading users...
+                </div>
             </div>
         </div>
+
     </main>
 
     <script>
         lucide.createIcons();
 
-        // Admin Auth Guard
+        /* ── Auth guard ───────────────────────────────── */
         const TK = 'bezent_jwt';
+        let currentUser = null;
+
+        try {
+            const raw = localStorage.getItem('bezent_user');
+            if (!raw) throw new Error();
+            currentUser = JSON.parse(raw);
+            if (currentUser.role !== 'admin') window.location.replace('index.html');
+        } catch { window.location.replace('index.html'); }
+
         if (!localStorage.getItem(TK)) window.location.replace('index.html');
-        
-        const userStr = localStorage.getItem('bezent_user');
-        if (userStr) {
-            try {
-                const usr = JSON.parse(userStr);
-                if (usr.email !== 'bhujasrisadhanand@gmail.com') {
-                    window.location.replace('index.html');
-                }
-            } catch(e) {}
-        }
 
-        const getToken = () => localStorage.getItem(TK) || '';
+        /* Module shortcut links */
+        document.addEventListener('DOMContentLoaded', () => {
+            const el = document.getElementById('moduleLinks');
+            if (el) el.innerHTML = `
+                <a href="marketflow-crm.html" class="text-xs text-purple-200 hover:text-white px-3 py-1.5 rounded-lg hover:bg-purple-800 transition flex items-center gap-1.5">
+                    <i data-lucide="bar-chart-2" class="w-3.5 h-3.5"></i> MarketFlow
+                </a>
+                <a href="#" class="text-xs text-purple-500 cursor-not-allowed px-3 py-1.5 flex items-center gap-1.5">
+                    <i data-lucide="folder-kanban" class="w-3.5 h-3.5"></i> Project Flow
+                </a>`;
+            lucide.createIcons();
+        });
 
-        const apiFetch = async (path, options = {}) => {
+        /* ── API helper ───────────────────────────────── */
+        const apiFetch = async (path, opts = {}) => {
             const h = { 'Content-Type': 'application/json' };
-            const tok = getToken();
+            const tok = localStorage.getItem(TK);
             if (tok) h['Authorization'] = 'Bearer ' + tok;
-            if (options.headers) Object.assign(h, options.headers);
-            
-            const res = await fetch('/api' + path, { ...options, headers: h });
-            if (res.status === 401 || res.status === 403) {
-                localStorage.clear();
-                window.location.replace('index.html');
-                return null;
-            }
-            return res.json();
+            if (opts.headers) Object.assign(h, opts.headers);
+            try {
+                const res = await fetch('/api' + path, { ...opts, headers: h });
+                if (res.status === 401) { localStorage.clear(); window.location.replace('index.html'); return null; }
+                return await res.json();
+            } catch { return { error: 'Network error' }; }
         };
 
+        /* ── State ────────────────────────────────────── */
         let allUsers = [];
 
-        async function loadUsers() {
-            const res = await apiFetch('/auth/users');
-            if (res && Array.isArray(res)) {
-                allUsers = res;
-                renderUsers(allUsers);
-            }
-        }
-
+        /* ── Render ───────────────────────────────────── */
         function renderUsers(users) {
-            const tbody = document.getElementById('userTableBody');
+            const cnt = document.getElementById('userCount');
+            if (cnt) cnt.textContent = `(${users.length})`;
+
+            const list = document.getElementById('userList');
             if (!users.length) {
-                tbody.innerHTML = `<tr><td colspan="3" class="px-6 py-8 text-center text-slate-500 text-sm">No other users found.</td></tr>`;
+                list.innerHTML = `<div class="flex items-center justify-center py-12 text-gray-400 text-sm gap-2">
+                    <i data-lucide="users" class="w-4 h-4"></i> No users found. Add one above.
+                </div>`;
                 lucide.createIcons();
                 return;
             }
 
-            tbody.innerHTML = users.map(u => `
-                <tr class="hover:bg-slate-50/50 transition-colors">
-                    <td class="px-6 py-4">
-                        <div class="flex items-center gap-3">
-                            <div class="w-10 h-10 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center font-bold text-sm">
-                                ${String(u.email || '').charAt(0).toUpperCase()}
-                            </div>
-                            <div>
-                                <div class="font-semibold text-slate-800 text-sm">${String(u.email).replace(/</g, '&lt;')}</div>
-                                <div class="text-xs text-slate-500 mt-0.5">ID: ${u.id.substring(0, 8)}...</div>
-                            </div>
+            list.innerHTML = users.map(u => {
+                // Determine which module is currently active (for the dropdown default)
+                const module = u.projectflow_access && !u.marketflow_access ? 'projectflow' : 'marketflow';
+                const hasAccess = module === 'marketflow' ? u.marketflow_access : u.projectflow_access;
+
+                return `
+                <div class="user-row grid grid-cols-[1fr_160px_120px_100px_36px] gap-3 px-5 py-3.5 items-center border-b border-gray-50 hover:bg-gray-50/70 transition-colors last:border-0" data-id="${u.id}">
+                    <!-- User -->
+                    <div class="flex items-center gap-3 min-w-0">
+                        <div class="w-8 h-8 rounded-full bg-purple-100 text-purple-700 flex items-center justify-center font-semibold text-sm flex-shrink-0">
+                            ${u.email.charAt(0).toUpperCase()}
                         </div>
-                    </td>
-                    <td class="px-6 py-4">
-                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-800 capitalize">
-                            ${String(u.role).replace('_', ' ')}
+                        <div class="min-w-0">
+                            <div class="text-sm font-medium text-gray-800 truncate">${u.email}</div>
+                        </div>
+                    </div>
+
+                    <!-- Module dropdown -->
+                    <select onchange="onModuleChange('${u.id}', '${u.email}', this.value)"
+                        class="text-xs border border-gray-200 rounded-lg px-2 py-1.5 bg-white focus:outline-none focus:ring-2 focus:ring-purple-400 cursor-pointer text-gray-700 w-full">
+                        <option value="marketflow" ${module === 'marketflow' ? 'selected' : ''}>MarketFlow</option>
+                        <option value="projectflow" ${module === 'projectflow' ? 'selected' : ''}>Project Flow</option>
+                        <option value="both" ${u.marketflow_access && u.projectflow_access ? 'selected' : ''}>Both</option>
+                    </select>
+
+                    <!-- Toggle -->
+                    <div class="flex items-center gap-2">
+                        <div class="relative inline-block w-9 align-middle select-none flex-shrink-0">
+                            <input type="checkbox" id="tgl-${u.id}"
+                                class="toggle-checkbox absolute block w-[18px] h-[18px] rounded-full bg-white border-4 appearance-none cursor-pointer z-10 top-0 left-0 transition-all duration-200 outline-none"
+                                ${hasAccess ? 'checked' : ''}
+                                onchange="onToggle('${u.id}', '${u.email}', this.checked)" />
+                            <label for="tgl-${u.id}" class="toggle-label block overflow-hidden h-[18px] rounded-full bg-gray-300 cursor-pointer transition-colors duration-200"></label>
+                        </div>
+                        <span id="tgl-label-${u.id}" class="text-xs font-medium ${hasAccess ? 'text-purple-600' : 'text-gray-400'} w-10">
+                            ${hasAccess ? 'On' : 'Off'}
                         </span>
-                    </td>
-                    <td class="px-6 py-4">
-                        <div class="flex items-center gap-3">
-                            <div class="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in">
-                                <input type="checkbox" name="toggle" id="toggle-${u.id}" class="toggle-checkbox absolute block w-5 h-5 rounded-full bg-white border-4 outline-none appearance-none cursor-pointer z-10 top-0 left-0 transition-all duration-200" ${u.marketflow_access ? 'checked' : ''} onchange="toggleAccess('${u.email}', this.checked, '${u.id}')" />
-                                <label for="toggle-${u.id}" class="toggle-label block overflow-hidden h-5 rounded-full bg-slate-300 cursor-pointer transition-colors duration-200"></label>
-                            </div>
-                            <span id="statusLabel-${u.id}" class="text-sm font-medium ${u.marketflow_access ? 'text-emerald-600' : 'text-slate-500'} w-16">
-                                ${u.marketflow_access ? 'Granted' : 'Denied'}
-                            </span>
-                        </div>
-                    </td>
-                    <td class="px-6 py-4 text-right">
-                        <button onclick="deleteUser('${u.email}')" class="text-slate-400 hover:text-red-500 hover:bg-red-50 p-2 rounded-lg transition-colors inline-block" title="Delete User">
-                            <i data-lucide="trash-2" class="w-4 h-4"></i>
-                        </button>
-                    </td>
-                </tr>
-            `).join('');
+                    </div>
+
+                    <!-- Role badge -->
+                    <div>
+                        <span class="text-xs px-2 py-0.5 rounded-full font-medium capitalize
+                            ${u.role === 'manager' ? 'bg-blue-50 text-blue-600' :
+                              u.role === 'employee' ? 'bg-green-50 text-green-600' :
+                              'bg-gray-100 text-gray-500'}">
+                            ${u.role}
+                        </span>
+                    </div>
+
+                    <!-- Delete -->
+                    <button onclick="deleteUser('${u.email}', '${u.id}')"
+                        class="w-8 h-8 flex items-center justify-center rounded-lg text-gray-300 hover:text-red-500 hover:bg-red-50 transition-colors flex-shrink-0" title="Delete user">
+                        <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    </button>
+                </div>`;
+            }).join('');
             lucide.createIcons();
         }
 
-        async function toggleAccess(email, newState, id) {
-            const label = document.getElementById('statusLabel-' + id);
-            const box = document.getElementById('toggle-' + id);
-            
-            box.disabled = true;
-            label.textContent = 'Updating...';
-            label.className = 'text-sm font-medium text-slate-400 w-16 animate-pulse';
+        /* ── Module change: update the toggle state based on selected module ── */
+        function onModuleChange(id, email, module) {
+            const u = allUsers.find(x => x.id === id);
+            if (!u) return;
+            const checkbox = document.getElementById('tgl-' + id);
+            const label = document.getElementById('tgl-label-' + id);
+
+            // Show current access state for chosen module
+            let currentAccess;
+            if (module === 'both') {
+                currentAccess = u.marketflow_access && u.projectflow_access;
+            } else {
+                currentAccess = module === 'marketflow' ? u.marketflow_access : u.projectflow_access;
+            }
+            checkbox.checked = currentAccess;
+            label.textContent = currentAccess ? 'On' : 'Off';
+            label.className = `text-xs font-medium w-10 ${currentAccess ? 'text-purple-600' : 'text-gray-400'}`;
+
+            // Store the selected module on the row for the toggle to use
+            const row = document.querySelector(`[data-id="${id}"]`);
+            if (row) row.dataset.module = module;
+        }
+
+        /* ── Toggle ───────────────────────────────────── */
+        async function onToggle(id, email, newState) {
+            const row = document.querySelector(`[data-id="${id}"]`);
+            const module = row?.dataset.module || (row?.querySelector('select')?.value) || 'marketflow';
+            const label = document.getElementById('tgl-label-' + id);
+            const checkbox = document.getElementById('tgl-' + id);
+
+            checkbox.disabled = true;
+            label.textContent = '...';
+            label.className = 'text-xs font-medium w-10 text-gray-400 animate-pulse';
+
+            let payload = {};
+            if (module === 'both') {
+                payload = { marketflow_access: newState, projectflow_access: newState };
+            } else if (module === 'marketflow') {
+                payload = { marketflow_access: newState };
+            } else {
+                payload = { projectflow_access: newState };
+            }
 
             const res = await apiFetch('/auth/users/' + encodeURIComponent(email) + '/access', {
                 method: 'PUT',
-                body: JSON.stringify({ marketflow_access: newState })
+                body: JSON.stringify(payload)
             });
 
-            box.disabled = false;
-            
+            checkbox.disabled = false;
+
             if (res && res.ok) {
-                // Update local state
-                const u = allUsers.find(x => x.email === email);
-                if (u) u.marketflow_access = newState;
-                
-                label.textContent = newState ? 'Granted' : 'Denied';
-                label.className = `text-sm font-medium w-16 ${newState ? 'text-emerald-600' : 'text-slate-500'}`;
+                const u = allUsers.find(x => x.id === id);
+                if (u) {
+                    if (payload.marketflow_access !== undefined) u.marketflow_access = newState;
+                    if (payload.projectflow_access !== undefined) u.projectflow_access = newState;
+                }
+                label.textContent = newState ? 'On' : 'Off';
+                label.className = `text-xs font-medium w-10 ${newState ? 'text-purple-600' : 'text-gray-400'}`;
             } else {
-                alert('Update failed');
-                box.checked = !newState; // revert UI
-                label.textContent = !newState ? 'Granted' : 'Denied';
-                label.className = `text-sm font-medium w-16 ${!newState ? 'text-emerald-600' : 'text-slate-500'}`;
+                alert(res?.error || 'Failed to update access');
+                checkbox.checked = !newState;
+                label.textContent = !newState ? 'On' : 'Off';
+                label.className = `text-xs font-medium w-10 ${!newState ? 'text-purple-600' : 'text-gray-400'}`;
             }
         }
 
-        async function deleteUser(email) {
-            if (!confirm('Are you strictly sure you want to permanently delete user ' + email + '?')) return;
-            
-            const res = await apiFetch('/auth/users/' + encodeURIComponent(email), {
-                method: 'DELETE'
-            });
-
+        /* ── Delete ───────────────────────────────────── */
+        async function deleteUser(email, id) {
+            if (!confirm(`Delete ${email}? This cannot be undone.`)) return;
+            const res = await apiFetch('/auth/users/' + encodeURIComponent(email), { method: 'DELETE' });
             if (res && res.ok) {
-                allUsers = allUsers.filter(u => u.email !== email);
+                allUsers = allUsers.filter(u => u.id !== id);
                 renderUsers(allUsers);
             } else {
                 alert(res?.error || 'Failed to delete user');
             }
         }
 
+        /* ── Add User ─────────────────────────────────── */
         async function addUser() {
-            const emailInput = document.getElementById('newUserEmail');
+            const input = document.getElementById('newUserEmail');
             const btn = document.getElementById('addUserBtn');
-            const email = emailInput.value.trim();
-            
-            if (!email) return alert('Please enter an email address');
-            
+            const email = input.value.trim();
+            if (!email) { input.focus(); return; }
+
             btn.disabled = true;
-            btn.textContent = 'Adding...';
-            
+            btn.innerHTML = `<i data-lucide="loader" class="w-4 h-4 animate-spin"></i> Adding...`;
+            lucide.createIcons();
+
             const res = await apiFetch('/auth/users', {
                 method: 'POST',
                 body: JSON.stringify({ email })
             });
-            
+
             btn.disabled = false;
-            btn.textContent = 'Add User';
-            
+            btn.innerHTML = `<i data-lucide="user-plus" class="w-4 h-4"></i> Add User`;
+            lucide.createIcons();
+
             if (res && res.ok) {
-                // Prepend the new user to the list
-                allUsers.unshift({
-                    id: res.id,
-                    email: res.email,
-                    role: res.role,
-                    marketflow_access: res.marketflow_access
-                });
+                allUsers.unshift({ id: res.id, email: res.email, role: res.role, marketflow_access: false, projectflow_access: false });
                 renderUsers(allUsers);
-                emailInput.value = '';
+                input.value = '';
             } else {
                 alert(res?.error || 'Failed to add user');
             }
         }
 
-        document.getElementById('userSearch').addEventListener('input', (e) => {
+        /* ── Search ───────────────────────────────────── */
+        document.getElementById('userSearch').addEventListener('input', e => {
             const q = e.target.value.toLowerCase();
-            const filtered = allUsers.filter(u => u.email.toLowerCase().includes(q));
-            renderUsers(filtered);
+            renderUsers(allUsers.filter(u => u.email.toLowerCase().includes(q)));
         });
 
+        /* ── Load ────────────────────────────────────── */
+        async function loadUsers() {
+            const res = await apiFetch('/auth/users');
+            if (res && Array.isArray(res)) {
+                allUsers = res;
+                renderUsers(allUsers);
+            } else {
+                document.getElementById('userList').innerHTML = `<div class="py-10 text-center text-red-400 text-sm">Failed to load users. Please refresh.</div>`;
+            }
+        }
+
+        /* ── Logout ──────────────────────────────────── */
         function logout() {
             localStorage.clear();
             window.location.replace('index.html');

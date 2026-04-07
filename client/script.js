@@ -963,10 +963,14 @@ document.addEventListener('DOMContentLoaded', () => {
             setStatus('<span style="color:#059669;">Verified! Redirecting...</span>');
 
             setTimeout(() => {
-                if (data.user.email === 'bhujasrisadhanand@gmail.com') {
+                if (data.user.role === 'super_admin') {
+                    window.location.replace('super-admin.html');
+                } else if (data.user.role === 'admin') {
                     window.location.replace('admin.html');
-                } else {
+                } else if (data.user.marketflow_access || data.user.projectflow_access) {
                     window.location.replace('marketflow-crm.html');
+                } else {
+                    window.location.replace('marketflow-crm.html'); // Let the guard reject them elegantly
                 }
             }, 700);
 

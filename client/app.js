@@ -5363,8 +5363,10 @@ class MarketFlowCRM {
     }
 
     getSubNavigationItems(section) {
+        const isProjectFlow = window.location.pathname.includes('projectflow-crm.html');
+        
         const navigation = {
-            dashboard: [
+            dashboard: isProjectFlow ? [] : [
                 { id: 'overview', label: 'Overview' },
                 { id: 'daily', label: 'Daily / Weekly ' },
                 { id: 'analytics', label: 'Overall Analytics' },
@@ -5375,15 +5377,12 @@ class MarketFlowCRM {
                 { id: 'clients', label: 'Directory' },
                 { id: 'tracking', label: 'Contacts' }
             ],
-            projects: window.location.pathname.includes('projectflow-crm.html') ? [
-                { id: 'intake', label: 'SaaS Intake & Alloc' },
+            projects: isProjectFlow ? [
                 { id: 'registration', label: 'Project Registration' },
                 { id: 'directory', label: 'Project Directory' },
                 { id: 'pipeline', label: 'Sales Pipeline' },
                 { id: 'active', label: 'Active Projects' },
-                { id: 'completed', label: 'Completed Projects' },
-                { id: 'quotation_templates', label: 'Quotation Templates' },
-                { id: 'rfp_templates', label: 'RFP Templates' }
+                { id: 'completed', label: 'Completed Projects' }
             ] : [
                 { id: 'registration', label: 'Project Registration' },
                 { id: 'directory', label: 'Project Directory' },
@@ -5417,7 +5416,7 @@ class MarketFlowCRM {
                 { id: 'route_map', label: 'Visit Route Map' },
                 { id: 'mobile_sync', label: 'Mobile Sync Visits' }
             ],
-            reports: [
+            reports: isProjectFlow ? [] : [
                 { id: 'funnel', label: 'Funnel Reports' },
                 { id: 'region_analytics', label: 'Regional Analytics' },
                 { id: 'quotation_conversion', label: 'Quotation → Project' },

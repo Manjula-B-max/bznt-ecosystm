@@ -967,10 +967,14 @@ document.addEventListener('DOMContentLoaded', () => {
                     window.location.replace('super-admin.html');
                 } else if (data.user.role === 'admin') {
                     window.location.replace('admin.html');
-                } else if (data.user.marketflow_access || data.user.projectflow_access) {
+                } else if (data.user.marketflow_access && data.user.projectflow_access) {
+                    window.location.replace('marketflow-crm.html'); // default to marketflow if both
+                } else if (data.user.projectflow_access) {
+                    window.location.replace('projectflow-crm.html');
+                } else if (data.user.marketflow_access) {
                     window.location.replace('marketflow-crm.html');
                 } else {
-                    window.location.replace('marketflow-crm.html'); // Let the guard reject them elegantly
+                    window.location.replace('marketflow-crm.html');
                 }
             }, 700);
 

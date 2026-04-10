@@ -20,7 +20,9 @@ export default defineConfig({
         main: resolve(__dirname, 'index.html'),
         crm: resolve(__dirname, 'marketflow-crm.html'),
         feedback: resolve(__dirname, 'feedback.html'),
-        admin: resolve(__dirname, 'admin.html')
+        admin: resolve(__dirname, 'admin.html'),
+        superAdmin: resolve(__dirname, 'super-admin.html'),
+        projectflow: resolve(__dirname, 'projectflow-crm.html')
       }
     }
   }

@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ProjectFlow</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* Light Purple Theme System */
+        :root {
+            /* Primary Light Purple Palette */
+            --purple-50: #faf5ff;
+            --purple-100: #f3e8ff;
+            --purple-200: #e9d5ff;
+            --purple-300: #d8b4fe;
+            --purple-400: #c084fc;
+            --purple-500: #a855f7;
+            --purple-600: #9333ea;
+            --purple-700: #7c3aed;
+            --purple-800: #6b21a8;
+            --purple-900: #581c87;
+
+            /* Gradients with Light Purple */
+            --gradient-primary: linear-gradient(to bottom right, #9333ea, #7c3aed);
+        }
+
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #a855f7; }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .fade-in { animation: fadeIn 0.3s ease-out; }
+
+        body.sidebar-collapsed .sidebar-title,
+        body.sidebar-collapsed .sidebar-label { display: none; }
+        body.sidebar-collapsed #appSidebar { width: 4rem !important; }
+        body.sidebar-collapsed #appSidebar>div { padding-left: 0 !important; padding-right: 0 !important; }
+        body.sidebar-collapsed #appSidebar .sidebar-item { justify-content: center; padding-left: 0 !important; padding-right: 0 !important; padding-top: 0.6rem !important; padding-bottom: 0.6rem !important; width: 100% !important; margin-left: 0 !important; margin-right: 0 !important; border-radius: 0 !important; }
+        body.sidebar-collapsed #sidebarCollapse i[data-lucide="chevrons-left"] { transform: rotate(180deg); }
+
+        #appSidebar { width: 14rem; transition: width 0.2s ease; }
+        .nav-tab.active { background: #f3e8ff; color: #9333ea; font-weight: 600; }
+        .sidebar-item.sidebar-active { border-left: 3px solid #9333ea; background: #faf5ff; }
+
+        /* ProjectFlow specific styles */
+        .glass-card { background: rgba(255, 255, 255, 0.95); border-radius: 16px; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
+        .progress-bar { height: 8px; background: #e2e8f0; border-radius: 99px; overflow: hidden; }
+        .progress-fill { height: 100%; border-radius: 99px; background: var(--gradient-primary); transition: width 0.5s ease-in-out; }
+
+        .badge { font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 99px; }
+        .badge-pending { background: #fef3c7; color: #d97706; }
+        .badge-active { background: #dbeafe; color: #2563eb; }
+        .badge-done { background: #dcfce7; color: #16a34a; }
+        .badge-risk { background: #fee2e2; color: #dc2626; }
+
+        .stepper-item { flex: 1; text-align: center; position: relative; }
+        .stepper-item::before { content: ''; position: absolute; top: 12px; left: -50%; width: 100%; height: 2px; background: #e2e8f0; z-index: 0; }
+        .stepper-item:first-child::before { display: none; }
+        .stepper-item.completed::before { background: #9333ea; }
+        .stepper-circle { width: 24px; height: 24px; border-radius: 50%; background: #e2e8f0; color: white; display: flex; align-items: center; justify-content: center; margin: 0 auto 8px auto; position: relative; z-index: 1; font-size: 10px; font-weight: bold; border: 2px solid white; box-shadow: 0 0 0 1px #e2e8f0; cursor: pointer; transition: all 0.2s;}
+        .stepper-item.completed .stepper-circle { background: #9333ea; box-shadow: 0 0 0 1px #9333ea; }
+        .stepper-item.current .stepper-circle { background: white; border: 2px solid #9333ea; color: #9333ea; box-shadow: 0 0 0 2px rgba(147, 51, 234, 0.2); }
+        .stepper-label { font-size: 10px; color: #64748b; font-weight: 500; text-transform: uppercase;}
+        .stepper-item.current .stepper-label { color: #9333ea; font-weight: 700; }
+        .suggestion-card { border: 2px solid transparent; cursor: pointer; }
+        .suggestion-card.selected { border-color: #9333ea; background: #faf5ff; }
+
+        @media (max-width: 639px) {
+            #main-content { min-width: 0; word-break: break-word; }
+            #notificationMenu { width: calc(100vw - 2rem); right: -4rem; }
+            #globalSearchResults { min-width: calc(100vw - 4rem); }
+        }
+        @media (min-width: 640px) and (max-width: 1023px) {
+            #notificationMenu { width: 20rem; }
+        }
+    </style>
+</head>
+
+<body class="bg-slate-50 font-sans antialiased h-screen overflow-hidden flex flex-col">
+    <!-- Header -->
+    <header id="mainHeader" class="flex-none sticky top-0 z-50 bg-white border-b border-slate-200">
+        <div class="flex flex-wrap md:flex-nowrap items-center min-h-[3.5rem] gap-0">
+            <!-- Collapse / Hamburger -->
+            <div class="flex items-center justify-center flex-shrink-0 h-14 border-r border-slate-100" style="width:4rem;">
+                <button id="sidebarToggle" class="md:hidden p-2 text-slate-500 hover:text-purple-600 hover:bg-slate-100 rounded-lg transition-colors">
+                    <i data-lucide="menu" class="w-5 h-5"></i>
+                </button>
+                <button id="sidebarCollapse" class="hidden md:flex items-center justify-center p-2 text-slate-500 hover:text-purple-600 hover:bg-slate-100 rounded-lg transition-colors">
+                    <i data-lucide="chevrons-left" class="w-5 h-5 transition-transform duration-200"></i>
+                </button>
+            </div>
+
+            <!-- Top Navigation (ProjectFlow Specific Tabs) -->
+            <nav class="order-3 md:order-none w-full md:w-auto md:flex-1 min-w-0 flex items-center gap-1 overflow-x-auto px-3 py-2 md:py-0 border-t border-slate-100 md:border-none bg-slate-50 md:bg-white hide-scrollbar">
+                <button class="nav-tab active shrink-0 whitespace-nowrap px-3 py-1.5 text-sm font-medium rounded-md transition-colors" data-section="dashboard">Dashboard</button>
+                <button class="nav-tab shrink-0 whitespace-nowrap px-3 py-1.5 text-sm font-medium rounded-md transition-colors text-slate-600 hover:text-slate-900 hover:bg-slate-50" data-section="intake">Project Intake</button>
+                <button class="nav-tab shrink-0 whitespace-nowrap px-3 py-1.5 text-sm font-medium rounded-md transition-colors text-slate-600 hover:text-slate-900 hover:bg-slate-50" data-section="allocation">Resource Allocation</button>
+                <button class="nav-tab shrink-0 whitespace-nowrap px-3 py-1.5 text-sm font-medium rounded-md transition-colors text-slate-600 hover:text-slate-900 hover:bg-slate-50" data-section="pipeline">Active Pipeline</button>
+                <button class="nav-tab shrink-0 whitespace-nowrap px-3 py-1.5 text-sm font-medium rounded-md transition-colors text-slate-600 hover:text-slate-900 hover:bg-slate-50" data-section="reports">Reports & Analytics</button>
+            </nav>
+
+            <!-- Right Side Actions -->
+            <div class="flex items-center gap-1.5 sm:gap-2 flex-shrink-0 pr-4 h-14 ml-auto">
+                <!-- Search -->
+                <div class="relative">
+                    <i data-lucide="search" class="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400"></i>
+                    <input type="text" placeholder="Search..." class="pl-8 pr-3 py-1.5 w-36 sm:w-48 md:w-52 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-slate-50 focus:bg-white">
+                </div>
+
+                <!-- Notifications -->
+                <div class="relative">
+                    <button id="notificationToggle" class="relative p-2 text-slate-500 hover:text-purple-600 hover:bg-slate-100 rounded-lg transition-colors">
+                        <i data-lucide="bell" class="w-4.5 h-4.5"></i>
+                        <span id="notificationCount" class="absolute -top-0.5 -right-0.5 min-w-4 h-4 px-1 bg-red-500 text-white text-[9px] leading-4 text-center rounded-full">1</span>
+                    </button>
+                    <div id="notificationMenu" class="hidden absolute right-0 mt-2 w-80 bg-white border border-slate-200 rounded-xl shadow-lg z-50">
+                        <div class="p-4 border-b border-slate-200">
+                            <div class="text-sm font-semibold">Notifications</div>
+                        </div>
+                        <div class="p-4 text-sm text-slate-500">No new notifications.</div>
+                    </div>
+                </div>
+
+                <!-- User Profile -->
+                <div class="relative">
+                    <button id="profileToggle" class="w-8 h-8 bg-purple-600 rounded-full flex items-center justify-center text-white text-xs font-bold ring-2 ring-white hover:ring-purple-300 transition" id="sidebarAvatar">U</button>
+                    <div id="profileMenu" class="hidden absolute right-0 mt-2 w-56 bg-white border border-slate-200 rounded-xl shadow-lg z-50 overflow-hidden">
+                        <div class="p-4 border-b border-slate-200">
+                            <div id="sidebarEmail" class="text-sm font-semibold text-slate-900">user@company.com</div>
+                            <div id="sidebarRole" class="text-xs text-slate-500">member</div>
+                        </div>
+                        <div class="p-2">
+                            <button onclick="window.location.href='marketflow-crm.html'" class="w-full text-left px-3 py-2 text-sm font-medium rounded-lg hover:bg-slate-50 text-slate-700 flex items-center gap-2">
+                                <i data-lucide="arrow-left-right" class="w-4 h-4 text-slate-500"></i> MarketFlow CRM
+                            </button>
+                            <button onclick="logout()" class="w-full text-left px-3 py-2 text-sm font-medium rounded-lg hover:bg-slate-50 text-slate-700 flex items-center gap-2">
+                                <i data-lucide="log-out" class="w-4 h-4 text-slate-500"></i> Logout
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Layout -->
+    <div class="flex flex-1 min-h-0 relative overflow-hidden">
+        <div id="sidebarOverlay" class="hidden absolute inset-0 bg-slate-900/40 z-40 md:hidden"></div>
+
+        <!-- Sidebar -->
+        <aside id="appSidebar" class="absolute md:relative z-50 md:z-auto top-0 left-0 h-full bg-white border-r border-slate-200 flex-shrink-0 overflow-y-auto overflow-x-hidden transform -translate-x-full md:translate-x-0 transition-all duration-200">
+            <div class="p-3" id="sidebar-nav">
+                <!-- Can be customized later, keeping shell empty by default like MarketFlow -->
+                <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2 mt-2 px-3 sidebar-title">Views</div>
+                <button class="sidebar-item sidebar-active w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-slate-600 transition-colors text-left">
+                    <i data-lucide="layout-grid" class="w-4 h-4 flex-shrink-0"></i> <span class="sidebar-label">Main Board</span>
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 p-4 sm:p-6 overflow-y-auto min-w-0 bg-slate-50">
+            <div id="main-content" class="w-full">
+                <!-- Content gets injected here by JS -->
+            </div>
+        </main>
+    </div>
+
+    <!-- Notification Toast -->
+    <div id="toast" class="fixed bottom-4 right-4 bg-slate-800 text-white px-4 py-3 rounded-xl shadow-2xl flex items-center gap-3 transform translate-y-20 opacity-0 transition-all duration-300 z-50">
+        <i data-lucide="check-circle" class="w-5 h-5 text-emerald-400"></i>
+        <span id="toastMsg" class="text-sm font-medium">Action completed</span>
+    </div>
+
+    <script>
+        // Auth guard — must have JWT token to view this page
+        (function () {
+            if (!localStorage.getItem('bezent_jwt')) {
+                location.replace('index.html');
+                return;
+            }
+            try {
+                var userStr = localStorage.getItem('bezent_user');
+                if (userStr) {
+                    var userObj = JSON.parse(userStr);
+                    if (!userObj.projectflow_access && userObj.role !== 'super_admin' && userObj.role !== 'admin') {
+                        localStorage.clear();
+                        location.replace('index.html');
+                        return;
+                    }
+                    if (userObj.role === 'super_admin') {
+                        location.replace('super-admin.html');
+                        return;
+                    }
+                    document.getElementById('sidebarEmail').textContent = userObj.email || '';
+                    document.getElementById('sidebarRole').textContent = userObj.role || 'member';
+                    document.getElementById('sidebarAvatar').textContent = (userObj.email || 'U').charAt(0).toUpperCase();
+                } else {
+                    localStorage.clear();
+                    location.replace('index.html');
+                    return;
+                }
+            } catch(e) {}
+        })();
+
+        // Shell Interactivity
+        document.getElementById('profileToggle').addEventListener('click', (e) => {
+            e.stopPropagation();
+            document.getElementById('notificationMenu').classList.add('hidden');
+            document.getElementById('profileMenu').classList.toggle('hidden');
+        });
+        document.getElementById('notificationToggle').addEventListener('click', (e) => {
+            e.stopPropagation();
+            document.getElementById('profileMenu').classList.add('hidden');
+            document.getElementById('notificationMenu').classList.toggle('hidden');
+        });
+        document.addEventListener('click', () => {
+            document.getElementById('profileMenu').classList.add('hidden');
+            document.getElementById('notificationMenu').classList.add('hidden');
+        });
+        document.getElementById('sidebarToggle').addEventListener('click', () => {
+            document.getElementById('appSidebar').classList.remove('-translate-x-full');
+            document.getElementById('sidebarOverlay').classList.remove('hidden');
+        });
+        document.getElementById('sidebarCollapse').addEventListener('click', () => {
+            document.body.classList.toggle('sidebar-collapsed');
+        });
+        document.getElementById('sidebarOverlay').addEventListener('click', () => {
+            document.getElementById('appSidebar').classList.add('-translate-x-full');
+            document.getElementById('sidebarOverlay').classList.add('hidden');
+        });
+        function logout() { localStorage.clear(); window.location.replace('index.html'); }
+        function showToast(msg) {
+            const t = document.getElementById('toast');
+            document.getElementById('toastMsg').textContent = msg;
+            t.classList.remove('translate-y-20', 'opacity-0');
+            setTimeout(() => t.classList.add('translate-y-20', 'opacity-0'), 3000);
+        }
+
+        /* PROJECTFLOW SAAS LOGIC */
+        const TEAM = [
+            { id: 't1', name: 'Riya Sharma', role: 'UI/UX Lead', skills: ['design'], workload: 15, maxWorkload: 40, perf: 95, avatar: 'RS', color:'a855f7' },
+            { id: 't2', name: 'Arjun Mehta', role: 'Sr Developer', skills: ['development'], workload: 35, maxWorkload: 40, perf: 88, avatar: 'AM', color:'3b82f6' },
+            { id: 't3', name: 'Sneha Patil', role: 'Frontend Dev', skills: ['development','design'], workload: 20, maxWorkload: 40, perf: 91, avatar: 'SP', color:'ec4899' },
+            { id: 't4', name: 'Karan Singh', role: 'Product Manager', skills: ['management'], workload: 10, maxWorkload: 40, perf: 98, avatar: 'KS', color:'10b981' }
+        ];
+
+        const PIPELINE_STEPS = {
+            design: ['Requirements', 'Wireframing', 'Mockups', 'Client Review', 'Delivery'],
+            development: ['Architecture', 'Setup', 'Development', 'QA Testing', 'UAT', 'Deployment'],
+            default: ['Planning', 'Execution', 'Review', 'Completion']
+        };
+
+        let currentActiveAlloc = null;
+        let selectedTeamForAlloc = [];
+
+        function renderTab(tabId) {
+            // Update tabs UI
+            document.querySelectorAll('.nav-tab').forEach(t => {
+                t.classList.remove('active');
+                t.classList.add('text-slate-600');
+                if(t.dataset.section === tabId) {
+                    t.classList.add('active');
+                    t.classList.remove('text-slate-600');
+                }
+            });
+
+            // Make sure icons apply
+            setTimeout(() => lucide.createIcons(), 10);
+            
+            const content = document.getElementById('main-content');
+            const projects = JSON.parse(localStorage.getItem('bezent_projects') || '[]');
+            const pending = projects.filter(p => p.status === 'pending');
+            const active = projects.filter(p => p.status === 'active');
+
+            if (tabId === 'dashboard') {
+                content.innerHTML = `
+                    <div class="mb-6 fade-in">
+                        <h1 class="text-2xl font-bold text-slate-800">Operational Dashboard</h1>
+                        <p class="text-sm text-slate-500">Live KPIs and metrics for project execution.</p>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6 fade-in">
+                        <div class="glass-card p-5">
+                            <div class="text-xs text-slate-400 font-semibold uppercase tracking-wider mb-1">Active Projects</div>
+                            <div class="text-3xl font-bold text-purple-700">${active.length}</div>
+                        </div>
+                        <div class="glass-card p-5">
+                            <div class="text-xs text-slate-400 font-semibold uppercase tracking-wider mb-1">Pending Intake</div>
+                            <div class="text-3xl font-bold text-amber-600">${pending.length}</div>
+                        </div>
+                        <div class="glass-card p-5">
+                            <div class="text-xs text-slate-400 font-semibold uppercase tracking-wider mb-1">Team Utilization</div>
+                            <div class="text-3xl font-bold text-slate-800">84%</div>
+                        </div>
+                        <div class="glass-card p-5 relative overflow-hidden">
+                            <div class="text-xs text-slate-400 font-semibold uppercase tracking-wider mb-1">Avg Risk Score</div>
+                            <div class="text-3xl font-bold text-red-500">Low</div>
+                        </div>
+                    </div>
+                `;
+            } 
+            else if (tabId === 'intake') {
+                let gridHtml = pending.map(p => `
+                    <div class="glass-card p-5 flex flex-col">
+                        <div class="flex justify-between items-start mb-3">
+                            <span class="badge badge-pending">New</span>
+                            <span class="text-xs font-bold text-slate-400 capitalize">${p.category}</span>
+                        </div>
+                        <h3 class="text-lg font-bold text-slate-800 mb-1">${p.name}</h3>
+                        <p class="text-sm text-slate-500 mb-4">${p.client}</p>
+                        <div class="mt-auto pt-4 border-t border-slate-100 flex justify-between items-center text-sm font-semibold">
+                            <span>${p.effort} hrs</span>
+                            <button onclick="renderTab('allocation')" class="text-purple-600 hover:text-purple-800">Allocate →</button>
+                        </div>
+                    </div>
+                `).join('');
+                if(!pending.length) gridHtml = '<div class="col-span-full py-12 text-center text-slate-400">No incoming projects.</div>';
+
+                content.innerHTML = `
+                    <div class="flex items-center justify-between mb-6 fade-in">
+                        <div>
+                            <h1 class="text-2xl font-bold text-slate-800">Project Intake</h1>
+                            <p class="text-sm text-slate-500">New projects synced from MarketFlow.</p>
+                        </div>
+                        <button onclick="mockSync()" class="px-4 py-2 bg-white border border-slate-200 text-sm font-medium rounded-lg text-slate-700 shadow-sm hover:bg-slate-50 flex items-center gap-2">
+                            <i data-lucide="refresh-cw" class="w-4 h-4 text-purple-600"></i> Fake Sync MarketFlow
+                        </button>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 fade-in">${gridHtml}</div>
+                `;
+            }
+            else if (tabId === 'allocation') {
+                content.innerHTML = `
+                    <div class="mb-6 fade-in">
+                        <h1 class="text-2xl font-bold text-slate-800">Resource Allocation</h1>
+                        <p class="text-sm text-slate-500">Assign manual hours or use Smart AI Suggestion.</p>
+                    </div>
+                    <div class="flex flex-col lg:flex-row gap-6 fade-in">
+                        <div class="w-full lg:w-1/3 glass-card p-4">
+                            <h3 class="font-bold text-slate-800 mb-3 text-sm">Pending Projects</h3>
+                            <div class="space-y-2">
+                                ${pending.length ? pending.map(p => `
+                                    <div class="p-3 rounded-lg border border-slate-100 hover:bg-purple-50 cursor-pointer" onclick="window.selectAlloc('${p.id}')">
+                                        <div class="font-bold text-sm text-slate-800">${p.name}</div>
+                                        <div class="text-xs text-slate-500">${p.effort}h</div>
+                                    </div>
+                                `).join('') : '<div class="text-xs text-center text-slate-400 p-4">Empty</div>'}
+                            </div>
+                        </div>
+                        <div class="w-full lg:w-2/3 glass-card p-6" id="allocPanelContainer">
+                            <div class="flex flex-col items-center justify-center text-slate-400 h-64">
+                                <i data-lucide="mouse-pointer-click" class="w-12 h-12 mb-3 opacity-50"></i>
+                                <p>Select a project to start allocation</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+            else if (tabId === 'pipeline') {
+                let pipeHtml = active.map(p => {
+                    const total = p.pipeline.length;
+                    const done = p.pipeline.filter(s=>s.done).length;
+                    const pct = Math.round((done/total)*100);
+                    
+                    const steps = p.pipeline.map((s,i) => {
+                        let cls = s.done ? 'completed' : ((i>0 && p.pipeline[i-1].done && !s.done) || (i===0 && !s.done) ? 'current' : '');
+                        return `
+                        <div class="stepper-item ${cls}" onclick="window.toggleStep('${p.id}', ${i})">
+                            <div class="stepper-circle"><i data-lucide="check" class="w-3 h-3 ${s.done ? 'block' : 'hidden'}"></i></div>
+                            <div class="stepper-label">${s.name}</div>
+                        </div>`;
+                    }).join('');
+
+                    return `
+                    <div class="glass-card p-6 mb-4">
+                        <div class="flex justify-between items-start mb-2"><h3 class="font-bold text-slate-800 text-lg">${p.name}</h3><span class="badge badge-active">${pct}%</span></div>
+                        <div class="flex justify-between w-full relative pt-6 pb-2">${steps}</div>
+                        <div class="mt-4 flex justify-end">
+                            ${pct === 100 ? `<button onclick="window.completeProj('${p.id}')" class="bg-emerald-500 text-white px-4 py-2 rounded-lg text-sm font-bold shadow-sm">Complete Project</button>` : ''}
+                        </div>
+                    </div>`;
+                }).join('');
+                
+                content.innerHTML = `
+                    <div class="mb-6 fade-in"><h1 class="text-2xl font-bold text-slate-800">Active Pipeline</h1></div>
+                    <div class="fade-in">${active.length ? pipeHtml : '<div class="text-center text-slate-400 mt-12">No active projects.</div>'}</div>
+                `;
+            }
+            else if (tabId === 'reports') {
+                const teamHtml = TEAM.map(m => `
+                    <div class="flex justify-between p-3 border-b border-slate-100">
+                        <div class="font-bold text-sm">${m.name}</div><div class="text-emerald-600 font-bold">${m.perf}% Score</div>
+                    </div>
+                `).join('');
+
+                content.innerHTML = `
+                    <div class="mb-6 fade-in"><h1 class="text-2xl font-bold text-slate-800">System Reports</h1></div>
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 fade-in">
+                        <div class="glass-card p-5"><h3 class="font-bold mb-4">Team Performance</h3>${teamHtml}</div>
+                        <div class="glass-card p-5"><h3 class="font-bold mb-4">Metrics</h3><p class="text-slate-500 text-sm">Quarterly Targets vs Actual rendered via charts.</p></div>
+                    </div>
+                `;
+            }
+        }
+
+        // Global functions for inline HTML binds
+        window.selectAlloc = (id) => {
+            const projects = JSON.parse(localStorage.getItem('bezent_projects'));
+            currentActiveAlloc = projects.find(p => p.id === id);
+            selectedTeamForAlloc = [];
+            
+            document.getElementById('allocPanelContainer').innerHTML = `
+                <div class="border-b border-slate-100 pb-4 mb-4">
+                    <h2 class="text-xl font-bold text-slate-800">${currentActiveAlloc.name}</h2>
+                </div>
+                <div class="mb-4 flex items-center justify-between bg-slate-50 p-3 rounded-lg border border-slate-200">
+                    <div><div class="text-xs font-semibold text-slate-500">Effort</div><div class="text-lg font-bold">${currentActiveAlloc.effort} Hrs</div></div>
+                    <button onclick="window.runSmart()" class="bg-gradient-to-r from-purple-600 to-purple-800 text-white px-4 py-2 rounded-lg text-sm font-medium">Run Smart Suggestion</button>
+                </div>
+                <div id="allocGrid" class="grid grid-cols-2 gap-3 mb-4 text-center p-6 text-slate-400 italic text-sm">Click Run Smart Suggestion to allocate.</div>
+                <div class="mt-auto pt-4 border-t border-slate-100 flex justify-between items-center">
+                    <div class="text-xs">Sum: <span id="allocSum">0</span></div>
+                    <button id="allocConfirm" onclick="window.confirmAlloc()" class="bg-green-600 text-white px-6 py-2 rounded-lg text-sm font-bold opacity-50" disabled>Confirm Allocation</button>
+                </div>
+            `;
+        };
+
+        window.runSmart = () => {
+            let effort = currentActiveAlloc.effort;
+            let scored = TEAM.map(m => ({ ...m, isMatch: m.skills.includes(currentActiveAlloc.category), avail: m.maxWorkload - m.workload, rec: Math.min(m.maxWorkload - m.workload, effort) }));
+            
+            document.getElementById('allocGrid').innerHTML = scored.map(m => `
+                <div class="glass-card p-4 text-left cursor-pointer border-2 border-transparent" id="c_${m.id}" onclick="window.toggleSel('${m.id}')">
+                    <div class="font-bold text-sm ${m.isMatch ? 'text-emerald-600' : 'text-slate-800'}">${m.name}</div>
+                    <div class="text-xs text-slate-500 mb-2">Avail: ${m.avail}h | Perf: ${m.perf}</div>
+                    <input type="number" id="i_${m.id}" value="${m.rec}" disabled class="w-full border p-1 text-sm rounded">
+                </div>
+            `).join('');
+        };
+
+        window.toggleSel = (id) => {
+            const card = document.getElementById(`c_${id}`);
+            const input = document.getElementById(`i_${id}`);
+            if(card.classList.contains('border-purple-600')) {
+                card.classList.remove('border-purple-600'); input.disabled = true;
+                selectedTeamForAlloc = selectedTeamForAlloc.filter(x => x !== id);
+            } else {
+                card.classList.add('border-purple-600'); input.disabled = false;
+                selectedTeamForAlloc.push(id);
+            }
+            
+            let sum = 0; selectedTeamForAlloc.forEach(i => sum += Number(document.getElementById(`i_${i}`).value));
+            document.getElementById('allocSum').textContent = sum;
+            if(sum > 0) { document.getElementById('allocConfirm').disabled = false; document.getElementById('allocConfirm').classList.remove('opacity-50'); }
+        };
+
+        window.confirmAlloc = () => {
+            let projects = JSON.parse(localStorage.getItem('bezent_projects'));
+            let pIdx = projects.findIndex(p => p.id === currentActiveAlloc.id);
+            projects[pIdx].status = 'active';
+            projects[pIdx].pipeline = (PIPELINE_STEPS[projects[pIdx].category] || PIPELINE_STEPS['default']).map((s,i)=>({name:s, done:i===0}));
+            localStorage.setItem('bezent_projects', JSON.stringify(projects));
+            showToast('Project moved to Pipeline!');
+            renderTab('pipeline');
+        };
+
+        window.toggleStep = (pid, idx) => {
+            let projects = JSON.parse(localStorage.getItem('bezent_projects'));
+            let p = projects.find(x => x.id === pid);
+            if(idx > 0 && !p.pipeline[idx-1].done) return showToast('Complete previous step first!');
+            p.pipeline[idx].done = true;
+            localStorage.setItem('bezent_projects', JSON.stringify(projects));
+            renderTab('pipeline');
+        };
+        
+        window.completeProj = (pid) => {
+            let projects = JSON.parse(localStorage.getItem('bezent_projects'));
+            projects.find(x => x.id === pid).status = 'completed';
+            localStorage.setItem('bezent_projects', JSON.stringify(projects));
+            showToast('Project Completed!');
+            renderTab('reports');
+        };
+
+        window.mockSync = () => {
+            let projects = JSON.parse(localStorage.getItem('bezent_projects') || '[]');
+            projects.push({ id: 'P_'+Date.now(), name: 'MarketFlow Direct', client: 'Acme Corp', category: 'design', effort: 50, status: 'pending' });
+            localStorage.setItem('bezent_projects', JSON.stringify(projects));
+            renderTab('intake');
+            showToast('Synced 1 external project!');
+        };
+
+        // Initialize Tab Listeners
+        document.querySelectorAll('button[data-section]').forEach(btn => {
+            btn.addEventListener('click', (e) => renderTab(e.target.dataset.section));
+        });
+
+        // Load Default Tab
+        renderTab('dashboard');
+
+    </script>
+</body>
+</html>

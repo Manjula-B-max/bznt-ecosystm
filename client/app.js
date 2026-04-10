@@ -5375,7 +5375,16 @@ class MarketFlowCRM {
                 { id: 'clients', label: 'Directory' },
                 { id: 'tracking', label: 'Contacts' }
             ],
-            projects: [
+            projects: window.location.pathname.includes('projectflow-crm.html') ? [
+                { id: 'intake', label: 'SaaS Intake & Alloc' },
+                { id: 'registration', label: 'Project Registration' },
+                { id: 'directory', label: 'Project Directory' },
+                { id: 'pipeline', label: 'Sales Pipeline' },
+                { id: 'active', label: 'Active Projects' },
+                { id: 'completed', label: 'Completed Projects' },
+                { id: 'quotation_templates', label: 'Quotation Templates' },
+                { id: 'rfp_templates', label: 'RFP Templates' }
+            ] : [
                 { id: 'registration', label: 'Project Registration' },
                 { id: 'directory', label: 'Project Directory' },
                 { id: 'pipeline', label: 'Sales Pipeline' },
@@ -8592,6 +8601,9 @@ class MarketFlowCRM {
 
     renderProjectsContent(container) {
         switch (this.currentSubSection) {
+            case 'intake':
+                container.innerHTML = this.getProjectFlowConsolidated();
+                break;
             case 'registration':
                 container.innerHTML = this.getProjectRegistration();
                 break;
@@ -18216,3 +18228,226 @@ document.addEventListener('DOMContentLoaded', () => {
         renderBootError(err);
     }
 });
+
+// START: ProjectFlow SaaS specific logic
+window.PF_TEAM = [
+    { id: 't1', name: 'Riya Sharma', role: 'UI/UX Lead', skills: ['design'], workload: 15, maxWorkload: 40, perf: 95, avatar: 'RS', color:'a855f7' },
+    { id: 't2', name: 'Arjun Mehta', role: 'Sr Developer', skills: ['development'], workload: 35, maxWorkload: 40, perf: 88, avatar: 'AM', color:'3b82f6' },
+    { id: 't3', name: 'Sneha Patil', role: 'Frontend Dev', skills: ['development','design'], workload: 20, maxWorkload: 40, perf: 91, avatar: 'SP', color:'ec4899' },
+    { id: 't4', name: 'Karan Singh', role: 'Product Manager', skills: ['management'], workload: 10, maxWorkload: 40, perf: 98, avatar: 'KS', color:'10b981' }
+];
+
+window.PF_PIPELINE_STEPS = {
+    design: ['Requirements', 'Wireframing', 'Mockups', 'Client Review', 'Delivery'],
+    development: ['Architecture', 'Setup', 'Development', 'QA Testing', 'UAT', 'Deployment'],
+    default: ['Planning', 'Execution', 'Review', 'Completion']
+};
+
+window.currentActiveAlloc = null;
+window.selectedTeamForAlloc = [];
+
+window.selectAlloc = (id) => {
+    const projects = JSON.parse(localStorage.getItem('bezent_projects') || '[]');
+    window.currentActiveAlloc = projects.find(p => p.id === id);
+    window.selectedTeamForAlloc = [];
+    
+    document.getElementById('allocPanelContainer').innerHTML = `
+        <div class="border-b border-slate-100 pb-4 mb-4">
+            <h2 class="text-xl font-bold text-slate-800">${window.currentActiveAlloc.name}</h2>
+        </div>
+        <div class="mb-4 flex items-center justify-between bg-slate-50 p-3 rounded-lg border border-slate-200">
+            <div><div class="text-xs font-semibold text-slate-500">Effort</div><div class="text-lg font-bold">${window.currentActiveAlloc.effort || 0} Hrs</div></div>
+            <button onclick="window.runSmart()" class="bg-gradient-to-r from-purple-600 to-purple-800 text-white px-4 py-2 rounded-lg text-sm font-medium">Run Smart Suggestion</button>
+        </div>
+        <div id="allocGrid" class="grid grid-cols-2 gap-3 mb-4 text-center p-6 text-slate-400 italic text-sm">Click Run Smart Suggestion to allocate.</div>
+        <div class="mt-auto pt-4 border-t border-slate-100 flex justify-between items-center">
+            <div class="text-xs">Sum: <span id="allocSum">0</span></div>
+            <button id="allocConfirm" onclick="window.confirmAlloc()" class="bg-green-600 text-white px-6 py-2 rounded-lg text-sm font-bold opacity-50" disabled>Confirm Allocation</button>
+        </div>
+    `;
+};
+
+window.runSmart = () => {
+    if(!window.currentActiveAlloc) return;
+    let effort = window.currentActiveAlloc.effort || 20;
+    let cat = (window.currentActiveAlloc.category || 'default').toLowerCase();
+    let scored = window.PF_TEAM.map(m => ({ ...m, isMatch: m.skills.includes(cat), avail: m.maxWorkload - m.workload, rec: Math.min(m.maxWorkload - m.workload, effort) }));
+    
+    document.getElementById('allocGrid').innerHTML = scored.map(m => `
+        <div class="bg-white rounded-lg p-4 text-left cursor-pointer border-2 border-transparent transition-all shadow-sm" id="c_${m.id}" onclick="window.toggleSel('${m.id}')">
+            <div class="font-bold text-sm ${m.isMatch ? 'text-emerald-600' : 'text-slate-800'}">${m.name}</div>
+            <div class="text-xs text-slate-500 mb-2">Avail: ${m.avail}h | Perf: ${m.perf}</div>
+            <input type="number" id="i_${m.id}" value="${m.rec}" disabled class="w-full border p-1 text-sm rounded bg-slate-50">
+        </div>
+    `).join('');
+};
+
+window.toggleSel = (id) => {
+    const card = document.getElementById('c_' + id);
+    const input = document.getElementById('i_' + id);
+    if (!card) return;
+    if(card.classList.contains('border-purple-600')) {
+        card.classList.remove('border-purple-600'); input.disabled = true;
+        window.selectedTeamForAlloc = window.selectedTeamForAlloc.filter(x => x !== id);
+    } else {
+        card.classList.add('border-purple-600'); input.disabled = false;
+        window.selectedTeamForAlloc.push(id);
+    }
+    let sum = 0; 
+    window.selectedTeamForAlloc.forEach(i => sum += Number(document.getElementById('i_' + i).value));
+    document.getElementById('allocSum').textContent = sum;
+    if(sum > 0) { 
+        document.getElementById('allocConfirm').disabled = false; 
+        document.getElementById('allocConfirm').classList.remove('opacity-50'); 
+    } else {
+        document.getElementById('allocConfirm').disabled = true; 
+        document.getElementById('allocConfirm').classList.add('opacity-50'); 
+    }
+};
+
+window.confirmAlloc = () => {
+    if(!window.currentActiveAlloc) return;
+    let projects = JSON.parse(localStorage.getItem('bezent_projects') || '[]');
+    let pIdx = projects.findIndex(p => p.id === window.currentActiveAlloc.id);
+    if(pIdx > -1) {
+        projects[pIdx].status = 'active';
+        let cat = (projects[pIdx].category || 'default').toLowerCase();
+        projects[pIdx].pipeline = (window.PF_PIPELINE_STEPS[cat] || window.PF_PIPELINE_STEPS['default']).map((s,i)=>({name:s, done:i===0}));
+        localStorage.setItem('bezent_projects', JSON.stringify(projects));
+        alert('Project moved to Active Pipeline!');
+        if(window.bezentApp) window.bezentApp.renderProjectsContent(document.getElementById('main-content'));
+    }
+};
+
+window.pfToggleStep = (pid, idx) => {
+    let projects = JSON.parse(localStorage.getItem('bezent_projects') || '[]');
+    let p = projects.find(x => x.id === pid);
+    if(!p || !p.pipeline) return;
+    if(idx > 0 && !p.pipeline[idx-1].done) return alert('Complete previous step first!');
+    p.pipeline[idx].done = true;
+    localStorage.setItem('bezent_projects', JSON.stringify(projects));
+    if(window.bezentApp) window.bezentApp.renderProjectsContent(document.getElementById('main-content'));
+};
+
+window.pfCompleteProj = (pid) => {
+    let projects = JSON.parse(localStorage.getItem('bezent_projects') || '[]');
+    let p = projects.find(x => x.id === pid);
+    if(p) {
+        p.status = 'completed';
+        localStorage.setItem('bezent_projects', JSON.stringify(projects));
+        alert('Project Completed!');
+        if(window.bezentApp) window.bezentApp.switchTab('reports');
+    }
+};
+
+window.pfMockSync = () => {
+    let projects = JSON.parse(localStorage.getItem('bezent_projects') || '[]');
+    projects.push({ id: 'P_'+Date.now(), name: 'MarketFlow Direct CRM Client', client: 'Acme Corp', category: 'design', effort: 50, status: 'pending' });
+    localStorage.setItem('bezent_projects', JSON.stringify(projects));
+    alert('Synced 1 external project!');
+    if(window.bezentApp) window.bezentApp.renderProjectsContent(document.getElementById('main-content'));
+};
+
+MarketFlowCRM.prototype.getProjectFlowConsolidated = function() {
+    const projects = JSON.parse(localStorage.getItem('bezent_projects') || '[]');
+    const pending = projects.filter(p => p.status === 'pending');
+    const active = projects.filter(p => p.status === 'active');
+
+    let gridHtml = pending.map(p => \`
+        <div class="bg-white rounded-lg border border-slate-200 p-5 flex flex-col shadow-sm">
+            <div class="flex justify-between items-start mb-3">
+                <span class="text-[11px] font-bold px-2 py-0.5 rounded-full bg-amber-50 text-amber-600">New</span>
+                <span class="text-xs font-bold text-slate-400 capitalize">\${p.category || 'General'}</span>
+            </div>
+            <h3 class="text-lg font-bold text-slate-800 mb-1">\${p.name}</h3>
+            <p class="text-sm text-slate-500 mb-4">\${p.client || 'Internal'}</p>
+            <div class="mt-auto pt-4 border-t border-slate-100 flex justify-between items-center text-sm font-semibold">
+                <span>\${p.effort || 0} hrs</span>
+                <button onclick="window.selectAlloc('\${p.id}'); document.getElementById('allocPanelContainer').scrollIntoView({behavior: 'smooth', block: 'center'})" class="text-purple-600 hover:text-purple-800">Allocate →</button>
+            </div>
+        </div>
+    \`).join('');
+    if(!pending.length) gridHtml = '<div class="col-span-full py-12 text-center text-slate-400">No incoming projects pending allocation.</div>';
+
+    let pipeHtml = active.map(p => {
+        if(!p.pipeline) return '';
+        const total = p.pipeline.length;
+        const done = p.pipeline.filter(s=>s.done).length;
+        const pct = Math.round((done/total)*100) || 0;
+        
+        const steps = p.pipeline.map((s,i) => {
+            let clz = s.done ? 'bg-purple-600 border-purple-600 text-white' : ((i>0 && p.pipeline[i-1].done && !s.done) || (i===0 && !s.done) ? 'bg-white border-purple-600 text-purple-600 ring-2 ring-purple-100' : 'bg-slate-100 border-slate-300 text-transparent');
+            let line = s.done ? 'bg-purple-600' : 'bg-slate-200';
+            return \`
+            <div class="flex-1 text-center relative cursor-pointer group" onclick="window.pfToggleStep('\${p.id}', \${i})">
+                \${i>0 ? \`<div class="absolute top-3 right-1/2 w-full h-[2px] \${line} -z-10"></div>\` : ''}
+                <div class="w-6 h-6 mx-auto rounded-full border-2 flex items-center justify-center text-[10px] font-bold transition-all \${clz} group-hover:scale-110">
+                    \${s.done ? '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>' : ''}
+                </div>
+                <div class="text-[10px] uppercase font-semibold mt-2 \${s.done||((i>0 && p.pipeline[i-1].done && !s.done) || (i===0 && !s.done)) ? 'text-purple-700' : 'text-slate-400'}">\${s.name}</div>
+            </div>\`;
+        }).join('');
+
+        return \`
+        <div class="bg-white rounded-lg border border-slate-200 p-6 mb-4 shadow-sm">
+            <div class="flex justify-between items-start mb-4">
+                <h3 class="font-bold text-slate-800 text-lg">\${p.name}</h3>
+                <span class="text-xs font-bold px-2 py-1 rounded-full bg-blue-50 text-blue-600">\${pct}%</span>
+            </div>
+            <div class="flex justify-between w-full relative pt-2 pb-2 z-10">\${steps}</div>
+            <div class="mt-4 flex justify-end">
+                \${pct === 100 ? \`<button onclick="window.pfCompleteProj('\${p.id}')" class="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-lg text-sm font-bold shadow-sm transition-colors">Complete Project</button>\` : ''}
+            </div>
+        </div>\`;
+    }).join('');
+
+    return \`
+        <div class="space-y-12 fade-in pb-12 w-full">
+            <section>
+                <div class="flex items-center justify-between mb-6">
+                    <div>
+                        <h1 class="text-2xl font-bold text-slate-800">Project Intake</h1>
+                        <p class="text-sm text-slate-500">New projects synced from MarketFlow ready for allocation.</p>
+                    </div>
+                    <button onclick="window.pfMockSync()" class="px-4 py-2 bg-white border border-slate-200 text-sm font-medium rounded-lg text-slate-700 shadow-sm hover:bg-slate-50 flex items-center gap-2">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-purple-600"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.59-13.19l5.25 5.12"></path></svg> Sync MarketFlow
+                    </button>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">\${gridHtml}</div>
+            </section>
+
+            <section id="allocationSection" class="pt-6 border-t border-slate-200">
+                <div class="mb-6">
+                    <h1 class="text-2xl font-bold text-slate-800">Resource Allocation</h1>
+                    <p class="text-sm text-slate-500">Assign manual hours or use Smart AI Suggestion.</p>
+                </div>
+                <div class="flex flex-col md:flex-row gap-6">
+                    <div class="w-full md:w-1/3 bg-white rounded-lg border border-slate-200 p-4 shadow-sm">
+                        <h3 class="font-bold text-slate-800 mb-3 text-sm">Pending Projects</h3>
+                        <div class="space-y-2">
+                            \${pending.length ? pending.map(p => \`
+                                <div class="p-3 rounded-lg border border-slate-100 hover:bg-purple-50 cursor-pointer transition-colors" onclick="window.selectAlloc('\${p.id}')">
+                                    <div class="font-bold text-sm text-slate-800">\${p.name}</div>
+                                    <div class="text-xs text-slate-500">\${p.effort || 0}h | \${p.client || 'Internal'}</div>
+                                </div>
+                            \`).join('') : '<div class="text-xs text-center text-slate-400 p-4 border border-dashed rounded-lg">No pending projects</div>'}
+                        </div>
+                    </div>
+                    <div class="w-full md:w-2/3 bg-white rounded-lg border border-slate-200 p-6 min-h-[300px] shadow-sm" id="allocPanelContainer">
+                        <div class="flex flex-col items-center justify-center text-slate-400 h-full min-h-[250px]">
+                            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" class="mb-3 opacity-50"><path d="M12 20V10M18 20V4M6 20v-4"></path></svg>
+                            <p>Select a project to start allocation</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="pipelineSection" class="pt-6 border-t border-slate-200">
+                <div class="mb-6"><h1 class="text-2xl font-bold text-slate-800">Active Pipeline</h1></div>
+                <div>\${active.length ? pipeHtml : '<div class="text-center text-slate-400 mt-12 p-8 border border-dashed rounded-lg bg-white">No active projects in the pipeline.</div>'}</div>
+            </section>
+        </div>
+    \`;
+};
+// END: ProjectFlow SaaS specific logic
+

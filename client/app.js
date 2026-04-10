@@ -5861,6 +5861,10 @@ class MarketFlowCRM {
     }
 
     renderDashboardContent(container) {
+        if (window.location.pathname.includes('projectflow-crm.html')) {
+            container.innerHTML = '<div class="text-slate-400 text-center py-12 text-sm italic">Dashboard is currently under construction.</div>';
+            return;
+        }
         switch (this.currentSubSection) {
             case 'overview':
                 container.innerHTML = this.getDashboardOverview();
@@ -14508,6 +14512,10 @@ class MarketFlowCRM {
     }
 
     renderReportsContent(container) {
+        if (window.location.pathname.includes('projectflow-crm.html')) {
+            container.innerHTML = '<div class="text-slate-400 text-center py-12 text-sm italic">Reports and Analytics are currently under construction.</div>';
+            return;
+        }
         switch (this.currentSubSection) {
             case 'funnel':
                 container.innerHTML = this.getReportsFunnel();

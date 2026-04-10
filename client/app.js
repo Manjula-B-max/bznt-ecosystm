@@ -18353,20 +18353,20 @@ MarketFlowCRM.prototype.getProjectFlowConsolidated = function() {
     const pending = projects.filter(p => p.status === 'pending');
     const active = projects.filter(p => p.status === 'active');
 
-    let gridHtml = pending.map(p => \`
+    let gridHtml = pending.map(p => `
         <div class="bg-white rounded-lg border border-slate-200 p-5 flex flex-col shadow-sm">
             <div class="flex justify-between items-start mb-3">
                 <span class="text-[11px] font-bold px-2 py-0.5 rounded-full bg-amber-50 text-amber-600">New</span>
-                <span class="text-xs font-bold text-slate-400 capitalize">\${p.category || 'General'}</span>
+                <span class="text-xs font-bold text-slate-400 capitalize">${p.category || 'General'}</span>
             </div>
-            <h3 class="text-lg font-bold text-slate-800 mb-1">\${p.name}</h3>
-            <p class="text-sm text-slate-500 mb-4">\${p.client || 'Internal'}</p>
+            <h3 class="text-lg font-bold text-slate-800 mb-1">${p.name}</h3>
+            <p class="text-sm text-slate-500 mb-4">${p.client || 'Internal'}</p>
             <div class="mt-auto pt-4 border-t border-slate-100 flex justify-between items-center text-sm font-semibold">
-                <span>\${p.effort || 0} hrs</span>
-                <button onclick="window.selectAlloc('\${p.id}'); document.getElementById('allocPanelContainer').scrollIntoView({behavior: 'smooth', block: 'center'})" class="text-purple-600 hover:text-purple-800">Allocate →</button>
+                <span>${p.effort || 0} hrs</span>
+                <button onclick="window.selectAlloc('${p.id}'); document.getElementById('allocPanelContainer').scrollIntoView({behavior: 'smooth', block: 'center'})" class="text-purple-600 hover:text-purple-800">Allocate →</button>
             </div>
         </div>
-    \`).join('');
+    `).join('');
     if(!pending.length) gridHtml = '<div class="col-span-full py-12 text-center text-slate-400">No incoming projects pending allocation.</div>';
 
     let pipeHtml = active.map(p => {
@@ -18378,30 +18378,30 @@ MarketFlowCRM.prototype.getProjectFlowConsolidated = function() {
         const steps = p.pipeline.map((s,i) => {
             let clz = s.done ? 'bg-purple-600 border-purple-600 text-white' : ((i>0 && p.pipeline[i-1].done && !s.done) || (i===0 && !s.done) ? 'bg-white border-purple-600 text-purple-600 ring-2 ring-purple-100' : 'bg-slate-100 border-slate-300 text-transparent');
             let line = s.done ? 'bg-purple-600' : 'bg-slate-200';
-            return \`
-            <div class="flex-1 text-center relative cursor-pointer group" onclick="window.pfToggleStep('\${p.id}', \${i})">
-                \${i>0 ? \`<div class="absolute top-3 right-1/2 w-full h-[2px] \${line} -z-10"></div>\` : ''}
-                <div class="w-6 h-6 mx-auto rounded-full border-2 flex items-center justify-center text-[10px] font-bold transition-all \${clz} group-hover:scale-110">
-                    \${s.done ? '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>' : ''}
+            return `
+            <div class="flex-1 text-center relative cursor-pointer group" onclick="window.pfToggleStep('${p.id}', ${i})">
+                ${i>0 ? `<div class="absolute top-3 right-1/2 w-full h-[2px] ${line} -z-10"></div>` : ''}
+                <div class="w-6 h-6 mx-auto rounded-full border-2 flex items-center justify-center text-[10px] font-bold transition-all ${clz} group-hover:scale-110">
+                    ${s.done ? '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>' : ''}
                 </div>
-                <div class="text-[10px] uppercase font-semibold mt-2 \${s.done||((i>0 && p.pipeline[i-1].done && !s.done) || (i===0 && !s.done)) ? 'text-purple-700' : 'text-slate-400'}">\${s.name}</div>
-            </div>\`;
+                <div class="text-[10px] uppercase font-semibold mt-2 ${s.done||((i>0 && p.pipeline[i-1].done && !s.done) || (i===0 && !s.done)) ? 'text-purple-700' : 'text-slate-400'}">${s.name}</div>
+            </div>`;
         }).join('');
 
-        return \`
+        return `
         <div class="bg-white rounded-lg border border-slate-200 p-6 mb-4 shadow-sm">
             <div class="flex justify-between items-start mb-4">
-                <h3 class="font-bold text-slate-800 text-lg">\${p.name}</h3>
-                <span class="text-xs font-bold px-2 py-1 rounded-full bg-blue-50 text-blue-600">\${pct}%</span>
+                <h3 class="font-bold text-slate-800 text-lg">${p.name}</h3>
+                <span class="text-xs font-bold px-2 py-1 rounded-full bg-blue-50 text-blue-600">${pct}%</span>
             </div>
-            <div class="flex justify-between w-full relative pt-2 pb-2 z-10">\${steps}</div>
+            <div class="flex justify-between w-full relative pt-2 pb-2 z-10">${steps}</div>
             <div class="mt-4 flex justify-end">
-                \${pct === 100 ? \`<button onclick="window.pfCompleteProj('\${p.id}')" class="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-lg text-sm font-bold shadow-sm transition-colors">Complete Project</button>\` : ''}
+                ${pct === 100 ? `<button onclick="window.pfCompleteProj('${p.id}')" class="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-lg text-sm font-bold shadow-sm transition-colors">Complete Project</button>` : ''}
             </div>
-        </div>\`;
+        </div>`;
     }).join('');
 
-    return \`
+    return `
         <div class="space-y-12 fade-in pb-12 w-full">
             <section>
                 <div class="flex items-center justify-between mb-6">
@@ -18413,7 +18413,7 @@ MarketFlowCRM.prototype.getProjectFlowConsolidated = function() {
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-purple-600"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.59-13.19l5.25 5.12"></path></svg> Sync MarketFlow
                     </button>
                 </div>
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">\${gridHtml}</div>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">${gridHtml}</div>
             </section>
 
             <section id="allocationSection" class="pt-6 border-t border-slate-200">
@@ -18425,12 +18425,12 @@ MarketFlowCRM.prototype.getProjectFlowConsolidated = function() {
                     <div class="w-full md:w-1/3 bg-white rounded-lg border border-slate-200 p-4 shadow-sm">
                         <h3 class="font-bold text-slate-800 mb-3 text-sm">Pending Projects</h3>
                         <div class="space-y-2">
-                            \${pending.length ? pending.map(p => \`
-                                <div class="p-3 rounded-lg border border-slate-100 hover:bg-purple-50 cursor-pointer transition-colors" onclick="window.selectAlloc('\${p.id}')">
-                                    <div class="font-bold text-sm text-slate-800">\${p.name}</div>
-                                    <div class="text-xs text-slate-500">\${p.effort || 0}h | \${p.client || 'Internal'}</div>
+                            ${pending.length ? pending.map(p => `
+                                <div class="p-3 rounded-lg border border-slate-100 hover:bg-purple-50 cursor-pointer transition-colors" onclick="window.selectAlloc('${p.id}')">
+                                    <div class="font-bold text-sm text-slate-800">${p.name}</div>
+                                    <div class="text-xs text-slate-500">${p.effort || 0}h | ${p.client || 'Internal'}</div>
                                 </div>
-                            \`).join('') : '<div class="text-xs text-center text-slate-400 p-4 border border-dashed rounded-lg">No pending projects</div>'}
+                            `).join('') : '<div class="text-xs text-center text-slate-400 p-4 border border-dashed rounded-lg">No pending projects</div>'}
                         </div>
                     </div>
                     <div class="w-full md:w-2/3 bg-white rounded-lg border border-slate-200 p-6 min-h-[300px] shadow-sm" id="allocPanelContainer">
@@ -18444,10 +18444,10 @@ MarketFlowCRM.prototype.getProjectFlowConsolidated = function() {
 
             <section id="pipelineSection" class="pt-6 border-t border-slate-200">
                 <div class="mb-6"><h1 class="text-2xl font-bold text-slate-800">Active Pipeline</h1></div>
-                <div>\${active.length ? pipeHtml : '<div class="text-center text-slate-400 mt-12 p-8 border border-dashed rounded-lg bg-white">No active projects in the pipeline.</div>'}</div>
+                <div>${active.length ? pipeHtml : '<div class="text-center text-slate-400 mt-12 p-8 border border-dashed rounded-lg bg-white">No active projects in the pipeline.</div>'}</div>
             </section>
         </div>
-    \`;
+    `;
 };
 // END: ProjectFlow SaaS specific logic
 

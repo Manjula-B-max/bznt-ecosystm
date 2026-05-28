@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Friend Page - BEZENT</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- Header -->
+    <header class="bg-purple-900 text-white shadow-md">
+        <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+            <div class="flex items-center gap-2">
+                <i data-lucide="users" class="w-8 h-8"></i>
+                <h1 class="text-2xl font-bold tracking-tight">BEZENT Friends</h1>
+            </div>
+            <nav>
+                <ul class="flex gap-6 font-medium">
+                    <li><a href="#" class="hover:text-purple-200 transition">Home</a></li>
+                    <li><a href="#" class="hover:text-purple-200 transition">Friends</a></li>
+                    <li><a href="#" class="hover:text-purple-200 transition">Settings</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 py-12">
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-10 text-center max-w-2xl mx-auto">
+            <div class="flex justify-center mb-6">
+                <div class="bg-purple-100 p-5 rounded-full">
+                    <i data-lucide="user-plus" class="w-12 h-12 text-purple-700"></i>
+                </div>
+            </div>
+            <h2 class="text-3xl font-bold text-gray-800 mb-4">Hello, Friend!</h2>
+            <p class="text-gray-600 mb-8 text-lg">This is your brand new feature page matching the BEZENT aesthetic. You can start adding your friend-related features here.</p>
+            <button class="bg-purple-700 hover:bg-purple-800 text-white px-8 py-3 rounded-lg font-medium transition flex items-center gap-2 mx-auto">
+                <i data-lucide="sparkles" class="w-5 h-5"></i>
+                Let's Build Together
+            </button>
+        </div>
+    </main>
+
+    <!-- Initialize Lucide Icons -->
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+</html>

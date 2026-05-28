@@ -8,7 +8,7 @@ export const sendOtp = async (req, res) => {
         if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
             return res.status(400).json({ error: 'Valid email required' });
 
-        if (email !== 'isabin1000@gmail.com') {
+        if (email !== 'isabin1011@gmail.com') {
             const existingUser = await User.findOne({ email });
             if (!existingUser) {
                 return res.status(403).json({ error: 'Access denied. You do not have an account on this platform.' });
@@ -81,17 +81,17 @@ export const verifyOtp = async (req, res) => {
         let userDoc = await User.findOne({ email });
         
         if (!userDoc) {
-            if (email === 'isabin1000@gmail.com') {
+            if (email === 'isabin1011@gmail.com') {
                 const name = email.split('@')[0].replace(/[._-]/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
                 userDoc = await User.create({ email, name, role: 'super_admin', marketflow_access: false });
             } else {
                 return res.status(403).json({ error: 'Access denied. You do not have permission to access MarketFlow.' });
             }
         } else {
-            if (email === 'isabin1000@gmail.com' && userDoc.role !== 'super_admin') {
+            if (email === 'isabin1011@gmail.com' && userDoc.role !== 'super_admin') {
                 userDoc.role = 'super_admin';
                 await userDoc.save();
-            } else if (email !== 'isabin1000@gmail.com' && !userDoc.marketflow_access && !userDoc.projectflow_access && userDoc.role !== 'admin') {
+            } else if (email !== 'isabin1011@gmail.com' && !userDoc.marketflow_access && !userDoc.projectflow_access && userDoc.role !== 'admin') {
                 return res.status(403).json({ error: 'Access denied. You do not have permissions.' });
             }
         }
@@ -187,7 +187,7 @@ export const deleteUser = async (req, res) => {
 
         const targetEmail = (req.params.email || '').toLowerCase().trim();
         if (!targetEmail) return res.status(400).json({ error: 'Email required' });
-        if (targetEmail === 'isabin1000@gmail.com') return res.status(400).json({ error: 'Cannot delete super admin' });
+        if (targetEmail === 'isabin1011@gmail.com') return res.status(400).json({ error: 'Cannot delete super admin' });
 
         const targetUser = await User.findOne({ email: targetEmail });
         if (!targetUser) return res.status(404).json({ error: 'User not found' });

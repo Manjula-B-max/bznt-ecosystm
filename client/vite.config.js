@@ -1,7 +1,13 @@
 import { defineConfig } from 'vite';
 import { resolve } from 'path';
+import react from '@vitejs/plugin-react';
+import tailwindcss from '@tailwindcss/vite';
 
 export default defineConfig({
+  plugins: [
+    react(),
+    tailwindcss()
+  ],
   server: {
     host: true,
     fs: { allow: ['..'] },
@@ -21,6 +27,7 @@ export default defineConfig({
         crm: resolve(__dirname, 'marketflow-crm.html'),
         feedback: resolve(__dirname, 'feedback.html'),
         admin: resolve(__dirname, 'admin.html'),
+        hrAdmin: resolve(__dirname, 'hr-admin.html'),
         superAdmin: resolve(__dirname, 'super-admin.html'),
         projectflow: resolve(__dirname, 'projectflow-crm.html')
       }

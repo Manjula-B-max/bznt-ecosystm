@@ -187,13 +187,9 @@
                 var userStr = localStorage.getItem('bezent_user');
                 if (userStr) {
                     var userObj = JSON.parse(userStr);
-                    if (!userObj.projectflow_access && userObj.role !== 'super_admin' && userObj.role !== 'admin') {
+                    if (!userObj.projectflow_access && userObj.role !== 'super_admin') {
                         localStorage.clear();
                         location.replace('index.html');
-                        return;
-                    }
-                    if (userObj.role === 'super_admin') {
-                        location.replace('super-admin.html');
                         return;
                     }
                     document.getElementById('sidebarEmail').textContent = userObj.email || '';

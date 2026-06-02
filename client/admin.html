@@ -842,19 +842,19 @@
                         <label class="block text-xs font-bold text-[#4B5563] uppercase tracking-wider">Permitted Modules</label>
                         <div class="space-y-3 pt-1">
                             <label class="flex items-center gap-3 cursor-pointer">
-                                <input type="checkbox" id="inviteScopeMF" class="w-4.5 h-4.5 text-[#7C3AED] border-gray-300 rounded focus:ring-[#7C3AED] cursor-pointer" checked>
+                                <input type="checkbox" id="inviteScopeMF" class="w-4.5 h-4.5 text-[#7C3AED] border-gray-300 rounded focus:ring-[#7C3AED] cursor-pointer" onchange="toggleInviteScope('MF')">
                                 <span class="text-xs font-semibold text-[#111827]">Marketing Page</span>
                             </label>
                             <label class="flex items-center gap-3 cursor-pointer">
-                                <input type="checkbox" id="inviteScopePF" class="w-4.5 h-4.5 text-[#7C3AED] border-gray-300 rounded focus:ring-[#7C3AED]" checked>
+                                <input type="checkbox" id="inviteScopePF" class="w-4.5 h-4.5 text-[#7C3AED] border-gray-300 rounded focus:ring-[#7C3AED]" onchange="toggleInviteScope('PF')">
                                 <span class="text-xs font-semibold text-[#111827]">Project Page</span>
                             </label>
                             <label class="flex items-center gap-3 cursor-pointer">
-                                <input type="checkbox" id="inviteScopeHR" class="w-4.5 h-4.5 text-[#7C3AED] border-gray-300 rounded focus:ring-[#7C3AED]" checked>
+                                <input type="checkbox" id="inviteScopeHR" class="w-4.5 h-4.5 text-[#7C3AED] border-gray-300 rounded focus:ring-[#7C3AED]" onchange="toggleInviteScope('HR')">
                                 <span class="text-xs font-semibold text-[#111827]">HR Page</span>
                             </label>
                             <label class="flex items-center gap-3 cursor-pointer">
-                                <input type="checkbox" id="inviteScopeEMP" class="w-4.5 h-4.5 text-[#7C3AED] border-gray-300 rounded focus:ring-[#7C3AED]" checked>
+                                <input type="checkbox" id="inviteScopeEMP" class="w-4.5 h-4.5 text-[#7C3AED] border-gray-300 rounded focus:ring-[#7C3AED]" onchange="toggleInviteScope('EMP')" checked>
                                 <span class="text-xs font-semibold text-[#111827]">Employee Page</span>
                             </label>
                             <label class="flex items-center gap-3 cursor-pointer border-t border-[#ECECF3] pt-2 mt-2">
@@ -1576,35 +1576,43 @@
             const isSystemAdmin = currentUser.role === 'admin' || currentUser.role === 'super_admin' || currentUser.role === 'owner';
 
             navigationTree.forEach(folder => {
-                // If inside workspace mode
-                if (inWorkspace) {
-                    // Hide administration tab completely
-                    if (folder.id === 'administration') return;
+                // First, check basic permissions based on the user's role and specific access rights
+                let isAllowed = false;
+                if (folder.isAdminOnly) {
+                    isAllowed = isSystemAdmin;
+                } else if (folder.isEmployeeOnly) {
+                    isAllowed = (currentUser.role === 'employee' || currentUser.employee_access || isSystemAdmin);
+                } else if (['dashboard', 'leads', 'projects', 'campaigns', 'billing', 'engagement', 'reports'].includes(folder.id)) {
+                    isAllowed = currentUser.marketflow_access || isSystemAdmin;
+                } else if (folder.id === 'projectflow') {
+                    isAllowed = currentUser.projectflow_access || isSystemAdmin;
+                } else if (folder.id === 'hr_admin') {
+                    isAllowed = currentUser.hr_access || isSystemAdmin;
+                } else {
+                    isAllowed = true;
+                }
+                if (!isAllowed) return;
 
-                    // Filter by Workspace Pillar
-                    if (activeWorkspace === 'marketing') {
-                        if (!['dashboard', 'leads', 'projects', 'campaigns', 'billing', 'engagement', 'reports'].includes(folder.id)) return;
-                    } else if (activeWorkspace === 'projects') {
-                        if (!['projectflow'].includes(folder.id)) return;
-                    } else if (activeWorkspace === 'hr') {
-                        if (!['hr_admin', 'employee_portal'].includes(folder.id)) return;
+                // For system admins, filter by active workspace mode
+                if (isSystemAdmin) {
+                    if (inWorkspace) {
+                        // Hide administration tab completely
+                        if (folder.id === 'administration') return;
+
+                        // Filter by Workspace Pillar
+                        if (activeWorkspace === 'marketing') {
+                            if (!['dashboard', 'leads', 'projects', 'campaigns', 'billing', 'engagement', 'reports'].includes(folder.id)) return;
+                        } else if (activeWorkspace === 'projects') {
+                            if (!['projectflow'].includes(folder.id)) return;
+                        } else if (activeWorkspace === 'hr') {
+                            if (!['hr_admin', 'employee_portal'].includes(folder.id)) return;
+                        }
+                    } else {
+                        // If in Admin Panel mode, hide workspace-specific accordion folders, show ONLY administration & employee_portal
+                        if (folder.id !== 'administration' && folder.id !== 'employee_portal') return;
                     }
-                } else {
-                    // If in Admin Panel mode, hide workspace-specific accordion folders, show ONLY administration & employee_portal
-                    if (folder.id !== 'administration' && folder.id !== 'employee_portal') return;
                 }
 
-                // Filter permissions
-                if (folder.isEmployeeOnly && currentUser.role !== 'employee') return;
-                if (folder.isAdminOnly && !isSystemAdmin) return;
-                if (!folder.isEmployeeOnly && !folder.isAdminOnly && currentUser.role === 'employee') return;
-
-                // Bind CRM folders to marketflow_access
-                if (['dashboard', 'leads', 'projects', 'campaigns', 'billing', 'engagement', 'reports'].includes(folder.id)) {
-                    if (!currentUser.marketflow_access && !isSystemAdmin) return;
-                } else {
-                    if (folder.accessKey && !currentUser[folder.accessKey] && !isSystemAdmin) return;
-                }
 
                 html += `
                     <div class="accordion-folder" id="folder-${folder.id}">
@@ -1828,24 +1836,33 @@
             lucide.createIcons();
         }
 
-        // Toggle user access scopes via API
+        // Toggle user access scopes via API (Enforcing mutually exclusive single-workspace-access)
         async function toggleAccess(id, email, module) {
             const u = allUsers.find(x => x.id === id);
             if (!u) return;
 
             const payload = {};
-            if (module === 'marketflow') {
-                payload.marketflow_access = !u.marketflow_access;
-            } else if (module === 'projectflow') {
-                payload.projectflow_access = !u.projectflow_access;
-            } else if (module === 'hr') {
-                payload.hr_access = !u.hr_access;
-            } else if (module === 'admin') {
-                payload.admin_access = !u.admin_access;
-            } else if (module === 'employee') {
-                payload.employee_access = !u.employee_access;
-            } else if (module === 'status') {
+            if (module === 'status') {
                 payload.status = u.status === 'Active' ? 'Inactive' : 'Active';
+            } else {
+                // Workspace modules (marketflow, projectflow, hr, employee) are strictly mutually exclusive!
+                let newval = false;
+                if (module === 'marketflow') newval = !u.marketflow_access;
+                else if (module === 'projectflow') newval = !u.projectflow_access;
+                else if (module === 'hr') newval = !u.hr_access;
+                else if (module === 'employee') newval = !u.employee_access;
+
+                if (newval) {
+                    payload.marketflow_access = (module === 'marketflow');
+                    payload.projectflow_access = (module === 'projectflow');
+                    payload.hr_access = (module === 'hr');
+                    payload.employee_access = (module === 'employee');
+                } else {
+                    payload.marketflow_access = false;
+                    payload.projectflow_access = false;
+                    payload.hr_access = false;
+                    payload.employee_access = false;
+                }
             }
 
             const res = await apiFetch('/auth/users/' + encodeURIComponent(email) + '/access', {
@@ -1857,13 +1874,38 @@
                 if (payload.marketflow_access !== undefined) u.marketflow_access = payload.marketflow_access;
                 if (payload.projectflow_access !== undefined) u.projectflow_access = payload.projectflow_access;
                 if (payload.hr_access !== undefined) u.hr_access = payload.hr_access;
-                if (payload.admin_access !== undefined) u.admin_access = payload.admin_access;
                 if (payload.employee_access !== undefined) u.employee_access = payload.employee_access;
                 if (payload.status !== undefined) u.status = payload.status;
                 renderUsers(allUsers);
             } else {
                 alert(res?.error || 'Failed to update access module status');
                 renderUsers(allUsers); // Re-render to undo
+            }
+        }
+
+        // Toggle invite form checkbox mutual exclusivity
+        function toggleInviteScope(scope) {
+            const chkMF = document.getElementById('inviteScopeMF');
+            const chkPF = document.getElementById('inviteScopePF');
+            const chkHR = document.getElementById('inviteScopeHR');
+            const chkEMP = document.getElementById('inviteScopeEMP');
+
+            if (scope === 'MF' && chkMF.checked) {
+                chkPF.checked = false;
+                chkHR.checked = false;
+                chkEMP.checked = false;
+            } else if (scope === 'PF' && chkPF.checked) {
+                chkMF.checked = false;
+                chkHR.checked = false;
+                chkEMP.checked = false;
+            } else if (scope === 'HR' && chkHR.checked) {
+                chkMF.checked = false;
+                chkPF.checked = false;
+                chkEMP.checked = false;
+            } else if (scope === 'EMP' && chkEMP.checked) {
+                chkMF.checked = false;
+                chkPF.checked = false;
+                chkHR.checked = false;
             }
         }
 
@@ -1952,6 +1994,11 @@
                 });
                 renderUsers(allUsers);
                 emailInput.value = '';
+                scopeMF.checked = false;
+                scopePF.checked = false;
+                scopeHR.checked = false;
+                scopeEMP.checked = true;
+                scopeActive.checked = true;
                 alert('Associate successfully provisioned!');
             } else {
                 alert(res?.error || 'Failed to provision associate');
@@ -2170,18 +2217,20 @@
         buildAccordionSidebar();
         renderWorkspaceHeader();
 
-        // Boot default permitted folder/item
         window.addEventListener('DOMContentLoaded', () => {
-            if (currentUser.role === 'employee') {
-                switchAccordionTab('emp-profile');
-            } else if (currentUser.role === 'admin' || currentUser.role === 'super_admin' || currentUser.role === 'owner') {
+            const isSystemAdmin = currentUser.role === 'admin' || currentUser.role === 'super_admin' || currentUser.role === 'owner';
+            if (isSystemAdmin) {
                 switchAccordionTab('admin-dashboard');
+            } else if (currentUser.hr_access) {
+                switchAccordionTab('hr-dashboard');
             } else if (currentUser.marketflow_access) {
                 switchAccordionTab('db-overview');
             } else if (currentUser.projectflow_access) {
                 switchAccordionTab('pm-dashboard');
-            } else if (currentUser.hr_access) {
-                switchAccordionTab('hr-dashboard');
+            } else if (currentUser.role === 'employee' || currentUser.employee_access) {
+                switchAccordionTab('emp-profile');
+            } else {
+                switchAccordionTab('emp-profile');
             }
         });
 

@@ -9,8 +9,8 @@ const CompanySchema = new mongoose.Schema({
 }, { timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' } });
 
 CompanySchema.set('toJSON', {
-    virtuals: true,
-    transform: (doc, ret) => { ret.id = ret._id.toString(); delete ret._id; delete ret.__v; }
+  virtuals: true,
+  transform: (doc, ret) => { ret.id = ret._id.toString(); delete ret._id; delete ret.__v; }
 });
 export const Company = mongoose.models.Company || mongoose.model('Company', CompanySchema);
 
@@ -31,8 +31,8 @@ const UserSchema = new mongoose.Schema({
 }, { timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' } });
 
 UserSchema.set('toJSON', {
-    virtuals: true,
-    transform: (doc, ret) => { ret.id = ret._id.toString(); delete ret._id; delete ret.__v; }
+  virtuals: true,
+  transform: (doc, ret) => { ret.id = ret._id.toString(); delete ret._id; delete ret.__v; }
 });
 export const User = mongoose.models.User || mongoose.model('User', UserSchema);
 

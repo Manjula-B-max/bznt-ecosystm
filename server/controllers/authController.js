@@ -28,13 +28,29 @@ export const sendOtp = async (req, res) => {
             }
         }
 
+        const OTP_COOLDOWN_MS = 60 * 1000; // 60 seconds between resends
+
+        // Check cooldown: if an OTP was recently sent, block resend
+        const existingOtp = await OtpCode.findOne({ email });
+        if (existingOtp && existingOtp.sent_at) {
+            const elapsed = Date.now() - existingOtp.sent_at;
+            if (elapsed < OTP_COOLDOWN_MS) {
+                const secondsLeft = Math.ceil((OTP_COOLDOWN_MS - elapsed) / 1000);
+                return res.status(429).json({
+                    error: `Please wait ${secondsLeft}s before requesting another OTP.`,
+                    cooldown: secondsLeft
+                });
+            }
+        }
+
         const code = String(Math.floor(100000 + Math.random() * 900000));
         const expiresAt = Date.now() + 5 * 60 * 1000; // 5 minutes
+        const sentAt = Date.now();
 
-        // Upsert OTP
+        // Upsert OTP with sent_at timestamp and reset attempts
         await OtpCode.findOneAndUpdate(
             { email },
-            { code, expires_at: expiresAt },
+            { code, expires_at: expiresAt, sent_at: sentAt, attempts: 0 },
             { upsert: true, returnDocument: 'after' }
         );
 
@@ -142,8 +158,13 @@ export const listUsers = async (req, res) => {
         if (user.role === 'super_admin') {
             query = { role: { $ne: 'super_admin' } };
         } else if (user.role === 'owner' || ['admin', 'manager', 'employee'].includes(user.role)) {
-            if (!user.company_id) return res.json([]);
-            query = { company_id: user.company_id, role: { $ne: 'super_admin' } };
+            if (user.company_id) {
+                query = { company_id: user.company_id, role: { $ne: 'super_admin' } };
+            } else if (user.company) {
+                query = { company: user.company, role: { $ne: 'super_admin' } };
+            } else {
+                return res.json([]);
+            }
         } else {
             return res.status(403).json({ error: 'Forbidden' });
         }
@@ -171,7 +192,8 @@ export const createUser = async (req, res) => {
         const adminUser = await User.findById(req.userId);
         if (!adminUser || !['super_admin', 'owner', 'admin'].includes(adminUser.role)) return res.status(403).json({ error: 'Forbidden' });
 
-        const { name: reqName, department, role, marketflow_access, projectflow_access, hr_access, employee_access, status } = req.body;
+        const { email: rawEmail, name: reqName, department, role, marketflow_access, projectflow_access, hr_access, employee_access, status } = req.body;
+        const email = (rawEmail || '').toLowerCase().trim();
 
         if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
             return res.status(400).json({ error: 'Valid email required' });

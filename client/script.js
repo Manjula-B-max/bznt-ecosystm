@@ -827,15 +827,26 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // ── State ──────────────────────────────────────────────────────────────────
     let otpSentTo = null;   // email OTP was dispatched to
+    let dualInterval = null;
 
     const resetToEmailStep = () => {
         otpSentTo = null;
+        if (dualInterval) {
+            clearInterval(dualInterval);
+            dualInterval = null;
+        }
         if (otpGroup) otpGroup.style.display = 'none';
         if (btnTextEl) btnTextEl.textContent = 'Send OTP';
-        if (otpInput) otpInput.value = '';
+        if (otpInput) {
+            otpInput.value = '';
+            otpInput.disabled = false;
+        }
+        const emailInput = document.getElementById('email');
+        const button = loginForm.querySelector('.login-btn');
+        if (button) button.disabled = false;
         if (statusEl) statusEl.innerHTML = '';
         if (changeEmailLink) changeEmailLink.style.display = 'none';
-        document.getElementById('email')?.focus();
+        emailInput?.focus();
     };
 
     if (changeEmailLink) {
@@ -904,10 +915,107 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (btnTextEl) btnTextEl.textContent = 'Verify OTP';
                 button.disabled = false;
 
-                setStatus(
-                    '<span>OTP sent completely securely to <strong>' + email.replace(/</g, '&lt;') + '</strong>.<br>' +
-                    '<span style="font-size:13px; color:#555;">Please check your inbox (and spam folder)</span></span>'
-                );
+                // Dual countdown: 5-min OTP expiry + 60s resend cooldown
+                const OTP_EXPIRY_S = 5 * 60; // 300 seconds
+                const RESEND_COOLDOWN_S = 60;
+                let expiryLeft = OTP_EXPIRY_S;
+                let resendLeft = RESEND_COOLDOWN_S;
+                if (dualInterval) clearInterval(dualInterval);
+
+                const fmtExpiry = (sec) => {
+                    const m = Math.floor(sec / 60);
+                    const s = sec % 60;
+                    return m + ':' + String(s).padStart(2, '0');
+                };
+
+                const attachResendHandler = () => {
+                    const resendLink = document.getElementById('resendOtpLink');
+                    if (!resendLink) return;
+                    resendLink.addEventListener('click', async (ev) => {
+                        ev.preventDefault();
+                        if (dualInterval) clearInterval(dualInterval);
+                        const prevSentTo = otpSentTo;
+                        otpSentTo = null;
+                        button.disabled = true;
+                        if (btnTextEl) btnTextEl.textContent = 'Sending...';
+                        try {
+                            const res = await fetch('/api/auth/send-otp', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ email })
+                            });
+                            const resData = await res.json();
+                            if (!res.ok) {
+                                otpSentTo = prevSentTo;
+                                button.disabled = false;
+                                if (btnTextEl) btnTextEl.textContent = 'Verify OTP';
+                                setStatus('<span style="color:#b91c1c;">' + (resData.error || 'Failed to resend OTP.') + '</span>');
+                                return;
+                            }
+                            otpSentTo = email;
+                            expiryLeft = OTP_EXPIRY_S;
+                            resendLeft = RESEND_COOLDOWN_S;
+                            button.disabled = false;
+                            if (btnTextEl) btnTextEl.textContent = 'Verify OTP';
+                            if (otpInput) {
+                                otpInput.value = '';
+                                otpInput.disabled = false;
+                            }
+                            renderDualStatus();
+                            startDualInterval();
+                        } catch (_) {
+                            otpSentTo = prevSentTo;
+                            button.disabled = false;
+                            if (btnTextEl) btnTextEl.textContent = 'Verify OTP';
+                            setStatus('<span style="color:#b91c1c;">Cannot reach server. Please try again.</span>');
+                        }
+                    });
+                };
+
+                const renderDualStatus = () => {
+                    const expiryColor = expiryLeft > 60 ? '#D97706' : '#DC2626';
+                    const expiryText = '<strong style="color:' + expiryColor + ';">' + fmtExpiry(expiryLeft) + '</strong>';
+                    
+                    const resendPart = resendLeft > 0
+                        ? '<span style="color:#9CA3AF;">Resend in <strong style="color:#374151;">' + resendLeft + 's</strong></span>'
+                        : '<a href="#" id="resendOtpLink" style="color:#7C3AED;font-weight:600;text-decoration:underline;">Resend OTP</a>';
+
+                    if (expiryLeft <= 0) {
+                        if (otpInput) otpInput.disabled = true;
+                        button.disabled = true;
+                        const expiredResend = resendLeft > 0
+                            ? 'Wait <strong>' + resendLeft + 's</strong> to resend'
+                            : '<a href="#" id="resendOtpLink" style="color:#7C3AED;font-weight:600;text-decoration:underline;">Request a new OTP</a>';
+                        setStatus(
+                            '<span>OTP for <strong>' + email.replace(/</g, '&lt;') + '</strong> has <strong style="color:#DC2626;">expired</strong>.<br>' +
+                            '<span style="font-size:12px;margin-top:4px;display:inline-block;">' + expiredResend + '</span></span>'
+                        );
+                    } else {
+                        setStatus(
+                            '<span>OTP sent to <strong>' + email.replace(/</g, '&lt;') + '</strong> · Expires in ' + expiryText + '<br>' +
+                            '<span style="font-size:12px;color:#6B7280;">Check inbox and spam folder.</span><br>' +
+                            '<span style="font-size:12px;margin-top:4px;display:inline-block;">' + resendPart + '</span></span>'
+                        );
+                    }
+
+                    if (resendLeft <= 0) {
+                        setTimeout(attachResendHandler, 0);
+                    }
+                };
+
+                const startDualInterval = () => {
+                    dualInterval = setInterval(() => {
+                        if (expiryLeft > 0) expiryLeft--;
+                        if (resendLeft > 0) resendLeft--;
+                        renderDualStatus();
+                        if (expiryLeft <= 0 && resendLeft <= 0) {
+                            if (dualInterval) clearInterval(dualInterval);
+                        }
+                    }, 1000);
+                };
+
+                renderDualStatus();
+                startDualInterval();
                 otpInput?.focus();
 
             } catch (_) {
@@ -969,18 +1077,16 @@ document.addEventListener('DOMContentLoaded', () => {
                     return;
                 }
 
-                const modules = [];
-                const isMaster = ['owner', 'admin'].includes(uObj.role);
+                const hasAccess = ['owner', 'admin'].includes(uObj.role) || 
+                                  uObj.admin_access || 
+                                  uObj.marketflow_access || 
+                                  uObj.projectflow_access || 
+                                  uObj.hr_access || 
+                                  uObj.employee_access || 
+                                  uObj.role === 'employee';
 
-                if (isMaster || uObj.admin_access) modules.push({ name: 'admin', url: 'admin.html' });
-                if (isMaster || uObj.marketflow_access) modules.push({ name: 'marketflow', url: 'marketflow-crm.html' });
-                if (isMaster || uObj.projectflow_access) modules.push({ name: 'projectflow', url: 'projectflow-crm.html' });
-                if (isMaster || uObj.hr_access) modules.push({ name: 'hr', url: 'hr-admin.html' });
-
-                if (modules.length === 1) {
-                    window.location.replace(modules[0].url);
-                } else if (modules.length > 1) {
-                    window.location.replace('workspace-selector.html');
+                if (hasAccess) {
+                    window.location.replace('admin.html');
                 } else {
                     setStatus('<span style="color:#b91c1c;">Account verified, but no product access is assigned. Please contact your administrator.</span>');
                     button.disabled = false;

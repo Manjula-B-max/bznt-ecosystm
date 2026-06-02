@@ -1,4 +1,4 @@
-import { User, OtpCode } from '../models/Auth.js';
+import { User, OtpCode, Company } from '../models/Auth.js';
 import { signToken } from '../auth.js';
 import { Resend } from 'resend';
 
@@ -20,7 +20,9 @@ export const sendOtp = async (req, res) => {
             }
             const hasAccess = ['super_admin', 'admin'].includes(existingUser.role)
                 || existingUser.marketflow_access
-                || existingUser.projectflow_access;
+                || existingUser.projectflow_access
+                || existingUser.hr_access
+                || existingUser.admin_access;
             if (!hasAccess) {
                 return res.status(403).json({ error: 'Access denied. You do not have permission to access this platform.' });
             }
@@ -98,7 +100,7 @@ export const verifyOtp = async (req, res) => {
             if (isSuperAdminEmail(email) && userDoc.role !== 'super_admin') {
                 userDoc.role = 'super_admin';
                 await userDoc.save();
-            } else if (!isSuperAdminEmail(email) && !userDoc.marketflow_access && !userDoc.projectflow_access && userDoc.role !== 'admin') {
+            } else if (!isSuperAdminEmail(email) && !userDoc.marketflow_access && !userDoc.projectflow_access && !userDoc.hr_access && !userDoc.admin_access && userDoc.role !== 'admin') {
                 return res.status(403).json({ error: 'Access denied. You do not have permissions.' });
             }
         }
@@ -130,37 +132,82 @@ export const updateMe = async (req, res) => {
     } catch (e) { res.status(500).json({ error: e.message }); }
 };
 
-// ── User Management (super_admin only) ─────────────────────────────────────
-
+// ── User Management ────────────────────────────────────────────────────────
 export const listUsers = async (req, res) => {
     try {
         const user = await User.findById(req.userId);
-        if (!user || !['super_admin', 'admin'].includes(user.role)) return res.status(403).json({ error: 'Forbidden' });
+        if (!user) return res.status(404).json({ error: 'Not found' });
 
-        const users = await User.find({ 
-            role: { $ne: 'super_admin' },
-            _id: { $ne: user._id }
-        }).sort({ created_at: -1 }).lean();
-        res.json(users.map(u => ({ id: u._id.toString(), email: u.email, role: u.role, marketflow_access: !!u.marketflow_access, projectflow_access: !!u.projectflow_access })));
+        let query = {};
+        if (user.role === 'super_admin') {
+            query = { role: { $ne: 'super_admin' } };
+        } else if (user.role === 'owner' || ['admin', 'manager', 'employee'].includes(user.role)) {
+            if (!user.company_id) return res.json([]);
+            query = { company_id: user.company_id, role: { $ne: 'super_admin' } };
+        } else {
+            return res.status(403).json({ error: 'Forbidden' });
+        }
+
+        const users = await User.find(query).sort({ created_at: -1 }).lean();
+        
+        res.json(users.map(u => ({
+            id: u._id.toString(),
+            email: u.email,
+            name: u.name,
+            role: u.role,
+            department: u.department || 'General',
+            marketflow_access: !!u.marketflow_access,
+            projectflow_access: !!u.projectflow_access,
+            hr_access: !!u.hr_access,
+            admin_access: !!u.admin_access,
+            employee_access: !!u.employee_access,
+            status: u.status || 'Active'
+        })));
     } catch (e) { res.status(500).json({ error: e.message }); }
 };
 
 export const createUser = async (req, res) => {
     try {
         const adminUser = await User.findById(req.userId);
-        if (!adminUser || !['super_admin', 'admin'].includes(adminUser.role)) return res.status(403).json({ error: 'Forbidden' });
+        if (!adminUser || !['super_admin', 'owner', 'admin'].includes(adminUser.role)) return res.status(403).json({ error: 'Forbidden' });
 
-        const email = (req.body.email || '').toLowerCase().trim();
+        const { name: reqName, department, role, marketflow_access, projectflow_access, hr_access, employee_access, status } = req.body;
+
         if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
             return res.status(400).json({ error: 'Valid email required' });
 
         let userDoc = await User.findOne({ email });
         if (userDoc) return res.status(400).json({ error: 'User already exists' });
 
-        const name = email.split('@')[0].replace(/[._-]/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
-        userDoc = await User.create({ email, name, role: 'user', marketflow_access: false, projectflow_access: false });
+        const name = reqName || email.split('@')[0].replace(/[._-]/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+        
+        userDoc = await User.create({
+            email,
+            name,
+            role: role || 'user',
+            company: adminUser.company,
+            company_id: adminUser.company_id,
+            department: department || 'General',
+            marketflow_access: !!marketflow_access,
+            projectflow_access: !!projectflow_access,
+            hr_access: !!hr_access,
+            admin_access: false,
+            employee_access: !!employee_access,
+            status: status || 'Active'
+        });
 
-        res.json({ ok: true, email: userDoc.email, id: userDoc._id, marketflow_access: false, projectflow_access: false, role: 'user' });
+        res.json({
+            ok: true,
+            email: userDoc.email,
+            id: userDoc._id,
+            role: userDoc.role,
+            department: userDoc.department,
+            marketflow_access: userDoc.marketflow_access,
+            projectflow_access: userDoc.projectflow_access,
+            hr_access: userDoc.hr_access,
+            employee_access: userDoc.employee_access,
+            status: userDoc.status
+        });
     } catch (e) { res.status(500).json({ error: e.message }); }
 };
 
@@ -170,7 +217,7 @@ export const updateUserAccess = async (req, res) => {
         if (!adminUser || !['super_admin', 'admin'].includes(adminUser.role)) return res.status(403).json({ error: 'Forbidden' });
 
         const targetEmail = (req.params.email || '').toLowerCase().trim();
-        const { marketflow_access, projectflow_access } = req.body;
+        const { marketflow_access, projectflow_access, hr_access, admin_access, employee_access, status } = req.body;
         
         if (!targetEmail) return res.status(400).json({ error: 'Email required' });
         
@@ -180,10 +227,23 @@ export const updateUserAccess = async (req, res) => {
 
         if (marketflow_access !== undefined) targetUser.marketflow_access = !!marketflow_access;
         if (projectflow_access !== undefined) targetUser.projectflow_access = !!projectflow_access;
+        if (hr_access !== undefined) targetUser.hr_access = !!hr_access;
+        if (admin_access !== undefined) targetUser.admin_access = !!admin_access;
+        if (employee_access !== undefined) targetUser.employee_access = !!employee_access;
+        if (status !== undefined) targetUser.status = status;
         
         await targetUser.save();
         
-        res.json({ ok: true, email: targetUser.email, marketflow_access: targetUser.marketflow_access, projectflow_access: targetUser.projectflow_access });
+        res.json({
+            ok: true,
+            email: targetUser.email,
+            marketflow_access: targetUser.marketflow_access,
+            projectflow_access: targetUser.projectflow_access,
+            hr_access: targetUser.hr_access,
+            admin_access: targetUser.admin_access,
+            employee_access: targetUser.employee_access,
+            status: targetUser.status
+        });
     } catch (e) { res.status(500).json({ error: e.message }); }
 };
 
@@ -230,5 +290,119 @@ export const updateUserRole = async (req, res) => {
         }
         
         res.json({ ok: true, email: targetUser.email, role: targetUser.role });
+    } catch (e) { res.status(500).json({ error: e.message }); }
+};
+
+// ── Company Management (super_admin only) ───────────────────────────────────
+
+export const listCompanies = async (req, res) => {
+    try {
+        const adminUser = await User.findById(req.userId);
+        if (!adminUser || adminUser.role !== 'super_admin') return res.status(403).json({ error: 'Forbidden' });
+
+        const companies = await Company.find().sort({ created_at: -1 }).lean();
+        res.json(companies.map(c => ({
+            id: c._id.toString(),
+            name: c.name,
+            logo: c.logo,
+            owner_email: c.owner_email,
+            subscription: c.subscription,
+            status: c.status,
+            created_at: c.created_at
+        })));
+    } catch (e) { res.status(500).json({ error: e.message }); }
+};
+
+export const createCompany = async (req, res) => {
+    try {
+        const adminUser = await User.findById(req.userId);
+        if (!adminUser || adminUser.role !== 'super_admin') return res.status(403).json({ error: 'Forbidden' });
+
+        const { name, logo, owner_email, subscription, status } = req.body;
+        const cleanEmail = (owner_email || '').toLowerCase().trim();
+
+        if (!name || !cleanEmail) return res.status(400).json({ error: 'Company Name and Owner Email required' });
+
+        let existingCompany = await Company.findOne({ owner_email: cleanEmail });
+        if (existingCompany) return res.status(400).json({ error: 'A company with this owner already exists' });
+
+        const companyDoc = await Company.create({
+            name,
+            logo: logo || '',
+            owner_email: cleanEmail,
+            subscription: subscription || 'Basic',
+            status: status || 'Active'
+        });
+
+        // Auto-provision Company Owner
+        let userDoc = await User.findOne({ email: cleanEmail });
+        if (userDoc) {
+            userDoc.role = 'owner';
+            userDoc.company = name;
+            userDoc.company_id = companyDoc._id;
+            userDoc.marketflow_access = true;
+            userDoc.projectflow_access = true;
+            userDoc.hr_access = true;
+            userDoc.admin_access = true;
+            userDoc.employee_access = true;
+            userDoc.status = 'Active';
+            await userDoc.save();
+        } else {
+            const ownerName = cleanEmail.split('@')[0].replace(/[._-]/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+            await User.create({
+                email: cleanEmail,
+                name: ownerName,
+                company: name,
+                company_id: companyDoc._id,
+                role: 'owner',
+                marketflow_access: true,
+                projectflow_access: true,
+                hr_access: true,
+                admin_access: true,
+                employee_access: true,
+                status: 'Active'
+            });
+        }
+
+        res.json({ ok: true, company: companyDoc });
+    } catch (e) { res.status(500).json({ error: e.message }); }
+};
+
+export const updateCompany = async (req, res) => {
+    try {
+        const adminUser = await User.findById(req.userId);
+        if (!adminUser || adminUser.role !== 'super_admin') return res.status(403).json({ error: 'Forbidden' });
+
+        const { name, logo, subscription, status } = req.body;
+        const companyDoc = await Company.findById(req.params.id);
+        if (!companyDoc) return res.status(404).json({ error: 'Company not found' });
+
+        if (name !== undefined) companyDoc.name = name;
+        if (logo !== undefined) companyDoc.logo = logo;
+        if (subscription !== undefined) companyDoc.subscription = subscription;
+        if (status !== undefined) companyDoc.status = status;
+
+        await companyDoc.save();
+
+        if (name !== undefined) {
+            await User.updateMany({ company_id: companyDoc._id }, { company: name });
+        }
+
+        res.json({ ok: true, company: companyDoc });
+    } catch (e) { res.status(500).json({ error: e.message }); }
+};
+
+export const deleteCompany = async (req, res) => {
+    try {
+        const adminUser = await User.findById(req.userId);
+        if (!adminUser || adminUser.role !== 'super_admin') return res.status(403).json({ error: 'Forbidden' });
+
+        const companyDoc = await Company.findById(req.params.id);
+        if (!companyDoc) return res.status(404).json({ error: 'Company not found' });
+
+        await User.deleteMany({ company_id: companyDoc._id });
+        await Company.deleteOne({ _id: companyDoc._id });
+
+        res.json({ ok: true, id: req.params.id });
     } catch (e) { res.status(500).json({ error: e.message }); }
 };

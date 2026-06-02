@@ -2,6 +2,9 @@
 <html lang="en">
 
 <head>
+    <script>
+        window.location.replace('admin.html');
+    </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ProjectFlow</title>
@@ -44,9 +47,50 @@
         body.sidebar-collapsed #appSidebar .sidebar-item { justify-content: center; padding-left: 0 !important; padding-right: 0 !important; padding-top: 0.6rem !important; padding-bottom: 0.6rem !important; width: 100% !important; margin-left: 0 !important; margin-right: 0 !important; border-radius: 0 !important; }
         body.sidebar-collapsed #sidebarCollapse i[data-lucide="chevrons-left"] { transform: rotate(180deg); }
 
-        #appSidebar { width: 14rem; transition: width 0.2s ease; }
-        .nav-tab.active { background: #f3e8ff; color: #9333ea; font-weight: 600; }
-        .sidebar-item.sidebar-active { border-left: 3px solid #9333ea; background: #faf5ff; }
+        /* Modern floating sidebar style override */
+        #appSidebar {
+            width: 280px !important;
+            background: #FFFFFF !important;
+            border: 1px solid #ECECF3 !important;
+            border-radius: 28px !important;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.03) !important;
+            margin: 24px 0 24px 24px !important;
+            height: calc(100vh - 48px) !important;
+            z-index: 40 !important;
+            overflow-y: auto !important;
+            transition: all 0.3s ease !important;
+        }
+        #mainHeader {
+            height: 72px !important;
+            background: rgba(255, 255, 255, 0.75) !important;
+            backdrop-filter: blur(24px) !important;
+            -webkit-backdrop-filter: blur(24px) !important;
+            border: 1px solid rgba(255, 255, 255, 0.5) !important;
+            border-radius: 22px !important;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.06) !important;
+            margin: 24px 24px 0 328px !important;
+            z-index: 30 !important;
+            transition: all 0.3s ease !important;
+        }
+        main.flex-1 {
+            margin: 112px 24px 24px 328px !important;
+            padding: 0 !important;
+            background-color: #FAFAFC !important;
+            min-height: calc(100vh - 136px) !important;
+            overflow-y: auto !important;
+        }
+        /* Nav tab active pill */
+        .nav-tab.active {
+            background: #F5F3FF !important;
+            color: #7C3AED !important;
+            font-weight: 600 !important;
+        }
+        /* Sidebar active item left accent */
+        .sidebar-item.sidebar-active {
+            border-left: 3px solid #7C3AED !important;
+            background: #F5F3FF !important;
+            color: #7C3AED !important;
+        }
 
         /* ProjectFlow specific styles */
         .glass-card { background: rgba(255, 255, 255, 0.95); border-radius: 16px; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }

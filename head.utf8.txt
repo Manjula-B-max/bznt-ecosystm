@@ -147,4 +147,4 @@ class MarketFlowCRM {
                                 <div class="md:col-span-2">
                                     <label class="text-xs font-medium text-slate-600">Company Name</label>
                                     <input data-rfp-field="provider.companyName" value="${esc(provider.companyName)}" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm" />
-                                </div>
+                                </div>

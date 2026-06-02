@@ -963,18 +963,28 @@ document.addEventListener('DOMContentLoaded', () => {
             setStatus('<span style="color:#059669;">Verified! Redirecting...</span>');
 
             setTimeout(() => {
-                if (data.user.role === 'super_admin') {
+                const uObj = data.user;
+                if (uObj.role === 'super_admin') {
                     window.location.replace('super-admin.html');
-                } else if (data.user.role === 'admin') {
-                    window.location.replace('admin.html');
-                } else if (data.user.marketflow_access && data.user.projectflow_access) {
-                    window.location.replace('marketflow-crm.html'); // default to marketflow if both
-                } else if (data.user.projectflow_access) {
-                    window.location.replace('projectflow-crm.html');
-                } else if (data.user.marketflow_access) {
-                    window.location.replace('marketflow-crm.html');
+                    return;
+                }
+
+                const modules = [];
+                const isMaster = ['owner', 'admin'].includes(uObj.role);
+
+                if (isMaster || uObj.admin_access) modules.push({ name: 'admin', url: 'admin.html' });
+                if (isMaster || uObj.marketflow_access) modules.push({ name: 'marketflow', url: 'marketflow-crm.html' });
+                if (isMaster || uObj.projectflow_access) modules.push({ name: 'projectflow', url: 'projectflow-crm.html' });
+                if (isMaster || uObj.hr_access) modules.push({ name: 'hr', url: 'hr-admin.html' });
+
+                if (modules.length === 1) {
+                    window.location.replace(modules[0].url);
+                } else if (modules.length > 1) {
+                    window.location.replace('workspace-selector.html');
                 } else {
-                    window.location.replace('marketflow-crm.html');
+                    setStatus('<span style="color:#b91c1c;">Account verified, but no product access is assigned. Please contact your administrator.</span>');
+                    button.disabled = false;
+                    if (btnTextEl) btnTextEl.textContent = 'Verify OTP';
                 }
             }, 700);
 

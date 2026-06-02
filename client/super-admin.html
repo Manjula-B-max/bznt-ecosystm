@@ -3,120 +3,455 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Control - BEZENT</title>
+    <title>Super Admin Center - BEZENT</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        .toggle-checkbox:checked { transform: translateX(100%); border-color: #10b981; }
-        .toggle-checkbox:checked + .toggle-label { background-color: #10b981; }
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap');
+        * {
+            font-family: 'Outfit', sans-serif;
+            box-sizing: border-box;
+        }
+        body {
+            background-color: #FAFAFC;
+        }
+        .hero-gradient {
+            background: linear-gradient(135deg, #7C3AED 0%, #5B21B6 50%, #312E81 100%);
+        }
+        .floating-sidebar {
+            width: 280px;
+            position: fixed;
+            top: 24px;
+            left: 24px;
+            bottom: 24px;
+            background: #FFFFFF;
+            border: 1px solid #ECECF3;
+            border-radius: 28px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.03);
+            z-index: 40;
+            transition: all 0.3s ease;
+        }
+        .floating-navbar {
+            height: 72px;
+            background: rgba(255, 255, 255, 0.75);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            border-radius: 22px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.06);
+            margin: 24px 24px 0 328px;
+            z-index: 30;
+            transition: all 0.3s ease;
+        }
+        .main-workspace {
+            margin: 24px 24px 24px 328px;
+            transition: all 0.3s ease;
+        }
+        .premium-card {
+            background: #FFFFFF;
+            border: 1px solid #ECECF3;
+            border-radius: 24px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.02);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .premium-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 16px 36px rgba(0,0,0,0.04);
+        }
+        .sidebar-tab {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 16px;
+            margin: 4px 16px;
+            border-radius: 12px;
+            color: #6B7280;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+        .sidebar-tab:hover {
+            background: #F7F7FB;
+            color: #111827;
+        }
+        .sidebar-tab.active {
+            background: #F5F3FF;
+            color: #7C3AED;
+            font-weight: 600;
+        }
+        /* Custom Checkbox styles */
+        .checkbox-custom:checked + label {
+            background-color: #7C3AED;
+            border-color: #7C3AED;
+        }
+        .checkbox-custom:checked + label::after {
+            opacity: 1;
+        }
+        .checkbox-custom-label::after {
+            content: '';
+            position: absolute;
+            width: 5px;
+            height: 10px;
+            border: solid white;
+            border-width: 0 2px 2px 0;
+            transform: rotate(45deg);
+            top: 3px;
+            left: 7px;
+            opacity: 0;
+            transition: opacity 0.15s ease;
+        }
+        /* Animations */
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(12px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .fade-up-view {
+            animation: fadeUp 0.35s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        .tab-panel { display: none; }
+        .tab-panel.active { display: block; }
+
+        /* Modal glass style */
+        .modal-backdrop {
+            background: rgba(15, 23, 42, 0.3);
+            backdrop-filter: blur(8px);
+        }
     </style>
 </head>
-<body class="bg-slate-50 font-sans min-h-screen">
-    
-    <!-- Top Nav -->
-    <header class="bg-purple-900 text-white border-b border-purple-800 shadow-sm sticky top-0 z-50">
-        <div class="flex items-center justify-between px-6 py-4">
-            <div class="flex items-center gap-6">
-                <div class="flex items-center gap-3">
-                    <div class="bg-purple-600 p-2 rounded-lg">
-                        <i data-lucide="shield-check" class="w-6 h-6"></i>
-                    </div>
-                    <div>
-                        <h1 class="text-xl font-bold tracking-wide">Admin Control</h1>
-                        <p class="text-purple-300 text-xs" id="header-subtitle">Admin Panel</p>
-                    </div>
+<body class="min-h-screen flex flex-col text-[#111827]">
+
+    <!-- Floating Sidebar -->
+    <aside class="floating-sidebar flex flex-col justify-between overflow-hidden">
+        <div>
+            <!-- Branding Header -->
+            <div class="px-6 py-6 border-b border-[#ECECF3] flex items-center gap-3">
+                <div class="bg-gradient-to-tr from-[#7C3AED] to-[#312E81] p-2 rounded-xl text-white shadow-md">
+                    <i data-lucide="shield-check" class="w-5 h-5"></i>
                 </div>
-                <div id="moduleLinks" class="hidden sm:flex border-l border-purple-700 pl-6 gap-4">
-                    <a href="marketflow-crm.html" class="text-xs text-purple-200 hover:text-white px-3 py-1.5 rounded-lg hover:bg-purple-800 transition flex items-center gap-1.5">
-                        <i data-lucide="bar-chart-2" class="w-3.5 h-3.5"></i> MarketFlow
-                    </a>
-                    <a href="projectflow-crm.html" class="text-xs text-purple-200 hover:text-white px-3 py-1.5 rounded-lg hover:bg-purple-800 transition flex items-center gap-1.5">
-                        <i data-lucide="folder-kanban" class="w-3.5 h-3.5"></i> Project Flow
-                    </a>
-                    <a href="hr-admin.html" class="text-xs text-purple-200 hover:text-white px-3 py-1.5 rounded-lg hover:bg-purple-800 transition flex items-center gap-1.5">
-                        <i data-lucide="users" class="w-3.5 h-3.5"></i> HR Admin
-                    </a>
+                <div>
+                    <h1 class="font-bold text-[#111827] text-base leading-tight">BEZENT</h1>
+                    <p class="text-[10px] text-[#6B7280] font-semibold tracking-wider uppercase">Super Admin Center</p>
                 </div>
             </div>
-            
-            <button onclick="logout()" class="flex items-center gap-2 px-4 py-2 hover:bg-purple-800 rounded-lg text-sm font-medium transition cursor-pointer">
-                <i data-lucide="log-out" class="w-4 h-4"></i> Sign out
+
+            <!-- Tab Links -->
+            <nav class="mt-6 overflow-y-auto max-h-[calc(100vh-220px)] hide-scrollbar">
+                <div class="sidebar-tab active" data-tab="dashboard">
+                    <i data-lucide="layout-dashboard" class="w-4 h-4"></i> Dashboard
+                </div>
+                <div class="sidebar-tab" data-tab="companies">
+                    <i data-lucide="building-2" class="w-4 h-4"></i> Companies
+                </div>
+                <div class="sidebar-tab" data-tab="plans">
+                    <i data-lucide="credit-card" class="w-4 h-4"></i> Subscription Plans
+                </div>
+                <div class="sidebar-tab" data-tab="health">
+                    <i data-lucide="activity" class="w-4 h-4"></i> Platform Health
+                </div>
+                <div class="sidebar-tab" data-tab="logs">
+                    <i data-lucide="history" class="w-4 h-4"></i> Activity Logs
+                </div>
+                <div class="sidebar-tab" data-tab="settings">
+                    <i data-lucide="settings" class="w-4 h-4"></i> Settings
+                </div>
+            </nav>
+        </div>
+
+        <!-- Logout Bottom Footer -->
+        <div class="p-4 border-t border-[#ECECF3]">
+            <button onclick="logout()" class="w-full flex items-center justify-center gap-2 py-3 hover:bg-[#F7F7FB] border border-[#ECECF3] rounded-xl text-sm font-semibold transition text-[#6B7280] hover:text-red-500">
+                <i data-lucide="log-out" class="w-4 h-4"></i> Log out
             </button>
+        </div>
+    </aside>
+
+    <!-- Floating Top Glass Navigation -->
+    <header class="floating-navbar px-6 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+            <span class="text-xs text-[#6B7280] font-semibold hover:text-[#111827] cursor-pointer">Platform</span>
+            <span class="text-xs text-[#ECECF3] font-bold">/</span>
+            <span class="text-xs text-[#111827] font-semibold" id="breadcrumbCurrent">Dashboard</span>
+        </div>
+
+        <!-- Profile, Notifications, Settings -->
+        <div class="flex items-center gap-4">
+            <button class="relative p-2 text-[#6B7280] hover:text-[#111827] hover:bg-[#F7F7FB] rounded-xl transition-colors">
+                <i data-lucide="bell" class="w-5 h-5"></i>
+                <span class="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white"></span>
+            </button>
+
+            <div class="w-9 h-9 rounded-full bg-gradient-to-tr from-[#7C3AED] to-[#312E81] text-white flex items-center justify-center text-xs font-bold ring-2 ring-purple-100 shadow-sm cursor-pointer" id="profileBubble">
+                SA
+            </div>
         </div>
     </header>
 
-    <main class="max-w-6xl mx-auto p-6 mt-6">
+    <!-- Main Workspace Dashboard Content -->
+    <main class="main-workspace flex-1">
         
-        <div class="mb-6 bg-white rounded-xl shadow-sm border border-slate-200 p-6 flex flex-col sm:flex-row gap-4 justify-between items-center w-full">
-            <div>
-                 <h3 class="text-sm font-bold text-slate-800 mb-1">Add New User</h3>
-                 <p class="text-xs text-slate-500" id="addUserDesc">Create a new user on the platform.</p>
-            </div>
-            <div class="flex w-full sm:w-auto gap-2">
-                 <input type="email" id="newUserEmail" placeholder="user@company.com" class="px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent w-full sm:w-64">
-                 <button onclick="addUser()" id="addUserBtn" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition whitespace-nowrap">Add User</button>
-            </div>
-        </div>
-
-        <div class="mb-4 flex justify-between items-end">
-            <div>
-                <h2 class="text-xl font-bold text-slate-800">User Management</h2>
-                <p class="text-slate-500 mt-1" id="manageUserDesc">Control access and roles across all registered accounts.</p>
-            </div>
+        <!-- ==================== DASHBOARD PANEL ==================== -->
+        <div id="dashboardPanel" class="tab-panel active space-y-6 fade-up-view">
             
-            <div class="relative w-64">
-                <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"></i>
-                <input type="text" id="userSearch" placeholder="Search missing users..." class="pl-10 pr-4 py-2 border border-slate-200 rounded-lg text-sm w-full focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+            <!-- SECTION 1: Large Gradient Hero Banner -->
+            <div class="hero-gradient rounded-[28px] p-8 text-white relative overflow-hidden shadow-lg shadow-purple-950/10">
+                <div class="absolute -right-20 -top-20 w-80 h-80 bg-white/5 rounded-full blur-3xl"></div>
+                <div class="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+                    <div>
+                        <div class="inline-flex items-center gap-2 px-3 py-1 bg-white/10 text-white rounded-full text-xs font-semibold mb-3 border border-white/15">
+                            <span class="w-1.5 h-1.5 rounded-full bg-[#10B981] animate-ping"></span> Global Platform Active
+                        </div>
+                        <h2 class="text-3xl font-bold tracking-tight">Welcome back, Super Admin</h2>
+                        <p class="text-purple-100 text-sm mt-1">Bezent unified control center. Monitor telemetry, configure product flags, and provision virtual tenant environments.</p>
+                    </div>
+                    
+                    <!-- Quick System Health Stats -->
+                    <div class="flex gap-3 w-full md:w-auto">
+                        <div class="bg-white/10 backdrop-blur-md rounded-2xl p-4 flex-1 md:w-36 border border-white/10 text-center">
+                            <span class="text-xs text-purple-200 block font-medium">System Health</span>
+                            <span class="text-2xl font-bold mt-1 block">99.99%</span>
+                        </div>
+                        <div class="bg-white/10 backdrop-blur-md rounded-2xl p-4 flex-1 md:w-36 border border-white/10 text-center">
+                            <span class="text-xs text-purple-200 block font-medium">Active Tenants</span>
+                            <span class="text-2xl font-bold mt-1 block" id="tenantCountHero">0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Footer Stats Grid inside Hero -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8 pt-6 border-t border-white/10">
+                    <div>
+                        <span class="text-xs text-purple-200 block">Total Workspaces</span>
+                        <span class="text-lg font-bold mt-0.5 block" id="tenantCountHero2">0</span>
+                    </div>
+                    <div>
+                        <span class="text-xs text-purple-200 block">Subscribers</span>
+                        <span class="text-lg font-bold mt-0.5 block" id="subscriberCountHero">0</span>
+                    </div>
+                    <div>
+                        <span class="text-xs text-purple-200 block">Platform Uptime</span>
+                        <span class="text-lg font-bold mt-0.5 block">142 Days</span>
+                    </div>
+                    <div>
+                        <span class="text-xs text-purple-200 block">Recent System Alerts</span>
+                        <span class="text-lg font-bold mt-0.5 text-emerald-300 flex items-center gap-1"><i data-lucide="check" class="w-4 h-4"></i> Stable</span>
+                    </div>
+                </div>
             </div>
+
+            <!-- SECTION 2: Platform Overview Telemetry Cards -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Company Growth Chart -->
+                <div class="premium-card p-6 lg:col-span-2">
+                    <div class="flex justify-between items-center mb-6">
+                        <h4 class="font-bold text-base text-[#111827]">Tenant Growth & Performance</h4>
+                        <span class="text-xs font-semibold text-[#6B7280]">Telemetry: Real-time</span>
+                    </div>
+                    <div class="h-64 relative">
+                        <canvas id="adoptionChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Recent Activity Feed panel -->
+                <div class="premium-card p-6 flex flex-col justify-between">
+                    <div>
+                        <h4 class="font-bold text-base text-[#111827] mb-4">Platform Activity Timeline</h4>
+                        <div class="space-y-4 max-h-60 overflow-y-auto hide-scrollbar" id="activityTimeline">
+                            <div class="flex gap-3 items-start text-xs">
+                                <div class="w-2 h-2 rounded-full bg-purple-600 mt-1 flex-shrink-0"></div>
+                                <div class="flex-1">
+                                    <p class="font-semibold text-[#111827]">System initialized successfully</p>
+                                    <span class="text-[#6B7280] text-[10px]">Just now</span>
+                                </div>
+                            </div>
+                            <div class="flex gap-3 items-start text-xs">
+                                <div class="w-2 h-2 rounded-full bg-emerald-500 mt-1 flex-shrink-0"></div>
+                                <div class="flex-1">
+                                    <p class="font-semibold text-[#111827]">Database connected successfully</p>
+                                    <span class="text-[#6B7280] text-[10px]">5 minutes ago</span>
+                                </div>
+                            </div>
+                            <div class="flex gap-3 items-start text-xs">
+                                <div class="w-2 h-2 rounded-full bg-blue-500 mt-1 flex-shrink-0"></div>
+                                <div class="flex-1">
+                                    <p class="font-semibold text-[#111827]">Super Admin logged in</p>
+                                    <span class="text-[#6B7280] text-[10px]">10 minutes ago</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <button onclick="switchTab('logs')" class="w-full mt-4 py-2 bg-[#F7F7FB] hover:bg-[#F5F3FF] border border-[#ECECF3] rounded-xl text-xs font-semibold transition text-[#7C3AED]">
+                        View Full System Logs
+                    </button>
+                </div>
+            </div>
+
         </div>
 
-        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-            <div class="overflow-x-auto">
-                <table class="w-full text-left" id="usersTable">
-                    <thead id="userTableHeader">
-                    </thead>
-                    <tbody id="userTableBody" class="divide-y divide-slate-100">
-                        <tr>
-                            <td colspan="3" class="px-6 py-8 text-center text-slate-400 text-sm">
-                                <i data-lucide="loader" class="w-6 h-6 mx-auto mb-2 animate-spin"></i> Loading users...
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+        <!-- ==================== COMPANIES PANEL (REGISTRAR GRID) ==================== -->
+        <div id="companiesPanel" class="tab-panel space-y-6 fade-up-view">
+            
+            <!-- Company Registrar Header & Trigger -->
+            <div class="premium-card p-6 flex flex-col md:flex-row gap-6 justify-between items-center">
+                <div>
+                    <h3 class="font-bold text-lg text-[#111827]">Provision Company Environment</h3>
+                    <p class="text-xs text-[#6B7280] mt-0.5">Spin up a brand new virtual company workspace. Owner will be auto-provisioned.</p>
+                </div>
+                <button onclick="openCreateCompanyModal()" class="bg-gradient-to-r from-[#7C3AED] to-[#5B21B6] hover:brightness-110 text-white px-5 py-2.5 rounded-xl text-sm font-semibold transition shadow-md shadow-purple-200 flex items-center gap-2">
+                    <i data-lucide="plus-circle" class="w-4 h-4"></i> Provision Workspace
+                </button>
             </div>
+
+            <!-- Filter and Search -->
+            <div class="flex items-center justify-between">
+                <div>
+                    <h3 class="font-bold text-lg text-[#111827]">Workspace Registry</h3>
+                    <p class="text-xs text-[#6B7280] mt-0.5" id="companyCountDesc">Managing active SaaS company workspaces</p>
+                </div>
+                <div class="relative w-72">
+                    <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#6B7280]"></i>
+                    <input type="text" id="companySearch" placeholder="Search company workspace registrar..." class="pl-10 pr-4 py-2 border border-[#ECECF3] rounded-xl text-sm w-full focus:outline-none focus:ring-2 focus:ring-[#7C3AED] bg-[#F7F7FB] focus:bg-white transition-all">
+                </div>
+            </div>
+
+            <!-- Companies List Table Grid -->
+            <div class="premium-card overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left" id="companiesTable">
+                        <thead class="bg-[#F7F7FB] border-b border-[#ECECF3] text-xs font-semibold tracking-wider text-[#6B7280] uppercase">
+                            <tr>
+                                <th class="px-6 py-4">Workspace Environment</th>
+                                <th class="px-6 py-4">Owner Email</th>
+                                <th class="px-6 py-4 text-center">Subscription</th>
+                                <th class="px-6 py-4 text-center">Status</th>
+                                <th class="px-6 py-4 text-center">Date Created</th>
+                                <th class="px-6 py-4 text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="companyTableBody" class="divide-y divide-[#ECECF3] text-sm">
+                            <tr>
+                                <td colspan="6" class="px-6 py-12 text-center text-[#6B7280] font-medium">
+                                    <i data-lucide="loader" class="w-6 h-6 mx-auto mb-2 animate-spin text-[#7C3AED]"></i>
+                                    Loading workspaces registry...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
         </div>
+
+        <!-- ==================== PLACER PANELS ==================== -->
+        <div id="plansPanel" class="tab-panel premium-card p-8 text-center space-y-4 fade-up-view">
+            <div class="bg-purple-50 text-[#7C3AED] p-4 rounded-full w-14 h-14 flex items-center justify-center mx-auto border border-purple-100">
+                <i data-lucide="credit-card" class="w-7 h-7"></i>
+            </div>
+            <h3 class="text-xl font-bold text-[#111827]">Subscription Pricing Models</h3>
+            <p class="text-sm text-[#6B7280] max-w-md mx-auto">Configure price indexes, feature tiers, and subscription billing policies. Current active tiers are Basic, Premium, and Enterprise.</p>
+        </div>
+
+        <div id="healthPanel" class="tab-panel premium-card p-8 text-center space-y-4 fade-up-view">
+            <div class="bg-purple-50 text-[#7C3AED] p-4 rounded-full w-14 h-14 flex items-center justify-center mx-auto border border-purple-100">
+                <i data-lucide="activity" class="w-7 h-7"></i>
+            </div>
+            <h3 class="text-xl font-bold text-[#111827]">Global Telemetry & Performance</h3>
+            <p class="text-sm text-[#6B7280] max-w-md mx-auto">Real-time status registers of microservices, server processors, database query timers, and request routing networks.</p>
+        </div>
+
+        <div id="logsPanel" class="tab-panel premium-card p-8 text-center space-y-4 fade-up-view">
+            <div class="bg-purple-50 text-[#7C3AED] p-4 rounded-full w-14 h-14 flex items-center justify-center mx-auto border border-purple-100">
+                <i data-lucide="history" class="w-7 h-7"></i>
+            </div>
+            <h3 class="text-xl font-bold text-[#111827]">System Event Auditor</h3>
+            <p class="text-sm text-[#6B7280] max-w-md mx-auto">Chronological log outputs tracking workspace provision actions, owner logins, subscription modifications, and API triggers.</p>
+        </div>
+
+        <div id="settingsPanel" class="tab-panel premium-card p-8 text-center space-y-4 fade-up-view">
+            <div class="bg-purple-50 text-[#7C3AED] p-4 rounded-full w-14 h-14 flex items-center justify-center mx-auto border border-purple-100">
+                <i data-lucide="settings" class="w-7 h-7"></i>
+            </div>
+            <h3 class="text-xl font-bold text-[#111827]">System Configurations</h3>
+            <p class="text-sm text-[#6B7280] max-w-md mx-auto">Setup environment endpoints, default branding parameters, backup frequencies, and email SMTP servers.</p>
+        </div>
+
     </main>
 
+    <!-- Create/Edit Company Modal -->
+    <div id="companyModal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 modal-backdrop transition-opacity duration-300">
+        <div class="bg-white rounded-3xl w-full max-w-lg shadow-2xl overflow-hidden border border-[#ECECF3] fade-up-view">
+            <div class="px-6 py-5 border-b border-[#ECECF3] flex items-center justify-between hero-gradient text-white">
+                <h3 class="font-bold text-lg" id="modalTitle">Provision Environment</h3>
+                <button onclick="closeCompanyModal()" class="text-white/80 hover:text-white transition p-1 hover:bg-white/10 rounded-lg">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            <form id="companyForm" onsubmit="saveCompany(event)" class="p-6 space-y-4">
+                <input type="hidden" id="companyId">
+                <div>
+                    <label class="block text-xs font-bold text-[#6B7280] uppercase tracking-wider mb-1">Company Workspace Name</label>
+                    <input type="text" id="companyName" required placeholder="e.g. Acme Corporation" class="w-full px-4 py-3 border border-[#ECECF3] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#7C3AED] bg-[#F7F7FB] focus:bg-white transition-all">
+                </div>
+                <div id="ownerEmailField">
+                    <label class="block text-xs font-bold text-[#6B7280] uppercase tracking-wider mb-1">Company Owner Email</label>
+                    <input type="email" id="companyOwnerEmail" required placeholder="e.g. ceo@acme.com" class="w-full px-4 py-3 border border-[#ECECF3] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#7C3AED] bg-[#F7F7FB] focus:bg-white transition-all">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-[#6B7280] uppercase tracking-wider mb-1">Branding Logo URL</label>
+                    <input type="text" id="companyLogo" placeholder="e.g. https://logo.clearbit.com/acme.com" class="w-full px-4 py-3 border border-[#ECECF3] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#7C3AED] bg-[#F7F7FB] focus:bg-white transition-all">
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-[#6B7280] uppercase tracking-wider mb-1">Subscription Tier</label>
+                        <select id="companySubscription" class="w-full px-4 py-3 border border-[#ECECF3] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#7C3AED] bg-[#F7F7FB] focus:bg-white transition-all font-semibold">
+                            <option value="Basic">Basic Plan</option>
+                            <option value="Premium">Premium Plan</option>
+                            <option value="Enterprise">Enterprise Plan</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-[#6B7280] uppercase tracking-wider mb-1">Workspace Status</label>
+                        <select id="companyStatus" class="w-full px-4 py-3 border border-[#ECECF3] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#7C3AED] bg-[#F7F7FB] focus:bg-white transition-all font-semibold">
+                            <option value="Active">Active Workspace</option>
+                            <option value="Deactivated">Deactivated Workspace</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="pt-4 border-t border-[#ECECF3] flex justify-end gap-2">
+                    <button type="button" onclick="closeCompanyModal()" class="px-4 py-2.5 border border-[#ECECF3] rounded-xl text-sm font-semibold text-[#6B7280] hover:bg-[#F7F7FB] transition">Cancel</button>
+                    <button type="submit" id="saveBtn" class="px-5 py-2.5 bg-gradient-to-r from-[#7C3AED] to-[#5B21B6] hover:brightness-110 text-white rounded-xl text-sm font-semibold transition shadow-md shadow-purple-200">Provision Workspace</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <footer class="py-6 mt-12 text-center text-xs text-[#6B7280] border-t border-[#ECECF3] bg-white w-full">
+        <p>&copy; 2026 BEZENT. Master Platform Architecture. All rights reserved.</p>
+    </footer>
+
     <script>
+        // Init Lucide
         lucide.createIcons();
 
-        let currentUser = null;
+        // Guard Check
         const TK = 'bezent_jwt';
         if (!localStorage.getItem(TK)) window.location.replace('index.html');
-        
-        const userStr = localStorage.getItem('bezent_user');
-        if (userStr) {
-            try {
-                currentUser = JSON.parse(userStr);
-                if (currentUser.role !== 'super_admin') {
-                    window.location.replace('index.html');
-                }
-                document.addEventListener('DOMContentLoaded', () => {
-                    const subtitle = document.getElementById('header-subtitle');
-                    const addUserDesc = document.getElementById('addUserDesc');
-                    const manageUserDesc = document.getElementById('manageUserDesc');
-                    
-                    if (subtitle) subtitle.textContent = 'Super Admin Panel';
-                    if (addUserDesc) addUserDesc.textContent = 'Register a new user to the platform.';
-                    if (manageUserDesc) manageUserDesc.textContent = 'Manage admin privileges across the platform.';
-                });
-            } catch(e) { window.location.replace('index.html'); }
-        } else {
-            window.location.replace('index.html');
-        }
+
+        let currentUser = null;
+        try {
+            const userStr = localStorage.getItem('bezent_user');
+            currentUser = JSON.parse(userStr);
+            if (currentUser.role !== 'super_admin') window.location.replace('index.html');
+            document.getElementById('profileBubble').textContent = (currentUser.email || 'SA').substring(0,2).toUpperCase();
+        } catch(e) { window.location.replace('index.html'); }
 
         const getToken = () => localStorage.getItem(TK) || '';
 
+        // API Helper
         const apiFetch = async (path, options = {}) => {
             const h = { 'Content-Type': 'application/json' };
             const tok = getToken();
@@ -129,157 +464,302 @@
                 window.location.replace('index.html');
                 return null;
             }
-            try {
-                return await res.json();
-            } catch(err) {
-                return { error: 'Invalid JSON response from server (Status: ' + res.status + ')' };
-            }
+            try { return await res.json(); } catch(err) { return { error: 'Parse Error' }; }
         };
 
-        let allUsers = [];
+        // Switch Tabs Programmatically
+        function switchTab(target) {
+            document.querySelectorAll('.sidebar-tab').forEach(t => {
+                if (t.dataset.tab === target) t.classList.add('active');
+                else t.classList.remove('active');
+            });
+            document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+            document.getElementById(target + 'Panel').classList.add('active');
+            document.getElementById('breadcrumbCurrent').textContent = target.charAt(0).toUpperCase() + target.slice(1);
+        }
 
-        async function loadUsers() {
-            const res = await apiFetch('/auth/users');
+        // Tabs Click Routing
+        document.querySelectorAll('.sidebar-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                switchTab(tab.dataset.tab);
+            });
+        });
+
+        // Companies State
+        let allCompanies = [];
+
+        async function loadCompanies() {
+            const res = await apiFetch('/auth/companies');
             if (res && Array.isArray(res)) {
-                allUsers = res;
-                renderUsers(allUsers);
+                allCompanies = res;
+                renderCompanies(allCompanies);
+                updateStats(allCompanies);
             }
         }
 
-        function renderUsers(users) {
-            const thead = document.getElementById('userTableHeader');
-            const tbody = document.getElementById('userTableBody');
-            
-            // Build Headers
-            thead.innerHTML = `
-                <tr class="bg-slate-50 border-b border-slate-200 text-slate-500 text-xs uppercase tracking-wider">
-                    <th class="px-6 py-4 font-semibold">User Details</th>
-                    <th class="px-6 py-4 font-semibold">Admin Privileges</th>
-                    <th class="px-6 py-4 font-semibold text-right">Actions</th>
-                </tr>
-            `;
+        function updateStats(companies) {
+            const activeTenants = companies.filter(c => c.status === 'Active').length;
+            const basicCount = companies.filter(c => c.subscription === 'Basic').length;
+            const premiumCount = companies.filter(c => c.subscription === 'Premium').length;
+            const enterpriseCount = companies.filter(c => c.subscription === 'Enterprise').length;
 
-            if (!users.length) {
-                tbody.innerHTML = `<tr><td colspan="5" class="px-6 py-8 text-center text-slate-500 text-sm">No other users found.</td></tr>`;
+            document.getElementById('tenantCountHero').textContent = activeTenants;
+            document.getElementById('tenantCountHero2').textContent = companies.length;
+            document.getElementById('subscriberCountHero').textContent = basicCount + premiumCount + enterpriseCount;
+
+            const desc = document.getElementById('companyCountDesc');
+            if (desc) desc.textContent = `Managing ${companies.length} active SaaS workspaces (${activeTenants} active, ${companies.length - activeTenants} suspended)`;
+        }
+
+        function renderCompanies(companies) {
+            const tbody = document.getElementById('companyTableBody');
+            
+            if (!companies.length) {
+                tbody.innerHTML = `<tr><td colspan="6" class="px-6 py-12 text-center text-[#6B7280] font-medium">No workspace registers found.</td></tr>`;
                 lucide.createIcons();
                 return;
             }
 
-            tbody.innerHTML = users.map(u => {
-                const columns = `
-                    <td class="px-6 py-4">
-                        <div class="flex items-center gap-3">
-                            <div class="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in">
-                                <input type="checkbox" id="admin-tgl-${u.id}" class="toggle-checkbox absolute block w-5 h-5 rounded-full bg-white border-4 outline-none appearance-none cursor-pointer z-10 top-0 left-0 transition-all duration-200" ${u.role === 'admin' ? 'checked' : ''} onchange="updateRole('${u.email}', this.checked ? 'admin' : 'user', '${u.id}')" />
-                                <label for="admin-tgl-${u.id}" class="toggle-label block overflow-hidden h-5 rounded-full bg-slate-300 cursor-pointer transition-colors duration-200"></label>
-                            </div>
-                            <span class="text-sm font-medium ${u.role === 'admin' ? 'text-emerald-600' : 'text-slate-500'} w-16">
-                                ${u.role === 'admin' ? 'Admin' : 'User'}
-                            </span>
-                        </div>
-                    </td>
-                    <td class="px-6 py-4 text-right">
-                        ${u.role === 'super_admin' ? '' : `<button onclick="deleteUser('${u.email}')" class="text-slate-400 hover:text-red-500 hover:bg-red-50 p-2 rounded-lg transition-colors inline-block" title="Delete User"><i data-lucide="trash-2" class="w-4 h-4"></i></button>`}
-                    </td>
-                `;
+            tbody.innerHTML = companies.map(c => {
+                const subColors = {
+                    'Basic': 'bg-purple-50 text-[#7C3AED] border-purple-100',
+                    'Premium': 'bg-blue-50 text-blue-600 border-blue-100',
+                    'Enterprise': 'bg-indigo-50 text-indigo-700 border-indigo-100'
+                };
+                const subColor = subColors[c.subscription] || 'bg-gray-50 text-gray-600 border-gray-100';
+
+                const statusColors = {
+                    'Active': 'bg-emerald-50 text-emerald-700 border-emerald-100',
+                    'Deactivated': 'bg-amber-50 text-amber-700 border-amber-100'
+                };
+                const statusColor = statusColors[c.status] || 'bg-gray-50 text-gray-600 border-gray-100';
+
+                const dateStr = c.created_at ? new Date(c.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) : 'N/A';
+
+                const logoHTML = c.logo 
+                    ? `<img src="${c.logo}" class="w-9 h-9 rounded-xl object-contain border border-[#ECECF3] bg-[#F7F7FB]" onerror="this.src=''; this.innerHTML='${String(c.name).charAt(0).toUpperCase()}'">`
+                    : `<div class="w-9 h-9 rounded-xl bg-purple-50 text-[#7C3AED] border border-purple-100 flex items-center justify-center font-bold text-sm">${String(c.name).charAt(0).toUpperCase()}</div>`;
 
                 return `
-                    <tr class="hover:bg-slate-50/50 transition-colors">
+                    <tr class="hover:bg-[#F7F7FB]/50 transition-colors">
                         <td class="px-6 py-4">
                             <div class="flex items-center gap-3">
-                                <div class="w-10 h-10 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center font-bold text-sm">
-                                    ${String(u.email || '').charAt(0).toUpperCase()}
-                                </div>
+                                ${logoHTML}
                                 <div>
-                                    <div class="font-semibold text-slate-800 text-sm">${String(u.email).replace(/</g, '&lt;')}</div>
-                                    <div class="text-xs text-slate-500 mt-0.5">ID: ${u.id.substring(0, 8)}...</div>
+                                    <div class="font-bold text-[#111827] text-sm">${String(c.name).replace(/</g, '&lt;')}</div>
+                                    <div class="text-[10px] text-[#6B7280] font-semibold mt-0.5">ID: ${c.id.substring(0, 8)}...</div>
                                 </div>
                             </div>
                         </td>
-                        ${columns}
+                        <td class="px-6 py-4">
+                            <a href="mailto:${c.owner_email}" class="text-[#7C3AED] hover:underline font-medium text-sm flex items-center gap-1">
+                                ${String(c.owner_email).replace(/</g, '&lt;')} <i data-lucide="mail" class="w-3.5 h-3.5 inline"></i>
+                            </a>
+                        </td>
+                        <td class="px-6 py-4 text-center">
+                            <span class="px-3 py-1 border rounded-full text-xs font-semibold ${subColor}">${c.subscription}</span>
+                        </td>
+                        <td class="px-6 py-4 text-center">
+                            <span class="px-3 py-1 border rounded-full text-xs font-semibold ${statusColor}">${c.status}</span>
+                        </td>
+                        <td class="px-6 py-4 text-center text-xs text-[#6B7280] font-medium">
+                            ${dateStr}
+                        </td>
+                        <td class="px-6 py-4 text-right">
+                            <div class="flex items-center justify-end gap-2">
+                                <button onclick="openEditCompanyModal('${c.id}')" class="text-[#6B7280] hover:text-[#7C3AED] hover:bg-[#F5F3FF] p-2 rounded-xl transition-colors inline-block" title="Edit Workspace">
+                                    <i data-lucide="pencil" class="w-4 h-4"></i>
+                                </button>
+                                <button onclick="deleteCompany('${c.id}', '${String(c.name).replace(/'/g, "\\'")}')" class="text-[#6B7280] hover:text-red-500 hover:bg-red-50 p-2 rounded-xl transition-colors inline-block" title="Delete Workspace">
+                                    <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                </button>
+                            </div>
+                        </td>
                     </tr>
                 `;
             }).join('');
             lucide.createIcons();
         }
 
-        async function updateRole(email, newRole, id) {
-            const res = await apiFetch('/auth/users/' + encodeURIComponent(email) + '/role', {
-                method: 'PUT',
-                body: JSON.stringify({ role: newRole })
+        // Modal triggers
+        function openCreateCompanyModal() {
+            document.getElementById('modalTitle').textContent = 'Provision Workspace';
+            document.getElementById('companyForm').reset();
+            document.getElementById('companyId').value = '';
+            document.getElementById('ownerEmailField').style.display = 'block';
+            document.getElementById('companyOwnerEmail').required = true;
+            document.getElementById('saveBtn').textContent = 'Provision Workspace';
+            
+            const modal = document.getElementById('companyModal');
+            modal.classList.remove('hidden');
+            lucide.createIcons();
+        }
+
+        function openEditCompanyModal(id) {
+            const comp = allCompanies.find(x => x.id === id);
+            if (!comp) return;
+
+            document.getElementById('modalTitle').textContent = 'Configure Environment';
+            document.getElementById('companyId').value = comp.id;
+            document.getElementById('companyName').value = comp.name;
+            document.getElementById('companyOwnerEmail').value = comp.owner_email;
+            document.getElementById('ownerEmailField').style.display = 'none'; // Lock email field on edit
+            document.getElementById('companyOwnerEmail').required = false;
+            document.getElementById('companyLogo').value = comp.logo || '';
+            document.getElementById('companySubscription').value = comp.subscription;
+            document.getElementById('companyStatus').value = comp.status;
+            document.getElementById('saveBtn').textContent = 'Apply Configuration';
+
+            const modal = document.getElementById('companyModal');
+            modal.classList.remove('hidden');
+            lucide.createIcons();
+        }
+
+        function closeCompanyModal() {
+            document.getElementById('companyModal').classList.add('hidden');
+        }
+
+        // Save (Create/Update) Company
+        async function saveCompany(e) {
+            e.preventDefault();
+            const id = document.getElementById('companyId').value;
+            const name = document.getElementById('companyName').value.trim();
+            const owner_email = document.getElementById('companyOwnerEmail').value.trim();
+            const logo = document.getElementById('companyLogo').value.trim();
+            const subscription = document.getElementById('companySubscription').value;
+            const status = document.getElementById('companyStatus').value;
+
+            const isEdit = !!id;
+            const path = isEdit ? `/auth/companies/${id}` : '/auth/companies';
+            const method = isEdit ? 'PUT' : 'POST';
+            
+            const payload = { name, logo, subscription, status };
+            if (!isEdit) payload.owner_email = owner_email;
+
+            const saveBtn = document.getElementById('saveBtn');
+            saveBtn.disabled = true;
+            saveBtn.textContent = 'Saving...';
+
+            const res = await apiFetch(path, {
+                method,
+                body: JSON.stringify(payload)
             });
 
+            saveBtn.disabled = false;
+            saveBtn.textContent = isEdit ? 'Apply Configuration' : 'Provision Workspace';
+
             if (res && res.ok) {
-                const u = allUsers.find(x => x.email === email);
-                if (u) u.role = newRole;
+                closeCompanyModal();
+                
+                // Add event log
+                const timeline = document.getElementById('activityTimeline');
+                const logItem = document.createElement('div');
+                logItem.className = 'flex gap-3 items-start text-xs';
+                logItem.innerHTML = `
+                    <div class="w-2 h-2 rounded-full ${isEdit ? 'bg-amber-400' : 'bg-purple-600'} mt-1 flex-shrink-0"></div>
+                    <div class="flex-1">
+                        <p class="font-semibold text-[#111827]">${isEdit ? 'Updated' : 'Provisioned'} workspace: ${name}</p>
+                        <span class="text-[#6B7280] text-[10px]">Just now</span>
+                    </div>
+                `;
+                timeline.insertBefore(logItem, timeline.firstChild);
+                
+                loadCompanies();
             } else {
-                alert(res?.error || 'Failed to update role. Please reload and try again.');
-                renderUsers(allUsers); // re-render to revert
+                alert(res?.error || 'Failed to save environment workspace configurations');
             }
         }
 
+        // Delete Company
+        async function deleteCompany(id, name) {
+            if (!confirm(`Are you strictly sure you want to permanently delete "${name}" workspace?\nWARNING: This will completely destroy all associated company data and accounts!`)) return;
 
-
-        async function deleteUser(email) {
-            if (!confirm('Are you strictly sure you want to permanently delete user ' + email + '?')) return;
-            
-            const res = await apiFetch('/auth/users/' + encodeURIComponent(email), {
-                method: 'DELETE'
-            });
+            const res = await apiFetch(`/auth/companies/${id}`, { method: 'DELETE' });
 
             if (res && res.ok) {
-                allUsers = allUsers.filter(u => u.email !== email);
-                renderUsers(allUsers);
+                // Add event log
+                const timeline = document.getElementById('activityTimeline');
+                const logItem = document.createElement('div');
+                logItem.className = 'flex gap-3 items-start text-xs';
+                logItem.innerHTML = `
+                    <div class="w-2 h-2 rounded-full bg-red-500 mt-1 flex-shrink-0"></div>
+                    <div class="flex-1">
+                        <p class="font-semibold text-[#111827]">Destroyed company workspace: ${name}</p>
+                        <span class="text-[#6B7280] text-[10px]">Just now</span>
+                    </div>
+                `;
+                timeline.insertBefore(logItem, timeline.firstChild);
+                
+                loadCompanies();
             } else {
-                alert(res?.error || 'Failed to delete user');
+                alert(res?.error || 'Failed to delete workspace');
             }
         }
 
-        async function addUser() {
-            const emailInput = document.getElementById('newUserEmail');
-            const btn = document.getElementById('addUserBtn');
-            const email = emailInput.value.trim();
-            
-            if (!email) return alert('Please enter an email address');
-            
-            btn.disabled = true;
-            btn.textContent = 'Adding...';
-            
-            const res = await apiFetch('/auth/users', {
-                method: 'POST',
-                body: JSON.stringify({ email })
-            });
-            
-            btn.disabled = false;
-            btn.textContent = 'Add User';
-            
-            if (res && res.ok) {
-                // Prepend the new user to the list
-                allUsers.unshift({
-                    id: res.id,
-                    email: res.email,
-                    role: res.role,
-                    marketflow_access: res.marketflow_access
-                });
-                renderUsers(allUsers);
-                emailInput.value = '';
-            } else {
-                alert(res?.error || 'Failed to add user');
-            }
-        }
-
-        document.getElementById('userSearch').addEventListener('input', (e) => {
+        // Search Filter
+        document.getElementById('companySearch').addEventListener('input', (e) => {
             const q = e.target.value.toLowerCase();
-            const filtered = allUsers.filter(u => u.email.toLowerCase().includes(q));
-            renderUsers(filtered);
+            const filtered = allCompanies.filter(c => 
+                c.name.toLowerCase().includes(q) || 
+                c.owner_email.toLowerCase().includes(q)
+            );
+            renderCompanies(filtered);
         });
+
+        // Initialize Analytics Chart
+        function initChart() {
+            const canvas = document.getElementById('adoptionChart');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            
+            const gradient = ctx.createLinearGradient(0, 0, 0, 240);
+            gradient.addColorStop(0, 'rgba(124, 58, 237, 0.4)');
+            gradient.addColorStop(1, 'rgba(124, 58, 237, 0)');
+
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'],
+                    datasets: [{
+                        label: 'Company Workspace Clusters',
+                        data: [4, 12, 19, 32, 45, 68, 84],
+                        borderColor: '#7C3AED',
+                        borderWidth: 3,
+                        pointBackgroundColor: '#7C3AED',
+                        pointBorderColor: '#FFFFFF',
+                        pointHoverRadius: 8,
+                        fill: true,
+                        backgroundColor: gradient,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: {
+                            grid: { color: '#ECECF3', drawBorder: false },
+                            ticks: { font: { family: 'Outfit', size: 11 }, color: '#6B7280' }
+                        },
+                        x: {
+                            grid: { display: false },
+                            ticks: { font: { family: 'Outfit', size: 11 }, color: '#6B7280' }
+                        }
+                    }
+                }
+            });
+        }
 
         function logout() {
             localStorage.clear();
             window.location.replace('index.html');
         }
 
-        loadUsers();
+        // Run
+        loadCompanies();
+        window.addEventListener('load', initChart);
+
     </script>
 </body>
 </html>

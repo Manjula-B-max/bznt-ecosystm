@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script>
+        window.location.replace('admin.html');
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Workspace Selector - BEZENT</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap');
+        * {
+            font-family: 'Outfit', sans-serif;
+            box-sizing: border-box;
+        }
+        body {
+            background-color: #FAFAFC;
+        }
+        .hero-gradient {
+            background: linear-gradient(135deg, #7C3AED 0%, #5B21B6 50%, #312E81 100%);
+        }
+        .premium-card {
+            background: #FFFFFF;
+            border: 1px solid #ECECF3;
+            border-radius: 24px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.02);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+        }
+        .premium-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.06);
+            border-color: #C084FC;
+        }
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(12px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .fade-up-view {
+            animation: fadeUp 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between text-[#111827]">
+
+    <!-- Main Launcher Console -->
+    <main class="flex-1 flex flex-col items-center justify-center p-6">
+        <div class="w-full max-w-4xl space-y-8 fade-up-view">
+            
+            <!-- Branding Header -->
+            <div class="text-center space-y-2">
+                <div class="inline-flex bg-gradient-to-tr from-[#7C3AED] to-[#312E81] p-3 rounded-2xl text-white shadow-md mb-2">
+                    <i data-lucide="layout-grid" class="w-6 h-6"></i>
+                </div>
+                <h1 class="text-3xl font-extrabold tracking-tight text-slate-900" id="welcomeMsg">Welcome to Bezent</h1>
+                <p class="text-sm text-slate-500 max-w-md mx-auto">Select a standalone workspace console to start your operations journey.</p>
+            </div>
+
+            <!-- Dynamic Launcher Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6" id="launcherGrid">
+                <!-- Populated dynamically via JS -->
+            </div>
+
+            <!-- Log out / Actions Row -->
+            <div class="text-center pt-4">
+                <button onclick="logout()" class="px-5 py-2.5 bg-white border border-[#ECECF3] hover:bg-red-50 hover:text-red-600 rounded-xl text-sm font-semibold transition text-slate-500 shadow-sm inline-flex items-center gap-2">
+                    <i data-lucide="log-out" class="w-4 h-4"></i> Log out from Session
+                </button>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="py-6 text-center text-xs text-[#6B7280] border-t border-[#ECECF3] bg-white w-full">
+        <p>&copy; 2026 BEZENT. Premium Workspace Systems. All rights reserved.</p>
+    </footer>
+
+    <script>
+        // Init Lucide
+        lucide.createIcons();
+
+        // Guard Check
+        const TK = 'bezent_jwt';
+        if (!localStorage.getItem(TK)) window.location.replace('index.html');
+
+        let currentUser = null;
+        try {
+            const userStr = localStorage.getItem('bezent_user');
+            currentUser = JSON.parse(userStr);
+            document.getElementById('welcomeMsg').textContent = `Welcome, ${currentUser.name || 'User'}`;
+        } catch(e) { window.location.replace('index.html'); }
+
+        // Render permitted launcher cards
+        function renderLauncher() {
+            const grid = document.getElementById('launcherGrid');
+            const isMaster = ['owner', 'admin'].includes(currentUser.role);
+            const cards = [];
+
+            if (isMaster || currentUser.marketflow_access) {
+                cards.push({
+                    title: 'MarketFlow CRM',
+                    desc: 'Sales pipeline tracking, contacts directory, campaign email templates, SMS alerts, and re-engagement tools.',
+                    icon: 'trending-up',
+                    color: 'text-purple-600 bg-purple-50 border-purple-100',
+                    url: 'marketflow-crm.html'
+                });
+            }
+
+            if (isMaster || currentUser.projectflow_access) {
+                cards.push({
+                    title: 'ProjectFlow PM',
+                    desc: 'Operations management, Gantt pipelines, dynamic resource allocation sprints, and active project timelines.',
+                    icon: 'folder-git2',
+                    color: 'text-blue-600 bg-blue-50 border-blue-100',
+                    url: 'projectflow-crm.html'
+                });
+            }
+
+            if (isMaster || currentUser.hr_access) {
+                cards.push({
+                    title: 'HR Admin Center',
+                    desc: 'Live employee directories, clock-in attendance monitor registers, leaves authorization, and payroll engine.',
+                    icon: 'users',
+                    color: 'text-emerald-600 bg-emerald-50 border-emerald-100',
+                    url: 'hr-admin.html'
+                });
+            }
+
+            if (isMaster || currentUser.admin_access) {
+                cards.push({
+                    title: 'Standard Admin Panel',
+                    desc: 'Workspace settings setups,Allowed emails whitelists registers, and corporate departments user provisioning.',
+                    icon: 'shield',
+                    color: 'text-amber-600 bg-amber-50 border-amber-100',
+                    url: 'admin.html'
+                });
+            }
+
+            if (cards.length === 0) {
+                grid.innerHTML = `
+                    <div class="col-span-2 text-center py-12 text-[#6B7280] font-medium premium-card p-6">
+                        <i data-lucide="lock" class="w-8 h-8 mx-auto mb-2 text-red-500"></i>
+                        No active workspace assignments found. Please contact your Super Admin.
+                    </div>`;
+                lucide.createIcons();
+                return;
+            }
+
+            grid.innerHTML = cards.map(c => `
+                <div onclick="window.location.href='${c.url}'" class="premium-card p-6 flex flex-col justify-between h-56">
+                    <div>
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="${c.color} p-3 rounded-2xl border">
+                                <i data-lucide="${c.icon}" class="w-5 h-5"></i>
+                            </div>
+                            <span class="text-[10px] text-slate-400 font-bold uppercase tracking-widest">SaaS Module</span>
+                        </div>
+                        <h3 class="font-bold text-lg text-slate-900">${c.title}</h3>
+                        <p class="text-xs text-slate-500 mt-1 leading-relaxed">${c.desc}</p>
+                    </div>
+                    <div class="flex justify-end pt-2 border-t border-[#ECECF3] mt-4">
+                        <span class="text-xs font-bold text-[#7C3AED] hover:underline inline-flex items-center gap-1">Launch Workspace <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i></span>
+                    </div>
+                </div>
+            `).join('');
+
+            lucide.createIcons();
+        }
+
+        function logout() {
+            localStorage.clear();
+            window.location.replace('index.html');
+        }
+
+        // Run
+        renderLauncher();
+    </script>
+</body>
+</html>

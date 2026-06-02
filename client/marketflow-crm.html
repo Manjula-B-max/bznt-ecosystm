@@ -2,6 +2,9 @@
 <html lang="en">
 
 <head>
+    <script>
+        window.location.replace('admin.html');
+    </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MarketFlow</title>
@@ -166,22 +169,49 @@
             transform: rotate(180deg);
         }
 
-        /* Sidebar width variable */
+        /* Modern floating sidebar style override */
         #appSidebar {
-            width: 14rem;
-            transition: width 0.2s ease;
+            width: 280px !important;
+            background: #FFFFFF !important;
+            border: 1px solid #ECECF3 !important;
+            border-radius: 28px !important;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.03) !important;
+            margin: 24px 0 24px 24px !important;
+            height: calc(100vh - 48px) !important;
+            z-index: 40 !important;
+            overflow-y: auto !important;
+            transition: all 0.3s ease !important;
         }
-
+        #mainHeader {
+            height: 72px !important;
+            background: rgba(255, 255, 255, 0.75) !important;
+            backdrop-filter: blur(24px) !important;
+            -webkit-backdrop-filter: blur(24px) !important;
+            border: 1px solid rgba(255, 255, 255, 0.5) !important;
+            border-radius: 22px !important;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.06) !important;
+            margin: 24px 24px 0 328px !important;
+            z-index: 30 !important;
+            transition: all 0.3s ease !important;
+        }
+        main.flex-1 {
+            margin: 112px 24px 24px 328px !important;
+            padding: 0 !important;
+            background-color: #FAFAFC !important;
+            min-height: calc(100vh - 136px) !important;
+            overflow-y: auto !important;
+        }
         /* Nav tab active pill */
         .nav-tab.active {
-            background: #f3e8ff;
-            color: #9333ea;
-            font-weight: 600;
+            background: #F5F3FF !important;
+            color: #7C3AED !important;
+            font-weight: 600 !important;
         }
-
         /* Sidebar active item left accent */
         .sidebar-item.sidebar-active {
-            border-left: 3px solid #9333ea;
+            border-left: 3px solid #7C3AED !important;
+            background: #F5F3FF !important;
+            color: #7C3AED !important;
         }
 
         /* =====================================================

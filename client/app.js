@@ -22,7 +22,7 @@
 })();
 
 // --- NEW GLOBAL HELPER FIXES START ---
-window.renderAddressLines = function(prefix, dataRecord) {
+window.renderAddressLines = function (prefix, dataRecord) {
     let addrParts = ["", "", ""];
     if (dataRecord && dataRecord.address) {
         let parts = dataRecord.address.split('\n');
@@ -39,7 +39,7 @@ window.renderAddressLines = function(prefix, dataRecord) {
     `;
 };
 
-window.renderContactsRows = function(contactDataString) {
+window.renderContactsRows = function (contactDataString) {
     let rowsHtml = '';
     let contacts = [];
     if (contactDataString) {
@@ -49,15 +49,15 @@ window.renderContactsRows = function(contactDataString) {
             return { name: name || '', email: email || '', dept: dept || '', phone: phone || '' };
         });
     }
-    if (contacts.length === 0) contacts.push({name:'', email:'', dept:'', phone:''}); // default empty row
-    
+    if (contacts.length === 0) contacts.push({ name: '', email: '', dept: '', phone: '' }); // default empty row
+
     contacts.forEach((ctx, index) => {
         rowsHtml += window.createContactRowHtml(ctx.name, ctx.email, ctx.dept, ctx.phone);
     });
     return rowsHtml;
 };
 
-window.createContactRowHtml = function(name='', email='', dept='', phone='') {
+window.createContactRowHtml = function (name = '', email = '', dept = '', phone = '') {
     // Strip +91 prefix for display in the 10-digit input
     let phoneDigits = String(phone || '').replace(/^\+91\s*/, '').replace(/\D/g, '').slice(0, 10);
     return `
@@ -77,12 +77,12 @@ window.createContactRowHtml = function(name='', email='', dept='', phone='') {
 };
 
 // Global phone validator: strips non-digits, limits to 10 digits
-window.validatePhoneInput = function(inp) {
+window.validatePhoneInput = function (inp) {
     inp.value = inp.value.replace(/\D/g, '').slice(0, 10);
 };
 
 // Global email validator: shows red border if format is invalid
-window.validateEmailInput = function(inp) {
+window.validateEmailInput = function (inp) {
     const val = inp.value.trim();
     if (!val) { inp.style.borderColor = ''; return; }
     const ok = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val);
@@ -91,7 +91,7 @@ window.validateEmailInput = function(inp) {
 };
 
 // Validate all contact phone inputs in a container (returns error message or null)
-window.validateContactPersons = function(prefix) {
+window.validateContactPersons = function (prefix) {
     const containerId = prefix + 'ContactPersonsList';
     const container = document.getElementById(containerId);
     if (!container) return null;
@@ -110,18 +110,18 @@ window.validateContactPersons = function(prefix) {
     return null;
 };
 
-window.addContactRow = function(prefix) {
+window.addContactRow = function (prefix) {
     let containerId = prefix + 'ContactPersonsList';
     let container = document.getElementById(containerId);
     if (container) {
         container.insertAdjacentHTML('beforeend', window.createContactRowHtml());
-        if(window.lucide && window.lucide.createIcons) {
+        if (window.lucide && window.lucide.createIcons) {
             window.lucide.createIcons();
         }
     }
 };
 
-window.compileContactsData = function(prefix) {
+window.compileContactsData = function (prefix) {
     let containerId = prefix + 'ContactPersonsList';
     let container = document.getElementById(containerId);
     if (!container) return "";
@@ -133,21 +133,21 @@ window.compileContactsData = function(prefix) {
         let rawPhone = row.querySelector('.contact-phone-inp').value.replace(/\D/g, '').slice(0, 10);
         let p = rawPhone ? '+91 ' + rawPhone : '';
         let d = row.querySelector('.contact-dept-inp').value.trim();
-        if (n || e || d || p) compiled.push([n,e,d,p].join(', '));
+        if (n || e || d || p) compiled.push([n, e, d, p].join(', '));
     });
     return compiled.join('\n');
 };
 
-window.compileAddressData = function(prefix) {
+window.compileAddressData = function (prefix) {
     let l1 = document.getElementById(prefix + 'AddressLine1');
     let l2 = document.getElementById(prefix + 'AddressLine2');
     let l3 = document.getElementById(prefix + 'AddressLine3');
-    if(!l1) return "";
+    if (!l1) return "";
     return [l1.value.trim(), l2.value.trim(), l3.value.trim()].join('\n');
 };
 
-window.esc = function(s) {
-    if(!s) return '';
+window.esc = function (s) {
+    if (!s) return '';
     return s.toString().replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 };
 
@@ -155,7 +155,7 @@ window.esc = function(s) {
 //   OLD format: JSON array of {name,email,dept,phone} objects
 //   NEW format: newline-separated "Name, Email, Dept, Phone" strings
 // Always returns an array of {name,email,dept,phone} plain objects.
-window.parseContactPersons = function(raw) {
+window.parseContactPersons = function (raw) {
     const s = String(raw || '').trim();
     if (!s) return [];
     // Try JSON array of objects
@@ -164,53 +164,53 @@ window.parseContactPersons = function(raw) {
             const arr = JSON.parse(s);
             if (Array.isArray(arr)) {
                 return arr.map(o => ({
-                    name:  String(o.name  || o[0] || '').trim(),
+                    name: String(o.name || o[0] || '').trim(),
                     email: String(o.email || o[1] || '').trim(),
-                    dept:  String(o.dept  || o[2] || '').trim(),
+                    dept: String(o.dept || o[2] || '').trim(),
                     phone: String(o.phone || o[3] || '').trim()
                 })).filter(o => o.name || o.email || o.dept || o.phone);
             }
-        } catch(e) { /* fall through */ }
+        } catch (e) { /* fall through */ }
     }
     // New format: "Name, Email, Dept, Phone" per line
     return s.split('\n').filter(Boolean).map(line => {
         const p = line.split(',').map(x => x.trim());
-        return { name: p[0]||'', email: p[1]||'', dept: p[2]||'', phone: p[3]||'' };
+        return { name: p[0] || '', email: p[1] || '', dept: p[2] || '', phone: p[3] || '' };
     }).filter(o => o.name || o.email || o.dept || o.phone);
 };
 
-window.handleDocumentsUpload = async function(resource, id, inputId) {
+window.handleDocumentsUpload = async function (resource, id, inputId) {
     let inp = document.getElementById(inputId);
     if (!inp || !inp.files || inp.files.length === 0) return;
     let fd = new FormData();
-    for(let i=0; i<inp.files.length; i++) fd.append('documents', inp.files[i]);
-    
+    for (let i = 0; i < inp.files.length; i++) fd.append('documents', inp.files[i]);
+
     try {
-        let res = await fetch('/api/upload/' + resource + '/' + encodeURIComponent(id.trim().replace(/\s+/g,'_')), {method: 'POST', body: fd});
+        let res = await fetch('/api/upload/' + resource + '/' + encodeURIComponent(id.trim().replace(/\s+/g, '_')), { method: 'POST', body: fd });
         let data = await res.json();
-        if(data && data.success && data.files) {
+        if (data && data.success && data.files) {
             let storeKey = resource === 'leads' ? 'bezent_leads' : 'bezent_clients';
             let ls = localStorage.getItem(storeKey);
-            if(ls) {
+            if (ls) {
                 let items = JSON.parse(ls);
-                let idx = items.findIndex(x => 
-                    String(x.id||'').toLowerCase() === String(id).toLowerCase() || 
-                    String(x.name||'').toLowerCase()===String(id).toLowerCase()
+                let idx = items.findIndex(x =>
+                    String(x.id || '').toLowerCase() === String(id).toLowerCase() ||
+                    String(x.name || '').toLowerCase() === String(id).toLowerCase()
                 );
-                if(idx >= 0) {
+                if (idx >= 0) {
                     items[idx].documents = items[idx].documents || [];
-                    for (let f of data.files) if(!items[idx].documents.includes(f)) items[idx].documents.push(f);
+                    for (let f of data.files) if (!items[idx].documents.includes(f)) items[idx].documents.push(f);
                     localStorage.setItem(storeKey, JSON.stringify(items));
                     window.dispatchEvent(new Event('storage')); // UI sync if needed
                 }
             }
         }
-    } catch(e) { console.error('Doc upload failed:', e); }
+    } catch (e) { console.error('Doc upload failed:', e); }
 };
 
 // --- NEW GLOBAL HELPER FIXES END ---
 
-window.applyContactsFilter = function() {
+window.applyContactsFilter = function () {
     try {
         const companyEl = document.getElementById('contactsFilterCompany');
         const nameEl = document.getElementById('contactsFilterName');
@@ -833,7 +833,7 @@ class MarketFlowCRM {
         if (avatarBtn) avatarBtn.textContent = initials;
         if (nameEl) nameEl.textContent = displayName;
         if (roleEl) roleEl.textContent = role || 'user';
-        
+
         const adminBtn = document.getElementById('adminPanelLink');
         if (adminBtn && ['super_admin', 'admin'].includes(role)) {
             adminBtn.href = role === 'super_admin' ? 'super-admin.html' : 'admin.html';
@@ -841,7 +841,8 @@ class MarketFlowCRM {
         }
     }
 
-    showToast(message) { console.trace('showToast', message); if (message === 'Client is required.') { const ob = new MutationObserver(m => console.log('Main content mutated!', m)); ob.observe(document.getElementById('main-content'), {childList: true, subtree: true, attributes: true, characterData: true}); }  console.trace('showToast called with', message); if (message === 'Client is required.') { console.log('Client invalid branch'); }
+    showToast(message) {
+        console.trace('showToast', message); if (message === 'Client is required.') { const ob = new MutationObserver(m => console.log('Main content mutated!', m)); ob.observe(document.getElementById('main-content'), { childList: true, subtree: true, attributes: true, characterData: true }); } console.trace('showToast called with', message); if (message === 'Client is required.') { console.log('Client invalid branch'); }
         const msg = String(message || '').trim();
         if (!msg) return;
 
@@ -946,7 +947,7 @@ class MarketFlowCRM {
             'bezent_playbooks', 'bezent_renewal_plans', 'bezent_client_tags',
             'bezent_engagement_log', 'bezent_greeting_reminders'
         ];
-        
+
         await Promise.all(COLS.map(async (sk) => {
             try {
                 const res = await fetch('/api/kv/' + encodeURIComponent(sk), { headers: hdr });
@@ -985,7 +986,7 @@ class MarketFlowCRM {
                             const ageMs = Date.now() - (localMeta.ts || 0);
                             if (ageMs < 30000) {
                                 useServer = false;
-                                console.info(`[bezent] Keeping recent local ${sk} (written ${Math.round(ageMs/1000)}s ago)`);
+                                console.info(`[bezent] Keeping recent local ${sk} (written ${Math.round(ageMs / 1000)}s ago)`);
                             }
                         }
                     }
@@ -996,7 +997,7 @@ class MarketFlowCRM {
                     } else {
                         // Push local data to server since it's newer
                         this._apiCache[sk] = localData;
-                        this._syncToApi(sk, localData).catch(() => {});
+                        this._syncToApi(sk, localData).catch(() => { });
                     }
                 }
             } catch (e) {
@@ -1010,7 +1011,7 @@ class MarketFlowCRM {
         } catch (_) { }
 
         // Flush any pending sync that failed earlier
-        await this._flushPendingSync().catch(() => {});
+        await this._flushPendingSync().catch(() => { });
 
         console.log('[Bezent] ✅ API data loaded');
         this.renderContent();
@@ -2547,7 +2548,7 @@ class MarketFlowCRM {
                                     const invoiceAmt = parseFloat(String(payment.invoiceAmount || '0').replace(/[^0-9.]/g, '')) || 0;
                                     const invoiceStatus = paymentReceivedAmt >= invoiceAmt && invoiceAmt > 0 ? 'Paid'
                                         : (payment.paymentDueDate && new Date(payment.paymentDueDate) < new Date()) ? 'Overdue'
-                                        : 'Pending';
+                                            : 'Pending';
                                     existingInvoices.push({
                                         id: 'inv_bulk_' + Date.now() + '_' + saved,
                                         no: invoiceNo,
@@ -3120,7 +3121,7 @@ class MarketFlowCRM {
                 const nextAction = document.getElementById('leadNextAction')?.value?.trim() || '';
                 const locUrlEl = document.getElementById('leadLocationUrl');
                 const locationUrl = locUrlEl?.value?.trim() || '';
-                
+
                 const compiledAddress = window.compileAddressData('lead');
                 const compiledContacts = window.compileContactsData('lead');
 
@@ -3152,16 +3153,16 @@ class MarketFlowCRM {
                     this.showToast(contactErr);
                     return true;
                 }
-                
-                const payload = { 
-                    company, contact: '', source, assignedTo, 
-                    nextAction, stage: 'New Lead', feedbackStatus: 'Pending', 
-                    email: '', 
-                    address: compiledAddress, 
-                    locationUrl, 
-                    contactPersonMultiple: compiledContacts 
+
+                const payload = {
+                    company, contact: '', source, assignedTo,
+                    nextAction, stage: 'New Lead', feedbackStatus: 'Pending',
+                    email: '',
+                    address: compiledAddress,
+                    locationUrl,
+                    contactPersonMultiple: compiledContacts
                 };
-                
+
                 const res = this.saveLead(payload);
                 if (res.ok) {
                     if (res.id) window.handleDocumentsUpload('leads', res.id, 'leadDocsUpload');
@@ -5213,11 +5214,11 @@ class MarketFlowCRM {
         // Flush pending syncs when user returns to the tab or comes back online
         document.addEventListener('visibilitychange', () => {
             if (document.visibilityState === 'visible') {
-                this._flushPendingSync().catch(() => {});
+                this._flushPendingSync().catch(() => { });
             }
         });
         window.addEventListener('online', () => {
-            this._flushPendingSync().catch(() => {});
+            this._flushPendingSync().catch(() => { });
             this.showToast('Back online — syncing your data...');
         });
     }
@@ -5317,7 +5318,9 @@ class MarketFlowCRM {
     }
 
     renderSidebar() {
+        if (window.location.pathname.includes('admin.html')) return;
         const sidebarNav = document.getElementById('sidebar-nav');
+        if (!sidebarNav) return;
         const subNavItems = this.getSubNavigationItems(this.currentSection);
 
         const icons = {
@@ -5363,8 +5366,8 @@ class MarketFlowCRM {
     }
 
     getSubNavigationItems(section) {
-        const isProjectFlow = window.location.pathname.includes('projectflow-crm.html');
-        
+        const isProjectFlow = window.isProjectFlowMode || window.location.pathname.includes('projectflow-crm.html');
+
         const navigation = {
             dashboard: isProjectFlow ? [] : [
                 { id: 'overview', label: 'Overview' },
@@ -5769,21 +5772,21 @@ class MarketFlowCRM {
 
     setupTableFilters() {
         const inputs = document.querySelectorAll('.table-filter-input');
-        inputs.forEach(input => {            
+        inputs.forEach(input => {
             // Remove previous listeners if we are re-rendering
             const clone = input.cloneNode(true);
-            if(input.parentNode) {
+            if (input.parentNode) {
                 input.parentNode.replaceChild(clone, input);
                 clone.addEventListener('input', (e) => {
                     const table = clone.closest('table');
-                    if(table) {
+                    if (table) {
                         const trs = table.querySelectorAll('tbody tr');
                         const filterKey = clone.dataset.filter;
                         const attrKey = 'data-f-' + filterKey;
                         const query = e.target.value.toLowerCase().trim();
                         trs.forEach(tr => {
                             const cell = tr.querySelector('[' + attrKey + ']');
-                            if(tr.closest('thead')) return;
+                            if (tr.closest('thead')) return;
                             if (cell) {
                                 const content = cell.getAttribute(attrKey) || '';
                                 if (content.includes(query)) {
@@ -5794,17 +5797,17 @@ class MarketFlowCRM {
                             }
                         });
                         trs.forEach(tr => {
-                             if(tr.closest('thead')) return; // do not hide thead
-                             let shouldHide = false;
-                             for(let i=0; i<tr.cells.length; i++){
-                                  const cell = tr.cells[i];
-                                  for (const key in cell.dataset) {
-                                      if (key.endsWith('Hidden') && cell.dataset[key] === 'true') {
-                                          shouldHide = true;
-                                      }
-                                  }
-                             }
-                             tr.style.display = shouldHide ? 'none' : '';
+                            if (tr.closest('thead')) return; // do not hide thead
+                            let shouldHide = false;
+                            for (let i = 0; i < tr.cells.length; i++) {
+                                const cell = tr.cells[i];
+                                for (const key in cell.dataset) {
+                                    if (key.endsWith('Hidden') && cell.dataset[key] === 'true') {
+                                        shouldHide = true;
+                                    }
+                                }
+                            }
+                            tr.style.display = shouldHide ? 'none' : '';
                         });
                     }
                 });
@@ -5861,7 +5864,7 @@ class MarketFlowCRM {
     }
 
     renderDashboardContent(container) {
-        if (window.location.pathname.includes('projectflow-crm.html')) {
+        if (window.isProjectFlowMode || window.location.pathname.includes('projectflow-crm.html')) {
             container.innerHTML = '<div class="text-slate-400 text-center py-12 text-sm italic">Dashboard is currently under construction.</div>';
             return;
         }
@@ -6168,40 +6171,40 @@ class MarketFlowCRM {
 
                 <!-- Regional Snapshot -->
                 ${(() => {
-                    const regionMap = {};
-                    clients.forEach(c => {
-                        const r = this._extractRegion ? this._extractRegion(c) : (String(c.location||'').trim() || 'Unknown');
-                        if (!regionMap[r]) regionMap[r] = { clients: 0, revenue: 0 };
-                        regionMap[r].clients++;
-                        invoices.filter(i => String(i.client||'').trim().toLowerCase() === String(c.name||'').trim().toLowerCase())
-                            .forEach(inv => { regionMap[r].revenue += this.parseCurrencyToNumber(inv.amount); });
-                    });
-                    const regions = Object.entries(regionMap).sort((a,b) => b[1].clients - a[1].clients).slice(0, 6);
-                    if (!regions.length || regions.every(([r]) => r === 'Unknown')) return '';
-                    const maxC = Math.max(...regions.map(([,d]) => d.clients), 1);
-                    const COLS = ['purple','sky','emerald','amber','rose','indigo'];
-                    return `<div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
+                const regionMap = {};
+                clients.forEach(c => {
+                    const r = this._extractRegion ? this._extractRegion(c) : (String(c.location || '').trim() || 'Unknown');
+                    if (!regionMap[r]) regionMap[r] = { clients: 0, revenue: 0 };
+                    regionMap[r].clients++;
+                    invoices.filter(i => String(i.client || '').trim().toLowerCase() === String(c.name || '').trim().toLowerCase())
+                        .forEach(inv => { regionMap[r].revenue += this.parseCurrencyToNumber(inv.amount); });
+                });
+                const regions = Object.entries(regionMap).sort((a, b) => b[1].clients - a[1].clients).slice(0, 6);
+                if (!regions.length || regions.every(([r]) => r === 'Unknown')) return '';
+                const maxC = Math.max(...regions.map(([, d]) => d.clients), 1);
+                const COLS = ['purple', 'sky', 'emerald', 'amber', 'rose', 'indigo'];
+                return `<div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
                         <div class="flex items-center justify-between mb-4">
                             <div class="text-sm font-semibold text-slate-900">Clients by Region</div>
                             <button data-action="nav:reports/region_analytics" class="text-xs text-purple-600 hover:underline">Full report →</button>
                         </div>
                         <div class="space-y-2.5">
                             ${regions.map(([region, d], i) => {
-                                const pct = Math.round(d.clients / maxC * 100);
-                                const col = COLS[i % COLS.length];
-                                return `<div>
+                    const pct = Math.round(d.clients / maxC * 100);
+                    const col = COLS[i % COLS.length];
+                    return `<div>
                                     <div class="flex items-center justify-between text-xs mb-1">
-                                        <span class="font-medium text-slate-700">${String(region).replace(/</g,'&lt;')}</span>
+                                        <span class="font-medium text-slate-700">${String(region).replace(/</g, '&lt;')}</span>
                                         <span class="text-slate-500">${d.clients} clients &nbsp;·&nbsp; ${this.formatINR(d.revenue)}</span>
                                     </div>
                                     <div class="w-full bg-slate-100 rounded-full h-2">
                                         <div class="bg-${col}-500 h-2 rounded-full" style="width:${pct}%"></div>
                                     </div>
                                 </div>`;
-                            }).join('')}
+                }).join('')}
                         </div>
                     </div>`;
-                })()}
+            })()}
             </div>`;
 
     }
@@ -6527,18 +6530,17 @@ class MarketFlowCRM {
                     
                     <div class="bg-gradient-to-br from-amber-500 to-amber-600 rounded-lg p-4 sm:p-6 text-white">
                         <i data-lucide="check-square" class="w-8 h-8 mb-3 opacity-80"></i>
-                        <div class="text-2xl sm:text-3xl font-semibold mb-1">${
-            (this.getStoredFollowups ? this.getStoredFollowups() : []).filter(f => !f.done).length +
+                        <div class="text-2xl sm:text-3xl font-semibold mb-1">${(this.getStoredFollowups ? this.getStoredFollowups() : []).filter(f => !f.done).length +
             (this.readStore('bezent_tasks', [])).filter(t => !t.completed).length
-        }</div>
+            }</div>
                         <div class="text-sm opacity-90">Tasks Due Today</div>
                     </div>
                     
                     <div class="bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-lg p-4 sm:p-6 text-white">
                         <i data-lucide="indian-rupee" class="w-8 h-8 mb-3 opacity-80"></i>
                         <div class="text-2xl sm:text-3xl font-semibold mb-1">${this.formatINR(
-            this.getStoredInvoices().filter(i => String(i.status || '').toLowerCase() !== 'paid').reduce((sum, x) => sum + this.parseCurrencyToNumber(x.amount), 0)
-        )}</div>
+                this.getStoredInvoices().filter(i => String(i.status || '').toLowerCase() !== 'paid').reduce((sum, x) => sum + this.parseCurrencyToNumber(x.amount), 0)
+            )}</div>
                         <div class="text-sm opacity-90">Payments Expected</div>
                     </div>
                 </div>
@@ -6721,24 +6723,24 @@ class MarketFlowCRM {
                         <h3 class="text-lg font-semibold text-slate-900 mb-4">This Week's Activity</h3>
                         <div class="space-y-3">
                             ${(() => {
-                                const leads = this.getStoredLeads ? this.getStoredLeads() : [];
-                                const projects = this.getAllProjectsMerged ? this.getAllProjectsMerged() : [];
-                                const invoices = this.getAllInvoices ? this.getAllInvoices() : [];
-                                const overdueInvs = invoices.filter(i => String(i.status || '').toLowerCase() === 'overdue');
-                                const pendingQuotes = this.readStore('bezent_quotations', []).filter(q => ['sent', 'draft'].includes(String(q.status || '').toLowerCase()));
-                                const rows = [
-                                    { icon: 'users', color: 'sky', label: `${leads.length} lead${leads.length !== 1 ? 's' : ''} in system` },
-                                    { icon: 'briefcase', color: 'indigo', label: `${projects.length} active project${projects.length !== 1 ? 's' : ''}` },
-                                    overdueInvs.length ? { icon: 'alert-triangle', color: 'orange', label: `${overdueInvs.length} overdue invoice${overdueInvs.length !== 1 ? 's' : ''} need follow-up` } : null,
-                                    pendingQuotes.length ? { icon: 'file-text', color: 'amber', label: `${pendingQuotes.length} quotation${pendingQuotes.length !== 1 ? 's' : ''} pending approval` } : null,
-                                ].filter(Boolean);
-                                if (!rows.length) return '<div class="text-sm text-slate-400 text-center py-4">No activity yet — add leads, projects or invoices to get started.</div>';
-                                return rows.map((r, i) => `
+                const leads = this.getStoredLeads ? this.getStoredLeads() : [];
+                const projects = this.getAllProjectsMerged ? this.getAllProjectsMerged() : [];
+                const invoices = this.getAllInvoices ? this.getAllInvoices() : [];
+                const overdueInvs = invoices.filter(i => String(i.status || '').toLowerCase() === 'overdue');
+                const pendingQuotes = this.readStore('bezent_quotations', []).filter(q => ['sent', 'draft'].includes(String(q.status || '').toLowerCase()));
+                const rows = [
+                    { icon: 'users', color: 'sky', label: `${leads.length} lead${leads.length !== 1 ? 's' : ''} in system` },
+                    { icon: 'briefcase', color: 'indigo', label: `${projects.length} active project${projects.length !== 1 ? 's' : ''}` },
+                    overdueInvs.length ? { icon: 'alert-triangle', color: 'orange', label: `${overdueInvs.length} overdue invoice${overdueInvs.length !== 1 ? 's' : ''} need follow-up` } : null,
+                    pendingQuotes.length ? { icon: 'file-text', color: 'amber', label: `${pendingQuotes.length} quotation${pendingQuotes.length !== 1 ? 's' : ''} pending approval` } : null,
+                ].filter(Boolean);
+                if (!rows.length) return '<div class="text-sm text-slate-400 text-center py-4">No activity yet — add leads, projects or invoices to get started.</div>';
+                return rows.map((r, i) => `
                                     <div class="flex items-center gap-3 p-3 ${i === 0 ? 'bg-purple-50' : 'bg-slate-50'} rounded-lg">
                                         <i data-lucide="${r.icon}" class="w-5 h-5 text-${r.color}-600 flex-shrink-0"></i>
                                         <span class="text-sm text-slate-700">${r.label}</span>
                                     </div>`).join('');
-                            })()}
+            })()}
                         </div>
                     </div>
 
@@ -6746,22 +6748,22 @@ class MarketFlowCRM {
                         <h3 class="text-lg font-semibold text-slate-900 mb-4">Weekly Highlights</h3>
                         <div class="space-y-3">
                             ${(() => {
-                                const leads = this.getStoredLeads ? this.getStoredLeads() : [];
-                                const wonLeads = leads.filter(l => ['closed', 'po received', 'won'].includes(String(l.stage || '').toLowerCase()));
-                                const invoices = this.getAllInvoices ? this.getAllInvoices() : [];
-                                const paidAmt = invoices.filter(i => String(i.status || '').toLowerCase() === 'paid').reduce((s, i) => s + this.parseCurrencyToNumber(i.amount), 0);
-                                const clients = this.getStoredClients ? this.getStoredClients() : [];
-                                const highlights = [];
-                                if (clients.length) highlights.push({ ok: true, text: `${clients.length} client${clients.length !== 1 ? 's' : ''} registered` });
-                                if (wonLeads.length) highlights.push({ ok: true, text: `${wonLeads.length} deal${wonLeads.length !== 1 ? 's' : ''} closed / PO received` });
-                                if (paidAmt) highlights.push({ ok: true, text: `${this.formatINR(paidAmt)} total collected` });
-                                if (!highlights.length) return '<div class="text-sm text-slate-400 text-center py-4">Highlights will appear once you add leads and close deals.</div>';
-                                return highlights.map(h => `
+                const leads = this.getStoredLeads ? this.getStoredLeads() : [];
+                const wonLeads = leads.filter(l => ['closed', 'po received', 'won'].includes(String(l.stage || '').toLowerCase()));
+                const invoices = this.getAllInvoices ? this.getAllInvoices() : [];
+                const paidAmt = invoices.filter(i => String(i.status || '').toLowerCase() === 'paid').reduce((s, i) => s + this.parseCurrencyToNumber(i.amount), 0);
+                const clients = this.getStoredClients ? this.getStoredClients() : [];
+                const highlights = [];
+                if (clients.length) highlights.push({ ok: true, text: `${clients.length} client${clients.length !== 1 ? 's' : ''} registered` });
+                if (wonLeads.length) highlights.push({ ok: true, text: `${wonLeads.length} deal${wonLeads.length !== 1 ? 's' : ''} closed / PO received` });
+                if (paidAmt) highlights.push({ ok: true, text: `${this.formatINR(paidAmt)} total collected` });
+                if (!highlights.length) return '<div class="text-sm text-slate-400 text-center py-4">Highlights will appear once you add leads and close deals.</div>';
+                return highlights.map(h => `
                                     <div class="flex items-center gap-3">
                                         <i data-lucide="${h.ok ? 'check-circle' : 'alert-triangle'}" class="w-5 h-5 ${h.ok ? 'text-green-600' : 'text-orange-600'}"></i>
                                         <span class="text-sm text-slate-700">${h.text}</span>
                                     </div>`).join('');
-                            })()}
+            })()}
                         </div>
                     </div>
                 </div>
@@ -7204,7 +7206,7 @@ class MarketFlowCRM {
             default:
                 container.innerHTML = this.getLeadsDirectory();
                 this.setupClientDirectoryInteractions();
-            this.setupTableFilters();
+                this.setupTableFilters();
         }
     }
 
@@ -7910,9 +7912,9 @@ class MarketFlowCRM {
                                     <i data-lucide="trash-2" style="width:12px;height:12px"></i> Delete
                                 </button>
                                 ${String(selected.status || '').toLowerCase() === 'converted'
-                                    ? `<button data-action="nav:leads/client_directory" class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-emerald-50 text-emerald-700 rounded-lg hover:bg-emerald-100 transition-colors"><i data-lucide="user-check" style="width:12px;height:12px"></i> Open Client</button>`
-                                    : `<button data-action="lead:convert" data-lead-id="${selected.id}" class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-slate-900 text-white rounded-lg hover:bg-slate-800 transition-colors"><i data-lucide="arrow-right-circle" style="width:12px;height:12px"></i> Convert</button>`
-                                }
+                    ? `<button data-action="nav:leads/client_directory" class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-emerald-50 text-emerald-700 rounded-lg hover:bg-emerald-100 transition-colors"><i data-lucide="user-check" style="width:12px;height:12px"></i> Open Client</button>`
+                    : `<button data-action="lead:convert" data-lead-id="${selected.id}" class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-slate-900 text-white rounded-lg hover:bg-slate-800 transition-colors"><i data-lucide="arrow-right-circle" style="width:12px;height:12px"></i> Convert</button>`
+                }
                             </div>
 
                             <div class="px-4 py-4 space-y-4">
@@ -7929,10 +7931,10 @@ class MarketFlowCRM {
                                     <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Contact Persons</div>
                                     <div class="space-y-2">
                                         ${(() => {
-                                            const persons = window.parseContactPersons(selected.contactPersonMultiple);
-                                            if (!persons.length) return '<div class="text-sm text-slate-400">—</div>';
-                                            return persons.map(({ name, email, dept, phone }) => {
-                                                return `<div class="bg-white rounded-lg border border-slate-200 p-2.5">
+                    const persons = window.parseContactPersons(selected.contactPersonMultiple);
+                    if (!persons.length) return '<div class="text-sm text-slate-400">—</div>';
+                    return persons.map(({ name, email, dept, phone }) => {
+                        return `<div class="bg-white rounded-lg border border-slate-200 p-2.5">
                                                     <div class="font-semibold text-slate-900 text-sm">${window.esc(name)}</div>
                                                     ${dept ? `<div class="text-xs text-slate-500 mt-0.5">${window.esc(dept)}</div>` : ''}
                                                     <div class="mt-1.5 flex flex-col gap-1">
@@ -7940,8 +7942,8 @@ class MarketFlowCRM {
                                                         ${email ? `<div class="flex items-center gap-1.5 text-xs text-slate-700"><i data-lucide="mail" style="width:11px;height:11px;color:#6366f1"></i><span>${window.esc(email)}</span></div>` : ''}
                                                     </div>
                                                 </div>`;
-                                            }).join('');
-                                        })()}
+                    }).join('');
+                })()}
                                     </div>
                                 </div>
 
@@ -7949,8 +7951,8 @@ class MarketFlowCRM {
                                 <div class="rounded-lg border border-slate-100 bg-slate-50 p-3">
                                     <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Documents</div>
                                     ${(selected.documents && selected.documents.length > 0)
-                                        ? selected.documents.map(d => `<a href="/uploads/leads/${selected.id}/${d}" target="_blank" class="flex items-center gap-1.5 text-xs text-purple-700 hover:text-purple-900 font-medium mb-1"><i data-lucide="file" style="width:12px;height:12px"></i>${d}</a>`).join('')
-                                        : '<div class="text-xs text-slate-400">No documents uploaded</div>'}
+                    ? selected.documents.map(d => `<a href="/uploads/leads/${selected.id}/${d}" target="_blank" class="flex items-center gap-1.5 text-xs text-purple-700 hover:text-purple-900 font-medium mb-1"><i data-lucide="file" style="width:12px;height:12px"></i>${d}</a>`).join('')
+                    : '<div class="text-xs text-slate-400">No documents uploaded</div>'}
                                 </div>
 
                                 <!-- Pipeline Stage & Quick Update -->
@@ -7986,21 +7988,21 @@ class MarketFlowCRM {
 
                                 <!-- History -->
                                 ${(() => {
-                                    const hist = Array.isArray(selected.history) ? selected.history.slice().reverse().slice(0,5) : [];
-                                    if (!hist.length) return '';
-                                    return `<div>
+                    const hist = Array.isArray(selected.history) ? selected.history.slice().reverse().slice(0, 5) : [];
+                    if (!hist.length) return '';
+                    return `<div>
                                         <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Recent History</div>
                                         <div class="space-y-1.5">${hist.map(h => `
                                             <div class="rounded-lg bg-slate-50 border border-slate-100 px-3 py-2">
                                                 <div class="flex items-center justify-between">
                                                     <span class="text-xs font-semibold text-slate-700">${String(h?.type || 'update')}</span>
-                                                    <span class="text-[10px] text-slate-400">${h?.at ? new Date(h.at).toLocaleString('en-IN', {day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}) : '—'}</span>
+                                                    <span class="text-[10px] text-slate-400">${h?.at ? new Date(h.at).toLocaleString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '—'}</span>
                                                 </div>
-                                                ${h?.note ? `<div class="text-xs text-slate-600 mt-0.5">${String(h.note).replace(/</g,'&lt;')}</div>` : ''}
+                                                ${h?.note ? `<div class="text-xs text-slate-600 mt-0.5">${String(h.note).replace(/</g, '&lt;')}</div>` : ''}
                                             </div>`).join('')}
                                         </div>
                                     </div>`;
-                                })()}
+                })()}
 
                             </div>
                         </div>
@@ -8171,17 +8173,17 @@ class MarketFlowCRM {
                         <select id="clientGstStateCode" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" onchange="let n=document.getElementById('clientGstNumber'); let cv=n.value; if(cv.length >= 2 && !isNaN(cv.substring(0,2))) { n.value = this.value + cv.substring(2); } else { n.value = this.value + cv; }">
                             <option value="">Select Code</option>
                             ${[
-                                {c:'01',n:'Jammu & Kashmir'},{c:'02',n:'Himachal Pradesh'},{c:'03',n:'Punjab'},{c:'04',n:'Chandigarh'},
-                                {c:'05',n:'Uttarakhand'},{c:'06',n:'Haryana'},{c:'07',n:'Delhi'},{c:'08',n:'Rajasthan'},
-                                {c:'09',n:'Uttar Pradesh'},{c:'10',n:'Bihar'},{c:'11',n:'Sikkim'},{c:'12',n:'Arunachal Pradesh'},
-                                {c:'13',n:'Nagaland'},{c:'14',n:'Manipur'},{c:'15',n:'Mizoram'},{c:'16',n:'Tripura'},
-                                {c:'17',n:'Meghalaya'},{c:'18',n:'Assam'},{c:'19',n:'West Bengal'},{c:'20',n:'Jharkhand'},
-                                {c:'21',n:'Odisha'},{c:'22',n:'Chhattisgarh'},{c:'23',n:'Madhya Pradesh'},{c:'24',n:'Gujarat'},
-                                {c:'25',n:'Daman & Diu'},{c:'26',n:'Dadra & Nagar Haveli'},{c:'27',n:'Maharashtra'},{c:'28',n:'Andhra (Old)'},
-                                {c:'29',n:'Karnataka'},{c:'30',n:'Goa'},{c:'31',n:'Lakshadweep'},{c:'32',n:'Kerala'},
-                                {c:'33',n:'Tamil Nadu'},{c:'34',n:'Puducherry'},{c:'35',n:'Andaman & Nicobar'},{c:'36',n:'Telangana'},
-                                {c:'37',n:'Andhra Pradesh'},{c:'38',n:'Ladakh'}
-                            ].map(s => '<option value="' + s.c + '" ' + ((clientData?.gstStateCode === s.c) ? 'selected' : '') + '>' + s.c + ' - ' + s.n + '</option>').join('')}
+                { c: '01', n: 'Jammu & Kashmir' }, { c: '02', n: 'Himachal Pradesh' }, { c: '03', n: 'Punjab' }, { c: '04', n: 'Chandigarh' },
+                { c: '05', n: 'Uttarakhand' }, { c: '06', n: 'Haryana' }, { c: '07', n: 'Delhi' }, { c: '08', n: 'Rajasthan' },
+                { c: '09', n: 'Uttar Pradesh' }, { c: '10', n: 'Bihar' }, { c: '11', n: 'Sikkim' }, { c: '12', n: 'Arunachal Pradesh' },
+                { c: '13', n: 'Nagaland' }, { c: '14', n: 'Manipur' }, { c: '15', n: 'Mizoram' }, { c: '16', n: 'Tripura' },
+                { c: '17', n: 'Meghalaya' }, { c: '18', n: 'Assam' }, { c: '19', n: 'West Bengal' }, { c: '20', n: 'Jharkhand' },
+                { c: '21', n: 'Odisha' }, { c: '22', n: 'Chhattisgarh' }, { c: '23', n: 'Madhya Pradesh' }, { c: '24', n: 'Gujarat' },
+                { c: '25', n: 'Daman & Diu' }, { c: '26', n: 'Dadra & Nagar Haveli' }, { c: '27', n: 'Maharashtra' }, { c: '28', n: 'Andhra (Old)' },
+                { c: '29', n: 'Karnataka' }, { c: '30', n: 'Goa' }, { c: '31', n: 'Lakshadweep' }, { c: '32', n: 'Kerala' },
+                { c: '33', n: 'Tamil Nadu' }, { c: '34', n: 'Puducherry' }, { c: '35', n: 'Andaman & Nicobar' }, { c: '36', n: 'Telangana' },
+                { c: '37', n: 'Andhra Pradesh' }, { c: '38', n: 'Ladakh' }
+            ].map(s => '<option value="' + s.c + '" ' + ((clientData?.gstStateCode === s.c) ? 'selected' : '') + '>' + s.c + ' - ' + s.n + '</option>').join('')}
                         </select>
                     </div>
                     <div>
@@ -8256,8 +8258,8 @@ class MarketFlowCRM {
                                 </thead>
                                 <tbody class="divide-y divide-slate-200">
                                     ${clients.map(c => {
-                                        const city = c.address ? c.address.split('\n')[1] || '' : '';
-                                        return `
+            const city = c.address ? c.address.split('\n')[1] || '' : '';
+            return `
                                         <tr data-client-name="${c.name}" class="hover:bg-slate-50 cursor-pointer ${c.name === selectedName ? 'bg-slate-50' : ''}">
                                             <td class="px-4 py-3">
                                                 <div class="font-medium text-slate-900">${c.name}</div>
@@ -8281,7 +8283,7 @@ class MarketFlowCRM {
                                             </td>
                                         </tr>
                                     `;
-                                    }).join('')}
+        }).join('')}
                                 </tbody>
                             </table>
                         </div>
@@ -8365,10 +8367,10 @@ class MarketFlowCRM {
                                     <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Contact Persons</div>
                                     <div class="space-y-2">
                                         ${(() => {
-                                            const persons = window.parseContactPersons(selected.contactPersonMultiple);
-                                            if (!persons.length) return '<div class="text-sm text-slate-400">—</div>';
-                                            return persons.map(({ name, email, dept, phone }) => {
-                                                return `<div class="bg-white rounded-lg border border-slate-200 p-2.5">
+                    const persons = window.parseContactPersons(selected.contactPersonMultiple);
+                    if (!persons.length) return '<div class="text-sm text-slate-400">—</div>';
+                    return persons.map(({ name, email, dept, phone }) => {
+                        return `<div class="bg-white rounded-lg border border-slate-200 p-2.5">
                                                     <div class="font-semibold text-slate-900 text-sm">${window.esc(name)}</div>
                                                     ${dept ? `<div class="text-xs text-slate-500 mt-0.5">${window.esc(dept)}</div>` : ''}
                                                     <div class="mt-1.5 flex flex-col gap-1">
@@ -8376,8 +8378,8 @@ class MarketFlowCRM {
                                                         ${email ? `<div class="flex items-center gap-1.5 text-xs text-slate-700"><i data-lucide="mail" style="width:11px;height:11px;color:#10b981"></i><span>${window.esc(email)}</span></div>` : ''}
                                                     </div>
                                                 </div>`;
-                                            }).join('');
-                                        })()}
+                    }).join('');
+                })()}
                                     </div>
                                 </div>
 
@@ -8385,8 +8387,8 @@ class MarketFlowCRM {
                                 <div class="rounded-lg border border-slate-100 bg-slate-50 p-3">
                                     <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Documents</div>
                                     ${(selected.documents && selected.documents.length > 0)
-                                        ? selected.documents.map(d => `<a href="/uploads/clients/${selected.id || window.esc(selected.name).replace(/\\s+/g,'_')}/${d}" target="_blank" class="flex items-center gap-1.5 text-xs text-purple-700 hover:text-purple-900 font-medium mb-1"><i data-lucide="file" style="width:12px;height:12px"></i>${d}</a>`).join('')
-                                        : '<div class="text-xs text-slate-400">No documents uploaded</div>'}
+                    ? selected.documents.map(d => `<a href="/uploads/clients/${selected.id || window.esc(selected.name).replace(/\\s+/g, '_')}/${d}" target="_blank" class="flex items-center gap-1.5 text-xs text-purple-700 hover:text-purple-900 font-medium mb-1"><i data-lucide="file" style="width:12px;height:12px"></i>${d}</a>`).join('')
+                    : '<div class="text-xs text-slate-400">No documents uploaded</div>'}
                                 </div>
 
                                 ${selected.notes ? `<div class="rounded-lg border border-slate-100 bg-amber-50 p-3">
@@ -13453,9 +13455,9 @@ class MarketFlowCRM {
                                         </div>
                                         <div class="w-full bg-slate-100 rounded-full h-2.5 relative overflow-hidden">
                                             ${d.count > 0
-                                                ? `<div class="bg-indigo-400 h-2.5 rounded-full absolute top-0 left-0" style="width:${(d.count / max) * 100}%"></div><div class="bg-emerald-400 h-2.5 rounded-full absolute top-0 left-0" style="width:${(d.done / max) * 100}%"></div>`
-                                                : '<div class="bg-slate-200 h-2.5 rounded-full" style="width:0%"></div>'
-                                            }
+                ? `<div class="bg-indigo-400 h-2.5 rounded-full absolute top-0 left-0" style="width:${(d.count / max) * 100}%"></div><div class="bg-emerald-400 h-2.5 rounded-full absolute top-0 left-0" style="width:${(d.done / max) * 100}%"></div>`
+                : '<div class="bg-slate-200 h-2.5 rounded-full" style="width:0%"></div>'
+            }
                                         </div>
                                     </div>
                                 `).join('')}
@@ -13567,17 +13569,17 @@ class MarketFlowCRM {
             return vals.length ? (vals.reduce((a, b) => a + b, 0) / vals.length).toFixed(1) : '0.0';
         };
         const questions = [
-            { q: 'Delivery Quality', avg: catAvg('quality'),  color: 'emerald' },
-            { q: 'Communication',   avg: catAvg('communication'), color: 'indigo' },
-            { q: 'Timelines',       avg: catAvg('timeline'), color: 'amber' },
-            { q: 'Value for Money', avg: catAvg('value'),    color: 'sky' }
+            { q: 'Delivery Quality', avg: catAvg('quality'), color: 'emerald' },
+            { q: 'Communication', avg: catAvg('communication'), color: 'indigo' },
+            { q: 'Timelines', avg: catAvg('timeline'), color: 'amber' },
+            { q: 'Value for Money', avg: catAvg('value'), color: 'sky' }
         ];
 
         // NPS: promoters (avg>=4) minus detractors (avg<=2) as % of total, scaled to -100..100
         const npsScore = storedFeedback.length
-            ? Math.round(((storedFeedback.filter(r => parseFloat(r.avg||0) >= 4).length
-                         - storedFeedback.filter(r => parseFloat(r.avg||0) <= 2).length)
-                         / storedFeedback.length) * 100)
+            ? Math.round(((storedFeedback.filter(r => parseFloat(r.avg || 0) >= 4).length
+                - storedFeedback.filter(r => parseFloat(r.avg || 0) <= 2).length)
+                / storedFeedback.length) * 100)
             : 0;
 
         // "This week" count
@@ -14512,7 +14514,7 @@ class MarketFlowCRM {
     }
 
     renderReportsContent(container) {
-        if (window.location.pathname.includes('projectflow-crm.html')) {
+        if (window.isProjectFlowMode || window.location.pathname.includes('projectflow-crm.html')) {
             container.innerHTML = '<div class="text-slate-400 text-center py-12 text-sm italic">Reports and Analytics are currently under construction.</div>';
             return;
         }
@@ -14567,9 +14569,9 @@ class MarketFlowCRM {
 
     getReportsRegionalAnalytics() {
         const clients = this.getStoredClients ? this.getStoredClients() : [];
-        const leads   = this.getStoredLeads   ? this.getStoredLeads()   : [];
-        const projects= this.getStoredProjects? this.getStoredProjects(): [];
-        const invoices= this.getAllInvoices   ? this.getAllInvoices()   : [];
+        const leads = this.getStoredLeads ? this.getStoredLeads() : [];
+        const projects = this.getStoredProjects ? this.getStoredProjects() : [];
+        const invoices = this.getAllInvoices ? this.getAllInvoices() : [];
         const esc = v => String(v ?? '').replace(/</g, '&lt;');
 
         // Build region map for clients
@@ -14583,7 +14585,7 @@ class MarketFlowCRM {
             ensureRegion(r);
             regionMap[r].clients++;
             // Revenue from invoices for this client
-            invoices.filter(i => String(i.client||'').trim().toLowerCase() === String(c.name||'').trim().toLowerCase())
+            invoices.filter(i => String(i.client || '').trim().toLowerCase() === String(c.name || '').trim().toLowerCase())
                 .forEach(inv => {
                     regionMap[r].revenue += this.parseCurrencyToNumber(inv.amount);
                     regionMap[r].totalInvoices++;
@@ -14595,23 +14597,23 @@ class MarketFlowCRM {
             ensureRegion(r);
             regionMap[r].leads++;
             const st = String(l.stage || l.status || '').toLowerCase();
-            if (['quotation','negotiation'].includes(st)) regionMap[r].quotations++;
-            if (['closed','po received','won'].includes(st)) regionMap[r].deals++;
+            if (['quotation', 'negotiation'].includes(st)) regionMap[r].quotations++;
+            if (['closed', 'po received', 'won'].includes(st)) regionMap[r].deals++;
             // Quotation stopped = was at quotation stage but NOT converted
             if (st === 'quotation') regionMap[r].quotationsStopped++;
         });
 
         projects.forEach(p => {
-            const clientRec = clients.find(c => String(c.name||'').trim().toLowerCase() === String(p.client||'').trim().toLowerCase());
+            const clientRec = clients.find(c => String(c.name || '').trim().toLowerCase() === String(p.client || '').trim().toLowerCase());
             const r = clientRec ? this._extractRegion(clientRec) : this._extractRegion({ location: p.identification?.location || '' });
             ensureRegion(r);
             regionMap[r].projects++;
         });
 
-        const regions = Object.values(regionMap).sort((a,b) => b.clients - a.clients);
-        const totalClients = regions.reduce((s,r) => s+r.clients, 0) || 1;
-        const totalLeads   = regions.reduce((s,r) => s+r.leads, 0) || 1;
-        const COLORS = ['purple','sky','emerald','amber','rose','indigo','teal','orange'];
+        const regions = Object.values(regionMap).sort((a, b) => b.clients - a.clients);
+        const totalClients = regions.reduce((s, r) => s + r.clients, 0) || 1;
+        const totalLeads = regions.reduce((s, r) => s + r.leads, 0) || 1;
+        const COLORS = ['purple', 'sky', 'emerald', 'amber', 'rose', 'indigo', 'teal', 'orange'];
 
         if (!regions.length || regions.every(r => r.region === 'Unknown')) {
             return `<div class="space-y-6 fade-in w-full">
@@ -14625,10 +14627,10 @@ class MarketFlowCRM {
         }
 
         const topRegion = regions[0];
-        const totalRevenue = regions.reduce((s,r)=>s+r.revenue,0);
+        const totalRevenue = regions.reduce((s, r) => s + r.revenue, 0);
 
         // Build chart data (stored in hidden element for JS to read)
-        const chartData = JSON.stringify(regions.slice(0,8).map((r,i) => ({ label: r.region, clients: r.clients, leads: r.leads, revenue: r.revenue, color: COLORS[i%COLORS.length] })));
+        const chartData = JSON.stringify(regions.slice(0, 8).map((r, i) => ({ label: r.region, clients: r.clients, leads: r.leads, revenue: r.revenue, color: COLORS[i % COLORS.length] })));
 
         return `<div class="space-y-6 fade-in w-full">
             <!-- Header -->
@@ -14683,10 +14685,10 @@ class MarketFlowCRM {
             <!-- Leads progress bars by region -->
             <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
                 <h3 class="text-sm font-semibold text-slate-900 mb-4">Leads by Region</h3>
-                ${regions.map((r,i) => {
-                    const pct = Math.round(r.leads / totalLeads * 100);
-                    const col = COLORS[i % COLORS.length];
-                    return `<div class="mb-3">
+                ${regions.map((r, i) => {
+            const pct = Math.round(r.leads / totalLeads * 100);
+            const col = COLORS[i % COLORS.length];
+            return `<div class="mb-3">
                         <div class="flex items-center justify-between mb-1">
                             <span class="text-sm font-medium text-slate-700">${esc(r.region)}</span>
                             <span class="text-sm text-slate-500">${r.leads} leads · ${pct}%</span>
@@ -14695,7 +14697,7 @@ class MarketFlowCRM {
                             <div class="bg-${col}-500 h-3 rounded-full transition-all" style="width:${pct}%"></div>
                         </div>
                     </div>`;
-                }).join('')}
+        }).join('')}
             </div>
 
             <!-- Detailed Table -->
@@ -14720,11 +14722,11 @@ class MarketFlowCRM {
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-100">
-                            ${regions.map((r,i) => {
-                                const convRate = r.leads > 0 ? (r.deals/r.leads*100).toFixed(1)+'%' : '—';
-                                const sharePct = Math.round(r.clients/totalClients*100);
-                                const col = COLORS[i%COLORS.length];
-                                return `<tr class="hover:bg-slate-50">
+                            ${regions.map((r, i) => {
+            const convRate = r.leads > 0 ? (r.deals / r.leads * 100).toFixed(1) + '%' : '—';
+            const sharePct = Math.round(r.clients / totalClients * 100);
+            const col = COLORS[i % COLORS.length];
+            return `<tr class="hover:bg-slate-50">
                                     <td class="px-4 py-3 font-semibold text-slate-900">
                                         <div class="flex items-center gap-2">
                                             <div class="w-2.5 h-2.5 rounded-full bg-${col}-500"></div>
@@ -14747,16 +14749,16 @@ class MarketFlowCRM {
                                         </div>
                                     </td>
                                 </tr>`;
-                            }).join('')}
+        }).join('')}
                         </tbody>
                         <tfoot class="bg-slate-50 border-t border-slate-200 font-semibold text-slate-800">
                             <tr>
                                 <td class="px-4 py-3">Total</td>
-                                <td class="px-4 py-3 text-right">${regions.reduce((s,r)=>s+r.clients,0)}</td>
-                                <td class="px-4 py-3 text-right">${regions.reduce((s,r)=>s+r.leads,0)}</td>
-                                <td class="px-4 py-3 text-right">${regions.reduce((s,r)=>s+r.projects,0)}</td>
-                                <td class="px-4 py-3 text-right">${regions.reduce((s,r)=>s+r.quotations,0)}</td>
-                                <td class="px-4 py-3 text-right text-emerald-700">${regions.reduce((s,r)=>s+r.deals,0)}</td>
+                                <td class="px-4 py-3 text-right">${regions.reduce((s, r) => s + r.clients, 0)}</td>
+                                <td class="px-4 py-3 text-right">${regions.reduce((s, r) => s + r.leads, 0)}</td>
+                                <td class="px-4 py-3 text-right">${regions.reduce((s, r) => s + r.projects, 0)}</td>
+                                <td class="px-4 py-3 text-right">${regions.reduce((s, r) => s + r.quotations, 0)}</td>
+                                <td class="px-4 py-3 text-right text-emerald-700">${regions.reduce((s, r) => s + r.deals, 0)}</td>
                                 <td class="px-4 py-3 text-right"></td>
                                 <td class="px-4 py-3 text-right">${this.formatINR(totalRevenue)}</td>
                                 <td class="px-4 py-3"></td>
@@ -14774,36 +14776,40 @@ class MarketFlowCRM {
     initializeRegionAnalyticsCharts() {
         const dataEl = document.getElementById('regionChartData');
         let data = [];
-        try { data = JSON.parse(dataEl?.textContent || '[]'); } catch(_) {}
+        try { data = JSON.parse(dataEl?.textContent || '[]'); } catch (_) { }
         if (!data.length) return;
 
-        const labels   = data.map(d => d.label);
-        const clients  = data.map(d => d.clients);
+        const labels = data.map(d => d.label);
+        const clients = data.map(d => d.clients);
         const revenues = data.map(d => d.revenue);
-        const palette  = ['#7c3aed','#0ea5e9','#10b981','#f59e0b','#f43f5e','#6366f1','#14b8a6','#f97316'];
-        const bgColors = data.map((_,i) => palette[i % palette.length] + 'CC');
-        const bdColors = data.map((_,i) => palette[i % palette.length]);
+        const palette = ['#7c3aed', '#0ea5e9', '#10b981', '#f59e0b', '#f43f5e', '#6366f1', '#14b8a6', '#f97316'];
+        const bgColors = data.map((_, i) => palette[i % palette.length] + 'CC');
+        const bdColors = data.map((_, i) => palette[i % palette.length]);
 
         const ctxC = document.getElementById('regionClientChart');
         if (ctxC) {
-            if (this.charts.regionClientChart) { try { this.charts.regionClientChart.destroy(); } catch(_) {} }
+            if (this.charts.regionClientChart) { try { this.charts.regionClientChart.destroy(); } catch (_) { } }
             this.charts.regionClientChart = new Chart(ctxC, {
                 type: 'doughnut',
                 data: { labels, datasets: [{ data: clients, backgroundColor: bgColors, borderColor: bdColors, borderWidth: 2, hoverOffset: 8 }] },
-                options: { responsive: true, maintainAspectRatio: false, cutout: '60%',
-                    plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11 } } } } }
+                options: {
+                    responsive: true, maintainAspectRatio: false, cutout: '60%',
+                    plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11 } } } }
+                }
             });
         }
 
         const ctxR = document.getElementById('regionRevenueChart');
         if (ctxR) {
-            if (this.charts.regionRevenueChart) { try { this.charts.regionRevenueChart.destroy(); } catch(_) {} }
+            if (this.charts.regionRevenueChart) { try { this.charts.regionRevenueChart.destroy(); } catch (_) { } }
             this.charts.regionRevenueChart = new Chart(ctxR, {
                 type: 'bar',
                 data: { labels, datasets: [{ label: 'Revenue (₹)', data: revenues, backgroundColor: bgColors, borderColor: bdColors, borderWidth: 1.5, borderRadius: 6 }] },
-                options: { responsive: true, maintainAspectRatio: false,
+                options: {
+                    responsive: true, maintainAspectRatio: false,
                     plugins: { legend: { display: false } },
-                    scales: { x: { grid: { display: false } }, y: { beginAtZero: true, ticks: { callback: v => v >= 100000 ? '₹'+(v/100000).toFixed(1)+'L' : '₹'+v.toLocaleString('en-IN'), font: { size: 10 } } } } }
+                    scales: { x: { grid: { display: false } }, y: { beginAtZero: true, ticks: { callback: v => v >= 100000 ? '₹' + (v / 100000).toFixed(1) + 'L' : '₹' + v.toLocaleString('en-IN'), font: { size: 10 } } } }
+                }
             });
         }
 
@@ -14814,15 +14820,15 @@ class MarketFlowCRM {
                 const map = {};
                 this.getStoredClients().forEach(c => {
                     const r = this._extractRegion(c);
-                    if (!map[r]) map[r] = { region:r, clients:0, leads:0, projects:0, revenue:0 };
+                    if (!map[r]) map[r] = { region: r, clients: 0, leads: 0, projects: 0, revenue: 0 };
                     map[r].clients++;
-                    this.getAllInvoices().filter(i => String(i.client||'').toLowerCase()===String(c.name||'').toLowerCase()).forEach(inv => { map[r].revenue += this.parseCurrencyToNumber(inv.amount); });
+                    this.getAllInvoices().filter(i => String(i.client || '').toLowerCase() === String(c.name || '').toLowerCase()).forEach(inv => { map[r].revenue += this.parseCurrencyToNumber(inv.amount); });
                 });
                 return Object.values(map);
             })() : [];
-            const rows = [['Region','Clients','Leads','Projects','Revenue'], ...regions.map(r => [r.region,r.clients,r.leads,r.projects,r.revenue])];
+            const rows = [['Region', 'Clients', 'Leads', 'Projects', 'Revenue'], ...regions.map(r => [r.region, r.clients, r.leads, r.projects, r.revenue])];
             const csv = rows.map(r => r.map(c => `"${c}"`).join(',')).join('\n');
-            const a = document.createElement('a'); a.href = 'data:text/csv;charset=utf-8,'+encodeURIComponent(csv); a.download = 'Regional_Analytics.csv'; a.click();
+            const a = document.createElement('a'); a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv); a.download = 'Regional_Analytics.csv'; a.click();
         };
     }
 
@@ -14830,64 +14836,64 @@ class MarketFlowCRM {
     //  QUOTATION → PROJECT CONVERSION REPORT
     // ─────────────────────────────────────────────────────────────────────────
     getReportsQuotationConversion() {
-        const leads   = this.getStoredLeads   ? this.getStoredLeads()   : [];
+        const leads = this.getStoredLeads ? this.getStoredLeads() : [];
         const clients = this.getStoredClients ? this.getStoredClients() : [];
-        const projects= this.getStoredProjects? this.getStoredProjects(): [];
+        const projects = this.getStoredProjects ? this.getStoredProjects() : [];
         const quotations = this.readStore ? this.readStore('bezent_quotations', []) : [];
         const esc = v => String(v ?? '').replace(/</g, '&lt;');
 
         // Stage flow: leads at/past Quotation stage
-        const atQuotation   = leads.filter(l => ['quotation'].includes(String(l.stage||'').toLowerCase()));
-        const atNegotiation = leads.filter(l => ['negotiation'].includes(String(l.stage||'').toLowerCase()));
-        const atClosed      = leads.filter(l => ['closed','po received','won'].includes(String(l.stage||'').toLowerCase()));
+        const atQuotation = leads.filter(l => ['quotation'].includes(String(l.stage || '').toLowerCase()));
+        const atNegotiation = leads.filter(l => ['negotiation'].includes(String(l.stage || '').toLowerCase()));
+        const atClosed = leads.filter(l => ['closed', 'po received', 'won'].includes(String(l.stage || '').toLowerCase()));
         // All leads that ever had quotation (approximation: at quotation or beyond)
-        const quotationAndBeyond = leads.filter(l => ['quotation','negotiation','closed','po received','won'].includes(String(l.stage||l.status||'').toLowerCase()));
-        
+        const quotationAndBeyond = leads.filter(l => ['quotation', 'negotiation', 'closed', 'po received', 'won'].includes(String(l.stage || l.status || '').toLowerCase()));
+
         // Conversion rates
-        const totalLeads           = leads.length || 1;
-        const quotationCount       = quotationAndBeyond.length;
-        const convertedToProject   = atClosed.length;
-        const stoppedAtQuotation   = atQuotation.length;
+        const totalLeads = leads.length || 1;
+        const quotationCount = quotationAndBeyond.length;
+        const convertedToProject = atClosed.length;
+        const stoppedAtQuotation = atQuotation.length;
         const stoppedAtNegotiation = atNegotiation.length;
-        const quotationToClose     = quotationCount > 0 ? (convertedToProject/quotationCount*100).toFixed(1) : '0.0';
-        const leadToQuotation      = (quotationCount/totalLeads*100).toFixed(1);
+        const quotationToClose = quotationCount > 0 ? (convertedToProject / quotationCount * 100).toFixed(1) : '0.0';
+        const leadToQuotation = (quotationCount / totalLeads * 100).toFixed(1);
 
         // Cross-reference with clients (quotation → became registered client)
-        const clientNames = new Set(clients.map(c => String(c.name||'').trim().toLowerCase()));
-        const quotationBecameClient = quotationAndBeyond.filter(l => clientNames.has(String(l.company||'').trim().toLowerCase())).length;
+        const clientNames = new Set(clients.map(c => String(c.name || '').trim().toLowerCase()));
+        const quotationBecameClient = quotationAndBeyond.filter(l => clientNames.has(String(l.company || '').trim().toLowerCase())).length;
 
         // Project connection: leads who became clients AND have a project
-        const projectClientNames = new Set(projects.map(p => String(p.client||'').trim().toLowerCase()));
-        const quotationGotProject = quotationAndBeyond.filter(l => projectClientNames.has(String(l.company||'').trim().toLowerCase())).length;
+        const projectClientNames = new Set(projects.map(p => String(p.client || '').trim().toLowerCase()));
+        const quotationGotProject = quotationAndBeyond.filter(l => projectClientNames.has(String(l.company || '').trim().toLowerCase())).length;
 
         // Breakdown table: each lead at/past quotation
         const tableRows = quotationAndBeyond.map(l => {
-            const st = String(l.stage||l.status||'New Lead');
-            const isClosed = ['closed','po received','won'].includes(st.toLowerCase());
-            const isClient = clientNames.has(String(l.company||'').trim().toLowerCase());
-            const hasProject = projectClientNames.has(String(l.company||'').trim().toLowerCase());
-            const region = this._extractRegion({ location: l.location||l.city||'', address: l.address||'', vendorCode:'' });
-            const statusColor = isClosed ? 'emerald' : st.toLowerCase()==='negotiation' ? 'amber' : 'sky';
-            return { company: l.company||l.contact||'—', stage: st, statusColor, isClient, hasProject, region, owner: l.assignedTo||l.owner||'—', source: l.source||l.leadSource||'—' };
+            const st = String(l.stage || l.status || 'New Lead');
+            const isClosed = ['closed', 'po received', 'won'].includes(st.toLowerCase());
+            const isClient = clientNames.has(String(l.company || '').trim().toLowerCase());
+            const hasProject = projectClientNames.has(String(l.company || '').trim().toLowerCase());
+            const region = this._extractRegion({ location: l.location || l.city || '', address: l.address || '', vendorCode: '' });
+            const statusColor = isClosed ? 'emerald' : st.toLowerCase() === 'negotiation' ? 'amber' : 'sky';
+            return { company: l.company || l.contact || '—', stage: st, statusColor, isClient, hasProject, region, owner: l.assignedTo || l.owner || '—', source: l.source || l.leadSource || '—' };
         });
 
         // Stopped at quotation table (never progressed)
         const stoppedRows = atQuotation.map(l => ({
-            company: l.company||l.contact||'—',
-            owner: l.assignedTo||l.owner||'—',
-            source: l.source||l.leadSource||'—',
-            region: this._extractRegion({ location: l.location||l.city||'', address: l.address||'' })
+            company: l.company || l.contact || '—',
+            owner: l.assignedTo || l.owner || '—',
+            source: l.source || l.leadSource || '—',
+            region: this._extractRegion({ location: l.location || l.city || '', address: l.address || '' })
         }));
 
         // Regional breakdown of conversion
         const regionConvMap = {};
         quotationAndBeyond.forEach(l => {
-            const r = this._extractRegion({ location: l.location||l.city||'', address: l.address||'' });
-            if (!regionConvMap[r]) regionConvMap[r] = { region:r, quotations:0, converted:0 };
+            const r = this._extractRegion({ location: l.location || l.city || '', address: l.address || '' });
+            if (!regionConvMap[r]) regionConvMap[r] = { region: r, quotations: 0, converted: 0 };
             regionConvMap[r].quotations++;
-            if (['closed','po received','won'].includes(String(l.stage||'').toLowerCase())) regionConvMap[r].converted++;
+            if (['closed', 'po received', 'won'].includes(String(l.stage || '').toLowerCase())) regionConvMap[r].converted++;
         });
-        const regionConvRows = Object.values(regionConvMap).sort((a,b) => b.quotations-a.quotations);
+        const regionConvRows = Object.values(regionConvMap).sort((a, b) => b.quotations - a.quotations);
 
         const chartData = JSON.stringify({
             funnelLabels: ['All Leads', 'Sent Quotation', 'Negotiation', 'Closed / Won'],
@@ -15027,10 +15033,10 @@ class MarketFlowCRM {
             ${regionConvRows.length ? `
             <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
                 <h3 class="text-sm font-semibold text-slate-900 mb-4">Conversion Rate by Region</h3>
-                ${regionConvRows.map((r,i) => {
-                    const rate = r.quotations > 0 ? Math.round(r.converted/r.quotations*100) : 0;
-                    const col = rate >= 60 ? 'emerald' : rate >= 30 ? 'amber' : 'rose';
-                    return `<div class="mb-3">
+                ${regionConvRows.map((r, i) => {
+            const rate = r.quotations > 0 ? Math.round(r.converted / r.quotations * 100) : 0;
+            const col = rate >= 60 ? 'emerald' : rate >= 30 ? 'amber' : 'rose';
+            return `<div class="mb-3">
                         <div class="flex items-center justify-between mb-1">
                             <span class="text-sm font-medium text-slate-700">${esc(r.region)}</span>
                             <span class="text-xs text-slate-500">${r.converted}/${r.quotations} converted &nbsp;·&nbsp; <strong class="text-${col}-600">${rate}%</strong></span>
@@ -15039,7 +15045,7 @@ class MarketFlowCRM {
                             <div class="bg-${col}-500 h-2.5 rounded-full" style="width:${rate}%"></div>
                         </div>
                     </div>`;
-                }).join('')}
+        }).join('')}
             </div>` : ''}
 
             <!-- Hidden chart data -->
@@ -15050,12 +15056,12 @@ class MarketFlowCRM {
     initializeQuotationConversionCharts() {
         const dataEl = document.getElementById('quotConvChartData');
         let data = {};
-        try { data = JSON.parse(dataEl?.textContent || '{}'); } catch(_) {}
+        try { data = JSON.parse(dataEl?.textContent || '{}'); } catch (_) { }
 
         // Funnel chart
         const ctxF = document.getElementById('quotConvFunnelChart');
         if (ctxF && data.funnelLabels) {
-            if (this.charts.quotConvFunnelChart) { try { this.charts.quotConvFunnelChart.destroy(); } catch(_) {} }
+            if (this.charts.quotConvFunnelChart) { try { this.charts.quotConvFunnelChart.destroy(); } catch (_) { } }
             this.charts.quotConvFunnelChart = new Chart(ctxF, {
                 type: 'bar',
                 data: {
@@ -15063,7 +15069,7 @@ class MarketFlowCRM {
                     datasets: [{
                         label: 'Count',
                         data: data.funnelData,
-                        backgroundColor: ['rgba(14,165,233,0.7)','rgba(99,102,241,0.7)','rgba(245,158,11,0.7)','rgba(16,185,129,0.85)'],
+                        backgroundColor: ['rgba(14,165,233,0.7)', 'rgba(99,102,241,0.7)', 'rgba(245,158,11,0.7)', 'rgba(16,185,129,0.85)'],
                         borderRadius: 8, borderSkipped: false
                     }]
                 },
@@ -15078,7 +15084,7 @@ class MarketFlowCRM {
         // Region grouped bar chart
         const ctxR = document.getElementById('quotConvRegionChart');
         if (ctxR && data.regionLabels && data.regionLabels.length) {
-            if (this.charts.quotConvRegionChart) { try { this.charts.quotConvRegionChart.destroy(); } catch(_) {} }
+            if (this.charts.quotConvRegionChart) { try { this.charts.quotConvRegionChart.destroy(); } catch (_) { } }
             this.charts.quotConvRegionChart = new Chart(ctxR, {
                 type: 'bar',
                 data: {
@@ -15099,17 +15105,17 @@ class MarketFlowCRM {
         // Export CSV
         const btn = document.getElementById('quotConvExportBtn');
         if (btn) btn.onclick = () => {
-            const leads  = this.getStoredLeads ? this.getStoredLeads() : [];
-            const qLeads = leads.filter(l => ['quotation','negotiation','closed','po received','won'].includes(String(l.stage||'').toLowerCase()));
-            const clients = new Set((this.getStoredClients ? this.getStoredClients() : []).map(c => String(c.name||'').toLowerCase()));
-            const projects = new Set((this.getStoredProjects ? this.getStoredProjects() : []).map(p => String(p.client||'').toLowerCase()));
-            const rows = [['Company','Stage','Region','Source','Owner','Registered Client','Has Project'],
-                ...qLeads.map(l => [l.company||'',l.stage||'',l.location||'',l.source||'',l.assignedTo||'',
-                    clients.has(String(l.company||'').toLowerCase()) ? 'Yes':'No',
-                    projects.has(String(l.company||'').toLowerCase()) ? 'Yes':'No'
-                ])];
+            const leads = this.getStoredLeads ? this.getStoredLeads() : [];
+            const qLeads = leads.filter(l => ['quotation', 'negotiation', 'closed', 'po received', 'won'].includes(String(l.stage || '').toLowerCase()));
+            const clients = new Set((this.getStoredClients ? this.getStoredClients() : []).map(c => String(c.name || '').toLowerCase()));
+            const projects = new Set((this.getStoredProjects ? this.getStoredProjects() : []).map(p => String(p.client || '').toLowerCase()));
+            const rows = [['Company', 'Stage', 'Region', 'Source', 'Owner', 'Registered Client', 'Has Project'],
+            ...qLeads.map(l => [l.company || '', l.stage || '', l.location || '', l.source || '', l.assignedTo || '',
+            clients.has(String(l.company || '').toLowerCase()) ? 'Yes' : 'No',
+            projects.has(String(l.company || '').toLowerCase()) ? 'Yes' : 'No'
+            ])];
             const csv = rows.map(r => r.map(c => `"${c}"`).join(',')).join('\n');
-            const a = document.createElement('a'); a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv); a.download='Quotation_Conversion.csv'; a.click();
+            const a = document.createElement('a'); a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv); a.download = 'Quotation_Conversion.csv'; a.click();
         };
     }
 
@@ -15118,20 +15124,20 @@ class MarketFlowCRM {
     //  KPI vs Target Report
     // ─────────────────────────────────────────────────────────────────────────
     getKPIData() {
-        const leadsData     = typeof this.getStoredLeads    === 'function' ? this.getStoredLeads()    : [];
-        const invoicesData  = typeof this.getAllInvoices     === 'function' ? this.getAllInvoices()     : [];
-        const feedbackData  = typeof this.readStore          === 'function' ? this.readStore('bezent_feedback_submissions', []) : [];
-        const campaignsData = typeof this.readStore          === 'function' ? this.readStore('bezent_campaigns', [])            : [];
-        const clientsData   = typeof this.getStoredClients   === 'function' ? this.getStoredClients()  : [];
+        const leadsData = typeof this.getStoredLeads === 'function' ? this.getStoredLeads() : [];
+        const invoicesData = typeof this.getAllInvoices === 'function' ? this.getAllInvoices() : [];
+        const feedbackData = typeof this.readStore === 'function' ? this.readStore('bezent_feedback_submissions', []) : [];
+        const campaignsData = typeof this.readStore === 'function' ? this.readStore('bezent_campaigns', []) : [];
+        const clientsData = typeof this.getStoredClients === 'function' ? this.getStoredClients() : [];
 
         let projectsData = [];
         try {
             projectsData = typeof this.getAllProjectsMerged === 'function'
                 ? this.getAllProjectsMerged([])
                 : (typeof this.getStoredProjects === 'function' ? this.getStoredProjects() : []);
-        } catch (_) {}
+        } catch (_) { }
 
-        const parse = v => this.parseCurrencyToNumber ? this.parseCurrencyToNumber(v) : parseFloat(String(v||'0').replace(/[^0-9.]/g,''))||0;
+        const parse = v => this.parseCurrencyToNumber ? this.parseCurrencyToNumber(v) : parseFloat(String(v || '0').replace(/[^0-9.]/g, '')) || 0;
         const storedTargets = typeof this.readStore === 'function' ? this.readStore('bezent_kpi_targets', {}) : {};
 
         // Helper: build a KPI entry, applying user-overridden target if set
@@ -15154,14 +15160,14 @@ class MarketFlowCRM {
 
         // ── INVOICES: only if invoices exist ───────────────────────────────
         if (invoicesData.length > 0) {
-            const paidInvs  = invoicesData.filter(i => String(i.status||'').toLowerCase() === 'paid');
-            const paidAmt   = paidInvs.reduce((s, i) => s + parse(i.amount), 0);
-            const totalAmt  = invoicesData.reduce((s, i) => s + parse(i.amount), 0);
-            const overdue   = invoicesData.filter(i => String(i.status||'').toLowerCase() === 'overdue').length;
+            const paidInvs = invoicesData.filter(i => String(i.status || '').toLowerCase() === 'paid');
+            const paidAmt = paidInvs.reduce((s, i) => s + parse(i.amount), 0);
+            const totalAmt = invoicesData.reduce((s, i) => s + parse(i.amount), 0);
+            const overdue = invoicesData.filter(i => String(i.status || '').toLowerCase() === 'overdue').length;
             const collectPct = totalAmt > 0 ? Math.round(paidAmt / totalAmt * 100) : 0;
 
-            rows.push(kpi('rev',     'Finance', 'Revenue Collected',       500000, paidAmt,     '₹',   'Team'));
-            rows.push(kpi('collect', 'Finance', 'Invoice Collection Rate', 95,     collectPct,  '%',   'Team'));
+            rows.push(kpi('rev', 'Finance', 'Revenue Collected', 500000, paidAmt, '₹', 'Team'));
+            rows.push(kpi('collect', 'Finance', 'Invoice Collection Rate', 95, collectPct, '%', 'Team'));
             if (overdue > 0 || invoicesData.length >= 3) {
                 rows.push(kpi('overdue', 'Finance', 'Overdue Invoices', 2, overdue, ' no.', 'Team', true));
             }
@@ -15169,19 +15175,19 @@ class MarketFlowCRM {
 
         // ── LEADS: only if leads exist ─────────────────────────────────────
         if (leadsData.length > 0) {
-            const wonLeads  = leadsData.filter(l => ['won','closed','po received','converted'].includes(String(l.stage||l.status||'').toLowerCase())).length;
-            const convRate  = Math.round(wonLeads / leadsData.length * 100);
-            const paidAmt   = invoicesData.filter(i => String(i.status||'').toLowerCase() === 'paid').reduce((s,i) => s + parse(i.amount), 0);
-            const avgDeal   = wonLeads > 0 ? Math.round(paidAmt / wonLeads) : 0;
+            const wonLeads = leadsData.filter(l => ['won', 'closed', 'po received', 'converted'].includes(String(l.stage || l.status || '').toLowerCase())).length;
+            const convRate = Math.round(wonLeads / leadsData.length * 100);
+            const paidAmt = invoicesData.filter(i => String(i.status || '').toLowerCase() === 'paid').reduce((s, i) => s + parse(i.amount), 0);
+            const avgDeal = wonLeads > 0 ? Math.round(paidAmt / wonLeads) : 0;
 
-            rows.push(kpi('leads', 'Sales', 'Leads in System',       100, leadsData.length, '', 'Team'));
-            rows.push(kpi('conv',  'Sales', 'Lead Conversion Rate',  30,  convRate,          '%', 'Team'));
+            rows.push(kpi('leads', 'Sales', 'Leads in System', 100, leadsData.length, '', 'Team'));
+            rows.push(kpi('conv', 'Sales', 'Lead Conversion Rate', 30, convRate, '%', 'Team'));
             if (wonLeads > 0 && avgDeal > 0) {
                 rows.push(kpi('deal', 'Sales', 'Avg Deal Size', 85000, avgDeal, '₹', 'Team'));
             }
 
             // Website leads only if any exist
-            const webLeads = leadsData.filter(l => String(l.source||'').toLowerCase().includes('website')).length;
+            const webLeads = leadsData.filter(l => String(l.source || '').toLowerCase().includes('website')).length;
             if (webLeads > 0) {
                 rows.push(kpi('webLeads', 'Marketing', 'Website Leads Captured', 40, webLeads, '', 'Team'));
             }
@@ -15193,16 +15199,16 @@ class MarketFlowCRM {
                 const s = String(p?.status || p?.monitoring?.overallProjectStatus || '').toLowerCase();
                 return !s.includes('delay') && !s.includes('risk');
             }).length;
-            const onTimePct   = Math.round(onTime / projectsData.length * 100);
+            const onTimePct = Math.round(onTime / projectsData.length * 100);
             const avgProgress = Math.round(projectsData.reduce((s, p) => s + parseInt(p.progress || 0), 0) / projectsData.length);
 
-            rows.push(kpi('ontime', 'Projects', 'Projects On Time',       90, onTimePct,   '%', 'Team'));
-            rows.push(kpi('comp',   'Projects', 'Avg Project Completion', 85, avgProgress, '%', 'Team'));
+            rows.push(kpi('ontime', 'Projects', 'Projects On Time', 90, onTimePct, '%', 'Team'));
+            rows.push(kpi('comp', 'Projects', 'Avg Project Completion', 85, avgProgress, '%', 'Team'));
 
             // Budget utilisation only if projects have budget set
             const budgeted = projectsData.filter(p => parse(p.budget) > 0);
             if (budgeted.length > 0) {
-                const spent  = budgeted.reduce((s, p) => s + parse(p.spent),  0);
+                const spent = budgeted.reduce((s, p) => s + parse(p.spent), 0);
                 const budget = budgeted.reduce((s, p) => s + parse(p.budget), 0);
                 const utilPct = Math.round(spent / budget * 100);
                 rows.push(kpi('budget', 'Finance', 'Budget Utilisation', 80, utilPct, '%', 'Team'));
@@ -15217,9 +15223,9 @@ class MarketFlowCRM {
         }
 
         // ── CAMPAIGNS: only if sent/active campaigns exist ─────────────────
-        const activeCamp = campaignsData.filter(c => ['active','sent'].includes(String(c.status||'').toLowerCase()));
+        const activeCamp = campaignsData.filter(c => ['active', 'sent'].includes(String(c.status || '').toLowerCase()));
         if (activeCamp.length > 0) {
-            const totalOpens     = activeCamp.reduce((s, c) => s + parseInt(c.opened    || c.open  || 0), 0);
+            const totalOpens = activeCamp.reduce((s, c) => s + parseInt(c.opened || c.open || 0), 0);
             const totalDelivered = activeCamp.reduce((s, c) => s + parseInt(c.delivered || c.audience || 0), 0);
             const openRate = totalDelivered > 0 ? Math.round(totalOpens / totalDelivered * 100) : 0;
             rows.push(kpi('email', 'Marketing', 'Email Open Rate', 28, openRate, '%', 'Team'));
@@ -15430,12 +15436,12 @@ class MarketFlowCRM {
             projects = typeof this.getAllProjectsMerged === 'function'
                 ? this.getAllProjectsMerged([])
                 : (typeof this.getStoredProjects === 'function' ? this.getStoredProjects() : []);
-        } catch (_) {}
-        const leads    = typeof this.getStoredLeads  === 'function' ? this.getStoredLeads()  : [];
-        const clients  = typeof this.getStoredClients === 'function' ? this.getStoredClients() : [];
+        } catch (_) { }
+        const leads = typeof this.getStoredLeads === 'function' ? this.getStoredLeads() : [];
+        const clients = typeof this.getStoredClients === 'function' ? this.getStoredClients() : [];
         const feedback = typeof this.readStore === 'function' ? this.readStore('bezent_feedback_submissions', []) : [];
         const campaigns = typeof this.readStore === 'function' ? this.readStore('bezent_campaigns', []) : [];
-        const fups     = typeof this.getStoredFollowups === 'function' ? this.getStoredFollowups() : [];
+        const fups = typeof this.getStoredFollowups === 'function' ? this.getStoredFollowups() : [];
 
         const sc = (L, I) => {
             const s = L * I;
@@ -15450,7 +15456,7 @@ class MarketFlowCRM {
         // ── FINANCIAL: only if invoices exist ──────────────────────────────
         if (invoices.length > 0) {
             const overdueCount = invoices.filter(i => String(i?.status || '').toLowerCase() === 'overdue').length;
-            const paidCount    = invoices.filter(i => String(i?.status || '').toLowerCase() === 'paid').length;
+            const paidCount = invoices.filter(i => String(i?.status || '').toLowerCase() === 'paid').length;
 
             // Revenue Target — shows how many invoices are paid vs total
             const revLk = paidCount === 0 ? 3 : paidCount < invoices.length * 0.5 ? 2 : 1;
@@ -15659,7 +15665,7 @@ class MarketFlowCRM {
         const invoicesChk = typeof this.getAllInvoices === 'function' ? this.getAllInvoices() : [];
         const leadsChk = typeof this.getStoredLeads === 'function' ? this.getStoredLeads() : [];
         let projChk = [];
-        try { projChk = typeof this.getAllProjectsMerged === 'function' ? this.getAllProjectsMerged([]) : (typeof this.getStoredProjects === 'function' ? this.getStoredProjects() : []); } catch (_) {}
+        try { projChk = typeof this.getAllProjectsMerged === 'function' ? this.getAllProjectsMerged([]) : (typeof this.getStoredProjects === 'function' ? this.getStoredProjects() : []); } catch (_) { }
         const hasDataKri = invoicesChk.length > 0 || leadsChk.length > 0 || projChk.length > 0;
         if (!hasDataKri) {
             return `<div class="space-y-6 fade-in w-full">
@@ -16450,29 +16456,29 @@ class MarketFlowCRM {
         const parse = v => parseInt(String(v || '0').replace(/\D/g, '')) || 0;
 
         const rows = stored.map(c => {
-            const audience  = parse(c.audience);
+            const audience = parse(c.audience);
             const delivered = parse(c.delivered) || audience; // fallback to audience if delivered not tracked
-            const opened    = parse(c.opened || c.open);
-            const clicked   = parse(c.clicked || c.click);
+            const opened = parse(c.opened || c.open);
+            const clicked = parse(c.clicked || c.click);
             const converted = parse(c.converted || c.conversions);
-            const unsub     = parse(c.unsubscribed || c.unsub);
-            const openRate  = delivered > 0 ? (opened / delivered * 100).toFixed(1) : '0.0';
-            const convPct   = delivered > 0 ? (converted / delivered * 100).toFixed(1) : '0.0';
-            const status    = String(c.status || 'Draft');
+            const unsub = parse(c.unsubscribed || c.unsub);
+            const openRate = delivered > 0 ? (opened / delivered * 100).toFixed(1) : '0.0';
+            const convPct = delivered > 0 ? (converted / delivered * 100).toFixed(1) : '0.0';
+            const status = String(c.status || 'Draft');
             const statusCol = status === 'Sent' ? 'emerald' : status === 'Active' ? 'sky' : status === 'Scheduled' ? 'amber' : 'slate';
             return { name: c.name || 'Unnamed', status, statusCol, audience, delivered, opened, clicked, converted, unsub, openRate, convPct };
         });
 
-        const grandAudience  = rows.reduce((s, r) => s + r.audience, 0);
+        const grandAudience = rows.reduce((s, r) => s + r.audience, 0);
         const grandDelivered = rows.reduce((s, r) => s + r.delivered, 0);
-        const grandOpened    = rows.reduce((s, r) => s + r.opened, 0);
-        const grandClicked   = rows.reduce((s, r) => s + r.clicked, 0);
+        const grandOpened = rows.reduce((s, r) => s + r.opened, 0);
+        const grandClicked = rows.reduce((s, r) => s + r.clicked, 0);
         const grandConverted = rows.reduce((s, r) => s + r.converted, 0);
-        const grandUnsub     = rows.reduce((s, r) => s + r.unsub, 0);
-        const grandOpenRate  = grandDelivered > 0 ? (grandOpened / grandDelivered * 100).toFixed(1) : '0.0';
-        const grandConvPct   = grandDelivered > 0 ? (grandConverted / grandDelivered * 100).toFixed(1) : '0.0';
+        const grandUnsub = rows.reduce((s, r) => s + r.unsub, 0);
+        const grandOpenRate = grandDelivered > 0 ? (grandOpened / grandDelivered * 100).toFixed(1) : '0.0';
+        const grandConvPct = grandDelivered > 0 ? (grandConverted / grandDelivered * 100).toFixed(1) : '0.0';
 
-        const sentCampaigns   = rows.filter(r => r.status === 'Sent' || r.status === 'Active').length;
+        const sentCampaigns = rows.filter(r => r.status === 'Sent' || r.status === 'Active').length;
         const activeCampaigns = rows.filter(r => r.status === 'Active').length;
 
         const kpis = [
@@ -17867,7 +17873,7 @@ class MarketFlowCRM {
         if (!this.notifications) this.notifications = this.getNotificationsData();
 
         const close = () => menu.classList.add('hidden');
-        const open = () => { if (menu.id==='notificationMenu') { const pm = document.getElementById('profileMenu'); if (pm) pm.classList.add('hidden'); } else if (menu.id==='profileMenu') { const nm = document.getElementById('notificationMenu'); if (nm) nm.classList.add('hidden'); } const sr = document.getElementById('globalSearchResults'); if (sr) sr.classList.add('hidden'); menu.classList.remove('hidden'); };
+        const open = () => { if (menu.id === 'notificationMenu') { const pm = document.getElementById('profileMenu'); if (pm) pm.classList.add('hidden'); } else if (menu.id === 'profileMenu') { const nm = document.getElementById('notificationMenu'); if (nm) nm.classList.add('hidden'); } const sr = document.getElementById('globalSearchResults'); if (sr) sr.classList.add('hidden'); menu.classList.remove('hidden'); };
         const isOpen = () => !menu.classList.contains('hidden');
 
         const sectionLabel = (type) => {
@@ -17961,7 +17967,7 @@ class MarketFlowCRM {
         if (!toggle || !menu) return;
 
         const close = () => menu.classList.add('hidden');
-        const open = () => { if (menu.id==='notificationMenu') { const pm = document.getElementById('profileMenu'); if (pm) pm.classList.add('hidden'); } else if (menu.id==='profileMenu') { const nm = document.getElementById('notificationMenu'); if (nm) nm.classList.add('hidden'); } const sr = document.getElementById('globalSearchResults'); if (sr) sr.classList.add('hidden'); menu.classList.remove('hidden'); };
+        const open = () => { if (menu.id === 'notificationMenu') { const pm = document.getElementById('profileMenu'); if (pm) pm.classList.add('hidden'); } else if (menu.id === 'profileMenu') { const nm = document.getElementById('notificationMenu'); if (nm) nm.classList.add('hidden'); } const sr = document.getElementById('globalSearchResults'); if (sr) sr.classList.add('hidden'); menu.classList.remove('hidden'); };
         const isOpen = () => !menu.classList.contains('hidden');
 
         toggle.addEventListener('click', (e) => {
@@ -18049,7 +18055,7 @@ class MarketFlowCRM {
                     </div>
                 </div>
             `;
-            
+
             const loadEmails = async () => {
                 try {
                     const res = await window.apiFetch('/auth/allowed-emails');
@@ -18097,7 +18103,7 @@ class MarketFlowCRM {
                 addBtn.disabled = false;
                 addBtn.textContent = 'Add';
             });
-            
+
             loadEmails();
         } else {
             container.innerHTML = '<div class="p-6 text-slate-500">Access panel not found</div>';
@@ -18230,7 +18236,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     try {
-        new MarketFlowCRM();
+        window.crmApp = new MarketFlowCRM();
     } catch (err) {
         renderBootError(err);
     }
@@ -18238,10 +18244,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // START: ProjectFlow SaaS specific logic
 window.PF_TEAM = [
-    { id: 't1', name: 'Riya Sharma', role: 'UI/UX Lead', skills: ['design'], workload: 15, maxWorkload: 40, perf: 95, avatar: 'RS', color:'a855f7' },
-    { id: 't2', name: 'Arjun Mehta', role: 'Sr Developer', skills: ['development'], workload: 35, maxWorkload: 40, perf: 88, avatar: 'AM', color:'3b82f6' },
-    { id: 't3', name: 'Sneha Patil', role: 'Frontend Dev', skills: ['development','design'], workload: 20, maxWorkload: 40, perf: 91, avatar: 'SP', color:'ec4899' },
-    { id: 't4', name: 'Karan Singh', role: 'Product Manager', skills: ['management'], workload: 10, maxWorkload: 40, perf: 98, avatar: 'KS', color:'10b981' }
+    { id: 't1', name: 'Riya Sharma', role: 'UI/UX Lead', skills: ['design'], workload: 15, maxWorkload: 40, perf: 95, avatar: 'RS', color: 'a855f7' },
+    { id: 't2', name: 'Arjun Mehta', role: 'Sr Developer', skills: ['development'], workload: 35, maxWorkload: 40, perf: 88, avatar: 'AM', color: '3b82f6' },
+    { id: 't3', name: 'Sneha Patil', role: 'Frontend Dev', skills: ['development', 'design'], workload: 20, maxWorkload: 40, perf: 91, avatar: 'SP', color: 'ec4899' },
+    { id: 't4', name: 'Karan Singh', role: 'Product Manager', skills: ['management'], workload: 10, maxWorkload: 40, perf: 98, avatar: 'KS', color: '10b981' }
 ];
 
 window.PF_PIPELINE_STEPS = {
@@ -18257,7 +18263,7 @@ window.selectAlloc = (id) => {
     const projects = JSON.parse(localStorage.getItem('bezent_projects') || '[]');
     window.currentActiveAlloc = projects.find(p => p.id === id);
     window.selectedTeamForAlloc = [];
-    
+
     document.getElementById('allocPanelContainer').innerHTML = `
         <div class="border-b border-slate-100 pb-4 mb-4">
             <h2 class="text-xl font-bold text-slate-800">${window.currentActiveAlloc.name}</h2>
@@ -18275,11 +18281,11 @@ window.selectAlloc = (id) => {
 };
 
 window.runSmart = () => {
-    if(!window.currentActiveAlloc) return;
+    if (!window.currentActiveAlloc) return;
     let effort = window.currentActiveAlloc.effort || 20;
     let cat = (window.currentActiveAlloc.category || 'default').toLowerCase();
     let scored = window.PF_TEAM.map(m => ({ ...m, isMatch: m.skills.includes(cat), avail: m.maxWorkload - m.workload, rec: Math.min(m.maxWorkload - m.workload, effort) }));
-    
+
     document.getElementById('allocGrid').innerHTML = scored.map(m => `
         <div class="bg-white rounded-lg p-4 text-left cursor-pointer border-2 border-transparent transition-all shadow-sm" id="c_${m.id}" onclick="window.toggleSel('${m.id}')">
             <div class="font-bold text-sm ${m.isMatch ? 'text-emerald-600' : 'text-slate-800'}">${m.name}</div>
@@ -18293,69 +18299,69 @@ window.toggleSel = (id) => {
     const card = document.getElementById('c_' + id);
     const input = document.getElementById('i_' + id);
     if (!card) return;
-    if(card.classList.contains('border-purple-600')) {
+    if (card.classList.contains('border-purple-600')) {
         card.classList.remove('border-purple-600'); input.disabled = true;
         window.selectedTeamForAlloc = window.selectedTeamForAlloc.filter(x => x !== id);
     } else {
         card.classList.add('border-purple-600'); input.disabled = false;
         window.selectedTeamForAlloc.push(id);
     }
-    let sum = 0; 
+    let sum = 0;
     window.selectedTeamForAlloc.forEach(i => sum += Number(document.getElementById('i_' + i).value));
     document.getElementById('allocSum').textContent = sum;
-    if(sum > 0) { 
-        document.getElementById('allocConfirm').disabled = false; 
-        document.getElementById('allocConfirm').classList.remove('opacity-50'); 
+    if (sum > 0) {
+        document.getElementById('allocConfirm').disabled = false;
+        document.getElementById('allocConfirm').classList.remove('opacity-50');
     } else {
-        document.getElementById('allocConfirm').disabled = true; 
-        document.getElementById('allocConfirm').classList.add('opacity-50'); 
+        document.getElementById('allocConfirm').disabled = true;
+        document.getElementById('allocConfirm').classList.add('opacity-50');
     }
 };
 
 window.confirmAlloc = () => {
-    if(!window.currentActiveAlloc) return;
+    if (!window.currentActiveAlloc) return;
     let projects = JSON.parse(localStorage.getItem('bezent_projects') || '[]');
     let pIdx = projects.findIndex(p => p.id === window.currentActiveAlloc.id);
-    if(pIdx > -1) {
+    if (pIdx > -1) {
         projects[pIdx].status = 'active';
         let cat = (projects[pIdx].category || 'default').toLowerCase();
-        projects[pIdx].pipeline = (window.PF_PIPELINE_STEPS[cat] || window.PF_PIPELINE_STEPS['default']).map((s,i)=>({name:s, done:i===0}));
+        projects[pIdx].pipeline = (window.PF_PIPELINE_STEPS[cat] || window.PF_PIPELINE_STEPS['default']).map((s, i) => ({ name: s, done: i === 0 }));
         localStorage.setItem('bezent_projects', JSON.stringify(projects));
         alert('Project moved to Active Pipeline!');
-        if(window.bezentApp) window.bezentApp.renderProjectsContent(document.getElementById('main-content'));
+        if (window.bezentApp) window.bezentApp.renderProjectsContent(document.getElementById('main-content'));
     }
 };
 
 window.pfToggleStep = (pid, idx) => {
     let projects = JSON.parse(localStorage.getItem('bezent_projects') || '[]');
     let p = projects.find(x => x.id === pid);
-    if(!p || !p.pipeline) return;
-    if(idx > 0 && !p.pipeline[idx-1].done) return alert('Complete previous step first!');
+    if (!p || !p.pipeline) return;
+    if (idx > 0 && !p.pipeline[idx - 1].done) return alert('Complete previous step first!');
     p.pipeline[idx].done = true;
     localStorage.setItem('bezent_projects', JSON.stringify(projects));
-    if(window.bezentApp) window.bezentApp.renderProjectsContent(document.getElementById('main-content'));
+    if (window.bezentApp) window.bezentApp.renderProjectsContent(document.getElementById('main-content'));
 };
 
 window.pfCompleteProj = (pid) => {
     let projects = JSON.parse(localStorage.getItem('bezent_projects') || '[]');
     let p = projects.find(x => x.id === pid);
-    if(p) {
+    if (p) {
         p.status = 'completed';
         localStorage.setItem('bezent_projects', JSON.stringify(projects));
         alert('Project Completed!');
-        if(window.bezentApp) window.bezentApp.switchTab('reports');
+        if (window.bezentApp) window.bezentApp.switchTab('reports');
     }
 };
 
 window.pfMockSync = () => {
     let projects = JSON.parse(localStorage.getItem('bezent_projects') || '[]');
-    projects.push({ id: 'P_'+Date.now(), name: 'MarketFlow Direct CRM Client', client: 'Acme Corp', category: 'design', effort: 50, status: 'pending' });
+    projects.push({ id: 'P_' + Date.now(), name: 'MarketFlow Direct CRM Client', client: 'Acme Corp', category: 'design', effort: 50, status: 'pending' });
     localStorage.setItem('bezent_projects', JSON.stringify(projects));
     alert('Synced 1 external project!');
-    if(window.bezentApp) window.bezentApp.renderProjectsContent(document.getElementById('main-content'));
+    if (window.bezentApp) window.bezentApp.renderProjectsContent(document.getElementById('main-content'));
 };
 
-MarketFlowCRM.prototype.getProjectFlowConsolidated = function() {
+MarketFlowCRM.prototype.getProjectFlowConsolidated = function () {
     const projects = JSON.parse(localStorage.getItem('bezent_projects') || '[]');
     const pending = projects.filter(p => p.status === 'pending');
     const active = projects.filter(p => p.status === 'active');
@@ -18374,24 +18380,24 @@ MarketFlowCRM.prototype.getProjectFlowConsolidated = function() {
             </div>
         </div>
     `).join('');
-    if(!pending.length) gridHtml = '<div class="col-span-full py-12 text-center text-slate-400">No incoming projects pending allocation.</div>';
+    if (!pending.length) gridHtml = '<div class="col-span-full py-12 text-center text-slate-400">No incoming projects pending allocation.</div>';
 
     let pipeHtml = active.map(p => {
-        if(!p.pipeline) return '';
+        if (!p.pipeline) return '';
         const total = p.pipeline.length;
-        const done = p.pipeline.filter(s=>s.done).length;
-        const pct = Math.round((done/total)*100) || 0;
-        
-        const steps = p.pipeline.map((s,i) => {
-            let clz = s.done ? 'bg-purple-600 border-purple-600 text-white' : ((i>0 && p.pipeline[i-1].done && !s.done) || (i===0 && !s.done) ? 'bg-white border-purple-600 text-purple-600 ring-2 ring-purple-100' : 'bg-slate-100 border-slate-300 text-transparent');
+        const done = p.pipeline.filter(s => s.done).length;
+        const pct = Math.round((done / total) * 100) || 0;
+
+        const steps = p.pipeline.map((s, i) => {
+            let clz = s.done ? 'bg-purple-600 border-purple-600 text-white' : ((i > 0 && p.pipeline[i - 1].done && !s.done) || (i === 0 && !s.done) ? 'bg-white border-purple-600 text-purple-600 ring-2 ring-purple-100' : 'bg-slate-100 border-slate-300 text-transparent');
             let line = s.done ? 'bg-purple-600' : 'bg-slate-200';
             return `
             <div class="flex-1 text-center relative cursor-pointer group" onclick="window.pfToggleStep('${p.id}', ${i})">
-                ${i>0 ? `<div class="absolute top-3 right-1/2 w-full h-[2px] ${line} -z-10"></div>` : ''}
+                ${i > 0 ? `<div class="absolute top-3 right-1/2 w-full h-[2px] ${line} -z-10"></div>` : ''}
                 <div class="w-6 h-6 mx-auto rounded-full border-2 flex items-center justify-center text-[10px] font-bold transition-all ${clz} group-hover:scale-110">
                     ${s.done ? '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>' : ''}
                 </div>
-                <div class="text-[10px] uppercase font-semibold mt-2 ${s.done||((i>0 && p.pipeline[i-1].done && !s.done) || (i===0 && !s.done)) ? 'text-purple-700' : 'text-slate-400'}">${s.name}</div>
+                <div class="text-[10px] uppercase font-semibold mt-2 ${s.done || ((i > 0 && p.pipeline[i - 1].done && !s.done) || (i === 0 && !s.done)) ? 'text-purple-700' : 'text-slate-400'}">${s.name}</div>
             </div>`;
         }).join('');
 

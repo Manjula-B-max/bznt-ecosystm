@@ -22,7 +22,8 @@ export const sendOtp = async (req, res) => {
                 || existingUser.marketflow_access
                 || existingUser.projectflow_access
                 || existingUser.hr_access
-                || existingUser.admin_access;
+                || existingUser.admin_access
+                || existingUser.employee_access;
             if (!hasAccess) {
                 return res.status(403).json({ error: 'Access denied. You do not have permission to access this platform.' });
             }
@@ -116,7 +117,7 @@ export const verifyOtp = async (req, res) => {
             if (isSuperAdminEmail(email) && userDoc.role !== 'super_admin') {
                 userDoc.role = 'super_admin';
                 await userDoc.save();
-            } else if (!isSuperAdminEmail(email) && !userDoc.marketflow_access && !userDoc.projectflow_access && !userDoc.hr_access && !userDoc.admin_access && userDoc.role !== 'admin') {
+            } else if (!isSuperAdminEmail(email) && !userDoc.marketflow_access && !userDoc.projectflow_access && !userDoc.hr_access && !userDoc.admin_access && !userDoc.employee_access && userDoc.role !== 'admin') {
                 return res.status(403).json({ error: 'Access denied. You do not have permissions.' });
             }
         }

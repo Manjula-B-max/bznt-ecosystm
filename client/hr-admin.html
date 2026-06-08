@@ -22,34 +22,46 @@
         }
         /* 1. Primary Brand Gradient & Premium Hero Design */
         .hero-gradient {
+            background-image: 
+                radial-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+                radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.05), transparent 40%),
+                radial-gradient(circle at 20% 80%, rgba(255, 255, 255, 0.03), transparent 30%),
+                radial-gradient(circle at top left, rgba(243, 189, 252, 0.20), transparent 60%),
+                radial-gradient(circle at 50% 50%, rgba(221, 115, 240, 0.12), transparent 50%),
+                radial-gradient(circle at bottom right, rgba(97, 1, 115, 0.18), transparent 60%),
+                linear-gradient(135deg, #a402bf 0%, #7f0395 35%, #53025f 70%, #210026 100%) !important;
+            background-size: 10px 10px, auto, auto, auto, auto, auto, auto !important;
+            background-repeat: repeat, no-repeat, no-repeat, no-repeat, no-repeat, no-repeat, no-repeat !important;
+            background-position: center, center, center, center, center, center, center !important;
             position: relative !important;
-            background: linear-gradient(135deg, #a402bf 0%, #7f0395 35%, #53025f 70%, #210026 100%) !important;
+            border: 1px solid rgba(255, 255, 255, 0.12) !important;
+            box-shadow: 0 20px 40px -15px rgba(33, 0, 38, 0.5) !important;
+            animation: hero-entrance 300ms cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
             overflow: hidden !important;
             border-radius: 28px !important;
-            border: 1px solid rgba(255, 255, 255, 0.08) !important;
+            height: 240px !important;
+            min-height: 240px !important;
+            max-height: 240px !important;
         }
-        .hero-gradient::before {
-            content: '' !important;
-            position: absolute !important;
-            top: 0 !important; left: 0 !important; right: 0 !important; bottom: 0 !important;
-            background: radial-gradient(circle at top left, rgba(255, 255, 255, 0.18), transparent 35%),
-                        radial-gradient(circle at bottom right, rgba(164, 2, 191, 0.35), transparent 45%) !important;
-            pointer-events: none !important;
-            z-index: 1 !important;
+
+        .hero-gradient::before, .hero-gradient::after {
+            display: none !important;
         }
-        .hero-gradient::after {
-            content: '' !important;
-            position: absolute !important;
-            top: 0 !important; left: 0 !important; right: 0 !important; bottom: 0 !important;
-            background-image: radial-gradient(rgba(255, 255, 255, 0.08) 1px, transparent 0) !important;
-            background-size: 16px 16px !important;
-            opacity: 0.3 !important;
-            pointer-events: none !important;
-            z-index: 2 !important;
-        }
+
         .hero-gradient > * {
             position: relative !important;
             z-index: 10 !important;
+        }
+
+        @keyframes hero-entrance {
+            from {
+                opacity: 0;
+                transform: translateY(12px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         /* 2. Hero Typography */
@@ -65,33 +77,115 @@
             color: rgba(255, 255, 255, 0.85) !important;
         }
 
-        /* 3. Glass KPI Cards inside Hero */
-        .hero-gradient .flex.gap-3.w-full.md\:w-auto > div {
-            background: rgba(255, 255, 255, 0.12) !important;
-            border: 1px solid rgba(255, 255, 255, 0.18) !important;
-            backdrop-filter: blur(20px) !important;
-            -webkit-backdrop-filter: blur(20px) !important;
-            border-radius: 20px !important;
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1) !important;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
-        }
-
-        /* 4. Quick Actions inside Hero */
-        .hero-gradient button {
+        /* Glass Action Buttons inside Hero */
+        .hero-gradient button, 
+        .hero-gradient .hero-btn {
             background: rgba(255, 255, 255, 0.08) !important;
-            border: 1px solid rgba(255, 255, 255, 0.15) !important;
-            backdrop-filter: blur(10px) !important;
-            -webkit-backdrop-filter: blur(10px) !important;
-            border-radius: 12px !important;
+            border: 1px solid rgba(255, 255, 255, 0.18) !important;
+            backdrop-filter: blur(12px) !important;
+            -webkit-backdrop-filter: blur(12px) !important;
+            color: #ffffff !important;
+            transition: all 150ms cubic-bezier(0.4, 0, 0.2, 1) !important;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08) !important;
             padding: 10px 18px !important;
             font-size: 13px !important;
             font-weight: 600 !important;
-            color: #ffffff !important;
-            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+            border-radius: 12px !important;
         }
-        .hero-gradient button:hover {
-            background: rgba(255, 255, 255, 0.18) !important;
+
+        .hero-gradient button:hover, 
+        .hero-gradient .hero-btn:hover {
+            background: rgba(255, 255, 255, 0.16) !important;
+            border-color: rgba(255, 255, 255, 0.30) !important;
+            transform: translateY(-2px) scale(1.01) !important;
+            box-shadow: 0 12px 24px rgba(164, 2, 191, 0.35), 0 0 16px rgba(255, 255, 255, 0.12) !important;
+        }
+
+        /* KPI Cards in Hero */
+        .hero-gradient div[class*="backdrop-blur"],
+        .hero-gradient .kpi-card,
+        .hero-gradient .flex.gap-3.w-full.md\:w-auto > div {
+            background: rgba(255, 255, 255, 0.10) !important;
+            border: 1px solid rgba(255, 255, 255, 0.22) !important;
+            backdrop-filter: blur(24px) !important;
+            -webkit-backdrop-filter: blur(24px) !important;
+            box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.15), 0 8px 24px rgba(0, 0, 0, 0.15) !important;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+            opacity: 0;
+            animation: kpi-reveal 350ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            border-radius: 20px !important;
+        }
+
+        .hero-gradient div[class*="backdrop-blur"]:hover,
+        .hero-gradient .kpi-card:hover,
+        .hero-gradient .flex.gap-3.w-full.md\:w-auto > div:hover {
             transform: translateY(-2px) !important;
+            background: rgba(255, 255, 255, 0.15) !important;
+            border-color: rgba(255, 255, 255, 0.32) !important;
+            box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.25), 0 12px 30px rgba(164, 2, 191, 0.2) !important;
+        }
+
+        /* KPI Cards Entrance Delays */
+        .hero-gradient div[class*="backdrop-blur"]:nth-child(1),
+        .hero-gradient .kpi-card:nth-child(1),
+        .hero-gradient .flex.gap-3.w-full.md\:w-auto > div:nth-child(1) { animation-delay: 100ms; }
+        .hero-gradient div[class*="backdrop-blur"]:nth-child(2),
+        .hero-gradient .kpi-card:nth-child(2),
+        .hero-gradient .flex.gap-3.w-full.md\:w-auto > div:nth-child(2) { animation-delay: 175ms; }
+        .hero-gradient div[class*="backdrop-blur"]:nth-child(3),
+        .hero-gradient .kpi-card:nth-child(3),
+        .hero-gradient .flex.gap-3.w-full.md\:w-auto > div:nth-child(3) { animation-delay: 250ms; }
+        .hero-gradient div[class*="backdrop-blur"]:nth-child(4),
+        .hero-gradient .kpi-card:nth-child(4),
+        .hero-gradient .flex.gap-3.w-full.md\:w-auto > div:nth-child(4) { animation-delay: 325ms; }
+
+        @keyframes kpi-reveal {
+            from {
+                opacity: 0;
+                transform: translateY(8px) scale(0.98);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        /* Pulsing Status Chips */
+        .hero-gradient .pulse-dot {
+            animation: hero-dot-pulse 4s infinite ease-in-out !important;
+            box-shadow: 0 0 8px rgba(52, 211, 153, 0.6) !important;
+        }
+
+        @keyframes hero-dot-pulse {
+            0%, 100% {
+                opacity: 0.6;
+                transform: scale(0.9);
+                box-shadow: 0 0 4px rgba(52, 211, 153, 0.4);
+            }
+            50% {
+                opacity: 1;
+                transform: scale(1.1);
+                box-shadow: 0 0 12px rgba(52, 211, 153, 0.8);
+            }
+        }
+
+        /* Progress Bars Gradient & Loading Animation */
+        .hero-gradient div[class*="bg-white/20"] > div {
+            background: linear-gradient(90deg, #34d399, #60a5fa, #34d399) !important;
+            background-size: 200% auto !important;
+            animation: progress-gradient 4s linear infinite, progress-load 1s cubic-bezier(0.4, 0, 0.2, 1) forwards !important;
+            transform-origin: left;
+        }
+
+        @keyframes progress-gradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        @keyframes progress-load {
+            from { transform: scaleX(0); }
+            to { transform: scaleX(1); }
         }
 
         /* 5. Card Design System */
@@ -150,7 +244,7 @@
             border: 1px solid #F5D0FE !important;
         }
         .floating-sidebar {
-            width: 280px;
+            width: 230px;
             position: fixed;
             top: 24px;
             left: 24px;
@@ -170,12 +264,12 @@
             border: 1px solid rgba(255, 255, 255, 0.5);
             border-radius: 22px;
             box-shadow: 0 20px 60px rgba(0,0,0,0.06);
-            margin: 24px 24px 0 328px;
+            margin: 24px 24px 0 278px;
             z-index: 30;
             transition: all 0.3s ease;
         }
         .main-workspace {
-            margin: 24px 24px 24px 328px;
+            margin: 24px 24px 24px 278px;
             transition: all 0.3s ease;
         }
         .premium-card {
@@ -234,7 +328,8 @@
 
     <!-- Floating Sidebar -->
     <aside class="floating-sidebar flex flex-col justify-between overflow-hidden">
-        <div>
+        <!-- ZONE 1: BRANDING -->
+        <div class="flex-shrink-0">
             <!-- Branding Header -->
             <div class="px-6 py-6 border-b border-[#ECECF3] flex items-center gap-3">
                 <div class="bg-gradient-to-tr from-[#7C3AED] to-[#312E81] p-2 rounded-xl text-white shadow-md">
@@ -245,44 +340,44 @@
                     <p class="text-[10px] text-[#6B7280] font-semibold tracking-wider uppercase">HR Admin</p>
                 </div>
             </div>
-
-            <!-- Tab Links -->
-            <nav class="mt-4 overflow-y-auto max-h-[calc(100vh-200px)] hide-scrollbar">
-                <div class="sidebar-tab active" data-target="dashView">
-                    <i data-lucide="layout-dashboard" class="w-4 h-4"></i> Dashboard
-                </div>
-                <div class="sidebar-tab" data-target="empView">
-                    <i data-lucide="users" class="w-4 h-4"></i> Employees
-                </div>
-                <div class="sidebar-tab" data-target="attView">
-                    <i data-lucide="clock" class="w-4 h-4"></i> Attendance
-                </div>
-                <div class="sidebar-tab" data-target="leaveView">
-                    <i data-lucide="calendar-off" class="w-4 h-4"></i> Leaves
-                </div>
-                <div class="sidebar-tab" data-target="payrollView">
-                    <i data-lucide="wallet" class="w-4 h-4"></i> Payroll
-                </div>
-                <div class="sidebar-tab" data-target="perfView">
-                    <i data-lucide="target" class="w-4 h-4"></i> Performance
-                </div>
-                <div class="sidebar-tab" data-target="recruitView">
-                    <i data-lucide="briefcase" class="w-4 h-4"></i> Recruitment
-                </div>
-                <div class="sidebar-tab" data-target="taskView">
-                    <i data-lucide="check-square" class="w-4 h-4"></i> Tasks
-                </div>
-                <div class="sidebar-tab" data-target="assetView">
-                    <i data-lucide="monitor" class="w-4 h-4"></i> Assets
-                </div>
-                <div class="sidebar-tab" data-target="helpView">
-                    <i data-lucide="life-buoy" class="w-4 h-4"></i> Helpdesk
-                </div>
-            </nav>
         </div>
 
-        <!-- Logout Bottom Footer -->
-        <div class="p-4 border-t border-[#ECECF3]">
+        <!-- ZONE 2: MIDDLE NAVIGATION -->
+        <nav class="flex-1 overflow-y-auto hide-scrollbar mt-4">
+            <div class="sidebar-tab active" data-target="dashView">
+                <i data-lucide="layout-dashboard" class="w-4 h-4"></i> Dashboard
+            </div>
+            <div class="sidebar-tab" data-target="empView">
+                <i data-lucide="users" class="w-4 h-4"></i> Employees
+            </div>
+            <div class="sidebar-tab" data-target="attView">
+                <i data-lucide="clock" class="w-4 h-4"></i> Attendance
+            </div>
+            <div class="sidebar-tab" data-target="leaveView">
+                <i data-lucide="calendar-off" class="w-4 h-4"></i> Leaves
+            </div>
+            <div class="sidebar-tab" data-target="payrollView">
+                <i data-lucide="wallet" class="w-4 h-4"></i> Payroll
+            </div>
+            <div class="sidebar-tab" data-target="perfView">
+                <i data-lucide="target" class="w-4 h-4"></i> Performance
+            </div>
+            <div class="sidebar-tab" data-target="recruitView">
+                <i data-lucide="briefcase" class="w-4 h-4"></i> Recruitment
+            </div>
+            <div class="sidebar-tab" data-target="taskView">
+                <i data-lucide="check-square" class="w-4 h-4"></i> Tasks
+            </div>
+            <div class="sidebar-tab" data-target="assetView">
+                <i data-lucide="monitor" class="w-4 h-4"></i> Assets
+            </div>
+            <div class="sidebar-tab" data-target="helpView">
+                <i data-lucide="life-buoy" class="w-4 h-4"></i> Helpdesk
+            </div>
+        </nav>
+
+        <!-- ZONE 3: INTEGRATED LOGOUT FOOTER -->
+        <div class="flex-shrink-0 p-4 border-t border-[#ECECF3] bg-[#F9FAFB]">
             <button onclick="logout()" class="w-full flex items-center justify-center gap-2 py-3 hover:bg-[#F7F7FB] border border-[#ECECF3] rounded-xl text-sm font-semibold transition text-[#6B7280] hover:text-red-500">
                 <i data-lucide="log-out" class="w-4 h-4"></i> Log out
             </button>
@@ -326,32 +421,89 @@
         <div id="dashView" class="tab-content active space-y-6">
             
             <!-- SECTION 1: Gradient Hero banner with rich information -->
-            <div class="hero-gradient rounded-[28px] p-8 text-white relative overflow-hidden shadow-lg">
+            <div class="hero-gradient rounded-[24px] p-5 text-white relative overflow-hidden shadow-lg max-h-[270px] flex flex-col justify-between">
                 <div class="absolute -right-20 -top-20 w-80 h-80 bg-white/5 rounded-full blur-3xl"></div>
-                <div class="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-                    <div>
-                        <h2 class="text-3xl font-bold tracking-tight">Welcome Back, HR Admin</h2>
-                        <p class="text-purple-100 text-sm mt-1">Telemetry active. Employees logged: 142/150 currently active & tapped in.</p>
-                        
-                        <!-- Quick Actions Grid inside Hero -->
-                        <div class="flex flex-wrap gap-2.5 mt-6">
-                            <button class="px-4 py-2 bg-white/10 hover:bg-white/20 border border-white/15 rounded-xl text-xs font-semibold transition flex items-center gap-1.5"><i data-lucide="file-text" class="w-3.5 h-3.5"></i> Attendance Log</button>
-                            <button class="px-4 py-2 bg-white/10 hover:bg-white/20 border border-white/15 rounded-xl text-xs font-semibold transition flex items-center gap-1.5"><i data-lucide="calendar" class="w-3.5 h-3.5"></i> Apply Leave</button>
-                            <button class="px-4 py-2 bg-white/10 hover:bg-white/20 border border-white/15 rounded-xl text-xs font-semibold transition flex items-center gap-1.5"><i data-lucide="laptop" class="w-3.5 h-3.5"></i> Request Asset</button>
-                            <button class="px-4 py-2 bg-white/10 hover:bg-white/20 border border-white/15 rounded-xl text-xs font-semibold transition flex items-center gap-1.5"><i data-lucide="receipt" class="w-3.5 h-3.5"></i> View Payslip</button>
+                <div class="relative z-10 flex flex-col justify-between h-full space-y-3.5">
+                    
+                    <!-- Top Row: Status Chips & Progress Indicators -->
+                    <div class="flex justify-between items-center flex-wrap gap-2">
+                        <div class="flex items-center gap-2 flex-wrap">
+                            <div class="inline-flex items-center gap-1 px-2.5 py-0.5 bg-white/10 text-white rounded-full text-[10px] font-bold border border-white/15">
+                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> Telemetry Active
+                            </div>
+                            <div class="inline-flex items-center gap-1 px-2.5 py-0.5 bg-white/10 text-white rounded-full text-[10px] font-bold border border-white/15">
+                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span> Operations Active
+                            </div>
+                            <div class="inline-flex items-center gap-1 px-2.5 py-0.5 bg-white/10 text-white rounded-full text-[10px] font-bold border border-white/15">
+                                <span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span> Payroll Ready
+                            </div>
+                            <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-white/10 text-white rounded-full text-[10px] font-bold border border-white/15">
+                                <i data-lucide="calendar" class="w-3 h-3 text-purple-200"></i>
+                                <span class="hero-date-time font-mono">Loading...</span>
+                            </div>
+                        </div>
+                        <!-- Progress Indicator -->
+                        <div class="flex items-center gap-2 text-[10px] bg-white/10 rounded-full px-2.5 py-0.5 border border-white/15">
+                            <span class="font-bold text-white/90">Payroll Processed: 88%</span>
+                            <div class="w-16 bg-white/20 rounded-full h-1 overflow-hidden">
+                                <div class="bg-emerald-400 h-full rounded-full" style="width: 88%"></div>
+                            </div>
                         </div>
                     </div>
-                    
-                    <!-- Right Attendance mini-widgets inside Hero -->
-                    <div class="flex gap-3 w-full md:w-auto">
-                        <div class="bg-white/10 backdrop-blur-md rounded-2xl p-4 flex-1 md:w-32 border border-white/10 text-center">
-                            <span class="text-xs text-purple-200 block font-medium">Late In Today</span>
-                            <span class="text-xl font-bold mt-1 block">12</span>
+
+                    <!-- Middle Row: Title & Key Daily Metrics -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
+                        <div class="md:col-span-1 text-left">
+                            <h2 class="text-xl font-extrabold tracking-tight leading-tight">Welcome Back, HR Admin</h2>
+                            <div class="flex items-center gap-1.5 mt-1">
+                                <span class="text-[10px] font-medium text-purple-200">Operational Shortcut:</span>
+                                <a href="#" onclick="switchTab('empView')" class="text-[10px] font-bold text-white hover:underline flex items-center gap-0.5">
+                                    Employee Directory <i data-lucide="arrow-up-right" class="w-3 h-3"></i>
+                                </a>
+                            </div>
                         </div>
-                        <div class="bg-white/10 backdrop-blur-md rounded-2xl p-4 flex-1 md:w-32 border border-white/10 text-center">
-                            <span class="text-xs text-purple-200 block font-medium">On Leave Today</span>
-                            <span class="text-xl font-bold mt-1 block">5</span>
+
+                        <!-- Key Daily Metrics -->
+                        <div class="md:col-span-2 grid grid-cols-4 gap-2">
+                            <div class="kpi-card rounded-xl p-2.5 text-center">
+                                <span class="text-[9px] text-white/80 uppercase font-bold tracking-wider">Present</span>
+                                <span class="text-base font-extrabold block mt-0.5">142</span>
+                            </div>
+                            <div class="kpi-card rounded-xl p-2.5 text-center">
+                                <span class="text-[9px] text-white/80 uppercase font-bold tracking-wider">Late</span>
+                                <span class="text-base font-extrabold block mt-0.5">12</span>
+                            </div>
+                            <div class="kpi-card rounded-xl p-2.5 text-center">
+                                <span class="text-[9px] text-white/80 uppercase font-bold tracking-wider">On Leave</span>
+                                <span class="text-base font-extrabold block mt-0.5">5</span>
+                            </div>
+                            <div class="kpi-card rounded-xl p-2.5 text-center">
+                                <span class="text-[9px] text-white/80 uppercase font-bold tracking-wider">PF Synced</span>
+                                <span class="text-base font-extrabold block mt-0.5">150</span>
+                            </div>
                         </div>
+                    </div>
+
+                    <!-- Bottom Row: Quick Action Buttons -->
+                    <div class="flex flex-wrap gap-2 pt-2 border-t border-white/10 items-center justify-between">
+                        <div class="flex flex-wrap gap-2">
+                            <button onclick="switchTab('empView')" class="hero-btn inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition">
+                                <i data-lucide="user-plus" class="w-3.5 h-3.5 text-emerald-400"></i> Add Employee
+                            </button>
+                            <button onclick="switchTab('recruitView')" class="hero-btn inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition">
+                                <i data-lucide="briefcase" class="w-3.5 h-3.5 text-blue-400"></i> Recruitment
+                            </button>
+                            <button onclick="switchTab('payrollView')" class="hero-btn inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition">
+                                <i data-lucide="wallet" class="w-3.5 h-3.5 text-amber-400"></i> Generate Payroll
+                            </button>
+                            <button onclick="switchTab('payrollView')" class="hero-btn inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition">
+                                <i data-lucide="file-down" class="w-3.5 h-3.5 text-purple-400"></i> PF Export
+                            </button>
+                            <button onclick="switchTab('attView')" class="hero-btn inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition">
+                                <i data-lucide="check-square" class="w-3.5 h-3.5 text-rose-400"></i> Attendance Review
+                            </button>
+                        </div>
+                        <span class="text-[10px] text-white/60 font-semibold italic">HR Command Panel</span>
                     </div>
                 </div>
             </div>
@@ -772,8 +924,23 @@
         // Live Clock
         setInterval(() => {
             const now = new Date();
-            document.getElementById('liveTime').textContent = now.toLocaleTimeString('en-US', { hour12: false });
+            const timeStr = now.toLocaleTimeString('en-US', { hour12: false });
+            const dateStr = now.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+            const liveTimeEl = document.getElementById('liveTime');
+            if (liveTimeEl) liveTimeEl.textContent = timeStr;
+            
+            document.querySelectorAll('.hero-date-time').forEach(el => {
+                el.textContent = `${dateStr} • ${timeStr}`;
+            });
         }, 1000);
+
+        // Switch tab helper
+        function switchTab(targetId) {
+            const tab = document.querySelector(`.sidebar-tab[data-target="${targetId}"]`);
+            if (tab) {
+                tab.click();
+            }
+        }
 
         // Guard Check
         const TK = 'bezent_jwt';

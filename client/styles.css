@@ -11,27 +11,16 @@
 
 
 :root {
-
-    --primary-gradient: linear-gradient(135deg, #3B1E6F, #6A4CFF, #B8A7FF);
-
-    --dark-gradient: #FFFFFF;
-
-    --glass-bg: #F9FAFC;
-
-    --glass-border: #E3E6ED;
-
-    --text-primary: #1F2430;
-
+    --primary-gradient: linear-gradient(135deg, #610173, #dd73f0, #f3bdfc);
+    --dark-gradient: #fcf8fd;
+    --glass-bg: #fcf8fd;
+    --glass-border: #ECECF3;
+    --text-primary: #210026;
     --text-secondary: #6B7280;
-
     --placeholder: #9AA1AE;
-
-    --accent: #3B1E6F;
-
-    --accent-hover: #4C2AAE;
-
-    --accent-glow: rgba(106, 76, 255, 0.35);
-
+    --accent: #610173;
+    --accent-hover: #7a118f;
+    --accent-glow: rgba(221, 115, 240, 0.35);
 }
 
 

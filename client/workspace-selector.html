@@ -7,17 +7,53 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Workspace Selector - BEZENT</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+        <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        purple: {
+                            50: '#fdf6ff',
+                            100: '#faebff',
+                            200: '#f3bdfc',
+                            300: '#e891f7',
+                            400: '#dd73f0',
+                            500: '#c44cd8',
+                            600: '#610173',
+                            700: '#540063',
+                            800: '#42004e',
+                            900: '#210026',
+                            950: '#140018'
+                        }
+                    }
+                }
+            }
+        };
+    </script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap');
+        
+        :root {
+            --primary-color: #610173;
+            --secondary-accent: #dd73f0;
+            --soft-accent: #f3bdfc;
+            --dark-accent: #210026;
+            --bg-page: #fcf8fd;
+            --hero-gradient: linear-gradient(135deg, #610173 0%, #7a118f 35%, #9e2dc0 65%, #210026 100%);
+            --card-radius: 20px;
+        }
+
         * {
             font-family: 'Outfit', sans-serif;
             box-sizing: border-box;
         }
+
         body {
-            background-color: #FAFAFC;
+            background-color: var(--bg-page);
         }
+
         /* 1. Primary Brand Gradient & Premium Hero Design */
         .hero-gradient {
             position: relative !important;
@@ -60,15 +96,15 @@
         .premium-card {
             background: #FFFFFF;
             border: 1px solid #ECECF3;
-            border-radius: 24px;
-            box-shadow: 0 8px 30px rgba(0,0,0,0.02);
+            border-radius: var(--card-radius);
+            box-shadow: 0 8px 30px rgba(97, 1, 115, 0.02);
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             cursor: pointer;
         }
         .premium-card:hover {
             transform: translateY(-4px);
-            box-shadow: 0 20px 40px rgba(0,0,0,0.06);
-            border-color: #C084FC;
+            box-shadow: 0 20px 40px rgba(97, 1, 115, 0.06);
+            border-color: var(--soft-accent);
         }
         @keyframes fadeUp {
             from { opacity: 0; transform: translateY(12px); }
@@ -87,7 +123,7 @@
             
             <!-- Branding Header -->
             <div class="text-center space-y-2">
-                <div class="inline-flex bg-gradient-to-tr from-[#7C3AED] to-[#312E81] p-3 rounded-2xl text-white shadow-md mb-2">
+                <div class="inline-flex bg-gradient-to-tr from-[#610173] to-[#210026] p-3 rounded-2xl text-white shadow-md mb-2">
                     <i data-lucide="layout-grid" class="w-6 h-6"></i>
                 </div>
                 <h1 class="text-3xl font-extrabold tracking-tight text-slate-900" id="welcomeMsg">Welcome to Bezent</h1>
@@ -198,7 +234,7 @@
                         <p class="text-xs text-slate-500 mt-1 leading-relaxed">${c.desc}</p>
                     </div>
                     <div class="flex justify-end pt-2 border-t border-[#ECECF3] mt-4">
-                        <span class="text-xs font-bold text-[#7C3AED] hover:underline inline-flex items-center gap-1">Launch Workspace <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i></span>
+                        <span class="text-xs font-bold text-[#610173] hover:underline inline-flex items-center gap-1">Launch Workspace <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i></span>
                     </div>
                 </div>
             `).join('');

@@ -509,9 +509,9 @@ function initBrandLogo() {
         const od = outData.data;
 
         const stops = [
-            { p: 0.0, c: [124, 58, 237] },
-            { p: 0.55, c: [147, 51, 234] },
-            { p: 1.0, c: [192, 132, 252] }
+            { p: 0.0, c: [97, 1, 115] },
+            { p: 0.55, c: [221, 115, 240] },
+            { p: 1.0, c: [243, 189, 252] }
         ];
         const sample = (t) => {
             if (t <= 0) return stops[0].c;

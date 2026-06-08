@@ -4615,26 +4615,15 @@
 
         function switchWorkspace(workspaceId) {
             if (workspaceId === 'employee') {
-                window.location.replace('employee.html');
-                return;
+                activeWorkspace = 'employee';
+                inWorkspace = true;
+                renderWorkspaceHeader();
+                buildAccordionSidebar();
+                switchAccordionTab('emp-profile');
             } else if (workspaceId === 'manager') {
                 window.location.replace('manager.html');
-                return;
-            }
-
-            activeWorkspace = workspaceId;
-            inWorkspace = true;
-
-            renderWorkspaceHeader();
-            buildAccordionSidebar();
-
-            // Auto-switch to default tab of that workspace
-            if (workspaceId === 'marketing') {
-                switchAccordionTab('db-overview');
-            } else if (workspaceId === 'projects') {
-                switchAccordionTab('pm-dashboard');
-            } else if (workspaceId === 'hr') {
-                switchAccordionTab('hr-dashboard');
+            } else {
+                window.location.replace(`admin.html?workspace=${workspaceId}`);
             }
         }
 
@@ -12558,37 +12547,7 @@
 
         window.addEventListener('DOMContentLoaded', async () => {
             await initHRMS();
-            
-            const urlParams = new URLSearchParams(window.location.search);
-            const wsParam = urlParams.get('workspace');
-            const isSystemAdmin = currentUser.role === 'admin' || currentUser.role === 'super_admin' || currentUser.role === 'owner';
-            
-            if (!isSystemAdmin) {
-                if (currentUser.role === 'manager') {
-                    window.location.replace('manager.html');
-                } else {
-                    window.location.replace('employee.html');
-                }
-                return;
-            }
-            
-            if (wsParam === 'hr' && (isSystemAdmin || currentUser.hr_access)) {
-                switchWorkspace('hr');
-            } else if (wsParam === 'marketing' && (isSystemAdmin || currentUser.marketflow_access)) {
-                switchWorkspace('marketing');
-            } else if (wsParam === 'projects' && (isSystemAdmin || currentUser.projectflow_access)) {
-                switchWorkspace('projects');
-            } else if (isSystemAdmin) {
-                switchAccordionTab('admin-dashboard');
-            } else if (currentUser.hr_access) {
-                switchWorkspace('hr');
-            } else if (currentUser.marketflow_access) {
-                switchWorkspace('marketing');
-            } else if (currentUser.projectflow_access) {
-                switchWorkspace('projects');
-            } else {
-                window.location.replace('employee.html');
-            }
+            switchWorkspace('employee');
         });
 
     </script>

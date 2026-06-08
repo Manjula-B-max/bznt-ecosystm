@@ -29,7 +29,9 @@ export default defineConfig({
         admin: resolve(__dirname, 'admin.html'),
         hrAdmin: resolve(__dirname, 'hr-admin.html'),
         superAdmin: resolve(__dirname, 'super-admin.html'),
-        projectflow: resolve(__dirname, 'projectflow-crm.html')
+        projectflow: resolve(__dirname, 'projectflow-crm.html'),
+        employee: resolve(__dirname, 'employee.html'),
+        manager: resolve(__dirname, 'manager.html')
       }
     }
   }

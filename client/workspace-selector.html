@@ -18,24 +18,44 @@
         body {
             background-color: #FAFAFC;
         }
+        /* 1. Primary Brand Gradient & Premium Hero Design */
         .hero-gradient {
-            background: radial-gradient(circle at top left, rgba(255, 255, 255, 0.18), transparent 35%), linear-gradient(135deg, #ef8fff 0%, #d85df5 25%, #b03ae0 50%, #8a18b6 75%, #5c016b 100%);
+            position: relative !important;
+            background: linear-gradient(135deg, #a402bf 0%, #7f0395 35%, #53025f 70%, #210026 100%) !important;
+            overflow: hidden !important;
+            border-radius: 28px !important;
+            border: 1px solid rgba(255, 255, 255, 0.08) !important;
+        }
+        .hero-gradient::before {
+            content: '' !important;
+            position: absolute !important;
+            top: 0 !important; left: 0 !important; right: 0 !important; bottom: 0 !important;
+            background: radial-gradient(circle at top left, rgba(255, 255, 255, 0.18), transparent 35%),
+                        radial-gradient(circle at bottom right, rgba(164, 2, 191, 0.35), transparent 45%) !important;
+            pointer-events: none !important;
+            z-index: 1 !important;
+        }
+        .hero-gradient::after {
+            content: '' !important;
+            position: absolute !important;
+            top: 0 !important; left: 0 !important; right: 0 !important; bottom: 0 !important;
+            background-image: radial-gradient(rgba(255, 255, 255, 0.08) 1px, transparent 0) !important;
+            background-size: 16px 16px !important;
+            opacity: 0.3 !important;
+            pointer-events: none !important;
+            z-index: 2 !important;
+        }
+        .hero-gradient > * {
+            position: relative !important;
+            z-index: 10 !important;
         }
         .hero-gradient h1, .hero-gradient h2, .hero-gradient h3, .hero-gradient .hero-title {
             color: #ffffff !important;
+            font-weight: 800 !important;
+            letter-spacing: -0.025em !important;
         }
         .hero-gradient p, .hero-gradient .text-purple-100 {
-            color: rgba(255, 255, 255, 0.92) !important;
-        }
-        .hero-gradient .text-purple-200 {
-            color: rgba(255, 255, 255, 0.8) !important;
-        }
-        .hero-gradient .inline-flex {
-            background: rgba(255, 255, 255, 0.12) !important;
-            backdrop-filter: blur(8px) !important;
-            -webkit-backdrop-filter: blur(8px) !important;
-            border: 1px solid rgba(255, 255, 255, 0.2) !important;
-            color: #ffffff !important;
+            color: rgba(255, 255, 255, 0.90) !important;
         }
         .premium-card {
             background: #FFFFFF;

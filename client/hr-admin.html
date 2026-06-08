@@ -20,24 +20,134 @@
         body {
             background-color: #FAFAFC;
         }
+        /* 1. Primary Brand Gradient & Premium Hero Design */
         .hero-gradient {
-            background: radial-gradient(circle at top left, rgba(255, 255, 255, 0.18), transparent 35%), linear-gradient(135deg, #ef8fff 0%, #d85df5 25%, #b03ae0 50%, #8a18b6 75%, #5c016b 100%);
+            position: relative !important;
+            background: linear-gradient(135deg, #a402bf 0%, #7f0395 35%, #53025f 70%, #210026 100%) !important;
+            overflow: hidden !important;
+            border-radius: 28px !important;
+            border: 1px solid rgba(255, 255, 255, 0.08) !important;
         }
+        .hero-gradient::before {
+            content: '' !important;
+            position: absolute !important;
+            top: 0 !important; left: 0 !important; right: 0 !important; bottom: 0 !important;
+            background: radial-gradient(circle at top left, rgba(255, 255, 255, 0.18), transparent 35%),
+                        radial-gradient(circle at bottom right, rgba(164, 2, 191, 0.35), transparent 45%) !important;
+            pointer-events: none !important;
+            z-index: 1 !important;
+        }
+        .hero-gradient::after {
+            content: '' !important;
+            position: absolute !important;
+            top: 0 !important; left: 0 !important; right: 0 !important; bottom: 0 !important;
+            background-image: radial-gradient(rgba(255, 255, 255, 0.08) 1px, transparent 0) !important;
+            background-size: 16px 16px !important;
+            opacity: 0.3 !important;
+            pointer-events: none !important;
+            z-index: 2 !important;
+        }
+        .hero-gradient > * {
+            position: relative !important;
+            z-index: 10 !important;
+        }
+
+        /* 2. Hero Typography */
         .hero-gradient h1, .hero-gradient h2, .hero-gradient h3, .hero-gradient .hero-title {
             color: #ffffff !important;
+            font-weight: 800 !important;
+            letter-spacing: -0.025em !important;
         }
         .hero-gradient p, .hero-gradient .text-purple-100 {
-            color: rgba(255, 255, 255, 0.92) !important;
+            color: rgba(255, 255, 255, 0.90) !important;
         }
         .hero-gradient .text-purple-200 {
-            color: rgba(255, 255, 255, 0.8) !important;
+            color: rgba(255, 255, 255, 0.85) !important;
         }
-        .hero-gradient .inline-flex {
+
+        /* 3. Glass KPI Cards inside Hero */
+        .hero-gradient .flex.gap-3.w-full.md\:w-auto > div {
             background: rgba(255, 255, 255, 0.12) !important;
-            backdrop-filter: blur(8px) !important;
-            -webkit-backdrop-filter: blur(8px) !important;
-            border: 1px solid rgba(255, 255, 255, 0.2) !important;
+            border: 1px solid rgba(255, 255, 255, 0.18) !important;
+            backdrop-filter: blur(20px) !important;
+            -webkit-backdrop-filter: blur(20px) !important;
+            border-radius: 20px !important;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1) !important;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        }
+
+        /* 4. Quick Actions inside Hero */
+        .hero-gradient button {
+            background: rgba(255, 255, 255, 0.08) !important;
+            border: 1px solid rgba(255, 255, 255, 0.15) !important;
+            backdrop-filter: blur(10px) !important;
+            -webkit-backdrop-filter: blur(10px) !important;
+            border-radius: 12px !important;
+            padding: 10px 18px !important;
+            font-size: 13px !important;
+            font-weight: 600 !important;
             color: #ffffff !important;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        }
+        .hero-gradient button:hover {
+            background: rgba(255, 255, 255, 0.18) !important;
+            transform: translateY(-2px) !important;
+        }
+
+        /* 5. Card Design System */
+        .premium-card {
+            background: #FFFFFF !important;
+            border: 1px solid #ECECF3 !important;
+            border-radius: 20px !important;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02) !important;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        }
+        .premium-card:hover {
+            transform: translateY(-3px) !important;
+            box-shadow: 0 12px 30px rgba(164, 2, 191, 0.06) !important;
+            border-color: #F5D0FE !important;
+        }
+
+        /* 6. Table Improvements */
+        table { width: 100% !important; border-collapse: separate !important; border-spacing: 0 !important; }
+        th {
+            position: sticky !important; top: 0 !important;
+            background: #F8FAFC !important;
+            font-weight: 700 !important; color: #475569 !important;
+            border-bottom: 2px solid #E2E8F0 !important;
+            z-index: 10 !important; padding: 12px 16px !important;
+        }
+        td { border-bottom: 1px solid #F1F5F9 !important; padding: 12px 16px !important; color: #334155 !important; }
+        tr:hover td { background-color: #FDF4FF !important; }
+
+        /* 7. Status Badges */
+        .status-badge, span[class*="bg-emerald-50"], span[class*="bg-green-50"],
+        span[class*="bg-red-50"], span[class*="bg-amber-50"], span[class*="bg-orange-50"],
+        span[class*="bg-blue-50"], span[class*="bg-purple-50"] {
+            border-radius: 9999px !important; padding: 4px 10px !important;
+            font-weight: 600 !important; letter-spacing: 0.025em !important;
+            display: inline-flex !important; align-items: center !important;
+            gap: 4px !important;
+        }
+        span[class*="bg-emerald-50"], span[class*="bg-green-50"] {
+            background-color: #ECFDF5 !important; color: #059669 !important;
+            border: 1px solid #A7F3D0 !important;
+        }
+        span[class*="bg-red-50"] {
+            background-color: #FEF2F2 !important; color: #DC2626 !important;
+            border: 1px solid #FCA5A5 !important;
+        }
+        span[class*="bg-amber-50"], span[class*="bg-orange-50"] {
+            background-color: #FFFBEB !important; color: #D97706 !important;
+            border: 1px solid #FDE68A !important;
+        }
+        span[class*="bg-blue-50"] {
+            background-color: #EFF6FF !important; color: #2563EB !important;
+            border: 1px solid #BFDBFE !important;
+        }
+        span[class*="bg-purple-50"] {
+            background-color: #FDF4FF !important; color: #a402bf !important;
+            border: 1px solid #F5D0FE !important;
         }
         .floating-sidebar {
             width: 280px;

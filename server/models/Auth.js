@@ -27,6 +27,7 @@ const UserSchema = new mongoose.Schema({
   hr_access: { type: Boolean, default: false },
   admin_access: { type: Boolean, default: false },
   employee_access: { type: Boolean, default: false },
+  manager_access: { type: Boolean, default: false },
   status: { type: String, default: 'Active' }
 }, { timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' } });
 

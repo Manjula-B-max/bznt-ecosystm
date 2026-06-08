@@ -2,7 +2,8 @@ import { Router } from 'express';
 import { 
     sendOtp, verifyOtp, getMe, updateMe, 
     listUsers, createUser, updateUserAccess, updateUserRole, deleteUser,
-    listCompanies, createCompany, updateCompany, deleteCompany 
+    listCompanies, createCompany, updateCompany, deleteCompany,
+    listAllowedEmails, addAllowedEmail, deleteAllowedEmail
 } from '../controllers/authController.js';
 import { authMiddleware } from '../auth.js';
 
@@ -25,5 +26,10 @@ router.post('/users', authMiddleware, createUser);
 router.put('/users/:email/access', authMiddleware, updateUserAccess);
 router.put('/users/:email/role', authMiddleware, updateUserRole);
 router.delete('/users/:email', authMiddleware, deleteUser);
+
+// ── Allowed Emails Whitelist Routes (Super Admin / Admin only) ───────────────
+router.get('/allowed-emails', authMiddleware, listAllowedEmails);
+router.post('/allowed-emails', authMiddleware, addAllowedEmail);
+router.delete('/allowed-emails/:email', authMiddleware, deleteAllowedEmail);
 
 export default router;

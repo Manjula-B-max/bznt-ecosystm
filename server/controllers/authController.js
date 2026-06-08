@@ -1,4 +1,4 @@
-import { User, OtpCode, Company } from '../models/Auth.js';
+import { User, OtpCode, Company, AllowedEmail } from '../models/Auth.js';
 import { signToken } from '../auth.js';
 import { Resend } from 'resend';
 
@@ -16,16 +16,21 @@ export const sendOtp = async (req, res) => {
         if (!isSuperAdminEmail(email)) {
             const existingUser = await User.findOne({ email });
             if (!existingUser) {
-                return res.status(403).json({ error: 'Access denied. You do not have an account on this platform.' });
-            }
-            const hasAccess = ['super_admin', 'admin'].includes(existingUser.role)
-                || existingUser.marketflow_access
-                || existingUser.projectflow_access
-                || existingUser.hr_access
-                || existingUser.admin_access
-                || existingUser.employee_access;
-            if (!hasAccess) {
-                return res.status(403).json({ error: 'Access denied. You do not have permission to access this platform.' });
+                const whitelisted = await AllowedEmail.findOne({ email });
+                if (!whitelisted) {
+                    return res.status(403).json({ error: 'Access denied. You do not have an account on this platform.' });
+                }
+            } else {
+                const hasAccess = ['super_admin', 'admin'].includes(existingUser.role)
+                    || existingUser.marketflow_access
+                    || existingUser.projectflow_access
+                    || existingUser.hr_access
+                    || existingUser.admin_access
+                    || existingUser.employee_access
+                    || existingUser.manager_access;
+                if (!hasAccess) {
+                    return res.status(403).json({ error: 'Access denied. You do not have permission to access this platform.' });
+                }
             }
         }
 
@@ -111,14 +116,32 @@ export const verifyOtp = async (req, res) => {
                 const name = email.split('@')[0].replace(/[._-]/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
                 userDoc = await User.create({ email, name, role: 'super_admin', marketflow_access: false });
             } else {
-                return res.status(403).json({ error: 'Access denied. You do not have permission to access MarketFlow.' });
+                const whitelisted = await AllowedEmail.findOne({ email });
+                if (whitelisted) {
+                    const name = email.split('@')[0].replace(/[._-]/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+                    userDoc = await User.create({
+                        email,
+                        name,
+                        role: 'user',
+                        marketflow_access: true,
+                        status: 'Active'
+                    });
+                } else {
+                    return res.status(403).json({ error: 'Access denied. You do not have permission to access MarketFlow.' });
+                }
             }
         } else {
             if (isSuperAdminEmail(email) && userDoc.role !== 'super_admin') {
                 userDoc.role = 'super_admin';
                 await userDoc.save();
-            } else if (!isSuperAdminEmail(email) && !userDoc.marketflow_access && !userDoc.projectflow_access && !userDoc.hr_access && !userDoc.admin_access && !userDoc.employee_access && userDoc.role !== 'admin') {
-                return res.status(403).json({ error: 'Access denied. You do not have permissions.' });
+            } else if (!isSuperAdminEmail(email) && !userDoc.marketflow_access && !userDoc.projectflow_access && !userDoc.hr_access && !userDoc.admin_access && !userDoc.employee_access && !userDoc.manager_access && userDoc.role !== 'admin') {
+                const whitelisted = await AllowedEmail.findOne({ email });
+                if (whitelisted) {
+                    userDoc.marketflow_access = true;
+                    await userDoc.save();
+                } else {
+                    return res.status(403).json({ error: 'Access denied. You do not have permissions.' });
+                }
             }
         }
 
@@ -183,6 +206,7 @@ export const listUsers = async (req, res) => {
             hr_access: !!u.hr_access,
             admin_access: !!u.admin_access,
             employee_access: !!u.employee_access,
+            manager_access: !!u.manager_access,
             status: u.status || 'Active'
         })));
     } catch (e) { res.status(500).json({ error: e.message }); }
@@ -193,14 +217,49 @@ export const createUser = async (req, res) => {
         const adminUser = await User.findById(req.userId);
         if (!adminUser || !['super_admin', 'owner', 'admin'].includes(adminUser.role)) return res.status(403).json({ error: 'Forbidden' });
 
-        const { email: rawEmail, name: reqName, department, role, marketflow_access, projectflow_access, hr_access, employee_access, status } = req.body;
+        const { email: rawEmail, name: reqName, department, role, marketflow_access, projectflow_access, hr_access, employee_access, manager_access, status } = req.body;
         const email = (rawEmail || '').toLowerCase().trim();
 
         if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
             return res.status(400).json({ error: 'Valid email required' });
 
         let userDoc = await User.findOne({ email });
-        if (userDoc) return res.status(400).json({ error: 'User already exists' });
+        if (userDoc) {
+            const isPlaceholderCompany = !userDoc.company_id || userDoc.company === 'My Company';
+            const isSameCompany = userDoc.company_id?.toString() === adminUser.company_id?.toString() || 
+                                  (!userDoc.company_id && !adminUser.company_id && userDoc.company === adminUser.company);
+            const hasNewCompany = adminUser.company_id || (adminUser.company && adminUser.company !== 'My Company');
+
+            if (isPlaceholderCompany && !isSameCompany && hasNewCompany) {
+                userDoc.company = adminUser.company;
+                userDoc.company_id = adminUser.company_id;
+                userDoc.role = role || userDoc.role || 'user';
+                userDoc.department = department || userDoc.department || 'General';
+                userDoc.marketflow_access = !!marketflow_access;
+                userDoc.projectflow_access = !!projectflow_access;
+                userDoc.hr_access = !!hr_access;
+                userDoc.employee_access = !!employee_access;
+                userDoc.manager_access = !!manager_access;
+                userDoc.admin_access = role === 'admin';
+                userDoc.status = status || userDoc.status || 'Active';
+                await userDoc.save();
+
+                return res.json({
+                    ok: true,
+                    email: userDoc.email,
+                    id: userDoc._id,
+                    role: userDoc.role,
+                    department: userDoc.department,
+                    marketflow_access: userDoc.marketflow_access,
+                    projectflow_access: userDoc.projectflow_access,
+                    hr_access: userDoc.hr_access,
+                    employee_access: userDoc.employee_access,
+                    manager_access: userDoc.manager_access,
+                    status: userDoc.status
+                });
+            }
+            return res.status(400).json({ error: 'User already exists' });
+        }
 
         const name = reqName || email.split('@')[0].replace(/[._-]/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
         
@@ -214,8 +273,9 @@ export const createUser = async (req, res) => {
             marketflow_access: !!marketflow_access,
             projectflow_access: !!projectflow_access,
             hr_access: !!hr_access,
-            admin_access: false,
+            admin_access: role === 'admin',
             employee_access: !!employee_access,
+            manager_access: !!manager_access,
             status: status || 'Active'
         });
 
@@ -229,6 +289,7 @@ export const createUser = async (req, res) => {
             projectflow_access: userDoc.projectflow_access,
             hr_access: userDoc.hr_access,
             employee_access: userDoc.employee_access,
+            manager_access: userDoc.manager_access,
             status: userDoc.status
         });
     } catch (e) { res.status(500).json({ error: e.message }); }
@@ -237,10 +298,10 @@ export const createUser = async (req, res) => {
 export const updateUserAccess = async (req, res) => {
     try {
         const adminUser = await User.findById(req.userId);
-        if (!adminUser || !['super_admin', 'admin'].includes(adminUser.role)) return res.status(403).json({ error: 'Forbidden' });
+        if (!adminUser || !['super_admin', 'owner', 'admin'].includes(adminUser.role)) return res.status(403).json({ error: 'Forbidden' });
 
         const targetEmail = (req.params.email || '').toLowerCase().trim();
-        const { marketflow_access, projectflow_access, hr_access, admin_access, employee_access, status } = req.body;
+        const { marketflow_access, projectflow_access, hr_access, admin_access, employee_access, manager_access, status } = req.body;
         
         if (!targetEmail) return res.status(400).json({ error: 'Email required' });
         
@@ -253,8 +314,17 @@ export const updateUserAccess = async (req, res) => {
         if (hr_access !== undefined) targetUser.hr_access = !!hr_access;
         if (admin_access !== undefined) targetUser.admin_access = !!admin_access;
         if (employee_access !== undefined) targetUser.employee_access = !!employee_access;
+        if (manager_access !== undefined) targetUser.manager_access = !!manager_access;
         if (status !== undefined) targetUser.status = status;
         
+        // Auto-sync user role based on the toggled access flags
+        if (targetUser.role !== 'super_admin' && targetUser.role !== 'owner') {
+            if (targetUser.admin_access) targetUser.role = 'admin';
+            else if (targetUser.manager_access) targetUser.role = 'manager';
+            else if (targetUser.employee_access) targetUser.role = 'employee';
+            else targetUser.role = 'user';
+        }
+
         await targetUser.save();
         
         res.json({
@@ -265,6 +335,7 @@ export const updateUserAccess = async (req, res) => {
             hr_access: targetUser.hr_access,
             admin_access: targetUser.admin_access,
             employee_access: targetUser.employee_access,
+            manager_access: targetUser.manager_access,
             status: targetUser.status
         });
     } catch (e) { res.status(500).json({ error: e.message }); }
@@ -273,7 +344,7 @@ export const updateUserAccess = async (req, res) => {
 export const deleteUser = async (req, res) => {
     try {
         const adminUser = await User.findById(req.userId);
-        if (!adminUser || !['super_admin', 'admin'].includes(adminUser.role)) return res.status(403).json({ error: 'Forbidden' });
+        if (!adminUser || !['super_admin', 'owner', 'admin'].includes(adminUser.role)) return res.status(403).json({ error: 'Forbidden' });
 
         const targetEmail = (req.params.email || '').toLowerCase().trim();
         if (!targetEmail) return res.status(400).json({ error: 'Email required' });
@@ -281,7 +352,7 @@ export const deleteUser = async (req, res) => {
 
         const targetUser = await User.findOne({ email: targetEmail });
         if (!targetUser) return res.status(404).json({ error: 'User not found' });
-        if (targetUser.role === 'admin' && adminUser.role !== 'super_admin' && targetEmail !== adminUser.email) {
+        if (targetUser.role === 'admin' && !['super_admin', 'owner'].includes(adminUser.role) && targetEmail !== adminUser.email) {
             return res.status(403).json({ error: 'Cannot delete another admin' });
         }
 
@@ -293,7 +364,7 @@ export const deleteUser = async (req, res) => {
 export const updateUserRole = async (req, res) => {
     try {
         const adminUser = await User.findById(req.userId);
-        if (!adminUser || !['super_admin', 'admin'].includes(adminUser.role)) return res.status(403).json({ error: 'Forbidden' });
+        if (!adminUser || !['super_admin', 'owner', 'admin'].includes(adminUser.role)) return res.status(403).json({ error: 'Forbidden' });
 
         const targetEmail = (req.params.email || '').toLowerCase().trim();
         const { role } = req.body;
@@ -303,12 +374,14 @@ export const updateUserRole = async (req, res) => {
         const targetUser = await User.findOne({ email: targetEmail });
         if (!targetUser) return res.status(404).json({ error: 'User not found' });
         if (targetUser.role === 'super_admin') return res.status(400).json({ error: 'Cannot modify super admin role' });
+        if (targetUser.role === 'owner' && adminUser.role !== 'super_admin' && targetUser.email !== adminUser.email) return res.status(403).json({ error: 'Cannot modify owner role' });
         if (adminUser.role === 'admin' && targetUser.role === 'admin' && targetUser.email !== adminUser.email) return res.status(403).json({ error: 'Cannot modify another admin role' });
 
         const allowedRoles = ['user', 'admin', 'manager', 'employee']; // Expanded roles for project flow
 
         if(role && allowedRoles.includes(role)) {
             targetUser.role = role;
+            targetUser.admin_access = (role === 'admin');
             await targetUser.save();
         }
         
@@ -368,6 +441,7 @@ export const createCompany = async (req, res) => {
             userDoc.hr_access = true;
             userDoc.admin_access = true;
             userDoc.employee_access = true;
+            userDoc.manager_access = true;
             userDoc.status = 'Active';
             await userDoc.save();
         } else {
@@ -383,6 +457,7 @@ export const createCompany = async (req, res) => {
                 hr_access: true,
                 admin_access: true,
                 employee_access: true,
+                manager_access: true,
                 status: 'Active'
             });
         }
@@ -428,4 +503,66 @@ export const deleteCompany = async (req, res) => {
 
         res.json({ ok: true, id: req.params.id });
     } catch (e) { res.status(500).json({ error: e.message }); }
+};
+
+// ── Allowed Emails Whitelist Management ─────────────────────────────────────
+export const listAllowedEmails = async (req, res) => {
+    try {
+        const adminUser = await User.findById(req.userId);
+        if (!adminUser || !['super_admin', 'owner', 'admin'].includes(adminUser.role)) {
+            return res.status(403).json({ error: 'Forbidden' });
+        }
+
+        const emails = await AllowedEmail.find({}).sort({ email: 1 }).lean();
+        res.json(emails.map(e => ({ id: e._id.toString(), email: e.email })));
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+};
+
+export const addAllowedEmail = async (req, res) => {
+    try {
+        const adminUser = await User.findById(req.userId);
+        if (!adminUser || !['super_admin', 'owner', 'admin'].includes(adminUser.role)) {
+            return res.status(403).json({ error: 'Forbidden' });
+        }
+
+        const email = (req.body.email || '').toLowerCase().trim();
+        if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+            return res.status(400).json({ error: 'Valid email required' });
+        }
+
+        let existing = await AllowedEmail.findOne({ email });
+        if (existing) {
+            return res.status(400).json({ error: 'Email already whitelisted' });
+        }
+
+        const allowed = await AllowedEmail.create({ email });
+        res.json({ ok: true, email: allowed.email });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+};
+
+export const deleteAllowedEmail = async (req, res) => {
+    try {
+        const adminUser = await User.findById(req.userId);
+        if (!adminUser || !['super_admin', 'owner', 'admin'].includes(adminUser.role)) {
+            return res.status(403).json({ error: 'Forbidden' });
+        }
+
+        const email = (req.params.email || '').toLowerCase().trim();
+        if (!email) {
+            return res.status(400).json({ error: 'Email required' });
+        }
+
+        const result = await AllowedEmail.deleteOne({ email });
+        if (result.deletedCount === 0) {
+            return res.status(404).json({ error: 'Email not found in whitelist' });
+        }
+
+        res.json({ ok: true, email });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
 };

@@ -1083,7 +1083,8 @@ document.addEventListener('DOMContentLoaded', () => {
                                   uObj.projectflow_access || 
                                   uObj.hr_access || 
                                   uObj.employee_access || 
-                                  uObj.role === 'employee';
+                                  uObj.manager_access || 
+                                  ['employee', 'manager'].includes(uObj.role);
 
                 if (hasAccess) {
                     window.location.replace('admin.html');

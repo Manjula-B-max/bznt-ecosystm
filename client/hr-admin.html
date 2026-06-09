@@ -761,53 +761,58 @@
                         </div>
                     </div>
 
-                    <!-- BOTTOM ROW: Split 60% Left, 40% Right with Separator -->
-                    <div class="flex-1 flex gap-6 items-stretch mt-4 overflow-hidden relative">
-                        <!-- Left Section (60%) -->
-                        <div class="w-[58%] flex flex-col justify-between h-full pr-2">
+                    <!-- BOTTOM ROW: Split 58% Left, 42% Right with Separator -->
+                    <div class="flex-1 flex gap-6 items-stretch mt-4 relative">
+                        <!-- Left Section (58%) -->
+                        <div class="flex flex-col justify-between h-full pr-2" style="width: 58%; flex-shrink: 0;">
                             <div class="text-left space-y-2">
                                 <div class="space-y-0.5">
                                     <h2 class="text-[34px] font-bold tracking-tight leading-[120%]">HR Control Dashboard</h2>
                                     <p class="text-purple-200/90 text-[16px] font-medium leading-[140%]">Workforce Operations Command Center</p>
                                 </div>
                                 
-                                <!-- Center zone metrics in glass pills -->
+                                <!-- Center zone metrics in glass pills (compact, 40px height, 14px text) -->
                                 <div class="flex flex-wrap gap-2 mt-1">
-                                    <div class="mini-glass-pill">
-                                        <i data-lucide="users" class="w-3.5 h-3.5 text-emerald-400"></i>
-                                        <span id="metricHrEmployees">52</span> Employees
+                                    <div class="mini-glass-pill" style="height: 40px; font-size: 14px; padding: 0 16px; border-radius: 20px; display: inline-flex; align-items: center; gap: 6px;">
+                                        <i data-lucide="users" class="w-3.5 h-3.5 text-emerald-400 flex-shrink-0"></i>
+                                        <span><span id="metricHrEmployees">52</span> Employees</span>
                                     </div>
-                                    <div class="mini-glass-pill">
-                                        <i data-lucide="calendar" class="w-3.5 h-3.5 text-blue-400"></i>
-                                        <span id="metricHrPendingLeaves">1</span> Pending Leave
+                                    <div class="mini-glass-pill" style="height: 40px; font-size: 14px; padding: 0 16px; border-radius: 20px; display: inline-flex; align-items: center; gap: 6px;">
+                                        <i data-lucide="calendar" class="w-3.5 h-3.5 text-blue-400 flex-shrink-0"></i>
+                                        <span><span id="metricHrPendingLeaves">1</span> Pending Leave</span>
                                     </div>
-                                    <div class="mini-glass-pill">
-                                        <i data-lucide="wallet" class="w-3.5 h-3.5 text-amber-400"></i>
-                                        <span id="metricHrPayroll">88%</span> Payroll
+                                    <div class="mini-glass-pill" style="height: 40px; font-size: 14px; padding: 0 16px; border-radius: 20px; display: inline-flex; align-items: center; gap: 6px;">
+                                        <i data-lucide="wallet" class="w-3.5 h-3.5 text-amber-400 flex-shrink-0"></i>
+                                        <span><span id="metricHrPayroll">88%</span> Payroll</span>
                                     </div>
-                                    <div class="mini-glass-pill">
-                                        <i data-lucide="shield-check" class="w-3.5 h-3.5 text-purple-400"></i>
-                                        <span id="metricHrPfSynced">100%</span> PF Synced
+                                    <div class="mini-glass-pill" style="height: 40px; font-size: 14px; padding: 0 16px; border-radius: 20px; display: inline-flex; align-items: center; gap: 6px;">
+                                        <i data-lucide="shield-check" class="w-3.5 h-3.5 text-purple-400 flex-shrink-0"></i>
+                                        <span><span id="metricHrPfSynced">100%</span> PF Synced</span>
                                     </div>
                                 </div>
                             </div>
                             
-                            <!-- Actions (Primary Filled, Secondary Outline) -->
-                            <div class="flex flex-wrap gap-2.5 mt-auto">
-                                <button onclick="switchTab('empView')" class="btn-premium-primary gap-2">
-                                    <i data-lucide="user-plus" class="w-4 h-4 text-emerald-300"></i> Add Employee
+                            <!-- SINGLE ACTION ROW — strict 5-button grid, no wrap ever -->
+                            <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; width: 100%; align-items: center;" class="mt-auto">
+                                <!-- Primary: Add Employee -->
+                                <button onclick="switchTab('empView')" class="btn-premium-primary gap-1.5" style="height: 52px; min-width: 180px; padding: 0 22px; border-radius: 18px; white-space: nowrap; font-size: 13px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center;">
+                                    <i data-lucide="user-plus" class="w-4 h-4 text-emerald-300 flex-shrink-0"></i> <span>Add Employee</span>
                                 </button>
-                                <button onclick="switchTab('recruitView')" class="btn-premium-secondary gap-2">
-                                    <i data-lucide="briefcase" class="w-4 h-4"></i> Recruitment
+                                <!-- Secondary: Recruitment -->
+                                <button onclick="switchTab('recruitView')" class="btn-premium-secondary gap-1.5" style="height: 52px; min-width: 180px; padding: 0 22px; border-radius: 18px; white-space: nowrap; font-size: 13px; display: inline-flex; align-items: center; justify-content: center;">
+                                    <i data-lucide="briefcase" class="w-4 h-4 flex-shrink-0"></i> <span>Recruitment</span>
                                 </button>
-                                <button onclick="switchTab('payrollView')" class="btn-premium-secondary gap-2">
-                                    <i data-lucide="wallet" class="w-4 h-4"></i> Generate Payroll
+                                <!-- Secondary: Generate Payroll -->
+                                <button onclick="switchTab('payrollView')" class="btn-premium-secondary gap-1.5" style="height: 52px; min-width: 180px; padding: 0 22px; border-radius: 18px; white-space: nowrap; font-size: 13px; display: inline-flex; align-items: center; justify-content: center;">
+                                    <i data-lucide="wallet" class="w-4 h-4 flex-shrink-0"></i> <span>Generate Payroll</span>
                                 </button>
-                                <button onclick="switchTab('attView')" class="btn-premium-secondary gap-2">
-                                    <i data-lucide="clock" class="w-4 h-4"></i> Attendance Review
+                                <!-- Secondary: Attendance Review -->
+                                <button onclick="switchTab('attView')" class="btn-premium-secondary gap-1.5" style="height: 52px; min-width: 180px; padding: 0 22px; border-radius: 18px; white-space: nowrap; font-size: 13px; display: inline-flex; align-items: center; justify-content: center;">
+                                    <i data-lucide="clock" class="w-4 h-4 flex-shrink-0"></i> <span>Attendance Review</span>
                                 </button>
-                                <button onclick="switchTab('payrollView')" class="btn-premium-secondary gap-2">
-                                    <i data-lucide="shield-check" class="w-4 h-4"></i> PF Export
+                                <!-- Secondary: PF Export -->
+                                <button onclick="switchTab('payrollView')" class="btn-premium-secondary gap-1.5" style="height: 52px; min-width: 180px; padding: 0 22px; border-radius: 18px; white-space: nowrap; font-size: 13px; display: inline-flex; align-items: center; justify-content: center;">
+                                    <i data-lucide="shield-check" class="w-4 h-4 flex-shrink-0"></i> <span>PF Export</span>
                                 </button>
                             </div>
                         </div>
@@ -815,8 +820,8 @@
                         <!-- Vertical Divider Glow -->
                         <div class="w-[1px] self-stretch bg-gradient-to-b from-white/0 via-white/10 to-white/0 relative" style="box-shadow: 0 0 10px rgba(255,255,255,0.08);"></div>
 
-                        <!-- Right Section: Command Panel (40%) -->
-                        <div class="w-[40%] command-glass-panel flex flex-col justify-between p-4 text-white">
+                        <!-- Right Section: Command Panel (42%, shifted up 12px) -->
+                        <div class="command-glass-panel flex flex-col justify-between p-4 text-white" style="width: calc(42% - 25px); flex-shrink: 0; margin-top: -12px;">
                             <div class="flex items-center justify-between pb-1.5 border-b border-white/5">
                                 <span class="text-[9px] font-extrabold text-purple-200 uppercase tracking-widest">Command Panel</span>
                                 <span class="text-[8px] font-mono font-bold bg-purple-500/20 text-purple-200 px-1.5 py-0.5 rounded border border-purple-500/10">Roster Stable</span>

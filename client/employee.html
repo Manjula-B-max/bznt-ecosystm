@@ -818,13 +818,65 @@
             transform: translateY(-1px) !important;
         }
 
+        /* Signature BEZENT Hero Divider */
+        .bezent-hero-divider {
+            width: 100% !important;
+            height: 1px !important;
+            background: linear-gradient(
+                90deg,
+                rgba(255, 255, 255, 0.04),
+                rgba(255, 255, 255, 0.18),
+                rgba(255, 255, 255, 0.04)
+            ) !important;
+            margin-top: 18px !important;
+            margin-bottom: 18px !important;
+            border: none !important;
+            backdrop-filter: blur(4px) !important;
+            -webkit-backdrop-filter: blur(4px) !important;
+            box-shadow: 0 0.5px 0 rgba(255, 255, 255, 0.08), 0 0 8px rgba(255, 255, 255, 0.05) !important;
+            position: relative !important;
+            z-index: 10 !important;
+            opacity: 0 !important;
+            transform: translateY(-4px) !important;
+            animation: divider-fade-in 500ms cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
+        }
+
+        @keyframes divider-fade-in {
+            from {
+                opacity: 0;
+                transform: translateY(-4px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Signature BEZENT Premium Vertical Divider */
+        .bezent-vertical-divider {
+            width: 1px !important;
+            height: 100% !important;
+            background: linear-gradient(
+                180deg,
+                rgba(255, 255, 255, 0),
+                rgba(255, 255, 255, 0.15),
+                rgba(255, 255, 255, 0)
+            ) !important;
+            opacity: 0.6 !important;
+            position: absolute !important;
+            left: 60% !important;
+            top: 0 !important;
+            bottom: 0 !important;
+            z-index: 5 !important;
+        }
+
         /* Command Glass Panel */
         .command-glass-panel {
-            background: rgba(255, 255, 255, 0.04) !important;
+            background: rgba(255, 255, 255, 0.03) !important;
             backdrop-filter: blur(20px) !important;
             -webkit-backdrop-filter: blur(20px) !important;
             border: 1px solid rgba(255, 255, 255, 0.08) !important;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.18) !important;
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 20px 40px rgba(0, 0, 0, 0.15) !important;
             border-radius: 32px !important;
             animation: panel-load 500ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
             will-change: transform, opacity;
@@ -851,17 +903,17 @@
         }
 
         .premium-kpi-card:hover {
-            transform: translateY(-4px) !important;
+            transform: translateY(-2px) !important;
             background: rgba(255, 255, 255, 0.1) !important;
             border-color: rgba(255, 255, 255, 0.18) !important;
             box-shadow: 0 8px 24px rgba(164, 2, 191, 0.25) !important;
         }
 
         .premium-kpi-card .card-number {
-            font-size: 30px !important;
+            font-size: 36px !important;
             font-weight: 700 !important;
             color: #ffffff !important;
-            line-height: 1 !important;
+            line-height: 1.1 !important;
             letter-spacing: -0.5px !important;
         }
 
@@ -870,8 +922,8 @@
             font-weight: 600 !important;
             color: rgba(243, 189, 252, 0.75) !important;
             text-transform: uppercase !important;
-            letter-spacing: 0.4px !important;
-            margin-top: 6px !important;
+            letter-spacing: 0.8px !important;
+            margin-top: 8px !important;
         }
 
         /* Premium Buttons */
@@ -879,9 +931,9 @@
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            height: 48px !important;
+            height: 50px !important;
             padding: 0 24px !important;
-            border-radius: 16px !important;
+            border-radius: 18px !important;
             background: rgba(255, 255, 255, 0.14) !important;
             border: 1px solid rgba(255, 255, 255, 0.22) !important;
             backdrop-filter: blur(12px);
@@ -906,9 +958,9 @@
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            height: 48px !important;
+            height: 50px !important;
             padding: 0 20px !important;
-            border-radius: 16px !important;
+            border-radius: 18px !important;
             background: rgba(255, 255, 255, 0.05) !important;
             border: 1px solid rgba(255, 255, 255, 0.08) !important;
             backdrop-filter: blur(12px);
@@ -1116,9 +1168,8 @@
 
                     <!-- Main Layout Grid -->
                     <div class="relative z-10 flex flex-col h-full justify-between w-full">
-
                         <!-- TOP ROW: Status Chips & Live Clock -->
-                        <div class="flex items-center justify-between border-b border-white/5 pb-2.5">
+                        <div class="flex items-center justify-between pb-3">
                             <div class="flex items-center gap-1.5">
                                 <div class="status-indicator-chip inline-flex items-center gap-1.5 px-2.5 py-1 text-[10px] font-bold rounded-full">
                                     <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 live-pulse-dot"></span>
@@ -1133,84 +1184,92 @@
                                     <span>Payroll Ready</span>
                                 </div>
                             </div>
-                            <div class="text-[10px] font-mono font-semibold text-purple-200/90 flex items-center gap-1.5">
-                                <i data-lucide="calendar" class="w-3.5 h-3.5 text-purple-200"></i>
+                            <div class="text-[11px] font-mono font-semibold text-purple-200/95 flex items-center gap-1.5 justify-center">
+                                <i data-lucide="clock" class="w-3.5 h-3.5 text-purple-200"></i>
                                 <span class="hero-date-time">Loading...</span>
                             </div>
                         </div>
 
-                        <!-- CONTENT ROW: 58% Left | 42% Right -->
-                        <div class="flex-1 flex gap-5 items-stretch mt-3">                             <!-- ── LEFT SECTION (58%) ── -->
-                            <div class="flex flex-col justify-between h-full pr-2" style="width: 58%; flex-shrink: 0;">
- 
-                                 <!-- Title & Subtitle -->
-                                 <div class="text-left space-y-1">
-                                     <h2 class="text-[36px] font-bold tracking-tight leading-tight" id="hrWelcomeMsgBanner">HR Control Dashboard</h2>
-                                     <p class="text-purple-100/90 text-[16px] font-medium leading-relaxed">
-                                         Workforce Operations Command Center
-                                     </p>
-                                 </div>
- 
-                                 <!-- Role Metrics — Mini Glass Pills (compact, 40px height, 14px text) -->
-                                 <div class="flex flex-wrap gap-1.5 mt-2">
-                                     <div class="mini-glass-pill" style="height: 40px; font-size: 14px; padding: 0 16px; border-radius: 20px; display: inline-flex; align-items: center; gap: 6px;">
-                                         <i data-lucide="users" class="w-3.5 h-3.5 text-emerald-400 flex-shrink-0"></i>
-                                         <span><span id="hrHeroTotalEmp">0</span> Employees</span>
-                                     </div>
-                                     <div class="mini-glass-pill" style="height: 40px; font-size: 14px; padding: 0 16px; border-radius: 20px; display: inline-flex; align-items: center; gap: 6px;">
-                                         <i data-lucide="calendar-off" class="w-3.5 h-3.5 text-amber-400 flex-shrink-0"></i>
-                                         <span><span id="hrHeroOnLeave">0</span> Pending Leave</span>
-                                     </div>
-                                     <div class="mini-glass-pill" style="height: 40px; font-size: 14px; padding: 0 16px; border-radius: 20px; display: inline-flex; align-items: center; gap: 6px;">
-                                         <i data-lucide="wallet" class="w-3.5 h-3.5 text-blue-400 flex-shrink-0"></i>
-                                         <span>88% Payroll</span>
-                                     </div>
-                                     <div class="mini-glass-pill" style="height: 40px; font-size: 14px; padding: 0 16px; border-radius: 20px; display: inline-flex; align-items: center; gap: 6px;">
-                                         <i data-lucide="shield-check" class="w-3.5 h-3.5 text-purple-400 flex-shrink-0"></i>
-                                         <span>100% PF Synced</span>
-                                     </div>
-                                 </div>
- 
-                                 <!-- Section Divider -->
-                                 <div class="w-full h-px bg-white/[0.08] my-2"></div>
- 
-                                 <!-- SINGLE ACTION ROW — strict 5-button grid, no wrap ever -->
-                                 <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; width: 100%; align-items: center;" class="mt-auto">
-                                     <!-- Primary: Add Employee -->
-                                     <button onclick="openAddEmployeeModal()" class="btn-premium-primary gap-1.5" style="height: 52px; min-width: 180px; padding: 0 22px; border-radius: 18px; white-space: nowrap; font-size: 13px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center;">
-                                         <i data-lucide="user-plus" class="w-3.5 h-3.5 text-emerald-400 animate-pulse flex-shrink-0"></i> <span>Add Employee</span>
-                                     </button>
-                                     <!-- Secondary: Recruitment -->
-                                     <button onclick="switchAccordionTab('hr-recruitment')" class="btn-premium-secondary gap-1.5" style="height: 52px; min-width: 180px; padding: 0 22px; border-radius: 18px; white-space: nowrap; font-size: 13px; display: inline-flex; align-items: center; justify-content: center;">
-                                         <i data-lucide="briefcase" class="w-3.5 h-3.5 flex-shrink-0"></i> <span>Recruitment</span>
-                                     </button>
-                                     <!-- Secondary: Generate Payroll -->
-                                     <button onclick="switchAccordionTab('hr-payroll')" class="btn-premium-secondary gap-1.5" style="height: 52px; min-width: 180px; padding: 0 22px; border-radius: 18px; white-space: nowrap; font-size: 13px; display: inline-flex; align-items: center; justify-content: center;">
-                                         <i data-lucide="wallet" class="w-3.5 h-3.5 flex-shrink-0"></i> <span>Generate Payroll</span>
-                                     </button>
-                                     <!-- Secondary: Attendance Review -->
-                                     <button onclick="switchAccordionTab('hr-attendance')" class="btn-premium-secondary gap-1.5" style="height: 52px; min-width: 180px; padding: 0 22px; border-radius: 18px; white-space: nowrap; font-size: 13px; display: inline-flex; align-items: center; justify-content: center;">
-                                         <i data-lucide="clock" class="w-3.5 h-3.5 flex-shrink-0"></i> <span>Attendance Review</span>
-                                     </button>
-                                     <!-- Secondary: PF Export -->
-                                     <button onclick="switchAccordionTab('hr-pf')" class="btn-premium-secondary gap-1.5" style="height: 52px; min-width: 180px; padding: 0 22px; border-radius: 18px; white-space: nowrap; font-size: 13px; display: inline-flex; align-items: center; justify-content: center;">
-                                         <i data-lucide="shield-check" class="w-3.5 h-3.5 flex-shrink-0"></i> <span>PF Export</span>
-                                     </button>
-                                 </div>
-                             </div>
- 
-                             <!-- Vertical Divider Glow -->
-                             <div class="w-[1px] self-stretch bg-gradient-to-b from-white/0 via-white/10 to-white/0 relative"
-                                 style="box-shadow: 0 0 10px rgba(255,255,255,0.08);"></div>
- 
-                             <!-- ── RIGHT SECTION: Command Panel (42%, shifted up 12px) ── -->
-                             <div class="command-glass-panel flex flex-col justify-between p-4 text-white" style="width: calc(42% - 21px); flex-shrink: 0; margin-top: -12px;">
-                                 <div class="flex items-center justify-between pb-1.5 border-b border-white/5">
-                                     <span class="text-[9px] font-extrabold text-purple-200 uppercase tracking-widest">Command Panel</span>
-                                     <span class="text-[8px] font-mono font-bold bg-purple-500/20 text-purple-200 px-1.5 py-0.5 rounded border border-purple-500/10">HR Live</span>
-                                 </div>
+                        <!-- GLOBAL DIVIDER LINE -->
+                        <div class="bezent-hero-divider"></div>
 
-                                <!-- KPI Cards — 4-column grid -->
+                        <!-- CONTENT CONTAINER (Relative positioned container to place Left Area, Vertical divider, and Command Panel) -->
+                        <div class="relative flex-grow flex flex-col justify-between" style="min-height: 220px;">
+                            
+                            <!-- Left Content Area (Width restricted to 58% to allow absolute split) -->
+                            <div class="w-[58%] flex flex-col justify-between" style="height: calc(100% - 2px);">
+                                
+                                <!-- Title Block (shifted slightly lower, pt-2 to reduce space above) -->
+                                <div class="text-left pt-2 flex flex-col gap-1">
+                                    <h2 class="text-[34px] font-bold tracking-tight leading-[120%]" id="hrWelcomeMsgBanner">HR Control Dashboard</h2>
+                                    <p class="text-purple-200/90 text-[16px] font-medium leading-[140%]">Workforce Operations Command Center</p>
+                                </div>
+
+                                <!-- Title -> Metrics Space (20px) -->
+                                <div class="h-[20px]"></div>
+
+                                <!-- Metrics pills -->
+                                <div class="flex flex-wrap gap-2">
+                                    <div class="mini-glass-pill" style="height: 40px; font-size: 14px; padding: 0 16px; border-radius: 20px; display: inline-flex; align-items: center; gap: 6px;">
+                                        <i data-lucide="users" class="w-3.5 h-3.5 text-emerald-400 flex-shrink-0"></i>
+                                        <span><span id="hrHeroTotalEmp">0</span> Employees</span>
+                                    </div>
+                                    <div class="mini-glass-pill" style="height: 40px; font-size: 14px; padding: 0 16px; border-radius: 20px; display: inline-flex; align-items: center; gap: 6px;">
+                                        <i data-lucide="calendar-off" class="w-3.5 h-3.5 text-amber-400 flex-shrink-0"></i>
+                                        <span><span id="hrHeroOnLeave">0</span> Pending Leave</span>
+                                    </div>
+                                    <div class="mini-glass-pill" style="height: 40px; font-size: 14px; padding: 0 16px; border-radius: 20px; display: inline-flex; align-items: center; gap: 6px;">
+                                        <i data-lucide="wallet" class="w-3.5 h-3.5 text-blue-400 flex-shrink-0"></i>
+                                        <span>88% Payroll</span>
+                                    </div>
+                                    <div class="mini-glass-pill" style="height: 40px; font-size: 14px; padding: 0 16px; border-radius: 20px; display: inline-flex; align-items: center; gap: 6px;">
+                                        <i data-lucide="shield-check" class="w-3.5 h-3.5 text-purple-400 flex-shrink-0"></i>
+                                        <span>100% PF Synced</span>
+                                    </div>
+                                </div>
+
+                            </div>
+
+                            <!-- DIVIDER #2 (Full width, below metrics, above actions) -->
+                            <div class="bezent-hero-divider"></div>
+
+                            <!-- Actions Area (width restricted to 58%) -->
+                            <div class="w-[58%] pb-1">
+                                <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; width: 100%; align-items: center;">
+                                    <!-- Primary: Add Employee -->
+                                    <button onclick="openAddEmployeeModal()" class="btn-premium-primary gap-1.5" style="height: 50px; padding: 0 16px; border-radius: 18px; white-space: nowrap; font-size: 13px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center;">
+                                        <i data-lucide="user-plus" class="w-4 h-4 text-emerald-300 flex-shrink-0"></i> <span>Add Employee</span>
+                                    </button>
+                                    <!-- Secondary: Recruitment -->
+                                    <button onclick="switchAccordionTab('hr-recruitment')" class="btn-premium-secondary gap-1.5" style="height: 50px; padding: 0 16px; border-radius: 18px; white-space: nowrap; font-size: 13px; display: inline-flex; align-items: center; justify-content: center;">
+                                        <i data-lucide="briefcase" class="w-4 h-4 flex-shrink-0"></i> <span>Recruitment</span>
+                                    </button>
+                                    <!-- Secondary: Generate Payroll -->
+                                    <button onclick="switchAccordionTab('hr-payroll')" class="btn-premium-secondary gap-1.5" style="height: 50px; padding: 0 16px; border-radius: 18px; white-space: nowrap; font-size: 13px; display: inline-flex; align-items: center; justify-content: center;">
+                                        <i data-lucide="wallet" class="w-4 h-4 flex-shrink-0"></i> <span>Generate Payroll</span>
+                                    </button>
+                                    <!-- Secondary: Attendance Review -->
+                                    <button onclick="switchAccordionTab('hr-attendance')" class="btn-premium-secondary gap-1.5" style="height: 50px; padding: 0 16px; border-radius: 18px; white-space: nowrap; font-size: 13px; display: inline-flex; align-items: center; justify-content: center;">
+                                        <i data-lucide="clock" class="w-4 h-4 flex-shrink-0"></i> <span>Attendance Review</span>
+                                    </button>
+                                    <!-- Secondary: PF Export -->
+                                    <button onclick="switchAccordionTab('hr-pf')" class="btn-premium-secondary gap-1.5" style="height: 50px; padding: 0 16px; border-radius: 18px; white-space: nowrap; font-size: 13px; display: inline-flex; align-items: center; justify-content: center;">
+                                        <i data-lucide="shield-check" class="w-4 h-4 flex-shrink-0"></i> <span>PF Export</span>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- VERTICAL DIVIDER (Absolute positioned at 60%) -->
+                            <div class="bezent-vertical-divider"></div>
+
+                            <!-- COMMAND PANEL (Absolute positioned on the right at 38% width, spanning full height below Divider #1) -->
+                            <div class="absolute right-0 top-0 bottom-0 w-[38%] command-glass-panel flex flex-col justify-between p-4 text-white">
+                                <div class="flex items-center justify-between pb-1.5 border-b border-white/5">
+                                    <span class="text-[9px] font-extrabold text-purple-200 uppercase tracking-widest">Command Panel</span>
+                                    <span class="text-[8px] font-mono font-bold bg-purple-500/20 text-purple-200 px-1.5 py-0.5 rounded border border-purple-500/10">HR Live</span>
+                                </div>
+
+                                <!-- Horizontal Grid with Dominant numbers -->
                                 <div class="grid grid-cols-4 gap-2 my-2">
                                     <div class="premium-kpi-card">
                                         <span class="card-number" id="statPresentCount">0</span>
@@ -1230,22 +1289,26 @@
                                     </div>
                                 </div>
 
-                                <!-- Payroll Progress -->
-                                <div class="flex items-center justify-between text-[10px] font-semibold text-white/70 mb-1">
-                                    <span>Payroll Processed</span>
-                                    <span class="text-white/90 font-bold">88%</span>
-                                </div>
-                                <div class="w-full bg-white/10 rounded-full h-1.5 overflow-hidden mb-2">
-                                    <div class="bg-emerald-400 h-full rounded-full" style="width:88%"></div>
+                                <!-- Progress Bar -->
+                                <div class="space-y-1">
+                                    <div class="flex justify-between items-center text-[9.5px] text-white/95">
+                                        <span class="font-semibold tracking-wide">Payroll Processed</span>
+                                        <span class="font-mono text-purple-200 font-bold">88%</span>
+                                    </div>
+                                    <div class="w-full bg-white/10 rounded-full h-1 overflow-hidden relative">
+                                        <div class="progress-shimmer absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
+                                        <div class="bg-emerald-400 h-full rounded-full transition-all duration-[1200ms]" style="width: 88%"></div>
+                                    </div>
                                 </div>
 
                                 <!-- Alert Footer -->
-                                <div class="flex items-center gap-1.5 text-[9px] text-amber-300/90 font-semibold">
-                                    <i data-lucide="alert-triangle" class="w-3 h-3 text-amber-400"></i>
-                                    <span>PF sync verified · All compliant</span>
+                                <div class="pt-2 border-t border-white/5 flex items-center justify-between text-[9.5px] text-purple-200/90 font-semibold">
+                                    <div class="flex items-center gap-1.5 text-[9px] text-amber-300/90 font-semibold">
+                                        <i data-lucide="alert-triangle" class="w-3 h-3 text-amber-400"></i>
+                                        <span>PF sync verified · All compliant</span>
+                                    </div>
                                 </div>
                             </div>
-
                         </div>
                     </div>
                 </div>
@@ -3131,104 +3194,173 @@
         <!-- ==================== STANDARD SYSTEM ADMIN TAB PANELS ==================== -->
         <!-- Admin Dashboard Panel -->
         <div id="dashboardPanel" class="tab-panel active space-y-6 fade-up-view">
-            <div
-                class="hero-gradient rounded-[24px] p-5 text-white relative overflow-hidden shadow-lg max-h-[260px] flex flex-col justify-between">
-                <div class="absolute -right-20 -top-20 w-80 h-80 bg-white/5 rounded-full blur-3xl"></div>
-                <div class="relative z-10 flex flex-col justify-between h-full space-y-3.5">
+            <div class="command-center-hero text-white flex flex-col justify-between">
+                <!-- Cinematic glows -->
+                <div class="glow-top-left"></div>
+                <div class="glow-center"></div>
+                <div class="glow-bottom-right"></div>
+                
+                <!-- Dot-grid pattern overlay -->
+                <div class="dot-grid-pattern"></div>
+                
+                <!-- Light sweep glass animation effect -->
+                <div class="light-sweep-overlay"></div>
 
-                    <!-- Top Row: Status Chips & Progress Indicators -->
-                    <div class="flex justify-between items-center flex-wrap gap-2">
-                        <div class="flex items-center gap-2 flex-wrap">
-                            <div
-                                class="inline-flex items-center gap-1 px-2.5 py-0.5 bg-white/10 text-white rounded-full text-[10px] font-bold border border-white/15">
-                                <span class="w-1.5 h-1.5 rounded-full bg-[#10B981] animate-ping"></span> Operations
-                                Active
-                            </div>
-                            <div
-                                class="inline-flex items-center gap-1 px-2.5 py-0.5 bg-white/10 text-white rounded-full text-[10px] font-bold border border-white/15">
-                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> System Stable
-                            </div>
-                            <div
-                                class="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-white/10 text-white rounded-full text-[10px] font-bold border border-white/15">
-                                <i data-lucide="calendar" class="w-3 h-3 text-purple-200"></i>
-                                <span class="hero-date-time font-mono">Loading...</span>
-                            </div>
-                        </div>
-                        <!-- Progress Indicator -->
-                        <div
-                            class="flex items-center gap-2 text-[10px] bg-white/10 rounded-full px-2.5 py-0.5 border border-white/15">
-                            <span class="font-bold text-white/90">System Health: 100%</span>
-                            <div class="w-16 bg-white/20 rounded-full h-1 overflow-hidden">
-                                <div class="bg-emerald-400 h-full rounded-full" style="width: 100%"></div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Middle Row: Welcome Area & KPI Cards -->
-                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 flex-1">
-                        <div>
-                            <h2 class="text-xl font-extrabold tracking-tight leading-tight" id="welcomeMsg">Welcome to
-                                the Administration Portal</h2>
-                            <p class="text-purple-100 text-xs mt-0.5">Review security credentials, adjust department
-                                access levels, inspect audit trails, and configure platform triggers.</p>
-                        </div>
-
-                        <!-- KPI Cards Grid -->
-                        <div class="flex flex-wrap gap-2 w-full md:w-auto flex-shrink-0">
-                            <div
-                                class="bg-white/12 border border-white/18 backdrop-blur-[20px] rounded-[12px] py-1 px-2.5 text-center min-w-[80px] transition duration-300 hover:translate-y-[-2px]">
-                                <span
-                                    class="text-[8px] text-white/85 block font-bold uppercase tracking-wider">Departments</span>
-                                <span class="text-xs font-extrabold mt-0.5 block">4 Depts</span>
-                            </div>
-                            <div
-                                class="bg-white/12 border border-white/18 backdrop-blur-[20px] rounded-[12px] py-1 px-2.5 text-center min-w-[80px] transition duration-300 hover:translate-y-[-2px]">
-                                <span
-                                    class="text-[8px] text-white/85 block font-bold uppercase tracking-wider">Employees</span>
-                                <span class="text-xs font-extrabold mt-0.5 block">52 Active</span>
-                            </div>
-                            <div
-                                class="bg-white/12 border border-white/18 backdrop-blur-[20px] rounded-[12px] py-1 px-2.5 text-center min-w-[80px] transition duration-300 hover:translate-y-[-2px]">
-                                <span
-                                    class="text-[8px] text-white/85 block font-bold uppercase tracking-wider">Projects</span>
-                                <span class="text-xs font-extrabold mt-0.5 block">12 Active</span>
-                            </div>
-                            <div
-                                class="bg-white/12 border border-white/18 backdrop-blur-[20px] rounded-[12px] py-1 px-2.5 text-center min-w-[80px] transition duration-300 hover:translate-y-[-2px]">
-                                <span class="text-[8px] text-white/85 block font-bold uppercase tracking-wider">Pending
-                                    Appr.</span>
-                                <span class="text-xs font-extrabold mt-0.5 block">9 Request</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Bottom Row: Quick Actions & Shortcuts -->
-                    <div
-                        class="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3 pt-2 border-t border-white/10 flex-shrink-0">
-                        <div class="flex flex-wrap gap-1.5">
-                            <button onclick="switchAccordionTab('admin-users')"
-                                class="px-2.5 py-1 bg-white/10 hover:bg-white/20 border border-white/15 rounded-lg text-[9px] font-bold transition flex items-center gap-1"><i
-                                    data-lucide="fingerprint" class="w-3 h-3"></i> Access Management</button>
-                            <button onclick="switchAccordionTab('admin-reports')"
-                                class="px-2.5 py-1 bg-white/10 hover:bg-white/20 border border-white/15 rounded-lg text-[9px] font-bold transition flex items-center gap-1"><i
-                                    data-lucide="download" class="w-3 h-3"></i> Reports</button>
-                            <button onclick="switchAccordionTab('admin-logs')"
-                                class="px-2.5 py-1 bg-white/10 hover:bg-white/20 border border-white/15 rounded-lg text-[9px] font-bold transition flex items-center gap-1"><i
-                                    data-lucide="scroll" class="w-3 h-3"></i> Audit Logs</button>
-                            <button onclick="switchAccordionTab('admin-settings')"
-                                class="px-2.5 py-1 bg-white/10 hover:bg-white/20 border border-white/15 rounded-lg text-[9px] font-bold transition flex items-center gap-1"><i
-                                    data-lucide="sliders" class="w-3 h-3"></i> Settings</button>
-                        </div>
-                        <div class="flex items-center gap-1.5 justify-end">
-                            <span class="text-[9px] font-bold text-purple-200 uppercase tracking-wide">Shortcut:</span>
-                            <button onclick="switchAccordionTab('admin-approvals')"
-                                class="px-2 py-0.5 bg-white/5 hover:bg-white/15 rounded text-[9px] font-bold transition border border-white/10">Pending
-                                Approvals</button>
-                        </div>
-                    </div>
-
+                <!-- Floating background particles -->
+                <div class="particle-field absolute inset-0 pointer-events-none opacity-10 z-[1]">
+                    <span class="particle particle-1"></span>
+                    <span class="particle particle-2"></span>
+                    <span class="particle particle-3"></span>
+                    <span class="particle particle-4"></span>
+                    <span class="particle particle-5"></span>
+                    <span class="particle particle-6"></span>
                 </div>
-            </div>
+
+                <!-- Main Layout Grid -->
+                <div class="relative z-10 flex flex-col h-full justify-between w-full">
+                    <!-- TOP BAR -->
+                    <div class="flex items-center justify-between pb-3">
+                        <!-- LEFT: Status Chips -->
+                        <div class="flex items-center gap-2">
+                            <div class="status-indicator-chip inline-flex items-center gap-1.5 px-3 py-1 text-[10px] font-bold rounded-full">
+                                <span class="health-pulse-dot"></span>
+                                <span>Operations Active</span>
+                            </div>
+                            <div class="status-indicator-chip inline-flex items-center gap-1.5 px-3 py-1 text-[10px] font-bold rounded-full">
+                                <span class="w-1.5 h-1.5 rounded-full bg-blue-400"></span>
+                                <span>System Stable</span>
+                            </div>
+                        </div>
+                        <!-- CENTER: Date & Time (Aligned on Same Axis) -->
+                        <div class="text-[11px] font-mono font-semibold text-purple-200/95 flex items-center gap-1.5 justify-center">
+                            <i data-lucide="clock" class="w-3.5 h-3.5 text-purple-200"></i>
+                            <span class="hero-date-time">Loading...</span>
+                        </div>
+                        <!-- RIGHT: Health Status Capsule -->
+                        <div class="inline-flex items-center gap-1.5 px-3 py-1 text-[10px] font-bold rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-300">
+                            <span class="health-pulse-dot"></span>
+                            <span>System Health 100%</span>
+                        </div>
+                    </div>
+
+                    <!-- GLOBAL DIVIDER LINE -->
+                    <div class="bezent-hero-divider"></div>
+
+                    <!-- CONTENT CONTAINER (Relative positioned container to place Left Area, Vertical divider, and Command Panel) -->
+                    <div class="relative flex-grow flex flex-col justify-between" style="min-height: 220px;">
+                        
+                        <!-- Left Content Area (Width restricted to 58% to allow absolute split) -->
+                        <div class="w-[58%] flex flex-col justify-between" style="height: calc(100% - 2px);">
+                            
+                            <!-- Title Block (shifted slightly lower, pt-2 to reduce space above) -->
+                            <div class="text-left pt-2 flex flex-col gap-1">
+                                <h2 class="text-[34px] font-bold tracking-tight leading-[120%]">Administration & System Center</h2>
+                                <p class="text-purple-200/90 text-[16px] font-medium leading-[140%]">Governance & Access Control Center</p>
+                            </div>
+
+                            <!-- Title -> Metrics Space (20px) -->
+                            <div class="h-[20px]"></div>
+
+                            <!-- Metrics pills -->
+                            <div class="flex flex-wrap gap-2">
+                                <div class="mini-glass-pill" style="height: 40px; font-size: 14px; padding: 0 16px; border-radius: 20px; display: inline-flex; align-items: center; gap: 6px;">
+                                    <i data-lucide="building" class="w-3.5 h-3.5 text-emerald-400 flex-shrink-0"></i>
+                                    <span><span id="metricAdminDepts">4</span> Departments</span>
+                                </div>
+                                <div class="mini-glass-pill" style="height: 40px; font-size: 14px; padding: 0 16px; border-radius: 20px; display: inline-flex; align-items: center; gap: 6px;">
+                                    <i data-lucide="users" class="w-3.5 h-3.5 text-blue-400 flex-shrink-0"></i>
+                                    <span><span id="metricAdminEmployees">52</span> Employees</span>
+                                </div>
+                                <div class="mini-glass-pill" style="height: 40px; font-size: 14px; padding: 0 16px; border-radius: 20px; display: inline-flex; align-items: center; gap: 6px;">
+                                    <i data-lucide="folder" class="w-3.5 h-3.5 text-amber-400 flex-shrink-0"></i>
+                                    <span><span id="metricAdminProjects">12</span> Projects</span>
+                                </div>
+                                <div class="mini-glass-pill" style="height: 40px; font-size: 14px; padding: 0 16px; border-radius: 20px; display: inline-flex; align-items: center; gap: 6px;">
+                                    <i data-lucide="check-square" class="w-3.5 h-3.5 text-purple-400 flex-shrink-0"></i>
+                                    <span><span id="metricAdminApprovals">9</span> Approvals</span>
+                                </div>
+                            </div>
+
+                        </div>
+
+                        <!-- DIVIDER #2 (Full width, below metrics, above actions) -->
+                        <div class="bezent-hero-divider"></div>
+
+                        <!-- Actions Area (width restricted to 58%) -->
+                        <div class="w-[58%] pb-1">
+                            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; width: 100%; align-items: center;">
+                                <!-- Primary: Access Management -->
+                                <button onclick="switchAccordionTab('admin-users')" class="btn-premium-primary gap-1.5" style="height: 50px; padding: 0 16px; border-radius: 18px; white-space: nowrap; font-size: 13px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center;">
+                                    <i data-lucide="fingerprint" class="w-4 h-4 text-emerald-300 flex-shrink-0"></i> <span>Access Management</span>
+                                </button>
+                                <!-- Secondary: Role Structures -->
+                                <button onclick="switchAccordionTab('admin-settings')" class="btn-premium-secondary gap-1.5" style="height: 50px; padding: 0 16px; border-radius: 18px; white-space: nowrap; font-size: 13px; display: inline-flex; align-items: center; justify-content: center;">
+                                    <i data-lucide="sliders" class="w-4 h-4 flex-shrink-0"></i> <span>Role Structures</span>
+                                </button>
+                                <!-- Secondary: Pending Approvals -->
+                                <button onclick="switchAccordionTab('admin-approvals')" class="btn-premium-secondary gap-1.5" style="height: 50px; padding: 0 16px; border-radius: 18px; white-space: nowrap; font-size: 13px; display: inline-flex; align-items: center; justify-content: center;">
+                                    <i data-lucide="check-square" class="w-4 h-4 flex-shrink-0"></i> <span>Pending Approvals</span>
+                                </button>
+                                <!-- Secondary: Audit Registers -->
+                                <button onclick="switchAccordionTab('admin-logs')" class="btn-premium-secondary gap-1.5" style="height: 50px; padding: 0 16px; border-radius: 18px; white-space: nowrap; font-size: 13px; display: inline-flex; align-items: center; justify-content: center;">
+                                    <i data-lucide="scroll" class="w-4 h-4 flex-shrink-0"></i> <span>Audit Registers</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- VERTICAL DIVIDER (Absolute positioned at 60%) -->
+                        <div class="bezent-vertical-divider"></div>
+
+                        <!-- COMMAND PANEL (Absolute positioned on the right at 38% width, spanning full height below Divider #1) -->
+                        <div class="absolute right-0 top-0 bottom-0 w-[38%] command-glass-panel flex flex-col justify-between p-4 text-white">
+                            <div class="flex items-center justify-between pb-1.5 border-b border-white/5">
+                                <span class="text-[9px] font-extrabold text-purple-200 uppercase tracking-widest">Command Panel</span>
+                                <span class="text-[8px] font-mono font-bold bg-purple-500/20 text-purple-200 px-1.5 py-0.5 rounded border border-purple-500/10">System Secure</span>
+                            </div>
+
+                            <!-- Horizontal Grid with Dominant numbers -->
+                            <div class="grid grid-cols-4 gap-2 my-2">
+                                <div class="premium-kpi-card">
+                                    <span class="card-number" id="adminHeroTotalEmp">52</span>
+                                    <span class="card-label">Employees</span>
+                                </div>
+                                <div class="premium-kpi-card">
+                                    <span class="card-number" id="adminHeroDepts">4</span>
+                                    <span class="card-label">Depts</span>
+                                </div>
+                                <div class="premium-kpi-card">
+                                    <span class="card-number" id="adminHeroProjects">12</span>
+                                    <span class="card-label">Projects</span>
+                                </div>
+                                <div class="premium-kpi-card">
+                                    <span class="card-number" id="adminHeroApprovals">9</span>
+                                    <span class="card-label">Approvals</span>
+                                </div>
+                            </div>
+
+                            <!-- Progress Bar -->
+                            <div class="space-y-1">
+                                <div class="flex justify-between items-center text-[9.5px] text-white/95">
+                                    <span class="font-semibold tracking-wide">Access Governance Score</span>
+                                    <span class="font-mono text-purple-200 font-bold">96%</span>
+                                </div>
+                                <div class="w-full bg-white/10 rounded-full h-1 overflow-hidden relative">
+                                    <div class="progress-shimmer absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
+                                    <div class="bg-emerald-400 h-full rounded-full transition-all duration-[1200ms]" style="width: 96%"></div>
+                                </div>
+                            </div>
+
+                            <!-- Alert Footer -->
+                            <div class="pt-2 border-t border-white/5 flex items-center justify-between text-[9.5px] text-purple-200/90 font-semibold">
+                                <div class="flex items-center gap-1.5">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-amber-400 live-pulse-dot"></span>
+                                    <span>2 Audit Reviews Pending</span>
+                                </div>
+                                <i data-lucide="shield-alert" class="w-3.5 h-3.5 text-purple-200/60"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
                 <div class="premium-card p-6">
@@ -3517,7 +3649,7 @@
                 <!-- Main Layout Grid -->
                 <div class="relative z-10 flex flex-col h-full justify-between w-full">
                     <!-- TOP ROW -->
-                    <div class="flex items-center justify-between border-b border-white/5 pb-2.5">
+                    <div class="flex items-center justify-between pb-3">
                         <!-- LEFT: Status Chips -->
                         <div class="flex items-center gap-1.5">
                             <div class="status-indicator-chip inline-flex items-center gap-1.5 px-2.5 py-1 text-[10px] font-bold rounded-full">
@@ -3530,7 +3662,7 @@
                             </div>
                         </div>
                         <!-- CENTER: Date & Time -->
-                        <div class="text-[10px] font-mono font-semibold text-purple-200/90 flex items-center gap-1.5">
+                        <div class="text-[11px] font-mono font-semibold text-purple-200/95 flex items-center gap-1.5 justify-center">
                             <i data-lucide="clock" class="w-3.5 h-3.5 text-purple-200"></i>
                             <span class="hero-date-time">Loading...</span>
                         </div>
@@ -3541,62 +3673,80 @@
                         </div>
                     </div>
 
-                    <!-- BOTTOM ROW: Split 60% Left, 40% Right -->
-                    <div class="flex-1 flex gap-5 items-stretch mt-3 overflow-hidden">
-                        <!-- Left Section (60%) -->
-                        <div class="w-[60%] flex flex-col justify-between h-full">
-                            <div class="text-left space-y-1">
-                                <h2 class="text-[34px] font-bold tracking-tight leading-tight" id="empWelcomeMsg">Employee Workspace</h2>
-                                <p class="text-purple-100/90 text-[16px] font-medium leading-relaxed">
-                                    Personal Productivity Center
-                                </p>
+                    <!-- GLOBAL DIVIDER LINE -->
+                    <div class="bezent-hero-divider"></div>
+
+                    <!-- CONTENT CONTAINER (Relative positioned container to place Left Area, Vertical divider, and Command Panel) -->
+                    <div class="relative flex-grow flex flex-col justify-between" style="min-height: 220px;">
+                        
+                        <!-- Left Content Area (Width restricted to 58% to allow absolute split) -->
+                        <div class="w-[58%] flex flex-col justify-between" style="height: calc(100% - 2px);">
+                            
+                            <!-- Title Block (shifted slightly lower, pt-2 to reduce space above) -->
+                            <div class="text-left pt-2 flex flex-col gap-1">
+                                <h2 class="text-[34px] font-bold tracking-tight leading-[120%]" id="empWelcomeMsg">Employee Workspace</h2>
+                                <p class="text-purple-200/90 text-[16px] font-medium leading-[140%]">Personal Productivity Center</p>
                             </div>
 
-                            <!-- Role Metrics as Mini Glass Pills directly below subtitle -->
-                            <div class="flex flex-wrap gap-2 my-2">
-                                <div class="mini-glass-pill">
-                                    <i data-lucide="check-square" class="w-3.5 h-3.5 text-emerald-400"></i>
+                            <!-- Title -> Metrics Space (20px) -->
+                            <div class="h-[20px]"></div>
+
+                            <!-- Metrics pills -->
+                            <div class="flex flex-wrap gap-2">
+                                <div class="mini-glass-pill" style="height: 40px; font-size: 14px; padding: 0 16px; border-radius: 20px; display: inline-flex; align-items: center; gap: 6px;">
+                                    <i data-lucide="check-square" class="w-3.5 h-3.5 text-emerald-400 flex-shrink-0"></i>
                                     <span><span id="metricEmpTasks">0</span> Tasks</span>
                                 </div>
-                                <div class="mini-glass-pill">
-                                    <i data-lucide="calendar-days" class="w-3.5 h-3.5 text-blue-400"></i>
+                                <div class="mini-glass-pill" style="height: 40px; font-size: 14px; padding: 0 16px; border-radius: 20px; display: inline-flex; align-items: center; gap: 6px;">
+                                    <i data-lucide="calendar-days" class="w-3.5 h-3.5 text-blue-400 flex-shrink-0"></i>
                                     <span><span id="metricEmpLeaveBal">18</span> Leave Days</span>
                                 </div>
-                                <div class="mini-glass-pill">
-                                    <i data-lucide="bar-chart-2" class="w-3.5 h-3.5 text-purple-400"></i>
+                                <div class="mini-glass-pill" style="height: 40px; font-size: 14px; padding: 0 16px; border-radius: 20px; display: inline-flex; align-items: center; gap: 6px;">
+                                    <i data-lucide="bar-chart-2" class="w-3.5 h-3.5 text-purple-400 flex-shrink-0"></i>
                                     <span><span id="metricEmpAttendancePct">95</span>% Attendance</span>
                                 </div>
-                                <div class="mini-glass-pill">
-                                    <i data-lucide="user-check" class="w-3.5 h-3.5 text-amber-400"></i>
+                                <div class="mini-glass-pill" style="height: 40px; font-size: 14px; padding: 0 16px; border-radius: 20px; display: inline-flex; align-items: center; gap: 6px;">
+                                    <i data-lucide="user-check" class="w-3.5 h-3.5 text-amber-400 flex-shrink-0"></i>
                                     <span><span id="metricEmpApprovals">0</span> Approvals</span>
                                 </div>
                             </div>
 
-                            <!-- Actions (1 Primary, Rest Secondary) -->
-                            <div class="flex flex-wrap gap-2">
-                                <button onclick="toggleClockInState()" class="btn-premium-primary gap-2">
-                                    <i data-lucide="log-in" class="w-4 h-4 text-emerald-400 animate-pulse"></i> Tap In
+                        </div>
+
+                        <!-- DIVIDER #2 (Full width, below metrics, above actions) -->
+                        <div class="bezent-hero-divider"></div>
+
+                        <!-- Actions Area (width restricted to 58%) -->
+                        <div class="w-[58%] pb-1">
+                            <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; width: 100%; align-items: center;">
+                                <!-- Primary: Tap In -->
+                                <button onclick="toggleClockInState()" class="btn-premium-primary gap-1.5" style="height: 50px; padding: 0 16px; border-radius: 18px; white-space: nowrap; font-size: 13px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center;">
+                                    <i data-lucide="log-in" class="w-4 h-4 text-emerald-300 flex-shrink-0 animate-pulse"></i> <span>Tap In</span>
                                 </button>
-                                <button onclick="toggleClockInState()" class="btn-premium-secondary gap-2">
-                                    <i data-lucide="log-out" class="w-4 h-4"></i> Tap Out
+                                <!-- Secondary: Tap Out -->
+                                <button onclick="toggleClockInState()" class="btn-premium-secondary gap-1.5" style="height: 50px; padding: 0 16px; border-radius: 18px; white-space: nowrap; font-size: 13px; display: inline-flex; align-items: center; justify-content: center;">
+                                    <i data-lucide="log-out" class="w-4 h-4 flex-shrink-0"></i> <span>Tap Out</span>
                                 </button>
-                                <button onclick="switchAccordionTab('emp-leaves')" class="btn-premium-secondary gap-2">
-                                    <i data-lucide="calendar" class="w-4 h-4"></i> Apply Leave
+                                <!-- Secondary: Apply Leave -->
+                                <button onclick="switchAccordionTab('emp-leaves')" class="btn-premium-secondary gap-1.5" style="height: 50px; padding: 0 16px; border-radius: 18px; white-space: nowrap; font-size: 13px; display: inline-flex; align-items: center; justify-content: center;">
+                                    <i data-lucide="calendar" class="w-4 h-4 flex-shrink-0"></i> <span>Apply Leave</span>
                                 </button>
-                                <button onclick="switchAccordionTab('emp-clock')" class="btn-premium-secondary gap-2">
-                                    <i data-lucide="edit" class="w-4 h-4"></i> Regularization
+                                <!-- Secondary: Regularization -->
+                                <button onclick="switchAccordionTab('emp-clock')" class="btn-premium-secondary gap-1.5" style="height: 50px; padding: 0 16px; border-radius: 18px; white-space: nowrap; font-size: 13px; display: inline-flex; align-items: center; justify-content: center;">
+                                    <i data-lucide="edit" class="w-4 h-4 flex-shrink-0"></i> <span>Regularization</span>
                                 </button>
-                                <button onclick="switchAccordionTab('emp-tickets')" class="btn-premium-secondary gap-2">
-                                    <i data-lucide="life-buoy" class="w-4 h-4"></i> Support Request
+                                <!-- Secondary: Support Request -->
+                                <button onclick="switchAccordionTab('emp-tickets')" class="btn-premium-secondary gap-1.5" style="height: 50px; padding: 0 16px; border-radius: 18px; white-space: nowrap; font-size: 13px; display: inline-flex; align-items: center; justify-content: center;">
+                                    <i data-lucide="life-buoy" class="w-4 h-4 flex-shrink-0"></i> <span>Support Request</span>
                                 </button>
                             </div>
                         </div>
 
-                        <!-- Vertical Divider Glow -->
-                        <div class="w-[1px] self-stretch bg-gradient-to-b from-white/0 via-white/10 to-white/0 relative" style="box-shadow: 0 0 10px rgba(255,255,255,0.08);"></div>
+                        <!-- VERTICAL DIVIDER (Absolute positioned at 60%) -->
+                        <div class="bezent-vertical-divider"></div>
 
-                        <!-- Right Section: Command Panel (40%) -->
-                        <div class="w-[40%] command-glass-panel flex flex-col justify-between p-4 text-white">
+                        <!-- COMMAND PANEL (Absolute positioned on the right at 38% width, spanning full height below Divider #1) -->
+                        <div class="absolute right-0 top-0 bottom-0 w-[38%] command-glass-panel flex flex-col justify-between p-4 text-white">
                             <div class="flex items-center justify-between pb-1.5 border-b border-white/5">
                                 <span class="text-[9px] font-extrabold text-purple-200 uppercase tracking-widest">Command Panel</span>
                                 <span class="text-[8px] font-mono font-bold bg-purple-500/20 text-purple-200 px-1.5 py-0.5 rounded border border-purple-500/10">Workspace Synced</span>
@@ -3646,6 +3796,7 @@
                     </div>
                 </div>
             </div>
+
 
             <!-- Profile Summary & Checklists -->
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -6763,10 +6914,7 @@
         }
 
         function exitWorkspace() {
-            inWorkspace = false;
-            renderWorkspaceHeader();
-            buildAccordionSidebar();
-            switchAccordionTab('admin-dashboard');
+            window.location.replace('admin.html');
         }
 
 

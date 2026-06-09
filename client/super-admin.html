@@ -216,13 +216,65 @@
             transform: translateY(-1px) !important;
         }
 
+        /* Signature BEZENT Hero Divider */
+        .bezent-hero-divider {
+            width: 100% !important;
+            height: 1px !important;
+            background: linear-gradient(
+                90deg,
+                rgba(255, 255, 255, 0.04),
+                rgba(255, 255, 255, 0.18),
+                rgba(255, 255, 255, 0.04)
+            ) !important;
+            margin-top: 18px !important;
+            margin-bottom: 18px !important;
+            border: none !important;
+            backdrop-filter: blur(4px) !important;
+            -webkit-backdrop-filter: blur(4px) !important;
+            box-shadow: 0 0.5px 0 rgba(255, 255, 255, 0.08), 0 0 8px rgba(255, 255, 255, 0.05) !important;
+            position: relative !important;
+            z-index: 10 !important;
+            opacity: 0 !important;
+            transform: translateY(-4px) !important;
+            animation: divider-fade-in 500ms cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
+        }
+
+        @keyframes divider-fade-in {
+            from {
+                opacity: 0;
+                transform: translateY(-4px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Signature BEZENT Premium Vertical Divider */
+        .bezent-vertical-divider {
+            width: 1px !important;
+            height: 100% !important;
+            background: linear-gradient(
+                180deg,
+                rgba(255, 255, 255, 0),
+                rgba(255, 255, 255, 0.15),
+                rgba(255, 255, 255, 0)
+            ) !important;
+            opacity: 0.6 !important;
+            position: absolute !important;
+            left: 60% !important;
+            top: 0 !important;
+            bottom: 0 !important;
+            z-index: 5 !important;
+        }
+
         /* Command Glass Panel */
         .command-glass-panel {
-            background: rgba(255, 255, 255, 0.04) !important;
+            background: rgba(255, 255, 255, 0.03) !important;
             backdrop-filter: blur(20px) !important;
             -webkit-backdrop-filter: blur(20px) !important;
             border: 1px solid rgba(255, 255, 255, 0.08) !important;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.18) !important;
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 20px 40px rgba(0, 0, 0, 0.15) !important;
             border-radius: 32px !important;
             animation: panel-load 500ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
             will-change: transform, opacity;
@@ -249,17 +301,17 @@
         }
 
         .premium-kpi-card:hover {
-            transform: translateY(-4px) !important;
+            transform: translateY(-2px) !important;
             background: rgba(255, 255, 255, 0.1) !important;
             border-color: rgba(255, 255, 255, 0.18) !important;
             box-shadow: 0 8px 24px rgba(164, 2, 191, 0.25) !important;
         }
 
         .premium-kpi-card .card-number {
-            font-size: 30px !important;
+            font-size: 36px !important;
             font-weight: 700 !important;
             color: #ffffff !important;
-            line-height: 1 !important;
+            line-height: 1.1 !important;
             letter-spacing: -0.5px !important;
         }
 
@@ -268,8 +320,8 @@
             font-weight: 600 !important;
             color: rgba(243, 189, 252, 0.75) !important;
             text-transform: uppercase !important;
-            letter-spacing: 0.4px !important;
-            margin-top: 6px !important;
+            letter-spacing: 0.8px !important;
+            margin-top: 8px !important;
         }
 
         /* Premium Buttons */
@@ -277,9 +329,9 @@
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            height: 48px !important;
+            height: 50px !important;
             padding: 0 24px !important;
-            border-radius: 16px !important;
+            border-radius: 18px !important;
             background: rgba(255, 255, 255, 0.14) !important;
             border: 1px solid rgba(255, 255, 255, 0.22) !important;
             backdrop-filter: blur(12px);
@@ -304,9 +356,9 @@
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            height: 48px !important;
+            height: 50px !important;
             padding: 0 20px !important;
-            border-radius: 16px !important;
+            border-radius: 18px !important;
             background: rgba(255, 255, 255, 0.05) !important;
             border: 1px solid rgba(255, 255, 255, 0.08) !important;
             backdrop-filter: blur(12px);
@@ -779,7 +831,7 @@
                 <!-- Main Layout Grid -->
                 <div class="relative z-10 flex flex-col h-full justify-between w-full">
                     <!-- TOP BAR -->
-                    <div class="flex items-center justify-between border-b border-white/5 pb-3">
+                    <div class="flex items-center justify-between pb-1">
                         <!-- LEFT: Status Chips -->
                         <div class="flex items-center gap-2">
                             <div class="status-indicator-chip inline-flex items-center gap-1.5 px-3 py-1 text-[10px] font-bold rounded-full">
@@ -803,39 +855,52 @@
                         </div>
                     </div>
 
-                    <!-- BOTTOM ROW: Split 60% Left, 40% Right with Separator -->
-                    <div class="flex-1 flex gap-6 items-stretch mt-4 overflow-hidden relative">
-                        <!-- Left Section (60%) -->
-                        <div class="w-[58%] flex flex-col justify-between h-full pr-2">
-                            <div class="text-left space-y-2">
-                                <div class="space-y-0.5">
-                                    <h2 class="text-[34px] font-bold tracking-tight leading-[120%]">BEZENT Platform Control Center</h2>
-                                    <p class="text-purple-200/90 text-[16px] font-medium leading-[140%]">Platform Operations Command Center</p>
+                    <!-- DIVIDER #1 (Full width, below top bar, above title) -->
+                    <div class="bezent-hero-divider"></div>
+
+                    <!-- CONTENT CONTAINER (Relative positioned container to place Left Area, Vertical divider, and Command Panel) -->
+                    <div class="relative flex-grow flex flex-col justify-between" style="min-height: 220px;">
+                        
+                        <!-- Left Content Area (Width restricted to 58% to allow absolute split) -->
+                        <div class="w-[58%] flex flex-col justify-between" style="height: calc(100% - 2px);">
+                            
+                            <!-- Title Block (shifted slightly lower, with pt-2 to reduce space above) -->
+                            <div class="text-left pt-2 flex flex-col gap-1">
+                                <h2 class="text-[34px] font-bold tracking-tight leading-[120%]">BEZENT Platform Control Center</h2>
+                                <p class="text-purple-200/90 text-[16px] font-medium leading-[140%]">Platform Operations Command Center</p>
+                            </div>
+
+                            <!-- Title -> Metrics Space (20px) -->
+                            <div class="h-[20px]"></div>
+
+                            <!-- Metrics Block -->
+                            <div class="flex flex-wrap gap-2">
+                                <div class="mini-glass-pill">
+                                    <i data-lucide="building" class="w-3.5 h-3.5 text-emerald-400"></i>
+                                    <span id="metricSaCompanies">1 Company</span>
                                 </div>
-                                
-                                <!-- Center zone metrics in glass pills -->
-                                <div class="flex flex-wrap gap-2 mt-1">
-                                    <div class="mini-glass-pill">
-                                        <i data-lucide="building" class="w-3.5 h-3.5 text-emerald-400"></i>
-                                        <span id="metricSaCompanies">1 Company</span>
-                                    </div>
-                                    <div class="mini-glass-pill">
-                                        <i data-lucide="activity" class="w-3.5 h-3.5 text-blue-400"></i>
-                                        <span id="metricSaHealth">99.99% Health</span>
-                                    </div>
-                                    <div class="mini-glass-pill">
-                                        <i data-lucide="clock" class="w-3.5 h-3.5 text-amber-400"></i>
-                                        <span id="metricSaUptime">142 Days Uptime</span>
-                                    </div>
-                                    <div class="mini-glass-pill">
-                                        <i data-lucide="credit-card" class="w-3.5 h-3.5 text-purple-400"></i>
-                                        <span id="metricSaSubscriptions">1 Subscription</span>
-                                    </div>
+                                <div class="mini-glass-pill">
+                                    <i data-lucide="activity" class="w-3.5 h-3.5 text-blue-400"></i>
+                                    <span id="metricSaHealth">99.99% Health</span>
+                                </div>
+                                <div class="mini-glass-pill">
+                                    <i data-lucide="clock" class="w-3.5 h-3.5 text-amber-400"></i>
+                                    <span id="metricSaUptime">142 Days Uptime</span>
+                                </div>
+                                <div class="mini-glass-pill">
+                                    <i data-lucide="credit-card" class="w-3.5 h-3.5 text-purple-400"></i>
+                                    <span id="metricSaSubscriptions">1 Subscription</span>
                                 </div>
                             </div>
-                            
-                            <!-- Actions (Primary Filled, Secondary Outline) -->
-                            <div class="flex flex-wrap gap-2.5 mt-auto">
+
+                        </div>
+
+                        <!-- DIVIDER #2 (Full width, below metrics, above actions) -->
+                        <div class="bezent-hero-divider"></div>
+
+                        <!-- Actions Area (width restricted to 58%) -->
+                        <div class="w-[58%] pb-1">
+                            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; width: 100%; align-items: center;">
                                 <button onclick="openCreateCompanyModal()" class="btn-premium-primary gap-2">
                                     <i data-lucide="plus-circle" class="w-4 h-4 text-emerald-300"></i> Add Company
                                 </button>
@@ -851,11 +916,11 @@
                             </div>
                         </div>
 
-                        <!-- Vertical Divider Glow -->
-                        <div class="w-[1px] self-stretch bg-gradient-to-b from-white/0 via-white/10 to-white/0 relative" style="box-shadow: 0 0 10px rgba(255,255,255,0.08);"></div>
+                        <!-- VERTICAL DIVIDER (Absolute positioned at 60%) -->
+                        <div class="bezent-vertical-divider"></div>
 
-                        <!-- Right Section: Command Panel (40%) -->
-                        <div class="w-[40%] command-glass-panel flex flex-col justify-between p-4 text-white">
+                        <!-- COMMAND PANEL (Absolute positioned on the right at 38% width, spanning full height below Divider #1) -->
+                        <div class="absolute right-0 top-0 bottom-0 w-[38%] command-glass-panel flex flex-col justify-between p-4 text-white">
                             <div class="flex items-center justify-between pb-1.5 border-b border-white/5">
                                 <span class="text-[9px] font-extrabold text-purple-200 uppercase tracking-widest">Command Panel</span>
                                 <span class="text-[8px] font-mono font-bold bg-purple-500/20 text-purple-200 px-1.5 py-0.5 rounded border border-purple-500/10">Uptime Stable</span>
@@ -902,6 +967,7 @@
                                 <i data-lucide="shield-alert" class="w-3.5 h-3.5 text-purple-200/60"></i>
                             </div>
                         </div>
+
                     </div>
                 </div>
             </div>

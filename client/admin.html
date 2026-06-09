@@ -804,13 +804,65 @@
             transform: translateY(-1px) !important;
         }
 
+        /* Signature BEZENT Hero Divider */
+        .bezent-hero-divider {
+            width: 100% !important;
+            height: 1px !important;
+            background: linear-gradient(
+                90deg,
+                rgba(255, 255, 255, 0.04),
+                rgba(255, 255, 255, 0.18),
+                rgba(255, 255, 255, 0.04)
+            ) !important;
+            margin-top: 18px !important;
+            margin-bottom: 18px !important;
+            border: none !important;
+            backdrop-filter: blur(4px) !important;
+            -webkit-backdrop-filter: blur(4px) !important;
+            box-shadow: 0 0.5px 0 rgba(255, 255, 255, 0.08), 0 0 8px rgba(255, 255, 255, 0.05) !important;
+            position: relative !important;
+            z-index: 10 !important;
+            opacity: 0 !important;
+            transform: translateY(-4px) !important;
+            animation: divider-fade-in 500ms cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
+        }
+
+        @keyframes divider-fade-in {
+            from {
+                opacity: 0;
+                transform: translateY(-4px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Signature BEZENT Premium Vertical Divider */
+        .bezent-vertical-divider {
+            width: 1px !important;
+            height: 100% !important;
+            background: linear-gradient(
+                180deg,
+                rgba(255, 255, 255, 0),
+                rgba(255, 255, 255, 0.15),
+                rgba(255, 255, 255, 0)
+            ) !important;
+            opacity: 0.6 !important;
+            position: absolute !important;
+            left: 60% !important;
+            top: 0 !important;
+            bottom: 0 !important;
+            z-index: 5 !important;
+        }
+
         /* Command Glass Panel */
         .command-glass-panel {
-            background: rgba(255, 255, 255, 0.04) !important;
+            background: rgba(255, 255, 255, 0.03) !important;
             backdrop-filter: blur(20px) !important;
             -webkit-backdrop-filter: blur(20px) !important;
             border: 1px solid rgba(255, 255, 255, 0.08) !important;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.18) !important;
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 20px 40px rgba(0, 0, 0, 0.15) !important;
             border-radius: 32px !important;
             animation: panel-load 500ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
             will-change: transform, opacity;
@@ -837,17 +889,17 @@
         }
 
         .premium-kpi-card:hover {
-            transform: translateY(-4px) !important;
+            transform: translateY(-2px) !important;
             background: rgba(255, 255, 255, 0.1) !important;
             border-color: rgba(255, 255, 255, 0.18) !important;
             box-shadow: 0 8px 24px rgba(164, 2, 191, 0.25) !important;
         }
 
         .premium-kpi-card .card-number {
-            font-size: 30px !important;
+            font-size: 36px !important;
             font-weight: 700 !important;
             color: #ffffff !important;
-            line-height: 1 !important;
+            line-height: 1.1 !important;
             letter-spacing: -0.5px !important;
         }
 
@@ -856,8 +908,8 @@
             font-weight: 600 !important;
             color: rgba(243, 189, 252, 0.75) !important;
             text-transform: uppercase !important;
-            letter-spacing: 0.4px !important;
-            margin-top: 6px !important;
+            letter-spacing: 0.8px !important;
+            margin-top: 8px !important;
         }
 
         /* Premium Buttons */
@@ -865,9 +917,9 @@
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            height: 48px !important;
+            height: 50px !important;
             padding: 0 24px !important;
-            border-radius: 16px !important;
+            border-radius: 18px !important;
             background: rgba(255, 255, 255, 0.14) !important;
             border: 1px solid rgba(255, 255, 255, 0.22) !important;
             backdrop-filter: blur(12px);
@@ -892,9 +944,9 @@
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            height: 48px !important;
+            height: 50px !important;
             padding: 0 20px !important;
-            border-radius: 16px !important;
+            border-radius: 18px !important;
             background: rgba(255, 255, 255, 0.05) !important;
             border: 1px solid rgba(255, 255, 255, 0.08) !important;
             backdrop-filter: blur(12px);
@@ -1084,7 +1136,7 @@
                     <!-- Main Layout Grid -->
                     <div class="relative z-10 flex flex-col h-full justify-between w-full">
                         <!-- TOP BAR -->
-                        <div class="flex items-center justify-between border-b border-white/5 pb-3">
+                        <div class="flex items-center justify-between pb-3">
                             <!-- LEFT: Status Chips -->
                             <div class="flex items-center gap-2">
                                 <div class="status-indicator-chip inline-flex items-center gap-1.5 px-3 py-1 text-[10px] font-bold rounded-full">
@@ -1112,67 +1164,80 @@
                             </div>
                         </div>
 
-                        <!-- BOTTOM ROW: Split 58% Left, 42% Right with Separator -->
-                        <div class="flex-1 flex gap-6 items-stretch mt-4 relative">
-                            <!-- Left Section (58%) -->
-                            <div class="flex flex-col justify-between h-full pr-2" style="width: 58%; flex-shrink: 0;">
-                                <div class="text-left space-y-2">
-                                    <div class="space-y-0.5">
-                                        <h2 class="text-[34px] font-bold tracking-tight leading-[120%]">HR Control Dashboard</h2>
-                                        <p class="text-purple-200/90 text-[16px] font-medium leading-[140%]">Workforce Operations Command Center</p>
+                        <!-- GLOBAL DIVIDER LINE -->
+                        <div class="bezent-hero-divider"></div>
+
+                        <!-- CONTENT CONTAINER (Relative positioned container to place Left Area, Vertical divider, and Command Panel) -->
+                        <div class="relative flex-grow flex flex-col justify-between" style="min-height: 220px;">
+                            
+                            <!-- Left Content Area (Width restricted to 58% to allow absolute split) -->
+                            <div class="w-[58%] flex flex-col justify-between" style="height: calc(100% - 2px);">
+                                
+                                <!-- Title Block (shifted slightly lower, pt-2 to reduce space above) -->
+                                <div class="text-left pt-2 flex flex-col gap-1">
+                                    <h2 class="text-[34px] font-bold tracking-tight leading-[120%]">HR Control Dashboard</h2>
+                                    <p class="text-purple-200/90 text-[16px] font-medium leading-[140%]">Workforce Operations Command Center</p>
+                                </div>
+
+                                <!-- Title -> Metrics Space (20px) -->
+                                <div class="h-[20px]"></div>
+
+                                <!-- Metrics pills -->
+                                <div class="flex flex-wrap gap-2">
+                                    <div class="mini-glass-pill" style="height: 40px; font-size: 14px; padding: 0 16px; border-radius: 20px; display: inline-flex; align-items: center; gap: 6px;">
+                                        <i data-lucide="users" class="w-3.5 h-3.5 text-emerald-400 flex-shrink-0"></i>
+                                        <span><span id="metricHrEmployees">52</span> Employees</span>
                                     </div>
-                                    
-                                    <!-- Center zone metrics in glass pills (compact, 40px height, 14px text) -->
-                                    <div class="flex flex-wrap gap-2 mt-1">
-                                        <div class="mini-glass-pill" style="height: 40px; font-size: 14px; padding: 0 16px; border-radius: 20px; display: inline-flex; align-items: center; gap: 6px;">
-                                            <i data-lucide="users" class="w-3.5 h-3.5 text-emerald-400 flex-shrink-0"></i>
-                                            <span><span id="metricHrEmployees">52</span> Employees</span>
-                                        </div>
-                                        <div class="mini-glass-pill" style="height: 40px; font-size: 14px; padding: 0 16px; border-radius: 20px; display: inline-flex; align-items: center; gap: 6px;">
-                                            <i data-lucide="calendar" class="w-3.5 h-3.5 text-blue-400 flex-shrink-0"></i>
-                                            <span><span id="metricHrPendingLeaves">1</span> Pending Leave</span>
-                                        </div>
-                                        <div class="mini-glass-pill" style="height: 40px; font-size: 14px; padding: 0 16px; border-radius: 20px; display: inline-flex; align-items: center; gap: 6px;">
-                                            <i data-lucide="wallet" class="w-3.5 h-3.5 text-amber-400 flex-shrink-0"></i>
-                                            <span><span id="metricHrPayroll">88%</span> Payroll</span>
-                                        </div>
-                                        <div class="mini-glass-pill" style="height: 40px; font-size: 14px; padding: 0 16px; border-radius: 20px; display: inline-flex; align-items: center; gap: 6px;">
-                                            <i data-lucide="shield-check" class="w-3.5 h-3.5 text-purple-400 flex-shrink-0"></i>
-                                            <span><span id="metricHrPfSynced">100%</span> PF Synced</span>
-                                        </div>
+                                    <div class="mini-glass-pill" style="height: 40px; font-size: 14px; padding: 0 16px; border-radius: 20px; display: inline-flex; align-items: center; gap: 6px;">
+                                        <i data-lucide="calendar" class="w-3.5 h-3.5 text-blue-400 flex-shrink-0"></i>
+                                        <span><span id="metricHrPendingLeaves">1</span> Pending Leave</span>
+                                    </div>
+                                    <div class="mini-glass-pill" style="height: 40px; font-size: 14px; padding: 0 16px; border-radius: 20px; display: inline-flex; align-items: center; gap: 6px;">
+                                        <i data-lucide="wallet" class="w-3.5 h-3.5 text-amber-400 flex-shrink-0"></i>
+                                        <span><span id="metricHrPayroll">88%</span> Payroll</span>
+                                    </div>
+                                    <div class="mini-glass-pill" style="height: 40px; font-size: 14px; padding: 0 16px; border-radius: 20px; display: inline-flex; align-items: center; gap: 6px;">
+                                        <i data-lucide="shield-check" class="w-3.5 h-3.5 text-purple-400 flex-shrink-0"></i>
+                                        <span><span id="metricHrPfSynced">100%</span> PF Synced</span>
                                     </div>
                                 </div>
-                                
-                                <!-- SINGLE ACTION ROW — strict 5-button grid, no wrap ever -->
-                                <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; width: 100%; align-items: center;" class="mt-auto">
+
+                            </div>
+
+                            <!-- DIVIDER #2 (Full width, below metrics, above actions) -->
+                            <div class="bezent-hero-divider"></div>
+
+                            <!-- Actions Area (width restricted to 58%) -->
+                            <div class="w-[58%] pb-1">
+                                <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; width: 100%; align-items: center;">
                                     <!-- Primary: Add Employee -->
-                                    <button onclick="openAddEmployeeModal()" class="btn-premium-primary gap-1.5" style="height: 52px; min-width: 180px; padding: 0 22px; border-radius: 18px; white-space: nowrap; font-size: 13px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center;">
+                                    <button onclick="openAddEmployeeModal()" class="btn-premium-primary gap-1.5" style="height: 50px; padding: 0 16px; border-radius: 18px; white-space: nowrap; font-size: 13px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center;">
                                         <i data-lucide="user-plus" class="w-4 h-4 text-emerald-300 flex-shrink-0"></i> <span>Add Employee</span>
                                     </button>
                                     <!-- Secondary: Recruitment -->
-                                    <button onclick="switchAccordionTab('hr-recruitment')" class="btn-premium-secondary gap-1.5" style="height: 52px; min-width: 180px; padding: 0 22px; border-radius: 18px; white-space: nowrap; font-size: 13px; display: inline-flex; align-items: center; justify-content: center;">
+                                    <button onclick="switchAccordionTab('hr-recruitment')" class="btn-premium-secondary gap-1.5" style="height: 50px; padding: 0 16px; border-radius: 18px; white-space: nowrap; font-size: 13px; display: inline-flex; align-items: center; justify-content: center;">
                                         <i data-lucide="briefcase" class="w-4 h-4 flex-shrink-0"></i> <span>Recruitment</span>
                                     </button>
                                     <!-- Secondary: Generate Payroll -->
-                                    <button onclick="switchAccordionTab('hr-payroll')" class="btn-premium-secondary gap-1.5" style="height: 52px; min-width: 180px; padding: 0 22px; border-radius: 18px; white-space: nowrap; font-size: 13px; display: inline-flex; align-items: center; justify-content: center;">
+                                    <button onclick="switchAccordionTab('hr-payroll')" class="btn-premium-secondary gap-1.5" style="height: 50px; padding: 0 16px; border-radius: 18px; white-space: nowrap; font-size: 13px; display: inline-flex; align-items: center; justify-content: center;">
                                         <i data-lucide="wallet" class="w-4 h-4 flex-shrink-0"></i> <span>Generate Payroll</span>
                                     </button>
                                     <!-- Secondary: Attendance Review -->
-                                    <button onclick="switchAccordionTab('hr-attendance')" class="btn-premium-secondary gap-1.5" style="height: 52px; min-width: 180px; padding: 0 22px; border-radius: 18px; white-space: nowrap; font-size: 13px; display: inline-flex; align-items: center; justify-content: center;">
+                                    <button onclick="switchAccordionTab('hr-attendance')" class="btn-premium-secondary gap-1.5" style="height: 50px; padding: 0 16px; border-radius: 18px; white-space: nowrap; font-size: 13px; display: inline-flex; align-items: center; justify-content: center;">
                                         <i data-lucide="clock" class="w-4 h-4 flex-shrink-0"></i> <span>Attendance Review</span>
                                     </button>
                                     <!-- Secondary: PF Export -->
-                                    <button onclick="switchAccordionTab('hr-pf')" class="btn-premium-secondary gap-1.5" style="height: 52px; min-width: 180px; padding: 0 22px; border-radius: 18px; white-space: nowrap; font-size: 13px; display: inline-flex; align-items: center; justify-content: center;">
+                                    <button onclick="switchAccordionTab('hr-pf')" class="btn-premium-secondary gap-1.5" style="height: 50px; padding: 0 16px; border-radius: 18px; white-space: nowrap; font-size: 13px; display: inline-flex; align-items: center; justify-content: center;">
                                         <i data-lucide="shield-check" class="w-4 h-4 flex-shrink-0"></i> <span>PF Export</span>
                                     </button>
                                 </div>
                             </div>
 
-                            <!-- Vertical Divider Glow -->
-                            <div class="w-[1px] self-stretch bg-gradient-to-b from-white/0 via-white/10 to-white/0 relative" style="box-shadow: 0 0 10px rgba(255,255,255,0.08);"></div>
+                            <!-- VERTICAL DIVIDER (Absolute positioned at 60%) -->
+                            <div class="bezent-vertical-divider"></div>
 
-                            <!-- Right Section: Command Panel (42%, shifted up 12px) -->
-                            <div class="command-glass-panel flex flex-col justify-between p-4 text-white" style="width: calc(42% - 25px); flex-shrink: 0; margin-top: -12px;">
+                            <!-- COMMAND PANEL (Absolute positioned on the right at 38% width, spanning full height below Divider #1) -->
+                            <div class="absolute right-0 top-0 bottom-0 w-[38%] command-glass-panel flex flex-col justify-between p-4 text-white">
                                 <div class="flex items-center justify-between pb-1.5 border-b border-white/5">
                                     <span class="text-[9px] font-extrabold text-purple-200 uppercase tracking-widest">Command Panel</span>
                                     <span class="text-[8px] font-mono font-bold bg-purple-500/20 text-purple-200 px-1.5 py-0.5 rounded border border-purple-500/10">Roster Stable</span>
@@ -1222,6 +1287,7 @@
                         </div>
                     </div>
                 </div>
+
 
                 <!-- KPI Rows Group -->
                 <div class="space-y-6">
@@ -3129,7 +3195,7 @@
                 <!-- Main Layout Grid -->
                 <div class="relative z-10 flex flex-col h-full justify-between w-full">
                     <!-- TOP BAR -->
-                    <div class="flex items-center justify-between border-b border-white/5 pb-3">
+                    <div class="flex items-center justify-between pb-3">
                         <!-- LEFT: Status Chips -->
                         <div class="flex items-center gap-2">
                             <div class="status-indicator-chip inline-flex items-center gap-1.5 px-3 py-1 text-[10px] font-bold rounded-full">
@@ -3153,59 +3219,76 @@
                         </div>
                     </div>
 
-                    <!-- BOTTOM ROW: Split 58% Left, 42% Right -->
-                    <div class="flex-1 flex gap-6 items-stretch mt-4 relative">
-                        <!-- Left Section (60%) -->
-                        <div class="w-[58%] flex flex-col justify-between h-full pr-2">
-                            <div class="text-left space-y-2">
-                                <div class="space-y-0.5">
-                                    <h2 class="text-[34px] font-bold tracking-tight leading-[120%]">Administration & System Center</h2>
-                                    <p class="text-purple-200/90 text-[16px] font-medium leading-[140%]">Governance & Access Control Center</p>
+                    <!-- GLOBAL DIVIDER LINE -->
+                    <div class="bezent-hero-divider"></div>
+
+                    <!-- CONTENT CONTAINER (Relative positioned container to place Left Area, Vertical divider, and Command Panel) -->
+                    <div class="relative flex-grow flex flex-col justify-between" style="min-height: 220px;">
+                        
+                        <!-- Left Content Area (Width restricted to 58% to allow absolute split) -->
+                        <div class="w-[58%] flex flex-col justify-between" style="height: calc(100% - 2px);">
+                            
+                            <!-- Title Block (shifted slightly lower, pt-2 to reduce space above) -->
+                            <div class="text-left pt-2 flex flex-col gap-1">
+                                <h2 class="text-[34px] font-bold tracking-tight leading-[120%]">Administration & System Center</h2>
+                                <p class="text-purple-200/90 text-[16px] font-medium leading-[140%]">Governance & Access Control Center</p>
+                            </div>
+
+                            <!-- Title -> Metrics Space (20px) -->
+                            <div class="h-[20px]"></div>
+
+                            <!-- Metrics pills -->
+                            <div class="flex flex-wrap gap-2">
+                                <div class="mini-glass-pill" style="height: 40px; font-size: 14px; padding: 0 16px; border-radius: 20px; display: inline-flex; align-items: center; gap: 6px;">
+                                    <i data-lucide="building" class="w-3.5 h-3.5 text-emerald-400 flex-shrink-0"></i>
+                                    <span><span id="metricAdminDepts">4</span> Departments</span>
                                 </div>
-                                
-                                <!-- Center zone metrics in glass pills -->
-                                <div class="flex flex-wrap gap-2 mt-1">
-                                    <div class="mini-glass-pill">
-                                        <i data-lucide="building" class="w-3.5 h-3.5 text-emerald-400"></i>
-                                        <span id="metricAdminDepts">4</span> Departments
-                                    </div>
-                                    <div class="mini-glass-pill">
-                                        <i data-lucide="users" class="w-3.5 h-3.5 text-blue-400"></i>
-                                        <span id="metricAdminEmployees">52</span> Employees
-                                    </div>
-                                    <div class="mini-glass-pill">
-                                        <i data-lucide="folder" class="w-3.5 h-3.5 text-amber-400"></i>
-                                        <span id="metricAdminProjects">12</span> Projects
-                                    </div>
-                                    <div class="mini-glass-pill">
-                                        <i data-lucide="check-square" class="w-3.5 h-3.5 text-purple-400"></i>
-                                        <span id="metricAdminApprovals">9</span> Approvals
-                                    </div>
+                                <div class="mini-glass-pill" style="height: 40px; font-size: 14px; padding: 0 16px; border-radius: 20px; display: inline-flex; align-items: center; gap: 6px;">
+                                    <i data-lucide="users" class="w-3.5 h-3.5 text-blue-400 flex-shrink-0"></i>
+                                    <span><span id="metricAdminEmployees">52</span> Employees</span>
+                                </div>
+                                <div class="mini-glass-pill" style="height: 40px; font-size: 14px; padding: 0 16px; border-radius: 20px; display: inline-flex; align-items: center; gap: 6px;">
+                                    <i data-lucide="folder" class="w-3.5 h-3.5 text-amber-400 flex-shrink-0"></i>
+                                    <span><span id="metricAdminProjects">12</span> Projects</span>
+                                </div>
+                                <div class="mini-glass-pill" style="height: 40px; font-size: 14px; padding: 0 16px; border-radius: 20px; display: inline-flex; align-items: center; gap: 6px;">
+                                    <i data-lucide="check-square" class="w-3.5 h-3.5 text-purple-400 flex-shrink-0"></i>
+                                    <span><span id="metricAdminApprovals">9</span> Approvals</span>
                                 </div>
                             </div>
-                            
-                            <!-- Actions (Primary Filled, Secondary Outline) -->
-                            <div class="flex flex-wrap gap-2.5 mt-auto">
-                                <button onclick="switchAccordionTab('admin-users')" class="btn-premium-primary gap-2">
-                                    <i data-lucide="fingerprint" class="w-4 h-4 text-emerald-300"></i> Access Management
+
+                        </div>
+
+                        <!-- DIVIDER #2 (Full width, below metrics, above actions) -->
+                        <div class="bezent-hero-divider"></div>
+
+                        <!-- Actions Area (width restricted to 58%) -->
+                        <div class="w-[58%] pb-1">
+                            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; width: 100%; align-items: center;">
+                                <!-- Primary: Access Management -->
+                                <button onclick="switchAccordionTab('admin-users')" class="btn-premium-primary gap-1.5" style="height: 50px; padding: 0 16px; border-radius: 18px; white-space: nowrap; font-size: 13px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center;">
+                                    <i data-lucide="fingerprint" class="w-4 h-4 text-emerald-300 flex-shrink-0"></i> <span>Access Management</span>
                                 </button>
-                                <button onclick="switchAccordionTab('admin-settings')" class="btn-premium-secondary gap-2">
-                                    <i data-lucide="sliders" class="w-4 h-4"></i> Role Structures
+                                <!-- Secondary: Role Structures -->
+                                <button onclick="switchAccordionTab('admin-settings')" class="btn-premium-secondary gap-1.5" style="height: 50px; padding: 0 16px; border-radius: 18px; white-space: nowrap; font-size: 13px; display: inline-flex; align-items: center; justify-content: center;">
+                                    <i data-lucide="sliders" class="w-4 h-4 flex-shrink-0"></i> <span>Role Structures</span>
                                 </button>
-                                <button onclick="switchAccordionTab('admin-approvals')" class="btn-premium-secondary gap-2">
-                                    <i data-lucide="check-square" class="w-4 h-4"></i> Pending Approvals
+                                <!-- Secondary: Pending Approvals -->
+                                <button onclick="switchAccordionTab('admin-approvals')" class="btn-premium-secondary gap-1.5" style="height: 50px; padding: 0 16px; border-radius: 18px; white-space: nowrap; font-size: 13px; display: inline-flex; align-items: center; justify-content: center;">
+                                    <i data-lucide="check-square" class="w-4 h-4 flex-shrink-0"></i> <span>Pending Approvals</span>
                                 </button>
-                                <button onclick="switchAccordionTab('admin-logs')" class="btn-premium-secondary gap-2">
-                                    <i data-lucide="scroll" class="w-4 h-4"></i> Audit Registers
+                                <!-- Secondary: Audit Registers -->
+                                <button onclick="switchAccordionTab('admin-logs')" class="btn-premium-secondary gap-1.5" style="height: 50px; padding: 0 16px; border-radius: 18px; white-space: nowrap; font-size: 13px; display: inline-flex; align-items: center; justify-content: center;">
+                                    <i data-lucide="scroll" class="w-4 h-4 flex-shrink-0"></i> <span>Audit Registers</span>
                                 </button>
                             </div>
                         </div>
 
-                        <!-- Vertical Divider Glow -->
-                        <div class="w-[1px] self-stretch bg-gradient-to-b from-white/0 via-white/10 to-white/0 relative" style="box-shadow: 0 0 10px rgba(255,255,255,0.08);"></div>
+                        <!-- VERTICAL DIVIDER (Absolute positioned at 60%) -->
+                        <div class="bezent-vertical-divider"></div>
 
-                        <!-- Right Section: Command Panel (40%) -->
-                        <div class="w-[40%] command-glass-panel flex flex-col justify-between p-4 text-white">
+                        <!-- COMMAND PANEL (Absolute positioned on the right at 38% width, spanning full height below Divider #1) -->
+                        <div class="absolute right-0 top-0 bottom-0 w-[38%] command-glass-panel flex flex-col justify-between p-4 text-white">
                             <div class="flex items-center justify-between pb-1.5 border-b border-white/5">
                                 <span class="text-[9px] font-extrabold text-purple-200 uppercase tracking-widest">Command Panel</span>
                                 <span class="text-[8px] font-mono font-bold bg-purple-500/20 text-purple-200 px-1.5 py-0.5 rounded border border-purple-500/10">System Secure</span>
@@ -3254,6 +3337,7 @@
                         </div>
                     </div>
                 </div>
+
             </div>
 
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">

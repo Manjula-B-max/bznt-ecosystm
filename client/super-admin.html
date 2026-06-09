@@ -71,203 +71,297 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* 1. Primary Brand Gradient & Premium Hero Design */
-        .hero-gradient {
-            background-image: 
-                radial-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
-                radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.05), transparent 40%),
-                radial-gradient(circle at 20% 80%, rgba(255, 255, 255, 0.03), transparent 30%),
-                radial-gradient(circle at top left, rgba(243, 189, 252, 0.20), transparent 60%),
-                radial-gradient(circle at 50% 50%, rgba(221, 115, 240, 0.12), transparent 50%),
-                radial-gradient(circle at bottom right, rgba(97, 1, 115, 0.18), transparent 60%),
-                linear-gradient(135deg, #a402bf 0%, #7f0395 35%, #53025f 70%, #210026 100%) !important;
-            background-size: 10px 10px, auto, auto, auto, auto, auto, auto !important;
-            background-repeat: repeat, no-repeat, no-repeat, no-repeat, no-repeat, no-repeat, no-repeat !important;
-            background-position: center, center, center, center, center, center, center !important;
-            position: relative !important;
-            border: 1px solid rgba(255, 255, 255, 0.12) !important;
-            box-shadow: 0 20px 40px -15px rgba(33, 0, 38, 0.5) !important;
-            animation: hero-entrance 300ms cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
+        /* ==================== BEZENT PREMIUM HERO COMMAND CENTER STYLES ==================== */
+        .command-center-hero {
+            position: relative;
+            background: linear-gradient(135deg, #a402bf 0%, #210026 100%) !important;
+            border-radius: 36px !important; /* Standardized radius: 36px */
+            padding: 24px 28px !important; /* Spacing */
             overflow: hidden !important;
-            border-radius: 28px !important;
-            height: 270px !important;
-            min-height: 270px !important;
-            max-height: 270px !important;
+            box-shadow: 0 12px 40px rgba(97, 1, 115, 0.18) !important;
+            border: none !important;
+            height: 340px !important;
+            min-height: 340px !important;
+            max-height: 340px !important;
+            animation: hero-load 400ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            background-size: 110% 110% !important;
+            will-change: transform;
+            mask-image: radial-gradient(white, black); /* force clean edge clipping */
+            -webkit-mask-image: -webkit-radial-gradient(white, black);
         }
 
-        /* Animated Light Sweep */
-        .hero-gradient::before {
-            content: '' !important;
-            position: absolute !important;
-            top: 0 !important;
-            left: -150% !important;
-            width: 150% !important;
-            height: 100% !important;
-            background: linear-gradient(
-                90deg,
-                transparent 0%,
-                rgba(255, 255, 255, 0.0) 30%,
-                rgba(255, 255, 255, 0.04) 50%,
-                rgba(255, 255, 255, 0.0) 70%,
-                transparent 100%
-            ) !important;
-            transform: skewX(-20deg) !important;
-            animation: hero-sweep 12s infinite linear !important;
-            pointer-events: none !important;
-            z-index: 5 !important;
-            display: block !important;
+        @keyframes hero-load {
+            from { opacity: 0; transform: translateY(12px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
-        .hero-gradient > * {
-            position: relative !important;
-            z-index: 10 !important;
+        /* 3 Cinematic Ambient depth layers */
+        .glow-top-left {
+            position: absolute;
+            left: -10%;
+            top: -10%;
+            width: 400px;
+            height: 400px;
+            border-radius: 50%;
+            background: rgba(243, 189, 252, 0.20) !important; /* 20% opacity */
+            filter: blur(250px) !important; /* 250px blur */
+            pointer-events: none;
+            z-index: 1;
         }
 
-        @keyframes hero-sweep {
-            0% { left: -150%; }
-            50% { left: 150%; }
-            100% { left: 150%; }
+        .glow-center {
+            position: absolute;
+            left: 30%;
+            top: 20%;
+            width: 500px;
+            height: 500px;
+            border-radius: 50%;
+            background: rgba(221, 115, 240, 0.10) !important; /* 10% opacity */
+            filter: blur(300px) !important; /* 300px blur */
+            pointer-events: none;
+            z-index: 1;
         }
 
-        @keyframes hero-entrance {
-            from {
-                opacity: 0;
-                transform: translateY(10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+        .glow-bottom-right {
+            position: absolute;
+            right: -10%;
+            bottom: -10%;
+            width: 600px;
+            height: 600px;
+            border-radius: 50%;
+            background: rgba(33, 0, 38, 0.45) !important; /* 45% opacity */
+            filter: blur(400px) !important; /* 400px blur */
+            pointer-events: none;
+            z-index: 1;
         }
 
-        /* 2. Hero Typography */
-        .hero-gradient h1, .hero-gradient h2, .hero-gradient h3, .hero-gradient .hero-title {
-            color: #ffffff !important;
-            font-weight: 800 !important;
-            letter-spacing: -0.025em !important;
-        }
-        .hero-gradient p, .hero-gradient .text-purple-100 {
-            color: rgba(255, 255, 255, 0.90) !important;
-        }
-        .hero-gradient .text-purple-200 {
-            color: rgba(255, 255, 255, 0.85) !important;
+        /* Dot Grid pattern: 5% opacity */
+        .dot-grid-pattern {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            opacity: 0.05 !important;
+            background-image: radial-gradient(rgba(255, 255, 255, 0.4) 1.5px, transparent 1.5px) !important;
+            background-size: 18px 18px !important;
+            z-index: 1;
         }
 
-        /* Glass Action Buttons inside Hero */
-        .hero-gradient button, 
-        .hero-gradient .hero-btn {
+        /* Light Sweep Animation: opacity 3%, duration 6s, interval 15s */
+        .light-sweep-overlay {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 30%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.03), transparent) !important;
+            filter: blur(150px) !important;
+            transform: translateX(-150%);
+            pointer-events: none;
+            z-index: 2;
+            animation: light-sweep-anim 15s infinite linear;
+        }
+
+        @keyframes light-sweep-anim {
+            0% { transform: translateX(-150%); }
+            40% { transform: translateX(250%); }
+            100% { transform: translateX(250%); }
+        }
+
+        /* Status indicators & pulse */
+        .status-indicator-chip {
             background: rgba(255, 255, 255, 0.08) !important;
-            border: 1px solid rgba(255, 255, 255, 0.18) !important;
-            backdrop-filter: blur(12px) !important;
-            -webkit-backdrop-filter: blur(12px) !important;
+            backdrop-filter: blur(18px) !important;
+            -webkit-backdrop-filter: blur(18px) !important;
+            border: 1px solid rgba(255, 255, 255, 0.08) !important;
             color: #ffffff !important;
-            transition: all 150ms cubic-bezier(0.4, 0, 0.2, 1) !important;
+            transition: all 150ms ease;
+            box-shadow: 0 4px 12px rgba(33, 0, 38, 0.05) !important;
+        }
+
+        .health-pulse-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background-color: #34d399;
+            box-shadow: 0 0 6px #34d399;
+            animation: health-pulse-anim 2s infinite ease-in-out;
+        }
+
+        @keyframes health-pulse-anim {
+            0%, 100% { opacity: 0.5; transform: scale(0.9); box-shadow: 0 0 4px rgba(52, 211, 153, 0.4); }
+            50% { opacity: 1; transform: scale(1.1); box-shadow: 0 0 10px rgba(52, 211, 153, 0.8); }
+        }
+
+        /* Mini Glass Pills for Role Metrics */
+        .mini-glass-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 5px 14px;
+            border-radius: 9999px;
+            background: rgba(255, 255, 255, 0.06) !important;
+            border: 1px solid rgba(255, 255, 255, 0.08) !important;
+            font-size: 12px !important;
+            font-weight: 600 !important;
+            color: rgba(255, 255, 255, 0.9) !important;
+            letter-spacing: 0.2px !important;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+            transition: all 180ms ease;
+        }
+
+        .mini-glass-pill:hover {
+            background: rgba(255, 255, 255, 0.1) !important;
+            border-color: rgba(255, 255, 255, 0.15) !important;
+            transform: translateY(-1px) !important;
+        }
+
+        /* Command Glass Panel */
+        .command-glass-panel {
+            background: rgba(255, 255, 255, 0.04) !important;
+            backdrop-filter: blur(20px) !important;
+            -webkit-backdrop-filter: blur(20px) !important;
+            border: 1px solid rgba(255, 255, 255, 0.08) !important;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.18) !important;
+            border-radius: 32px !important;
+            animation: panel-load 500ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            will-change: transform, opacity;
+        }
+
+        @keyframes panel-load {
+            from { opacity: 0; transform: scale(0.98); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        /* Dominant KPI Card inside Command Panel */
+        .premium-kpi-card {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 72px;
+            border-radius: 18px;
+            background: rgba(255, 255, 255, 0.05) !important;
+            border: 1px solid rgba(255, 255, 255, 0.08) !important;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08) !important;
-            padding: 8px 16px !important;
+            cursor: pointer;
+            transition: all 250ms cubic-bezier(0.4, 0, 0.2, 1) !important;
+        }
+
+        .premium-kpi-card:hover {
+            transform: translateY(-4px) !important;
+            background: rgba(255, 255, 255, 0.1) !important;
+            border-color: rgba(255, 255, 255, 0.18) !important;
+            box-shadow: 0 8px 24px rgba(164, 2, 191, 0.25) !important;
+        }
+
+        .premium-kpi-card .card-number {
+            font-size: 30px !important;
+            font-weight: 700 !important;
+            color: #ffffff !important;
+            line-height: 1 !important;
+            letter-spacing: -0.5px !important;
+        }
+
+        .premium-kpi-card .card-label {
+            font-size: 11px !important;
+            font-weight: 600 !important;
+            color: rgba(243, 189, 252, 0.75) !important;
+            text-transform: uppercase !important;
+            letter-spacing: 0.4px !important;
+            margin-top: 6px !important;
+        }
+
+        /* Premium Buttons */
+        .btn-premium-primary {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            height: 48px !important;
+            padding: 0 24px !important;
+            border-radius: 16px !important;
+            background: rgba(255, 255, 255, 0.14) !important;
+            border: 1px solid rgba(255, 255, 255, 0.22) !important;
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            font-size: 13px !important;
+            font-weight: 700 !important;
+            color: #ffffff !important;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
+            letter-spacing: 0.2px !important;
+        }
+
+        .btn-premium-primary:hover {
+            transform: translateY(-2px) scale(1.01) !important;
+            background: rgba(255, 255, 255, 0.22) !important;
+            border-color: rgba(255, 255, 255, 0.35) !important;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15), 0 0 15px rgba(164, 2, 191, 0.35) !important;
+        }
+
+        .btn-premium-secondary {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            height: 48px !important;
+            padding: 0 20px !important;
+            border-radius: 16px !important;
+            background: rgba(255, 255, 255, 0.05) !important;
+            border: 1px solid rgba(255, 255, 255, 0.08) !important;
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
             font-size: 13px !important;
             font-weight: 600 !important;
-            border-radius: 12px !important;
-            opacity: 0;
-            animation: button-reveal 350ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
-            animation-delay: 250ms;
+            color: rgba(255, 255, 255, 0.9) !important;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
+            letter-spacing: 0.2px !important;
         }
 
-        @keyframes button-reveal {
-            from {
-                opacity: 0;
-                transform: translateY(4px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .hero-gradient button:hover, 
-        .hero-gradient .hero-btn:hover {
-            background: rgba(255, 255, 255, 0.16) !important;
-            border-color: rgba(255, 255, 255, 0.30) !important;
+        .btn-premium-secondary:hover {
             transform: translateY(-2px) scale(1.01) !important;
-            box-shadow: 0 12px 24px rgba(164, 2, 191, 0.35), 0 0 16px rgba(255, 255, 255, 0.12) !important;
+            background: rgba(255, 255, 255, 0.1) !important;
+            border-color: rgba(255, 255, 255, 0.18) !important;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1), 0 0 10px rgba(164, 2, 191, 0.2) !important;
+            color: #ffffff !important;
         }
 
-        .hero-gradient button:active, 
-        .hero-gradient .hero-btn:active {
-            transform: translateY(0) scale(0.97) !important;
-            transition: all 100ms ease !important;
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1) !important;
+        .btn-premium-primary i, .btn-premium-secondary i {
+            transition: transform 150ms ease;
         }
 
-        /* KPI Cards in Hero */
-        .hero-gradient div[class*="backdrop-blur"],
-        .hero-gradient .kpi-card,
-        .hero-gradient .flex.gap-3.w-full.md\:w-auto > div {
-            background: rgba(255, 255, 255, 0.10) !important;
-            border: 1px solid rgba(255, 255, 255, 0.22) !important;
-            backdrop-filter: blur(24px) !important;
-            -webkit-backdrop-filter: blur(24px) !important;
-            box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.15), 0 8px 24px rgba(0, 0, 0, 0.15) !important;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
-            opacity: 0;
-            animation: kpi-reveal 350ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
-            border-radius: 20px !important;
+        .btn-premium-primary:hover i, .btn-premium-secondary:hover i {
+            transform: scale(1.1);
         }
 
-        .hero-gradient div[class*="backdrop-blur"]:hover,
-        .hero-gradient .kpi-card:hover,
-        .hero-gradient .flex.gap-3.w-full.md\:w-auto > div:hover {
-            transform: translateY(-2px) !important;
-            background: rgba(255, 255, 255, 0.15) !important;
-            border-color: rgba(255, 255, 255, 0.32) !important;
-            box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.25), 0 12px 30px rgba(164, 2, 191, 0.2) !important;
+        /* Floating background particles */
+        .command-center-hero .particle {
+            position: absolute;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.2) 0%, transparent 70%);
+            border-radius: 50%;
+            pointer-events: none;
+            will-change: transform;
         }
+        .command-center-hero .particle-1 { width: 50px; height: 50px; left: 10%; top: 15%; animation: float-p-1 20s linear infinite; }
+        .command-center-hero .particle-2 { width: 60px; height: 60px; right: 20%; top: 35%; animation: float-p-2 20s linear infinite; }
+        .command-center-hero .particle-3 { width: 35px; height: 35px; left: 40%; bottom: 10%; animation: float-p-3 20s linear infinite; }
+        .command-center-hero .particle-4 { width: 55px; height: 55px; right: 8%; top: 10%; animation: float-p-4 20s linear infinite; }
+        .command-center-hero .particle-5 { width: 45px; height: 45px; left: 25%; bottom: 25%; animation: float-p-5 20s linear infinite; }
+        .command-center-hero .particle-6 { width: 50px; height: 50px; right: 35%; bottom: 15%; animation: float-p-6 20s linear infinite; }
 
-        /* KPI Cards Entrance Delays */
-        .hero-gradient div[class*="backdrop-blur"]:nth-child(1),
-        .hero-gradient .kpi-card:nth-child(1),
-        .hero-gradient .flex.gap-3.w-full.md\:w-auto > div:nth-child(1) { animation-delay: 50ms; }
-        .hero-gradient div[class*="backdrop-blur"]:justify-between:nth-child(2),
-        .hero-gradient .kpi-card:nth-child(2),
-        .hero-gradient .flex.gap-3.w-full.md\:w-auto > div:nth-child(2) { animation-delay: 100ms; }
-        .hero-gradient div[class*="backdrop-blur"]:nth-child(3),
-        .hero-gradient .kpi-card:nth-child(3),
-        .hero-gradient .flex.gap-3.w-full.md\:w-auto > div:nth-child(3) { animation-delay: 150ms; }
-        .hero-gradient div[class*="backdrop-blur"]:nth-child(4),
-        .hero-gradient .kpi-card:nth-child(4),
-        .hero-gradient .flex.gap-3.w-full.md\:w-auto > div:nth-child(4) { animation-delay: 200ms; }
-
-        @keyframes kpi-reveal {
-            from {
-                opacity: 0;
-                transform: translateY(8px) scale(0.98);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0) scale(1);
-            }
-        }
-
-        /* Pulsing Status Chips */
-        .hero-gradient .pulse-dot {
-            animation: hero-dot-pulse 4s infinite ease-in-out !important;
-            box-shadow: 0 0 8px rgba(52, 211, 153, 0.6) !important;
-        }
-
-        @keyframes hero-dot-pulse {
-            0%, 100% {
-                opacity: 0.6;
-                transform: scale(0.9);
-                box-shadow: 0 0 4px rgba(52, 211, 153, 0.4);
-            }
-            50% {
-                opacity: 1;
-                transform: scale(1.1);
-                box-shadow: 0 0 12px rgba(52, 211, 153, 0.8);
-            }
-        }
+        @keyframes float-p-1 { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(20px, -10px); } }
+        @keyframes float-p-2 { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(-15px, 15px); } }
+        @keyframes float-p-3 { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(15px, 20px); } }
+        @keyframes float-p-4 { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(-20px, -15px); } }
+        @keyframes float-p-5 { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(10px, -15px); } }
+        @keyframes float-p-6 { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(-10px, 10px); } }
 
         /* Progress Bars Gradient & Loading Animation */
-        .hero-gradient div[class*="bg-white/20"] > div {
+        .command-center-hero div[class*="bg-white/10"]>div,
+        .command-center-hero .bg-emerald-400,
+        .hero-gradient div[class*="bg-white/20"]>div {
             background: linear-gradient(90deg, #34d399, #60a5fa, #34d399) !important;
             background-size: 200% auto !important;
             animation: progress-gradient 4s linear infinite, progress-load 1s cubic-bezier(0.4, 0, 0.2, 1) forwards !important;
@@ -469,13 +563,13 @@
             border: 1px solid rgba(238, 238, 245, 0.6);
             border-radius: 18px;
             box-shadow: 0 15px 45px rgba(97, 1, 115, 0.03);
-            margin: 24px 24px 0 278px;
+            margin: 16px 24px 0 278px;
             z-index: 30;
             transition: all 0.3s ease;
         }
 
         .main-workspace {
-            margin: 24px 24px 24px 278px;
+            margin: 12px 24px 24px 278px;
             transition: all 0.3s ease;
         }
 
@@ -659,85 +753,156 @@
         <div id="dashboardPanel" class="tab-panel active space-y-6 fade-up-view">
             
             <!-- SECTION 1: Large Gradient Hero Banner -->
-            <div class="hero-gradient rounded-[24px] p-5 text-white relative overflow-hidden shadow-lg max-h-[270px] flex flex-col justify-between">
-                <div class="absolute -right-20 -top-20 w-80 h-80 bg-white/5 rounded-full blur-3xl"></div>
-                <div class="relative z-10 flex flex-col justify-between h-full space-y-3.5">
-                    
-                    <!-- Top Row: Status Chips & Progress Indicators -->
-                    <div class="flex justify-between items-center flex-wrap gap-2">
-                        <div class="flex items-center gap-2 flex-wrap">
-                            <div class="inline-flex items-center gap-1 px-2.5 py-0.5 bg-white/10 text-white rounded-full text-[10px] font-bold border border-white/15">
-                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 pulse-dot"></span> Global Platform Active
+            <!-- SECTION 1: Large Gradient Hero Banner -->
+            <div class="command-center-hero text-white flex flex-col justify-between">
+                <!-- Cinematic glows -->
+                <div class="glow-top-left"></div>
+                <div class="glow-center"></div>
+                <div class="glow-bottom-right"></div>
+                
+                <!-- Dot-grid pattern overlay -->
+                <div class="dot-grid-pattern"></div>
+                
+                <!-- Light sweep glass animation effect -->
+                <div class="light-sweep-overlay"></div>
+
+                <!-- Floating background particles -->
+                <div class="particle-field absolute inset-0 pointer-events-none opacity-10 z-[1]">
+                    <span class="particle particle-1"></span>
+                    <span class="particle particle-2"></span>
+                    <span class="particle particle-3"></span>
+                    <span class="particle particle-4"></span>
+                    <span class="particle particle-5"></span>
+                    <span class="particle particle-6"></span>
+                </div>
+
+                <!-- Main Layout Grid -->
+                <div class="relative z-10 flex flex-col h-full justify-between w-full">
+                    <!-- TOP BAR -->
+                    <div class="flex items-center justify-between border-b border-white/5 pb-3">
+                        <!-- LEFT: Status Chips -->
+                        <div class="flex items-center gap-2">
+                            <div class="status-indicator-chip inline-flex items-center gap-1.5 px-3 py-1 text-[10px] font-bold rounded-full">
+                                <span class="health-pulse-dot"></span>
+                                <span>Platform Active</span>
                             </div>
-                            <div class="inline-flex items-center gap-1 px-2.5 py-0.5 bg-white/10 text-white rounded-full text-[10px] font-bold border border-white/15">
-                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> System Stable
-                            </div>
-                            <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-white/10 text-white rounded-full text-[10px] font-bold border border-white/15">
-                                <i data-lucide="calendar" class="w-3 h-3 text-purple-200"></i>
-                                <span class="hero-date-time font-mono">Loading...</span>
+                            <div class="status-indicator-chip inline-flex items-center gap-1.5 px-3 py-1 text-[10px] font-bold rounded-full">
+                                <span class="w-1.5 h-1.5 rounded-full bg-blue-400"></span>
+                                <span>System Stable</span>
                             </div>
                         </div>
-                        <!-- Progress Indicator -->
-                        <div class="flex items-center gap-2 text-[10px] bg-white/10 rounded-full px-2.5 py-0.5 border border-white/15">
-                            <span class="font-bold text-white/90">SaaS Health Index: 99.99%</span>
-                            <div class="w-16 bg-white/20 rounded-full h-1 overflow-hidden">
-                                <div class="bg-emerald-400 h-full rounded-full" style="width: 100%"></div>
+                        <!-- CENTER: Date & Time (Aligned on Same Axis) -->
+                        <div class="text-[11px] font-mono font-semibold text-purple-200/95 flex items-center gap-1.5 justify-center">
+                            <i data-lucide="clock" class="w-3.5 h-3.5 text-purple-200"></i>
+                            <span class="hero-date-time">Loading...</span>
+                        </div>
+                        <!-- RIGHT: Health Status Capsule -->
+                        <div class="inline-flex items-center gap-1.5 px-3 py-1 text-[10px] font-bold rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-300">
+                            <span class="health-pulse-dot"></span>
+                            <span>System Health 100%</span>
+                        </div>
+                    </div>
+
+                    <!-- BOTTOM ROW: Split 60% Left, 40% Right with Separator -->
+                    <div class="flex-1 flex gap-6 items-stretch mt-4 overflow-hidden relative">
+                        <!-- Left Section (60%) -->
+                        <div class="w-[58%] flex flex-col justify-between h-full pr-2">
+                            <div class="text-left space-y-2">
+                                <div class="space-y-0.5">
+                                    <h2 class="text-[34px] font-bold tracking-tight leading-[120%]">BEZENT Platform Control Center</h2>
+                                    <p class="text-purple-200/90 text-[16px] font-medium leading-[140%]">Platform Operations Command Center</p>
+                                </div>
+                                
+                                <!-- Center zone metrics in glass pills -->
+                                <div class="flex flex-wrap gap-2 mt-1">
+                                    <div class="mini-glass-pill">
+                                        <i data-lucide="building" class="w-3.5 h-3.5 text-emerald-400"></i>
+                                        <span id="metricSaCompanies">1 Company</span>
+                                    </div>
+                                    <div class="mini-glass-pill">
+                                        <i data-lucide="activity" class="w-3.5 h-3.5 text-blue-400"></i>
+                                        <span id="metricSaHealth">99.99% Health</span>
+                                    </div>
+                                    <div class="mini-glass-pill">
+                                        <i data-lucide="clock" class="w-3.5 h-3.5 text-amber-400"></i>
+                                        <span id="metricSaUptime">142 Days Uptime</span>
+                                    </div>
+                                    <div class="mini-glass-pill">
+                                        <i data-lucide="credit-card" class="w-3.5 h-3.5 text-purple-400"></i>
+                                        <span id="metricSaSubscriptions">1 Subscription</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Actions (Primary Filled, Secondary Outline) -->
+                            <div class="flex flex-wrap gap-2.5 mt-auto">
+                                <button onclick="openCreateCompanyModal()" class="btn-premium-primary gap-2">
+                                    <i data-lucide="plus-circle" class="w-4 h-4 text-emerald-300"></i> Add Company
+                                </button>
+                                <button onclick="switchTab('plans')" class="btn-premium-secondary gap-2">
+                                    <i data-lucide="credit-card" class="w-4 h-4"></i> Manage Plans
+                                </button>
+                                <button onclick="switchTab('health')" class="btn-premium-secondary gap-2">
+                                    <i data-lucide="activity" class="w-4 h-4"></i> System Monitoring
+                                </button>
+                                <button onclick="switchTab('logs')" class="btn-premium-secondary gap-2">
+                                    <i data-lucide="history" class="w-4 h-4"></i> Platform Reports
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Vertical Divider Glow -->
+                        <div class="w-[1px] self-stretch bg-gradient-to-b from-white/0 via-white/10 to-white/0 relative" style="box-shadow: 0 0 10px rgba(255,255,255,0.08);"></div>
+
+                        <!-- Right Section: Command Panel (40%) -->
+                        <div class="w-[40%] command-glass-panel flex flex-col justify-between p-4 text-white">
+                            <div class="flex items-center justify-between pb-1.5 border-b border-white/5">
+                                <span class="text-[9px] font-extrabold text-purple-200 uppercase tracking-widest">Command Panel</span>
+                                <span class="text-[8px] font-mono font-bold bg-purple-500/20 text-purple-200 px-1.5 py-0.5 rounded border border-purple-500/10">Uptime Stable</span>
+                            </div>
+
+                            <!-- Horizontal Grid with Dominant numbers -->
+                            <div class="grid grid-cols-4 gap-2 my-2">
+                                <div class="premium-kpi-card">
+                                    <span class="card-number" id="tenantCountHero">0</span>
+                                    <span class="card-label">Companies</span>
+                                </div>
+                                <div class="premium-kpi-card">
+                                    <span class="card-number" id="subscriberCountHero">0</span>
+                                    <span class="card-label">Subs</span>
+                                </div>
+                                <div class="premium-kpi-card">
+                                    <span class="card-number">99.9%</span>
+                                    <span class="card-label">Health</span>
+                                </div>
+                                <div class="premium-kpi-card">
+                                    <span class="card-number">142d</span>
+                                    <span class="card-label">Uptime</span>
+                                </div>
+                            </div>
+
+                            <!-- Progress Bar -->
+                            <div class="space-y-1">
+                                <div class="flex justify-between items-center text-[9.5px] text-white/95">
+                                    <span class="font-semibold tracking-wide">Platform Health Index</span>
+                                    <span class="font-mono text-purple-200 font-bold">99.99%</span>
+                                </div>
+                                <div class="w-full bg-white/10 rounded-full h-1 overflow-hidden relative">
+                                    <div class="progress-shimmer absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
+                                    <div class="bg-emerald-400 h-full rounded-full transition-all duration-[1200ms]" style="width: 100%"></div>
+                                </div>
+                            </div>
+
+                            <!-- Alert Footer -->
+                            <div class="pt-2 border-t border-white/5 flex items-center justify-between text-[9.5px] text-purple-200/90 font-semibold">
+                                <div class="flex items-center gap-1.5">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 live-pulse-dot"></span>
+                                    <span>All Services Operational</span>
+                                </div>
+                                <i data-lucide="shield-alert" class="w-3.5 h-3.5 text-purple-200/60"></i>
                             </div>
                         </div>
                     </div>
-                    
-                    <!-- Middle Row: Welcome Area & KPI Cards -->
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
-                        <div class="md:col-span-1 text-left">
-                            <h2 class="text-xl font-extrabold tracking-tight leading-tight">Welcome back, Super Admin</h2>
-                            <div class="flex items-center gap-1.5 mt-1">
-                                <span class="text-[10px] font-medium text-purple-200">Operational Shortcut:</span>
-                                <a href="#" onclick="openCreateCompanyModal()" class="text-[10px] font-bold text-white hover:underline flex items-center gap-0.5">
-                                    Provision Environment <i data-lucide="arrow-up-right" class="w-3 h-3"></i>
-                                </a>
-                            </div>
-                        </div>
-                        
-                        <!-- KPI Cards Grid -->
-                        <div class="md:col-span-2 grid grid-cols-4 gap-2">
-                            <div class="kpi-card rounded-xl p-2.5 text-center">
-                                <span class="text-[9px] text-white/80 uppercase font-bold tracking-wider">Companies</span>
-                                <span class="text-base font-extrabold block mt-0.5" id="tenantCountHero">0</span>
-                            </div>
-                            <div class="kpi-card rounded-xl p-2.5 text-center">
-                                <span class="text-[9px] text-white/80 uppercase font-bold tracking-wider">Subscriptions</span>
-                                <span class="text-base font-extrabold block mt-0.5" id="subscriberCountHero">0</span>
-                            </div>
-                            <div class="kpi-card rounded-xl p-2.5 text-center">
-                                <span class="text-[9px] text-white/80 uppercase font-bold tracking-wider">Platform Health</span>
-                                <span class="text-base font-extrabold block mt-0.5">99.99%</span>
-                            </div>
-                            <div class="kpi-card rounded-xl p-2.5 text-center">
-                                <span class="text-[9px] text-white/80 uppercase font-bold tracking-wider">Uptime</span>
-                                <span class="text-base font-extrabold block mt-0.5">142 Days</span>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Bottom Row: Quick Actions -->
-                    <div class="flex flex-wrap gap-2 pt-2 border-t border-white/10 items-center justify-between">
-                        <div class="flex flex-wrap gap-2">
-                            <button onclick="openCreateCompanyModal()" class="hero-btn inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition">
-                                <i data-lucide="plus-circle" class="w-3.5 h-3.5 text-emerald-400"></i> Add Company
-                            </button>
-                            <button onclick="switchTab('plans')" class="hero-btn inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition">
-                                <i data-lucide="credit-card" class="w-3.5 h-3.5 text-blue-400"></i> Manage Plans
-                            </button>
-                            <button onclick="switchTab('health')" class="hero-btn inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition">
-                                <i data-lucide="activity" class="w-3.5 h-3.5 text-amber-400"></i> System Monitoring
-                            </button>
-                            <button onclick="switchTab('logs')" class="hero-btn inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition">
-                                <i data-lucide="history" class="w-3.5 h-3.5 text-purple-400"></i> Platform Reports
-                            </button>
-                        </div>
-                        <span class="text-[10px] text-white/60 font-semibold italic">Super Admin Panel</span>
-                    </div>
-                    
                 </div>
             </div>
 
@@ -1267,7 +1432,7 @@
 
         // KPI Animated Counter
         function initKpiAnimations() {
-            const kpiEls = document.querySelectorAll('[id$="Count"],[id$="Hero"],[id$="Hero2"],[id*="kpi"],[id*="Kpi"],[id*="KPI"]');
+            const kpiEls = document.querySelectorAll('[id$="Count"],[id$="Hero"],[id$="Hero2"],[id*="kpi"],[id*="Kpi"],[id*="KPI"], .card-number, span[id*="metric"]');
             const animateCounter = (el, target) => {
                 let start = 0;
                 const duration = 1200;

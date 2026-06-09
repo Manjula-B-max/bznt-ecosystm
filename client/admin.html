@@ -131,13 +131,13 @@
             border: 1px solid rgba(238, 238, 245, 0.6);
             border-radius: 18px;
             box-shadow: 0 15px 45px rgba(97, 1, 115, 0.03);
-            margin: 24px 24px 0 278px;
+            margin: 16px 24px 0 278px;
             z-index: 30;
             transition: all 0.3s ease;
         }
 
         .main-workspace {
-            margin: 24px 24px 24px 278px;
+            margin: 12px 24px 24px 278px;
             transition: all 0.3s ease;
         }
 
@@ -375,11 +375,13 @@
                 opacity: 0;
                 transform: translateX(-12px);
             }
+
             to {
                 opacity: 1;
                 transform: translateX(0);
             }
         }
+
         .floating-sidebar {
             animation: sidebar-entrance 250ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
             background: #FFFFFF !important;
@@ -666,224 +668,283 @@
         .command-center-hero {
             position: relative;
             background: linear-gradient(135deg, #a402bf 0%, #210026 100%) !important;
-            border-radius: 28px !important;
-            padding: 24px !important;
-            overflow: hidden;
+            border-radius: 36px !important;
+            padding: 24px 28px !important;
+            overflow: hidden !important;
             box-shadow: 0 12px 40px rgba(97, 1, 115, 0.18) !important;
             border: none !important;
-            min-height: 250px;
-            animation: hero-gradient-drift 18s ease-in-out infinite alternate;
+            height: 340px !important;
+            min-height: 340px !important;
+            max-height: 340px !important;
+            opacity: 1;
+            transform: none;
             background-size: 110% 110% !important;
+            mask-image: radial-gradient(white, black);
+            -webkit-mask-image: -webkit-radial-gradient(white, black);
         }
 
-        /* Ambient Layers & Depth */
-        .command-center-hero .light-source-radial {
-            background: radial-gradient(circle, rgba(243, 189, 252, 0.35) 0%, transparent 70%);
-            animation: light-pulse 16s ease-in-out infinite alternate;
-        }
-
-        .command-center-hero .ambient-glow {
-            background: radial-gradient(circle, rgba(221, 115, 240, 0.12) 0%, transparent 70%);
-            animation: ambient-pulse 20s ease-in-out infinite alternate;
-        }
-
-        .command-center-hero .dark-vignette {
-            background: radial-gradient(circle, rgba(33, 0, 38, 0.45) 0%, transparent 80%);
-        }
-
-        /* Noise Texture Overlay */
-        .command-center-hero .noise-overlay {
-            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
-        }
-
-        /* Animations */
-        @keyframes hero-gradient-drift {
-            0% { background-position: 0% 5% }
-            100% { background-position: 5% 0% }
-        }
-
-        @keyframes light-pulse {
-            0% { transform: scale(1) translate(0, 0); opacity: 0.85; }
-            50% { transform: scale(1.05) translate(15px, -10px); opacity: 1; }
-            100% { transform: scale(0.95) translate(-10px, 15px); opacity: 0.9; }
-        }
-
-        @keyframes ambient-pulse {
-            0% { transform: scale(1) translate(-50%, -50%); opacity: 0.8; }
-            50% { transform: scale(1.1) translate(-48%, -52%); opacity: 1; }
-            100% { transform: scale(0.9) translate(-52%, -48%); opacity: 0.85; }
-        }
-
-        @keyframes pulse-dot {
-            0% { transform: scale(0.9); opacity: 0.6; }
-            50% { transform: scale(1.2); opacity: 1; }
-            100% { transform: scale(0.9); opacity: 0.6; }
-        }
-
-        .live-pulse-dot {
-            animation: pulse-dot 1.8s infinite ease-in-out;
-        }
-
-        /* Soft Particle Field */
-        .command-center-hero .particle {
+        /* 3 Cinematic Ambient depth layers */
+        .glow-top-left {
             position: absolute;
-            background: radial-gradient(circle, rgba(255, 255, 255, 0.3) 0%, transparent 70%);
+            left: -10%;
+            top: -10%;
+            width: 400px;
+            height: 400px;
             border-radius: 50%;
+            background: rgba(243, 189, 252, 0.20) !important; /* 20% opacity */
+            filter: blur(250px) !important; /* 250px blur */
             pointer-events: none;
+            z-index: 1;
         }
 
-        .command-center-hero .particle-1 { width: 60px; height: 60px; left: 15%; top: 20%; animation: particle-float-1 25s linear infinite; }
-        .command-center-hero .particle-2 { width: 80px; height: 80px; right: 25%; top: 40%; animation: particle-float-2 30s linear infinite; }
-        .command-center-hero .particle-3 { width: 40px; height: 40px; left: 45%; bottom: 15%; animation: particle-float-3 20s linear infinite; }
-        .command-center-hero .particle-4 { width: 70px; height: 70px; right: 10%; top: 15%; animation: particle-float-4 28s linear infinite; }
-
-        @keyframes particle-float-1 {
-            0% { transform: translate(0, 0) scale(1); }
-            50% { transform: translate(30px, -20px) scale(1.1); }
-            100% { transform: translate(0, 0) scale(1); }
+        .glow-center {
+            position: absolute;
+            left: 30%;
+            top: 20%;
+            width: 500px;
+            height: 500px;
+            border-radius: 50%;
+            background: rgba(221, 115, 240, 0.10) !important; /* 10% opacity */
+            filter: blur(300px) !important; /* 300px blur */
+            pointer-events: none;
+            z-index: 1;
         }
 
-        @keyframes particle-float-2 {
-            0% { transform: translate(0, 0) scale(1); }
-            50% { transform: translate(-40px, 30px) scale(0.9); }
-            100% { transform: translate(0, 0) scale(1); }
+        .glow-bottom-right {
+            position: absolute;
+            right: -10%;
+            bottom: -10%;
+            width: 600px;
+            height: 600px;
+            border-radius: 50%;
+            background: rgba(33, 0, 38, 0.45) !important; /* 45% opacity */
+            filter: blur(400px) !important; /* 400px blur */
+            pointer-events: none;
+            z-index: 1;
         }
 
-        @keyframes particle-float-3 {
-            0% { transform: translate(0, 0) scale(1); }
-            50% { transform: translate(20px, 20px) scale(1.15); }
-            100% { transform: translate(0, 0) scale(1); }
+        /* Dot Grid pattern: 5% opacity */
+        .dot-grid-pattern {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            opacity: 0.05 !important;
+            background-image: radial-gradient(rgba(255, 255, 255, 0.4) 1.5px, transparent 1.5px) !important;
+            background-size: 18px 18px !important;
+            z-index: 1;
         }
 
-        @keyframes particle-float-4 {
-            0% { transform: translate(0, 0) scale(1); }
-            50% { transform: translate(-25px, -25px) scale(0.85); }
-            100% { transform: translate(0, 0) scale(1); }
+        /* Light Sweep Animation: opacity 3%, duration 6s, interval 15s */
+        .light-sweep-overlay {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 30%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.03), transparent) !important;
+            filter: blur(150px) !important;
+            transform: translateX(-150%);
+            pointer-events: none;
+            z-index: 2;
+            animation: light-sweep-anim 15s infinite linear;
         }
 
-        /* Glassmorphism Refinement (Phases 8 & 9) */
+        @keyframes light-sweep-anim {
+            0% { transform: translateX(-150%); }
+            40% { transform: translateX(250%); }
+            100% { transform: translateX(250%); }
+        }
+
+        /* Status indicators & pulse */
         .status-indicator-chip {
             background: rgba(255, 255, 255, 0.08) !important;
             backdrop-filter: blur(18px) !important;
-            border: 1px solid rgba(255, 255, 255, 0.12) !important;
+            -webkit-backdrop-filter: blur(18px) !important;
+            border: 1px solid rgba(255, 255, 255, 0.08) !important;
             color: #ffffff !important;
             transition: all 150ms ease;
+            box-shadow: 0 4px 12px rgba(33, 0, 38, 0.05) !important;
         }
 
-        /* KPI Rail System */
-        .kpi-rail-container {
-            width: 100%;
-            margin-top: 10px;
-            margin-bottom: 10px;
+        .health-pulse-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background-color: #34d399;
+            box-shadow: 0 0 6px #34d399;
+            animation: health-pulse-anim 2s infinite ease-in-out;
         }
 
-        .kpi-rail-wrapper {
-            display: flex;
+        @keyframes health-pulse-anim {
+            0%, 100% { opacity: 0.5; transform: scale(0.9); box-shadow: 0 0 4px rgba(52, 211, 153, 0.4); }
+            50% { opacity: 1; transform: scale(1.1); box-shadow: 0 0 10px rgba(52, 211, 153, 0.8); }
+        }
+
+        /* Mini Glass Pills for Role Metrics */
+        .mini-glass-pill {
+            display: inline-flex;
             align-items: center;
-            justify-content: space-between;
+            gap: 6px;
+            padding: 5px 14px;
+            border-radius: 9999px;
             background: rgba(255, 255, 255, 0.06) !important;
-            backdrop-filter: blur(18px) !important;
-            border: 1px solid rgba(255, 255, 255, 0.1) !important;
-            border-radius: 16px !important;
-            padding: 10px 20px !important;
-            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
+            border: 1px solid rgba(255, 255, 255, 0.08) !important;
+            font-size: 12px !important;
+            font-weight: 600 !important;
+            color: rgba(255, 255, 255, 0.9) !important;
+            letter-spacing: 0.2px !important;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+            transition: all 180ms ease;
         }
 
-        .kpi-rail-item {
-            flex: 1;
+        .mini-glass-pill:hover {
+            background: rgba(255, 255, 255, 0.1) !important;
+            border-color: rgba(255, 255, 255, 0.15) !important;
+            transform: translateY(-1px) !important;
+        }
+
+        /* Command Glass Panel */
+        .command-glass-panel {
+            background: rgba(255, 255, 255, 0.04) !important;
+            backdrop-filter: blur(20px) !important;
+            -webkit-backdrop-filter: blur(20px) !important;
+            border: 1px solid rgba(255, 255, 255, 0.08) !important;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.18) !important;
+            border-radius: 32px !important;
+            animation: panel-load 500ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            will-change: transform, opacity;
+        }
+
+        @keyframes panel-load {
+            from { opacity: 0; transform: scale(0.98); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        /* Dominant KPI Card inside Command Panel */
+        .premium-kpi-card {
             display: flex;
             flex-direction: column;
-            align-items: flex-start;
-        }
-
-        .kpi-rail-divider {
-            width: 1px;
-            height: 24px;
-            background: rgba(255, 255, 255, 0.12);
-            margin: 0 15px;
-        }
-
-        .kpi-rail-label {
-            font-size: 9px !important;
-            text-transform: uppercase !important;
-            letter-spacing: 0.07em !important;
-            color: rgba(255, 255, 255, 0.65) !important;
-            font-weight: 700 !important;
-        }
-
-        .kpi-rail-value {
-            font-size: 15px !important;
-            font-weight: 800 !important;
-            color: #ffffff !important;
-            margin-top: 2px;
-            display: flex;
+            justify-content: center;
             align-items: center;
+            height: 72px;
+            border-radius: 18px;
+            background: rgba(255, 255, 255, 0.05) !important;
+            border: 1px solid rgba(255, 255, 255, 0.08) !important;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08) !important;
+            cursor: pointer;
+            transition: all 250ms cubic-bezier(0.4, 0, 0.2, 1) !important;
         }
 
-        /* Command Chips (Phase 5) */
-        .command-chip {
-            background: rgba(255, 255, 255, 0.08) !important;
-            backdrop-filter: blur(18px) !important;
-            border: 1px solid rgba(255, 255, 255, 0.12) !important;
-            border-radius: 12px !important;
-            padding: 6px 12px !important;
-            font-size: 10px !important;
+        .premium-kpi-card:hover {
+            transform: translateY(-4px) !important;
+            background: rgba(255, 255, 255, 0.1) !important;
+            border-color: rgba(255, 255, 255, 0.18) !important;
+            box-shadow: 0 8px 24px rgba(164, 2, 191, 0.25) !important;
+        }
+
+        .premium-kpi-card .card-number {
+            font-size: 30px !important;
             font-weight: 700 !important;
             color: #ffffff !important;
-            box-shadow: 0 4px 12px rgba(33, 0, 38, 0.15) !important;
-            cursor: pointer;
-            transition: all 150ms cubic-bezier(0.4, 0, 0.2, 1);
+            line-height: 1 !important;
+            letter-spacing: -0.5px !important;
         }
 
-        .command-chip:hover {
-            transform: scale(1.02) translateY(-2px) !important;
+        .premium-kpi-card .card-label {
+            font-size: 11px !important;
+            font-weight: 600 !important;
+            color: rgba(243, 189, 252, 0.75) !important;
+            text-transform: uppercase !important;
+            letter-spacing: 0.4px !important;
+            margin-top: 6px !important;
+        }
+
+        /* Premium Buttons */
+        .btn-premium-primary {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            height: 48px !important;
+            padding: 0 24px !important;
+            border-radius: 16px !important;
             background: rgba(255, 255, 255, 0.14) !important;
-            border-color: rgba(255, 255, 255, 0.25) !important;
-            box-shadow: 0 6px 20px rgba(221, 115, 240, 0.25) !important;
+            border: 1px solid rgba(255, 255, 255, 0.22) !important;
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            font-size: 13px !important;
+            font-weight: 700 !important;
+            color: #ffffff !important;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
+            letter-spacing: 0.2px !important;
         }
 
-        .command-chip:active {
-            transform: scale(0.98) translateY(0px) !important;
+        .btn-premium-primary:hover {
+            transform: translateY(-2px) scale(1.01) !important;
+            background: rgba(255, 255, 255, 0.22) !important;
+            border-color: rgba(255, 255, 255, 0.35) !important;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15), 0 0 15px rgba(164, 2, 191, 0.35) !important;
         }
 
-        .command-chip i {
+        .btn-premium-secondary {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            height: 48px !important;
+            padding: 0 20px !important;
+            border-radius: 16px !important;
+            background: rgba(255, 255, 255, 0.05) !important;
+            border: 1px solid rgba(255, 255, 255, 0.08) !important;
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            font-size: 13px !important;
+            font-weight: 600 !important;
+            color: rgba(255, 255, 255, 0.9) !important;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
+            letter-spacing: 0.2px !important;
+        }
+
+        .btn-premium-secondary:hover {
+            transform: translateY(-2px) scale(1.01) !important;
+            background: rgba(255, 255, 255, 0.1) !important;
+            border-color: rgba(255, 255, 255, 0.18) !important;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1), 0 0 10px rgba(164, 2, 191, 0.2) !important;
+            color: #ffffff !important;
+        }
+
+        .btn-premium-primary i, .btn-premium-secondary i {
             transition: transform 150ms ease;
         }
 
-        .command-chip:hover i {
-            transform: rotate(-5deg) scale(1.1);
+        .btn-premium-primary:hover i, .btn-premium-secondary:hover i {
+            transform: scale(1.1);
         }
 
-        /* Shortcut Chip */
-        .shortcut-chip {
-            background: rgba(255, 255, 255, 0.04) !important;
-            backdrop-filter: blur(18px) !important;
-            border: 1px solid rgba(255, 255, 255, 0.06) !important;
-            border-radius: 10px !important;
-            padding: 4px 10px !important;
-            font-size: 9px !important;
-            font-weight: 700 !important;
-            color: rgba(255, 255, 255, 0.8) !important;
-            cursor: pointer;
-            transition: all 150ms ease;
+        /* Floating background particles */
+        .command-center-hero .particle {
+            position: absolute;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.2) 0%, transparent 70%);
+            border-radius: 50%;
+            pointer-events: none;
+            will-change: transform;
         }
+        .command-center-hero .particle-1 { width: 50px; height: 50px; left: 10%; top: 15%; animation: float-p-1 20s linear infinite; }
+        .command-center-hero .particle-2 { width: 60px; height: 60px; right: 20%; top: 35%; animation: float-p-2 20s linear infinite; }
+        .command-center-hero .particle-3 { width: 35px; height: 35px; left: 40%; bottom: 10%; animation: float-p-3 20s linear infinite; }
+        .command-center-hero .particle-4 { width: 55px; height: 55px; right: 8%; top: 10%; animation: float-p-4 20s linear infinite; }
+        .command-center-hero .particle-5 { width: 45px; height: 45px; left: 25%; bottom: 25%; animation: float-p-5 20s linear infinite; }
+        .command-center-hero .particle-6 { width: 50px; height: 50px; right: 35%; bottom: 15%; animation: float-p-6 20s linear infinite; }
 
-        .shortcut-chip:hover {
-            background: rgba(255, 255, 255, 0.08) !important;
-            color: #ffffff !important;
-            border-color: rgba(255, 255, 255, 0.15) !important;
-        }
-
-        /* Progress Shimmer (Phase 10) */
-        .progress-shimmer {
-            animation: shimmer-load 2.5s infinite linear;
-            background-size: 200% 100%;
-        }
-
-        @keyframes shimmer-load {
-            0% { background-position: -150% 0; }
-            100% { background-position: 150% 0; }
-        }
+        @keyframes float-p-1 { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(20px, -10px); } }
+        @keyframes float-p-2 { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(-15px, 15px); } }
+        @keyframes float-p-3 { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(15px, 20px); } }
+        @keyframes float-p-4 { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(-20px, -15px); } }
+        @keyframes float-p-5 { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(10px, -15px); } }
+        @keyframes float-p-6 { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(-10px, 10px); } }
     </style>
 </head>
 
@@ -999,151 +1060,161 @@
             <div id="dashView" class="tab-content active space-y-6">
                 <!-- Hero Banner -->
                 <div class="command-center-hero text-white flex flex-col justify-between">
-                    <!-- Layer 1: Noise Texture Overlay (0.5% opacity) -->
-                    <div class="noise-overlay absolute inset-0 pointer-events-none opacity-[0.005]"></div>
+                    <!-- Cinematic glows -->
+                    <div class="glow-top-left"></div>
+                    <div class="glow-center"></div>
+                    <div class="glow-bottom-right"></div>
                     
-                    <!-- Layer 2: Radial Light Source Top Left -->
-                    <div class="light-source-radial absolute -left-20 -top-20 w-[300px] h-[300px] rounded-full blur-[180px] pointer-events-none"></div>
+                    <!-- Dot-grid pattern overlay -->
+                    <div class="dot-grid-pattern"></div>
                     
-                    <!-- Layer 3: Ambient Purple Glow Center -->
-                    <div class="ambient-glow absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] rounded-full blur-[180px] pointer-events-none"></div>
-                    
-                    <!-- Layer 4: Dark Vignette Bottom Right -->
-                    <div class="dark-vignette absolute right-0 bottom-0 w-[300px] h-[300px] rounded-full blur-[120px] pointer-events-none"></div>
+                    <!-- Light sweep glass animation effect -->
+                    <div class="light-sweep-overlay"></div>
 
-                    <!-- Soft Particle Field Container (Luxury particle animation) -->
-                    <div class="particle-field absolute inset-0 pointer-events-none opacity-20">
+                    <!-- Floating background particles -->
+                    <div class="particle-field absolute inset-0 pointer-events-none opacity-10 z-[1]">
                         <span class="particle particle-1"></span>
                         <span class="particle particle-2"></span>
                         <span class="particle particle-3"></span>
                         <span class="particle particle-4"></span>
+                        <span class="particle particle-5"></span>
+                        <span class="particle particle-6"></span>
                     </div>
 
-                    <!-- Main Grid Container: Split Screen Command Center -->
-                    <div class="relative z-10 grid grid-cols-1 lg:grid-cols-3 gap-6 h-full items-stretch w-full">
-                        
-                        <!-- Left 2 Columns: Title, Operational Summary, KPI Rail, Command Chips -->
-                        <div class="lg:col-span-2 flex flex-col justify-between space-y-4 h-full">
-                            
-                            <!-- Top Section: Status Intelligence & Title -->
-                            <div class="space-y-2">
-                                <!-- Status Intelligence Row -->
-                                <div class="flex items-center gap-2 flex-wrap">
-                                    <div class="status-indicator-chip inline-flex items-center gap-1.5 px-3 py-1 text-[10px] font-bold rounded-full">
-                                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 live-pulse-dot"></span>
-                                        <span>Live</span>
-                                    </div>
-                                    <div class="status-indicator-chip inline-flex items-center gap-1.5 px-3 py-1 text-[10px] font-bold rounded-full">
-                                        <span class="w-1.5 h-1.5 rounded-full bg-blue-400 live-pulse-dot"></span>
-                                        <span>Synced</span>
-                                    </div>
-                                    <div class="status-indicator-chip inline-flex items-center gap-1.5 px-3 py-1 text-[10px] font-bold rounded-full">
-                                        <span class="w-1.5 h-1.5 rounded-full bg-indigo-400 live-pulse-dot"></span>
-                                        <span>Healthy</span>
-                                    </div>
-                                    <div class="status-indicator-chip inline-flex items-center gap-1.5 px-3 py-1 text-[10px] font-bold rounded-full">
-                                        <i data-lucide="clock" class="w-3 h-3 text-purple-200"></i>
-                                        <span class="hero-date-time font-mono">Loading...</span>
-                                    </div>
+                    <!-- Main Layout Grid -->
+                    <div class="relative z-10 flex flex-col h-full justify-between w-full">
+                        <!-- TOP BAR -->
+                        <div class="flex items-center justify-between border-b border-white/5 pb-3">
+                            <!-- LEFT: Status Chips -->
+                            <div class="flex items-center gap-2">
+                                <div class="status-indicator-chip inline-flex items-center gap-1.5 px-3 py-1 text-[10px] font-bold rounded-full">
+                                    <span class="health-pulse-dot"></span>
+                                    <span>Operations Active</span>
                                 </div>
+                                <div class="status-indicator-chip inline-flex items-center gap-1.5 px-3 py-1 text-[10px] font-bold rounded-full">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-blue-400"></span>
+                                    <span>Payroll Ready</span>
+                                </div>
+                                <div class="status-indicator-chip inline-flex items-center gap-1.5 px-3 py-1 text-[10px] font-bold rounded-full">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
+                                    <span>Attendance Synced</span>
+                                </div>
+                            </div>
+                            <!-- CENTER: Date & Time (Aligned on Same Axis) -->
+                            <div class="text-[11px] font-mono font-semibold text-purple-200/95 flex items-center gap-1.5 justify-center">
+                                <i data-lucide="clock" class="w-3.5 h-3.5 text-purple-200"></i>
+                                <span class="hero-date-time">Loading...</span>
+                            </div>
+                            <!-- RIGHT: Health Status Capsule -->
+                            <div class="inline-flex items-center gap-1.5 px-3 py-1 text-[10px] font-bold rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-300">
+                                <span class="health-pulse-dot"></span>
+                                <span>System Health 100%</span>
+                            </div>
+                        </div>
 
-                                <!-- Title Zone -->
-                                <div class="text-left mt-2">
-                                    <h2 class="text-lg font-extrabold tracking-tight leading-tight" id="hrWelcomeMsgBanner">HR Control Dashboard</h2>
-                                    <!-- Operational Summary Block -->
-                                    <div class="text-purple-100/90 text-[11px] font-medium space-y-1 mt-1" id="hrOperationalSummary">
-                                        <div>Real-time workforce operations telemetry stream.</div>
-                                        <div class="flex items-center gap-3 text-[10px] text-purple-200 mt-1 flex-wrap font-semibold">
-                                            <span class="flex items-center gap-1"><i data-lucide="users" class="w-3 h-3"></i> <span id="summaryActiveEmployees">52</span> active today</span>
-                                            <span class="flex items-center gap-1"><i data-lucide="calendar" class="w-3 h-3"></i> <span id="summaryPendingLeaves">9</span> leaves pending</span>
-                                            <span class="flex items-center gap-1"><i data-lucide="wallet" class="w-3 h-3"></i> Cycle <span id="summaryPayrollProgress">88%</span> completed</span>
+                        <!-- BOTTOM ROW: Split 60% Left, 40% Right with Separator -->
+                        <div class="flex-1 flex gap-6 items-stretch mt-4 overflow-hidden relative">
+                            <!-- Left Section (60%) -->
+                            <div class="w-[58%] flex flex-col justify-between h-full pr-2">
+                                <div class="text-left space-y-2">
+                                    <div class="space-y-0.5">
+                                        <h2 class="text-[34px] font-bold tracking-tight leading-[120%]">HR Control Dashboard</h2>
+                                        <p class="text-purple-200/90 text-[16px] font-medium leading-[140%]">Workforce Operations Command Center</p>
+                                    </div>
+                                    
+                                    <!-- Center zone metrics in glass pills -->
+                                    <div class="flex flex-wrap gap-2 mt-1">
+                                        <div class="mini-glass-pill">
+                                            <i data-lucide="users" class="w-3.5 h-3.5 text-emerald-400"></i>
+                                            <span id="metricHrEmployees">52</span> Employees
+                                        </div>
+                                        <div class="mini-glass-pill">
+                                            <i data-lucide="calendar" class="w-3.5 h-3.5 text-blue-400"></i>
+                                            <span id="metricHrPendingLeaves">1</span> Pending Leave
+                                        </div>
+                                        <div class="mini-glass-pill">
+                                            <i data-lucide="wallet" class="w-3.5 h-3.5 text-amber-400"></i>
+                                            <span id="metricHrPayroll">88%</span> Payroll
+                                        </div>
+                                        <div class="mini-glass-pill">
+                                            <i data-lucide="shield-check" class="w-3.5 h-3.5 text-purple-400"></i>
+                                            <span id="metricHrPfSynced">100%</span> PF Synced
                                         </div>
                                     </div>
                                 </div>
-                            </div>
-
-                            <!-- Middle Section: Unified KPI Rail -->
-                            <div class="kpi-rail-container">
-                                <div class="kpi-rail-wrapper">
-                                    <div class="kpi-rail-item">
-                                        <span class="kpi-rail-label">Employees</span>
-                                        <span class="kpi-rail-value" id="railEmployeesCount">0 <span class="text-[10px] text-purple-200/80 font-semibold ml-1">Active</span></span>
-                                    </div>
-                                    <div class="kpi-rail-divider"></div>
-                                    <div class="kpi-rail-item">
-                                        <span class="kpi-rail-label">Projects</span>
-                                        <span class="kpi-rail-value" id="railProjectsCount">0 <span class="text-[10px] text-purple-200/80 font-semibold ml-1">Active</span></span>
-                                    </div>
-                                    <div class="kpi-rail-divider"></div>
-                                    <div class="kpi-rail-item">
-                                        <span class="kpi-rail-label">Approvals</span>
-                                        <span class="kpi-rail-value" id="railApprovalsCount">0 <span class="text-[10px] text-purple-200/80 font-semibold ml-1">Pending</span></span>
-                                    </div>
-                                    <div class="kpi-rail-divider"></div>
-                                    <div class="kpi-rail-item">
-                                        <span class="kpi-rail-label">Departments</span>
-                                        <span class="kpi-rail-value" id="railDeptCount">4</span>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Bottom Section: Command Center Actions -->
-                            <div class="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3 pt-2 border-t border-white/5 flex-shrink-0">
-                                <div class="flex flex-wrap gap-1.5">
-                                    <button onclick="openAddEmployeeModal()" class="command-chip flex items-center gap-1"><i data-lucide="user-plus" class="w-3 h-3"></i> Add Employee</button>
-                                    <button onclick="switchAccordionTab('hr-recruitment')" class="command-chip flex items-center gap-1"><i data-lucide="briefcase" class="w-3 h-3"></i> Recruitment</button>
-                                    <button onclick="switchAccordionTab('hr-payroll')" class="command-chip flex items-center gap-1"><i data-lucide="wallet" class="w-3 h-3"></i> Generate Payroll</button>
-                                    <button onclick="switchAccordionTab('hr-pf')" class="command-chip flex items-center gap-1"><i data-lucide="shield-check" class="w-3 h-3"></i> PF Export</button>
-                                </div>
-                                <!-- Shortcuts -->
-                                <div class="flex items-center gap-1.5 justify-end">
-                                    <span class="text-[9px] font-bold text-purple-200/60 uppercase tracking-wider">Shortcut:</span>
-                                    <button onclick="switchAccordionTab('hr-employees')" class="shortcut-chip">Employee Directory</button>
-                                </div>
-                            </div>
-
-                        </div>
-                        
-                        <!-- Right Column: Right Side Command Panel (Health bar, Mini Alerts) -->
-                        <div class="right-command-panel flex flex-col justify-between p-3.5 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-md h-full">
-                            <!-- Progress & Health Bars -->
-                            <div class="space-y-3.5 text-left">
-                                <h3 class="text-[9px] font-extrabold text-purple-200 uppercase tracking-widest block">Diagnostics</h3>
                                 
-                                <!-- Health Bar 1 -->
-                                <div class="space-y-1">
-                                    <div class="flex justify-between items-center text-[9px] text-white/95">
-                                        <span class="font-bold">Payroll Progress</span>
-                                        <span class="font-mono text-purple-200 font-bold" id="panelPayrollProgress">88%</span>
-                                    </div>
-                                    <div class="w-full bg-white/10 rounded-full h-1 overflow-hidden relative">
-                                        <div class="progress-shimmer absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
-                                        <div class="bg-emerald-400 h-full rounded-full" style="width: 88%"></div>
-                                    </div>
-                                </div>
-
-                                <!-- Health Bar 2 -->
-                                <div class="space-y-1">
-                                    <div class="flex justify-between items-center text-[9px] text-white/95">
-                                        <span class="font-bold">Roster Compliance</span>
-                                        <span class="font-mono text-purple-200 font-bold" id="panelRosterHealth">100%</span>
-                                    </div>
-                                    <div class="w-full bg-white/10 rounded-full h-1 overflow-hidden relative">
-                                        <div class="progress-shimmer absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
-                                        <div class="bg-emerald-400 h-full rounded-full" id="complianceProgressBar" style="width: 100%"></div>
-                                    </div>
+                                <!-- Actions (Primary Filled, Secondary Outline) -->
+                                <div class="flex flex-wrap gap-2.5 mt-auto">
+                                    <button onclick="openAddEmployeeModal()" class="btn-premium-primary gap-2">
+                                        <i data-lucide="user-plus" class="w-4 h-4 text-emerald-300"></i> Add Employee
+                                    </button>
+                                    <button onclick="switchAccordionTab('hr-recruitment')" class="btn-premium-secondary gap-2">
+                                        <i data-lucide="briefcase" class="w-4 h-4"></i> Recruitment
+                                    </button>
+                                    <button onclick="switchAccordionTab('hr-payroll')" class="btn-premium-secondary gap-2">
+                                        <i data-lucide="wallet" class="w-4 h-4"></i> Generate Payroll
+                                    </button>
+                                    <button onclick="switchAccordionTab('hr-attendance')" class="btn-premium-secondary gap-2">
+                                        <i data-lucide="clock" class="w-4 h-4"></i> Attendance Review
+                                    </button>
+                                    <button onclick="switchAccordionTab('hr-pf')" class="btn-premium-secondary gap-2">
+                                        <i data-lucide="shield-check" class="w-4 h-4"></i> PF Export
+                                    </button>
                                 </div>
                             </div>
 
-                            <!-- Mini Alerts Section -->
-                            <div class="mt-2 pt-2 border-t border-white/5 space-y-1.5 text-left">
-                                <h4 class="text-[8px] font-extrabold text-purple-200/60 uppercase tracking-widest mb-1">Mini Alerts</h4>
-                                <div class="space-y-1 max-h-[85px] overflow-y-auto pr-1" id="heroMiniAlerts">
-                                    <!-- Dynamic alerts populated via controller -->
+                            <!-- Vertical Divider Glow -->
+                            <div class="w-[1px] self-stretch bg-gradient-to-b from-white/0 via-white/10 to-white/0 relative" style="box-shadow: 0 0 10px rgba(255,255,255,0.08);"></div>
+
+                            <!-- Right Section: Command Panel (40%) -->
+                            <div class="w-[40%] command-glass-panel flex flex-col justify-between p-4 text-white">
+                                <div class="flex items-center justify-between pb-1.5 border-b border-white/5">
+                                    <span class="text-[9px] font-extrabold text-purple-200 uppercase tracking-widest">Command Panel</span>
+                                    <span class="text-[8px] font-mono font-bold bg-purple-500/20 text-purple-200 px-1.5 py-0.5 rounded border border-purple-500/10">Roster Stable</span>
+                                </div>
+
+                                <!-- Horizontal Grid with Dominant numbers -->
+                                <div class="grid grid-cols-4 gap-2 my-2">
+                                    <div class="premium-kpi-card">
+                                        <span class="card-number" id="hrHeroTotalEmp">52</span>
+                                        <span class="card-label">Employees</span>
+                                    </div>
+                                    <div class="premium-kpi-card">
+                                        <span class="card-number" id="hrHeroLateIn">0</span>
+                                        <span class="card-label">Late In</span>
+                                    </div>
+                                    <div class="premium-kpi-card">
+                                        <span class="card-number" id="hrHeroLeaveReq">1</span>
+                                        <span class="card-label">Leave Req</span>
+                                    </div>
+                                    <div class="premium-kpi-card">
+                                        <span class="card-number" id="hrHeroPayroll">88%</span>
+                                        <span class="card-label">Payroll</span>
+                                    </div>
+                                </div>
+
+                                <!-- Progress Bar -->
+                                <div class="space-y-1">
+                                    <div class="flex justify-between items-center text-[9.5px] text-white/95">
+                                        <span class="font-semibold tracking-wide">Payroll Cycle Progress</span>
+                                        <span class="font-mono text-purple-200 font-bold" id="hrHeroPayrollPercentText">88%</span>
+                                    </div>
+                                    <div class="w-full bg-white/10 rounded-full h-1 overflow-hidden relative">
+                                        <div class="progress-shimmer absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
+                                        <div class="bg-emerald-400 h-full rounded-full transition-all duration-[1200ms]" style="width: 88%"></div>
+                                    </div>
+                                </div>
+
+                                <!-- Alert Footer -->
+                                <div class="pt-2 border-t border-white/5 flex items-center justify-between text-[9.5px] text-purple-200/90 font-semibold">
+                                    <div class="flex items-center gap-1.5">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-amber-400 live-pulse-dot"></span>
+                                        <span>1 Attendance Exception</span>
+                                    </div>
+                                    <i data-lucide="shield-alert" class="w-3.5 h-3.5 text-purple-200/60"></i>
                                 </div>
                             </div>
                         </div>
-
                     </div>
                 </div>
 
@@ -3028,102 +3099,155 @@
         <!-- ==================== STANDARD SYSTEM ADMIN TAB PANELS ==================== -->
         <!-- Admin Dashboard Panel -->
         <div id="dashboardPanel" class="tab-panel active space-y-6 fade-up-view">
-            <div
-                class="hero-gradient rounded-[24px] p-5 text-white relative overflow-hidden shadow-lg max-h-[260px] flex flex-col justify-between">
-                <div class="absolute -right-20 -top-20 w-80 h-80 bg-white/5 rounded-full blur-3xl"></div>
-                <div class="relative z-10 flex flex-col justify-between h-full space-y-3.5">
+            <div class="command-center-hero text-white flex flex-col justify-between">
+                <!-- Cinematic glows -->
+                <div class="glow-top-left"></div>
+                <div class="glow-center"></div>
+                <div class="glow-bottom-right"></div>
+                
+                <!-- Dot-grid pattern overlay -->
+                <div class="dot-grid-pattern"></div>
+                
+                <!-- Light sweep glass animation effect -->
+                <div class="light-sweep-overlay"></div>
 
-                    <!-- Top Row: Status Chips & Progress Indicators -->
-                    <div class="flex justify-between items-center flex-wrap gap-2">
-                        <div class="flex items-center gap-2 flex-wrap">
-                            <div
-                                class="inline-flex items-center gap-1 px-2.5 py-0.5 bg-white/10 text-white rounded-full text-[10px] font-bold border border-white/15">
-                                <span class="w-1.5 h-1.5 rounded-full bg-[#10B981] animate-ping"></span> Operations
-                                Active
+                <!-- Floating background particles -->
+                <div class="particle-field absolute inset-0 pointer-events-none opacity-10 z-[1]">
+                    <span class="particle particle-1"></span>
+                    <span class="particle particle-2"></span>
+                    <span class="particle particle-3"></span>
+                    <span class="particle particle-4"></span>
+                    <span class="particle particle-5"></span>
+                    <span class="particle particle-6"></span>
+                </div>
+
+                <!-- Main Layout Grid -->
+                <div class="relative z-10 flex flex-col h-full justify-between w-full">
+                    <!-- TOP BAR -->
+                    <div class="flex items-center justify-between border-b border-white/5 pb-3">
+                        <!-- LEFT: Status Chips -->
+                        <div class="flex items-center gap-2">
+                            <div class="status-indicator-chip inline-flex items-center gap-1.5 px-3 py-1 text-[10px] font-bold rounded-full">
+                                <span class="health-pulse-dot"></span>
+                                <span>Operations Active</span>
                             </div>
-                            <div
-                                class="inline-flex items-center gap-1 px-2.5 py-0.5 bg-white/10 text-white rounded-full text-[10px] font-bold border border-white/15">
-                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> System Stable
-                            </div>
-                            <div
-                                class="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-white/10 text-white rounded-full text-[10px] font-bold border border-white/15">
-                                <i data-lucide="calendar" class="w-3 h-3 text-purple-200"></i>
-                                <span class="hero-date-time font-mono">Loading...</span>
+                            <div class="status-indicator-chip inline-flex items-center gap-1.5 px-3 py-1 text-[10px] font-bold rounded-full">
+                                <span class="w-1.5 h-1.5 rounded-full bg-blue-400"></span>
+                                <span>System Stable</span>
                             </div>
                         </div>
-                        <!-- Progress Indicator -->
-                        <div
-                            class="flex items-center gap-2 text-[10px] bg-white/10 rounded-full px-2.5 py-0.5 border border-white/15">
-                            <span class="font-bold text-white/90">System Health: 100%</span>
-                            <div class="w-16 bg-white/20 rounded-full h-1 overflow-hidden">
-                                <div class="bg-emerald-400 h-full rounded-full" style="width: 100%"></div>
-                            </div>
+                        <!-- CENTER: Date & Time (Aligned on Same Axis) -->
+                        <div class="text-[11px] font-mono font-semibold text-purple-200/95 flex items-center gap-1.5 justify-center">
+                            <i data-lucide="clock" class="w-3.5 h-3.5 text-purple-200"></i>
+                            <span class="hero-date-time">Loading...</span>
+                        </div>
+                        <!-- RIGHT: Health Status Capsule -->
+                        <div class="inline-flex items-center gap-1.5 px-3 py-1 text-[10px] font-bold rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-300">
+                            <span class="health-pulse-dot"></span>
+                            <span>System Health 100%</span>
                         </div>
                     </div>
 
-                    <!-- Middle Row: Welcome Area & KPI Cards -->
-                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 flex-1">
-                        <div>
-                            <h2 class="text-xl font-extrabold tracking-tight leading-tight" id="welcomeMsg">Welcome to
-                                the Administration Portal</h2>
-                            <p class="text-purple-100 text-xs mt-0.5">Review security credentials, adjust department
-                                access levels, inspect audit trails, and configure platform triggers.</p>
+                    <!-- BOTTOM ROW: Split 58% Left, 42% Right -->
+                    <div class="flex-1 flex gap-6 items-stretch mt-4 relative">
+                        <!-- Left Section (60%) -->
+                        <div class="w-[58%] flex flex-col justify-between h-full pr-2">
+                            <div class="text-left space-y-2">
+                                <div class="space-y-0.5">
+                                    <h2 class="text-[34px] font-bold tracking-tight leading-[120%]">Administration & System Center</h2>
+                                    <p class="text-purple-200/90 text-[16px] font-medium leading-[140%]">Governance & Access Control Center</p>
+                                </div>
+                                
+                                <!-- Center zone metrics in glass pills -->
+                                <div class="flex flex-wrap gap-2 mt-1">
+                                    <div class="mini-glass-pill">
+                                        <i data-lucide="building" class="w-3.5 h-3.5 text-emerald-400"></i>
+                                        <span id="metricAdminDepts">4</span> Departments
+                                    </div>
+                                    <div class="mini-glass-pill">
+                                        <i data-lucide="users" class="w-3.5 h-3.5 text-blue-400"></i>
+                                        <span id="metricAdminEmployees">52</span> Employees
+                                    </div>
+                                    <div class="mini-glass-pill">
+                                        <i data-lucide="folder" class="w-3.5 h-3.5 text-amber-400"></i>
+                                        <span id="metricAdminProjects">12</span> Projects
+                                    </div>
+                                    <div class="mini-glass-pill">
+                                        <i data-lucide="check-square" class="w-3.5 h-3.5 text-purple-400"></i>
+                                        <span id="metricAdminApprovals">9</span> Approvals
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Actions (Primary Filled, Secondary Outline) -->
+                            <div class="flex flex-wrap gap-2.5 mt-auto">
+                                <button onclick="switchAccordionTab('admin-users')" class="btn-premium-primary gap-2">
+                                    <i data-lucide="fingerprint" class="w-4 h-4 text-emerald-300"></i> Access Management
+                                </button>
+                                <button onclick="switchAccordionTab('admin-settings')" class="btn-premium-secondary gap-2">
+                                    <i data-lucide="sliders" class="w-4 h-4"></i> Role Structures
+                                </button>
+                                <button onclick="switchAccordionTab('admin-approvals')" class="btn-premium-secondary gap-2">
+                                    <i data-lucide="check-square" class="w-4 h-4"></i> Pending Approvals
+                                </button>
+                                <button onclick="switchAccordionTab('admin-logs')" class="btn-premium-secondary gap-2">
+                                    <i data-lucide="scroll" class="w-4 h-4"></i> Audit Registers
+                                </button>
+                            </div>
                         </div>
 
-                        <!-- KPI Cards Grid -->
-                        <div class="flex flex-wrap gap-2 w-full md:w-auto flex-shrink-0">
-                            <div
-                                class="bg-white/12 border border-white/18 backdrop-blur-[20px] rounded-[12px] py-1 px-2.5 text-center min-w-[80px] transition duration-300 hover:translate-y-[-2px]">
-                                <span
-                                    class="text-[8px] text-white/85 block font-bold uppercase tracking-wider">Departments</span>
-                                <span class="text-xs font-extrabold mt-0.5 block">4 Depts</span>
+                        <!-- Vertical Divider Glow -->
+                        <div class="w-[1px] self-stretch bg-gradient-to-b from-white/0 via-white/10 to-white/0 relative" style="box-shadow: 0 0 10px rgba(255,255,255,0.08);"></div>
+
+                        <!-- Right Section: Command Panel (40%) -->
+                        <div class="w-[40%] command-glass-panel flex flex-col justify-between p-4 text-white">
+                            <div class="flex items-center justify-between pb-1.5 border-b border-white/5">
+                                <span class="text-[9px] font-extrabold text-purple-200 uppercase tracking-widest">Command Panel</span>
+                                <span class="text-[8px] font-mono font-bold bg-purple-500/20 text-purple-200 px-1.5 py-0.5 rounded border border-purple-500/10">System Secure</span>
                             </div>
-                            <div
-                                class="bg-white/12 border border-white/18 backdrop-blur-[20px] rounded-[12px] py-1 px-2.5 text-center min-w-[80px] transition duration-300 hover:translate-y-[-2px]">
-                                <span
-                                    class="text-[8px] text-white/85 block font-bold uppercase tracking-wider">Employees</span>
-                                <span class="text-xs font-extrabold mt-0.5 block">52 Active</span>
+
+                            <!-- Horizontal Grid with Dominant numbers -->
+                            <div class="grid grid-cols-4 gap-2 my-2">
+                                <div class="premium-kpi-card">
+                                    <span class="card-number" id="adminHeroTotalEmp">52</span>
+                                    <span class="card-label">Employees</span>
+                                </div>
+                                <div class="premium-kpi-card">
+                                    <span class="card-number" id="adminHeroDepts">4</span>
+                                    <span class="card-label">Depts</span>
+                                </div>
+                                <div class="premium-kpi-card">
+                                    <span class="card-number" id="adminHeroProjects">12</span>
+                                    <span class="card-label">Projects</span>
+                                </div>
+                                <div class="premium-kpi-card">
+                                    <span class="card-number" id="adminHeroApprovals">9</span>
+                                    <span class="card-label">Approvals</span>
+                                </div>
                             </div>
-                            <div
-                                class="bg-white/12 border border-white/18 backdrop-blur-[20px] rounded-[12px] py-1 px-2.5 text-center min-w-[80px] transition duration-300 hover:translate-y-[-2px]">
-                                <span
-                                    class="text-[8px] text-white/85 block font-bold uppercase tracking-wider">Projects</span>
-                                <span class="text-xs font-extrabold mt-0.5 block">12 Active</span>
+
+                            <!-- Progress Bar -->
+                            <div class="space-y-1">
+                                <div class="flex justify-between items-center text-[9.5px] text-white/95">
+                                    <span class="font-semibold tracking-wide">Access Governance Score</span>
+                                    <span class="font-mono text-purple-200 font-bold">96%</span>
+                                </div>
+                                <div class="w-full bg-white/10 rounded-full h-1 overflow-hidden relative">
+                                    <div class="progress-shimmer absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
+                                    <div class="bg-emerald-400 h-full rounded-full transition-all duration-[1200ms]" style="width: 96%"></div>
+                                </div>
                             </div>
-                            <div
-                                class="bg-white/12 border border-white/18 backdrop-blur-[20px] rounded-[12px] py-1 px-2.5 text-center min-w-[80px] transition duration-300 hover:translate-y-[-2px]">
-                                <span class="text-[8px] text-white/85 block font-bold uppercase tracking-wider">Pending
-                                    Appr.</span>
-                                <span class="text-xs font-extrabold mt-0.5 block">9 Request</span>
+
+                            <!-- Alert Footer -->
+                            <div class="pt-2 border-t border-white/5 flex items-center justify-between text-[9.5px] text-purple-200/90 font-semibold">
+                                <div class="flex items-center gap-1.5">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-amber-400 live-pulse-dot"></span>
+                                    <span>2 Audit Reviews Pending</span>
+                                </div>
+                                <i data-lucide="shield-alert" class="w-3.5 h-3.5 text-purple-200/60"></i>
                             </div>
                         </div>
                     </div>
-
-                    <!-- Bottom Row: Quick Actions & Shortcuts -->
-                    <div
-                        class="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3 pt-2 border-t border-white/10 flex-shrink-0">
-                        <div class="flex flex-wrap gap-1.5">
-                            <button onclick="switchAccordionTab('admin-users')"
-                                class="px-2.5 py-1 bg-white/10 hover:bg-white/20 border border-white/15 rounded-lg text-[9px] font-bold transition flex items-center gap-1"><i
-                                    data-lucide="fingerprint" class="w-3 h-3"></i> Access Management</button>
-                            <button onclick="switchAccordionTab('admin-reports')"
-                                class="px-2.5 py-1 bg-white/10 hover:bg-white/20 border border-white/15 rounded-lg text-[9px] font-bold transition flex items-center gap-1"><i
-                                    data-lucide="download" class="w-3 h-3"></i> Reports</button>
-                            <button onclick="switchAccordionTab('admin-logs')"
-                                class="px-2.5 py-1 bg-white/10 hover:bg-white/20 border border-white/15 rounded-lg text-[9px] font-bold transition flex items-center gap-1"><i
-                                    data-lucide="scroll" class="w-3 h-3"></i> Audit Logs</button>
-                            <button onclick="switchAccordionTab('admin-settings')"
-                                class="px-2.5 py-1 bg-white/10 hover:bg-white/20 border border-white/15 rounded-lg text-[9px] font-bold transition flex items-center gap-1"><i
-                                    data-lucide="sliders" class="w-3 h-3"></i> Settings</button>
-                        </div>
-                        <div class="flex items-center gap-1.5 justify-end">
-                            <span class="text-[9px] font-bold text-purple-200 uppercase tracking-wide">Shortcut:</span>
-                            <button onclick="switchAccordionTab('admin-approvals')"
-                                class="px-2 py-0.5 bg-white/5 hover:bg-white/15 rounded text-[9px] font-bold transition border border-white/10">Pending
-                                Approvals</button>
-                        </div>
-                    </div>
-
                 </div>
             </div>
 
@@ -8332,57 +8456,15 @@
         }
 
         // HR Admin View Controllers
-        // Value count up animation helper
-        function animateValue(obj, start, end, duration) {
-            if (!obj) return;
-            let startTimestamp = null;
-            const step = (timestamp) => {
-                if (!startTimestamp) startTimestamp = timestamp;
-                const progress = Math.min((timestamp - startTimestamp) / duration, 1);
-                const easeProgress = progress * (2 - progress); // outQuad
-                const currentValue = Math.floor(easeProgress * (end - start) + start);
-                
-                if (obj.id === 'railEmployeesCount') {
-                    obj.innerHTML = `${currentValue} <span class="text-[10px] text-purple-200/80 font-semibold ml-1">Active</span>`;
-                } else if (obj.id === 'railProjectsCount') {
-                    obj.innerHTML = `${currentValue} <span class="text-[10px] text-purple-200/80 font-semibold ml-1">Active</span>`;
-                } else if (obj.id === 'railApprovalsCount') {
-                    obj.innerHTML = `${currentValue} <span class="text-[10px] text-purple-200/80 font-semibold ml-1">Pending</span>`;
-                } else {
-                    obj.textContent = currentValue;
-                }
-                
-                if (progress < 1) {
-                    window.requestAnimationFrame(step);
-                } else {
-                    if (obj.id === 'railEmployeesCount') {
-                        obj.innerHTML = `${end} <span class="text-[10px] text-purple-200/80 font-semibold ml-1">Active</span>`;
-                    } else if (obj.id === 'railProjectsCount') {
-                        obj.innerHTML = `${end} <span class="text-[10px] text-purple-200/80 font-semibold ml-1">Active</span>`;
-                    } else if (obj.id === 'railApprovalsCount') {
-                        obj.innerHTML = `${end} <span class="text-[10px] text-purple-200/80 font-semibold ml-1">Pending</span>`;
-                    } else {
-                        obj.textContent = end;
-                    }
-                }
-            };
-            window.requestAnimationFrame(step);
-        }
-
-        // HR Admin View Controllers
         async function loadHrAdminView(target) {
             await loadAllHRMSData();
 
             if (target === 'dashView') {
-                const activeCount = employeesData.filter(e => e.status === 'Active').length;
-                const probationCount = employeesData.filter(e => e.status === 'Probation' || e.probation_status === 'Probation').length;
-                const pendingVerification = employeesData.filter(e => e.onboarding_status === 'Pending Verification').length;
-
                 // Row 1: Workforce Overview
                 document.getElementById('statTotalEmployees').textContent = employeesData.length;
-                document.getElementById('statActiveCount').textContent = activeCount;
-                document.getElementById('statProbationCount').textContent = probationCount;
-                document.getElementById('statPendingVerifications').textContent = pendingVerification;
+                document.getElementById('statActiveCount').textContent = employeesData.filter(e => e.status === 'Active').length;
+                document.getElementById('statProbationCount').textContent = employeesData.filter(e => e.status === 'Probation' || e.probation_status === 'Probation').length;
+                document.getElementById('statPendingVerifications').textContent = employeesData.filter(e => e.onboarding_status === 'Pending Verification').length;
 
                 // Row 2: Operations & Revisions
                 document.getElementById('statOffersPending').textContent = candidatesData.filter(c => ['Selected', 'Offer Sent'].includes(c.stage)).length;
@@ -8402,8 +8484,7 @@
                 document.getElementById('statAttendanceCompliance').textContent = `${attCompliance}%`;
 
                 // Row 4: Compliance & Approvals Queues
-                const pendingLeaves = leavesData.filter(l => l.status === 'Pending').length;
-                document.getElementById('statPendingLeaves').textContent = pendingLeaves;
+                document.getElementById('statPendingLeaves').textContent = leavesData.filter(l => l.status === 'Pending').length;
                 document.getElementById('statPendingDocs').textContent = employeesData.filter(e => e.onboarding_status === 'Pending Verification' && (!e.uan || !e.phone)).length;
                 document.getElementById('statPendingProbationConfirm').textContent = employeesData.filter(e => (e.status === 'Probation' || e.probation_status === 'Probation') && e.probation_end_date && new Date(e.probation_end_date) <= new Date()).length;
                 document.getElementById('statPendingExits').textContent = employeesData.filter(e => e.status === 'Exiting').length;
@@ -8411,76 +8492,47 @@
                 // Render Action Center Widget
                 renderHrActionCenter();
 
-                // Dynamic updates for Command Center Hero Title Zone
-                const summaryActiveEmployees = document.getElementById('summaryActiveEmployees');
-                if (summaryActiveEmployees) summaryActiveEmployees.textContent = activeCount;
-                const summaryPendingLeaves = document.getElementById('summaryPendingLeaves');
-                if (summaryPendingLeaves) summaryPendingLeaves.textContent = pendingLeaves;
-
-                // Diagnostics
-                const panelRosterHealth = document.getElementById('panelRosterHealth');
-                if (panelRosterHealth) panelRosterHealth.textContent = `${attCompliance}%`;
-                const complianceBar = document.getElementById('complianceProgressBar');
-                if (complianceBar) complianceBar.style.width = `${attCompliance}%`;
-
-                // KPI Rail value animation
-                const activeProjectsCount = projectsData ? projectsData.filter(p => p.status === 'Active').length : 12;
-                const uniqueDepts = new Set(employeesData.map(e => e.department).filter(Boolean));
-                const deptsCount = uniqueDepts.size || 4;
-
-                animateValue(document.getElementById('railEmployeesCount'), 0, activeCount, 800);
-                animateValue(document.getElementById('railProjectsCount'), 0, activeProjectsCount, 800);
-                animateValue(document.getElementById('railApprovalsCount'), 0, pendingLeaves, 800);
-                animateValue(document.getElementById('railDeptCount'), 0, deptsCount, 800);
-
-                // Populate Mini Alerts
-                const heroMiniAlerts = document.getElementById('heroMiniAlerts');
-                if (heroMiniAlerts) {
-                    let alerts = [];
-                    alerts.push(`
-                        <div class="alert-item flex items-center gap-2 p-1.5 rounded-lg bg-white/5 text-[10px] hover:bg-white/8 transition-colors">
-                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 live-pulse-dot"></span>
-                            <span class="font-medium text-slate-100">Payroll cycle ready for validation</span>
-                        </div>
-                    `);
-                    if (pendingLeaves > 0) {
-                        alerts.push(`
-                            <div class="alert-item flex items-center gap-2 p-1.5 rounded-lg bg-white/5 text-[10px] hover:bg-white/8 transition-colors">
-                                <span class="w-1.5 h-1.5 rounded-full bg-amber-400 live-pulse-dot"></span>
-                                <span class="font-medium text-slate-100">${pendingLeaves} Leave requests pending review</span>
-                            </div>
-                        `);
-                    }
-                    if (pendingVerification > 0) {
-                        alerts.push(`
-                            <div class="alert-item flex items-center gap-2 p-1.5 rounded-lg bg-white/5 text-[10px] hover:bg-white/8 transition-colors">
-                                <span class="w-1.5 h-1.5 rounded-full bg-rose-400 live-pulse-dot"></span>
-                                <span class="font-medium text-slate-100">${pendingVerification} Document verifications pending</span>
-                            </div>
-                        `);
-                    }
-                    heroMiniAlerts.innerHTML = alerts.join('');
-                }
-
                 // Populate HR Hero KPI chips
                 const hrHeroTotalEl = document.getElementById('hrHeroTotalEmp');
                 if (hrHeroTotalEl) hrHeroTotalEl.textContent = employeesData.length;
-                const hrHeroOnLeaveEl = document.getElementById('hrHeroOnLeave');
-                if (hrHeroOnLeaveEl) {
-                    const todayDate = new Date().toISOString().split('T')[0];
-                    hrHeroOnLeaveEl.textContent = leavesData.filter(l => l.status === 'Approved' && l.start_date <= todayDate && l.end_date >= todayDate).length;
-                }
+                const metricHrEmployeesEl = document.getElementById('metricHrEmployees');
+                if (metricHrEmployeesEl) metricHrEmployeesEl.textContent = employeesData.length;
+
+                const hrHeroLateInEl = document.getElementById('hrHeroLateIn');
+                if (hrHeroLateInEl) hrHeroLateInEl.textContent = presentToday.filter(a => a.status === 'Late').length;
+
+                const hrHeroLeaveReqEl = document.getElementById('hrHeroLeaveReq');
+                if (hrHeroLeaveReqEl) hrHeroLeaveReqEl.textContent = leavesData.filter(l => l.status === 'Pending').length;
+                const metricHrPendingLeavesEl = document.getElementById('metricHrPendingLeaves');
+                if (metricHrPendingLeavesEl) metricHrPendingLeavesEl.textContent = leavesData.filter(l => l.status === 'Pending').length;
 
                 // Populate Admin Hero KPI chips
                 const adminHeroTotalEl = document.getElementById('adminHeroTotalEmp');
                 if (adminHeroTotalEl) adminHeroTotalEl.textContent = employeesData.length;
+                const metricAdminEmployeesEl = document.getElementById('metricAdminEmployees');
+                if (metricAdminEmployeesEl) metricAdminEmployeesEl.textContent = employeesData.length;
+
                 const adminHeroDeptsEl = document.getElementById('adminHeroDepts');
+                let uniqueDeptsCount = 0;
                 if (adminHeroDeptsEl) {
                     const uniqueDepts = new Set(employeesData.map(e => e.department).filter(Boolean));
-                    adminHeroDeptsEl.textContent = uniqueDepts.size || '—';
+                    uniqueDeptsCount = uniqueDepts.size;
+                    adminHeroDeptsEl.textContent = uniqueDeptsCount || '0';
                 }
+                const metricAdminDeptsEl = document.getElementById('metricAdminDepts');
+                if (metricAdminDeptsEl) metricAdminDeptsEl.textContent = uniqueDeptsCount || '0';
+
                 const adminHeroProjectsEl = document.getElementById('adminHeroProjects');
-                if (adminHeroProjectsEl) adminHeroProjectsEl.textContent = projectsData ? projectsData.filter(p => p.status === 'Active').length : '—';
+                let activeProjectsCount = projectsData ? projectsData.filter(p => p.status === 'Active').length : 0;
+                if (adminHeroProjectsEl) adminHeroProjectsEl.textContent = activeProjectsCount;
+                const metricAdminProjectsEl = document.getElementById('metricAdminProjects');
+                if (metricAdminProjectsEl) metricAdminProjectsEl.textContent = activeProjectsCount;
+
+                const adminHeroApprovalsEl = document.getElementById('adminHeroApprovals');
+                let pendingApprovalsCount = leavesData.filter(l => l.status === 'Pending').length;
+                if (adminHeroApprovalsEl) adminHeroApprovalsEl.textContent = pendingApprovalsCount;
+                const metricAdminApprovalsEl = document.getElementById('metricAdminApprovals');
+                if (metricAdminApprovalsEl) metricAdminApprovalsEl.textContent = pendingApprovalsCount;
 
                 const totalGenders = employeesData.length;
                 if (totalGenders > 0) {
@@ -14917,8 +14969,8 @@
                             if (oldVal !== val) {
                                 target.dataset.oldValue = val;
                                 target.dataset.animating = 'true';
-                                animateValue(target, oldVal, val, 800, suffix, prefix);
-                                setTimeout(() => { target.removeAttribute('data-animating'); }, 850);
+                                animateValue(target, oldVal, val, 1200, suffix, prefix);
+                                setTimeout(() => { target.removeAttribute('data-animating'); }, 1250);
                             }
                         }
                     }
@@ -14928,7 +14980,8 @@
             const targets = document.querySelectorAll(
                 '#statPresentCount, #statLateCount, #statTotalEmployees, #statActiveCount, #statProbationCount, #statPendingVerifications, ' +
                 '#tenantCountHero, #tenantCountHero2, #subscriberCountHero, #mgrKpiTeamSize, #mgrKpiAllocatedHours, ' +
-                '.premium-card span.text-2xl, .glass-kpi-card span.text-xl, .premium-card h3.text-2xl, .hero-gradient span.text-xl'
+                '.premium-card span.text-2xl, .glass-kpi-card span.text-xl, .premium-card h3.text-2xl, .hero-gradient span.text-xl, ' +
+                '.premium-kpi-card .card-number, .mini-glass-pill span'
             );
 
             targets.forEach(t => {
@@ -14940,7 +14993,7 @@
                     const val = parseFloat(match[2]);
                     const suffix = match[3];
                     t.dataset.oldValue = val;
-                    animateValue(t, 0, val, 1000, suffix, prefix);
+                    animateValue(t, 0, val, 1200, suffix, prefix);
                 }
             });
         }

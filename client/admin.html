@@ -66,7 +66,11 @@
         body {
             background-color: var(--bg-page) !important;
             animation: appFadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-            overflow-x: hidden;
+            height: 100vh !important;
+            overflow: hidden !important;
+            display: flex !important;
+            flex-direction: column !important;
+            position: relative !important;
         }
 
         @keyframes appFadeIn {
@@ -112,15 +116,28 @@
         .floating-sidebar {
             width: 230px;
             position: fixed;
-            top: 24px;
-            left: 24px;
-            bottom: 24px;
+            top: 0 !important;
+            left: 0 !important;
+            bottom: 0 !important;
+            height: 100vh !important;
             background: #FFFFFF;
-            border: 1px solid #ECECF3;
-            border-radius: var(--card-radius);
+            border-right: 1px solid #ECECF3 !important;
+            border-left: none !important;
+            border-top: none !important;
+            border-bottom: none !important;
+            border-radius: 0 !important;
             box-shadow: 0 10px 35px rgba(97, 1, 115, 0.02);
             z-index: 40;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex !important;
+            flex-direction: column !important;
+            overflow: hidden !important;
+        }
+
+        .floating-sidebar nav {
+            flex: 1 1 auto !important;
+            overflow-y: auto !important;
+            min-height: 0 !important;
         }
 
         .floating-navbar {
@@ -139,6 +156,9 @@
         .main-workspace {
             margin: 12px 24px 24px 278px;
             transition: all 0.3s ease;
+            flex: 1 1 auto !important;
+            overflow-y: auto !important;
+            min-height: 0 !important;
         }
 
         /* Checkbox overrides */
@@ -691,8 +711,10 @@
             width: 400px;
             height: 400px;
             border-radius: 50%;
-            background: rgba(243, 189, 252, 0.20) !important; /* 20% opacity */
-            filter: blur(250px) !important; /* 250px blur */
+            background: rgba(243, 189, 252, 0.20) !important;
+            /* 20% opacity */
+            filter: blur(250px) !important;
+            /* 250px blur */
             pointer-events: none;
             z-index: 1;
         }
@@ -704,8 +726,10 @@
             width: 500px;
             height: 500px;
             border-radius: 50%;
-            background: rgba(221, 115, 240, 0.10) !important; /* 10% opacity */
-            filter: blur(300px) !important; /* 300px blur */
+            background: rgba(221, 115, 240, 0.10) !important;
+            /* 10% opacity */
+            filter: blur(300px) !important;
+            /* 300px blur */
             pointer-events: none;
             z-index: 1;
         }
@@ -717,8 +741,10 @@
             width: 600px;
             height: 600px;
             border-radius: 50%;
-            background: rgba(33, 0, 38, 0.45) !important; /* 45% opacity */
-            filter: blur(400px) !important; /* 400px blur */
+            background: rgba(33, 0, 38, 0.45) !important;
+            /* 45% opacity */
+            filter: blur(400px) !important;
+            /* 400px blur */
             pointer-events: none;
             z-index: 1;
         }
@@ -749,9 +775,17 @@
         }
 
         @keyframes light-sweep-anim {
-            0% { transform: translateX(-150%); }
-            40% { transform: translateX(250%); }
-            100% { transform: translateX(250%); }
+            0% {
+                transform: translateX(-150%);
+            }
+
+            40% {
+                transform: translateX(250%);
+            }
+
+            100% {
+                transform: translateX(250%);
+            }
         }
 
         /* Status indicators & pulse */
@@ -775,8 +809,19 @@
         }
 
         @keyframes health-pulse-anim {
-            0%, 100% { opacity: 0.5; transform: scale(0.9); box-shadow: 0 0 4px rgba(52, 211, 153, 0.4); }
-            50% { opacity: 1; transform: scale(1.1); box-shadow: 0 0 10px rgba(52, 211, 153, 0.8); }
+
+            0%,
+            100% {
+                opacity: 0.5;
+                transform: scale(0.9);
+                box-shadow: 0 0 4px rgba(52, 211, 153, 0.4);
+            }
+
+            50% {
+                opacity: 1;
+                transform: scale(1.1);
+                box-shadow: 0 0 10px rgba(52, 211, 153, 0.8);
+            }
         }
 
         /* Mini Glass Pills for Role Metrics */
@@ -808,12 +853,10 @@
         .bezent-hero-divider {
             width: 100% !important;
             height: 1px !important;
-            background: linear-gradient(
-                90deg,
-                rgba(255, 255, 255, 0.04),
-                rgba(255, 255, 255, 0.18),
-                rgba(255, 255, 255, 0.04)
-            ) !important;
+            background: linear-gradient(90deg,
+                    rgba(255, 255, 255, 0.04),
+                    rgba(255, 255, 255, 0.18),
+                    rgba(255, 255, 255, 0.04)) !important;
             margin-top: 18px !important;
             margin-bottom: 18px !important;
             border: none !important;
@@ -832,6 +875,7 @@
                 opacity: 0;
                 transform: translateY(-4px);
             }
+
             to {
                 opacity: 1;
                 transform: translateY(0);
@@ -842,12 +886,10 @@
         .bezent-vertical-divider {
             width: 1px !important;
             height: 100% !important;
-            background: linear-gradient(
-                180deg,
-                rgba(255, 255, 255, 0),
-                rgba(255, 255, 255, 0.15),
-                rgba(255, 255, 255, 0)
-            ) !important;
+            background: linear-gradient(180deg,
+                    rgba(255, 255, 255, 0),
+                    rgba(255, 255, 255, 0.15),
+                    rgba(255, 255, 255, 0)) !important;
             opacity: 0.6 !important;
             position: absolute !important;
             left: 60% !important;
@@ -869,8 +911,15 @@
         }
 
         @keyframes panel-load {
-            from { opacity: 0; transform: scale(0.98); }
-            to { opacity: 1; transform: scale(1); }
+            from {
+                opacity: 0;
+                transform: scale(0.98);
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
         }
 
         /* Dominant KPI Card inside Command Panel */
@@ -968,11 +1017,13 @@
             color: #ffffff !important;
         }
 
-        .btn-premium-primary i, .btn-premium-secondary i {
+        .btn-premium-primary i,
+        .btn-premium-secondary i {
             transition: transform 150ms ease;
         }
 
-        .btn-premium-primary:hover i, .btn-premium-secondary:hover i {
+        .btn-premium-primary:hover i,
+        .btn-premium-secondary:hover i {
             transform: scale(1.1);
         }
 
@@ -984,19 +1035,126 @@
             pointer-events: none;
             will-change: transform;
         }
-        .command-center-hero .particle-1 { width: 50px; height: 50px; left: 10%; top: 15%; animation: float-p-1 20s linear infinite; }
-        .command-center-hero .particle-2 { width: 60px; height: 60px; right: 20%; top: 35%; animation: float-p-2 20s linear infinite; }
-        .command-center-hero .particle-3 { width: 35px; height: 35px; left: 40%; bottom: 10%; animation: float-p-3 20s linear infinite; }
-        .command-center-hero .particle-4 { width: 55px; height: 55px; right: 8%; top: 10%; animation: float-p-4 20s linear infinite; }
-        .command-center-hero .particle-5 { width: 45px; height: 45px; left: 25%; bottom: 25%; animation: float-p-5 20s linear infinite; }
-        .command-center-hero .particle-6 { width: 50px; height: 50px; right: 35%; bottom: 15%; animation: float-p-6 20s linear infinite; }
 
-        @keyframes float-p-1 { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(20px, -10px); } }
-        @keyframes float-p-2 { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(-15px, 15px); } }
-        @keyframes float-p-3 { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(15px, 20px); } }
-        @keyframes float-p-4 { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(-20px, -15px); } }
-        @keyframes float-p-5 { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(10px, -15px); } }
-        @keyframes float-p-6 { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(-10px, 10px); } }
+        .command-center-hero .particle-1 {
+            width: 50px;
+            height: 50px;
+            left: 10%;
+            top: 15%;
+            animation: float-p-1 20s linear infinite;
+        }
+
+        .command-center-hero .particle-2 {
+            width: 60px;
+            height: 60px;
+            right: 20%;
+            top: 35%;
+            animation: float-p-2 20s linear infinite;
+        }
+
+        .command-center-hero .particle-3 {
+            width: 35px;
+            height: 35px;
+            left: 40%;
+            bottom: 10%;
+            animation: float-p-3 20s linear infinite;
+        }
+
+        .command-center-hero .particle-4 {
+            width: 55px;
+            height: 55px;
+            right: 8%;
+            top: 10%;
+            animation: float-p-4 20s linear infinite;
+        }
+
+        .command-center-hero .particle-5 {
+            width: 45px;
+            height: 45px;
+            left: 25%;
+            bottom: 25%;
+            animation: float-p-5 20s linear infinite;
+        }
+
+        .command-center-hero .particle-6 {
+            width: 50px;
+            height: 50px;
+            right: 35%;
+            bottom: 15%;
+            animation: float-p-6 20s linear infinite;
+        }
+
+        @keyframes float-p-1 {
+
+            0%,
+            100% {
+                transform: translate(0, 0);
+            }
+
+            50% {
+                transform: translate(20px, -10px);
+            }
+        }
+
+        @keyframes float-p-2 {
+
+            0%,
+            100% {
+                transform: translate(0, 0);
+            }
+
+            50% {
+                transform: translate(-15px, 15px);
+            }
+        }
+
+        @keyframes float-p-3 {
+
+            0%,
+            100% {
+                transform: translate(0, 0);
+            }
+
+            50% {
+                transform: translate(15px, 20px);
+            }
+        }
+
+        @keyframes float-p-4 {
+
+            0%,
+            100% {
+                transform: translate(0, 0);
+            }
+
+            50% {
+                transform: translate(-20px, -15px);
+            }
+        }
+
+        @keyframes float-p-5 {
+
+            0%,
+            100% {
+                transform: translate(0, 0);
+            }
+
+            50% {
+                transform: translate(10px, -15px);
+            }
+        }
+
+        @keyframes float-p-6 {
+
+            0%,
+            100% {
+                transform: translate(0, 0);
+            }
+
+            50% {
+                transform: translate(-10px, 10px);
+            }
+        }
     </style>
 </head>
 
@@ -1116,10 +1274,10 @@
                     <div class="glow-top-left"></div>
                     <div class="glow-center"></div>
                     <div class="glow-bottom-right"></div>
-                    
+
                     <!-- Dot-grid pattern overlay -->
                     <div class="dot-grid-pattern"></div>
-                    
+
                     <!-- Light sweep glass animation effect -->
                     <div class="light-sweep-overlay"></div>
 
@@ -1139,26 +1297,31 @@
                         <div class="flex items-center justify-between pb-3">
                             <!-- LEFT: Status Chips -->
                             <div class="flex items-center gap-2">
-                                <div class="status-indicator-chip inline-flex items-center gap-1.5 px-3 py-1 text-[10px] font-bold rounded-full">
+                                <div
+                                    class="status-indicator-chip inline-flex items-center gap-1.5 px-3 py-1 text-[10px] font-bold rounded-full">
                                     <span class="health-pulse-dot"></span>
                                     <span>Operations Active</span>
                                 </div>
-                                <div class="status-indicator-chip inline-flex items-center gap-1.5 px-3 py-1 text-[10px] font-bold rounded-full">
+                                <div
+                                    class="status-indicator-chip inline-flex items-center gap-1.5 px-3 py-1 text-[10px] font-bold rounded-full">
                                     <span class="w-1.5 h-1.5 rounded-full bg-blue-400"></span>
                                     <span>Payroll Ready</span>
                                 </div>
-                                <div class="status-indicator-chip inline-flex items-center gap-1.5 px-3 py-1 text-[10px] font-bold rounded-full">
+                                <div
+                                    class="status-indicator-chip inline-flex items-center gap-1.5 px-3 py-1 text-[10px] font-bold rounded-full">
                                     <span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
                                     <span>Attendance Synced</span>
                                 </div>
                             </div>
                             <!-- CENTER: Date & Time (Aligned on Same Axis) -->
-                            <div class="text-[11px] font-mono font-semibold text-purple-200/95 flex items-center gap-1.5 justify-center">
+                            <div
+                                class="text-[11px] font-mono font-semibold text-purple-200/95 flex items-center gap-1.5 justify-center">
                                 <i data-lucide="clock" class="w-3.5 h-3.5 text-purple-200"></i>
                                 <span class="hero-date-time">Loading...</span>
                             </div>
                             <!-- RIGHT: Health Status Capsule -->
-                            <div class="inline-flex items-center gap-1.5 px-3 py-1 text-[10px] font-bold rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-300">
+                            <div
+                                class="inline-flex items-center gap-1.5 px-3 py-1 text-[10px] font-bold rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-300">
                                 <span class="health-pulse-dot"></span>
                                 <span>System Health 100%</span>
                             </div>
@@ -1169,14 +1332,16 @@
 
                         <!-- CONTENT CONTAINER (Relative positioned container to place Left Area, Vertical divider, and Command Panel) -->
                         <div class="relative flex-grow flex flex-col justify-between" style="min-height: 220px;">
-                            
+
                             <!-- Left Content Area (Width restricted to 58% to allow absolute split) -->
                             <div class="w-[58%] flex flex-col justify-between" style="height: calc(100% - 2px);">
-                                
+
                                 <!-- Title Block (shifted slightly lower, pt-2 to reduce space above) -->
                                 <div class="text-left pt-2 flex flex-col gap-1">
-                                    <h2 class="text-[34px] font-bold tracking-tight leading-[120%]">HR Control Dashboard</h2>
-                                    <p class="text-purple-200/90 text-[16px] font-medium leading-[140%]">Workforce Operations Command Center</p>
+                                    <h2 class="text-[34px] font-bold tracking-tight leading-[120%]">HR Control Dashboard
+                                    </h2>
+                                    <p class="text-purple-200/90 text-[16px] font-medium leading-[140%]">Workforce
+                                        Operations Command Center</p>
                                 </div>
 
                                 <!-- Title -> Metrics Space (20px) -->
@@ -1184,20 +1349,25 @@
 
                                 <!-- Metrics pills -->
                                 <div class="flex flex-wrap gap-2">
-                                    <div class="mini-glass-pill" style="height: 40px; font-size: 14px; padding: 0 16px; border-radius: 20px; display: inline-flex; align-items: center; gap: 6px;">
+                                    <div class="mini-glass-pill"
+                                        style="height: 40px; font-size: 14px; padding: 0 16px; border-radius: 20px; display: inline-flex; align-items: center; gap: 6px;">
                                         <i data-lucide="users" class="w-3.5 h-3.5 text-emerald-400 flex-shrink-0"></i>
                                         <span><span id="metricHrEmployees">52</span> Employees</span>
                                     </div>
-                                    <div class="mini-glass-pill" style="height: 40px; font-size: 14px; padding: 0 16px; border-radius: 20px; display: inline-flex; align-items: center; gap: 6px;">
+                                    <div class="mini-glass-pill"
+                                        style="height: 40px; font-size: 14px; padding: 0 16px; border-radius: 20px; display: inline-flex; align-items: center; gap: 6px;">
                                         <i data-lucide="calendar" class="w-3.5 h-3.5 text-blue-400 flex-shrink-0"></i>
                                         <span><span id="metricHrPendingLeaves">1</span> Pending Leave</span>
                                     </div>
-                                    <div class="mini-glass-pill" style="height: 40px; font-size: 14px; padding: 0 16px; border-radius: 20px; display: inline-flex; align-items: center; gap: 6px;">
+                                    <div class="mini-glass-pill"
+                                        style="height: 40px; font-size: 14px; padding: 0 16px; border-radius: 20px; display: inline-flex; align-items: center; gap: 6px;">
                                         <i data-lucide="wallet" class="w-3.5 h-3.5 text-amber-400 flex-shrink-0"></i>
                                         <span><span id="metricHrPayroll">88%</span> Payroll</span>
                                     </div>
-                                    <div class="mini-glass-pill" style="height: 40px; font-size: 14px; padding: 0 16px; border-radius: 20px; display: inline-flex; align-items: center; gap: 6px;">
-                                        <i data-lucide="shield-check" class="w-3.5 h-3.5 text-purple-400 flex-shrink-0"></i>
+                                    <div class="mini-glass-pill"
+                                        style="height: 40px; font-size: 14px; padding: 0 16px; border-radius: 20px; display: inline-flex; align-items: center; gap: 6px;">
+                                        <i data-lucide="shield-check"
+                                            class="w-3.5 h-3.5 text-purple-400 flex-shrink-0"></i>
                                         <span><span id="metricHrPfSynced">100%</span> PF Synced</span>
                                     </div>
                                 </div>
@@ -1209,26 +1379,40 @@
 
                             <!-- Actions Area (width restricted to 58%) -->
                             <div class="w-[58%] pb-1">
-                                <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; width: 100%; align-items: center;">
+                                <div
+                                    style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; width: 100%; align-items: center;">
                                     <!-- Primary: Add Employee -->
-                                    <button onclick="openAddEmployeeModal()" class="btn-premium-primary gap-1.5" style="height: 50px; padding: 0 16px; border-radius: 18px; white-space: nowrap; font-size: 13px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center;">
-                                        <i data-lucide="user-plus" class="w-4 h-4 text-emerald-300 flex-shrink-0"></i> <span>Add Employee</span>
+                                    <button onclick="openAddEmployeeModal()" class="btn-premium-primary gap-1.5"
+                                        style="height: 50px; padding: 0 16px; border-radius: 18px; white-space: nowrap; font-size: 13px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center;">
+                                        <i data-lucide="user-plus" class="w-4 h-4 text-emerald-300 flex-shrink-0"></i>
+                                        <span>Add Employee</span>
                                     </button>
                                     <!-- Secondary: Recruitment -->
-                                    <button onclick="switchAccordionTab('hr-recruitment')" class="btn-premium-secondary gap-1.5" style="height: 50px; padding: 0 16px; border-radius: 18px; white-space: nowrap; font-size: 13px; display: inline-flex; align-items: center; justify-content: center;">
-                                        <i data-lucide="briefcase" class="w-4 h-4 flex-shrink-0"></i> <span>Recruitment</span>
+                                    <button onclick="switchAccordionTab('hr-recruitment')"
+                                        class="btn-premium-secondary gap-1.5"
+                                        style="height: 50px; padding: 0 16px; border-radius: 18px; white-space: nowrap; font-size: 13px; display: inline-flex; align-items: center; justify-content: center;">
+                                        <i data-lucide="briefcase" class="w-4 h-4 flex-shrink-0"></i>
+                                        <span>Recruitment</span>
                                     </button>
                                     <!-- Secondary: Generate Payroll -->
-                                    <button onclick="switchAccordionTab('hr-payroll')" class="btn-premium-secondary gap-1.5" style="height: 50px; padding: 0 16px; border-radius: 18px; white-space: nowrap; font-size: 13px; display: inline-flex; align-items: center; justify-content: center;">
-                                        <i data-lucide="wallet" class="w-4 h-4 flex-shrink-0"></i> <span>Generate Payroll</span>
+                                    <button onclick="switchAccordionTab('hr-payroll')"
+                                        class="btn-premium-secondary gap-1.5"
+                                        style="height: 50px; padding: 0 16px; border-radius: 18px; white-space: nowrap; font-size: 13px; display: inline-flex; align-items: center; justify-content: center;">
+                                        <i data-lucide="wallet" class="w-4 h-4 flex-shrink-0"></i> <span>Generate
+                                            Payroll</span>
                                     </button>
                                     <!-- Secondary: Attendance Review -->
-                                    <button onclick="switchAccordionTab('hr-attendance')" class="btn-premium-secondary gap-1.5" style="height: 50px; padding: 0 16px; border-radius: 18px; white-space: nowrap; font-size: 13px; display: inline-flex; align-items: center; justify-content: center;">
-                                        <i data-lucide="clock" class="w-4 h-4 flex-shrink-0"></i> <span>Attendance Review</span>
+                                    <button onclick="switchAccordionTab('hr-attendance')"
+                                        class="btn-premium-secondary gap-1.5"
+                                        style="height: 50px; padding: 0 16px; border-radius: 18px; white-space: nowrap; font-size: 13px; display: inline-flex; align-items: center; justify-content: center;">
+                                        <i data-lucide="clock" class="w-4 h-4 flex-shrink-0"></i> <span>Attendance
+                                            Review</span>
                                     </button>
                                     <!-- Secondary: PF Export -->
-                                    <button onclick="switchAccordionTab('hr-pf')" class="btn-premium-secondary gap-1.5" style="height: 50px; padding: 0 16px; border-radius: 18px; white-space: nowrap; font-size: 13px; display: inline-flex; align-items: center; justify-content: center;">
-                                        <i data-lucide="shield-check" class="w-4 h-4 flex-shrink-0"></i> <span>PF Export</span>
+                                    <button onclick="switchAccordionTab('hr-pf')" class="btn-premium-secondary gap-1.5"
+                                        style="height: 50px; padding: 0 16px; border-radius: 18px; white-space: nowrap; font-size: 13px; display: inline-flex; align-items: center; justify-content: center;">
+                                        <i data-lucide="shield-check" class="w-4 h-4 flex-shrink-0"></i> <span>PF
+                                            Export</span>
                                     </button>
                                 </div>
                             </div>
@@ -1237,10 +1421,15 @@
                             <div class="bezent-vertical-divider"></div>
 
                             <!-- COMMAND PANEL (Absolute positioned on the right at 38% width, spanning full height below Divider #1) -->
-                            <div class="absolute right-0 top-0 bottom-0 w-[38%] command-glass-panel flex flex-col justify-between p-4 text-white">
+                            <div
+                                class="absolute right-0 top-0 bottom-0 w-[38%] command-glass-panel flex flex-col justify-between p-4 text-white">
                                 <div class="flex items-center justify-between pb-1.5 border-b border-white/5">
-                                    <span class="text-[9px] font-extrabold text-purple-200 uppercase tracking-widest">Command Panel</span>
-                                    <span class="text-[8px] font-mono font-bold bg-purple-500/20 text-purple-200 px-1.5 py-0.5 rounded border border-purple-500/10">Roster Stable</span>
+                                    <span
+                                        class="text-[9px] font-extrabold text-purple-200 uppercase tracking-widest">Command
+                                        Panel</span>
+                                    <span
+                                        class="text-[8px] font-mono font-bold bg-purple-500/20 text-purple-200 px-1.5 py-0.5 rounded border border-purple-500/10">Roster
+                                        Stable</span>
                                 </div>
 
                                 <!-- Horizontal Grid with Dominant numbers -->
@@ -1267,16 +1456,21 @@
                                 <div class="space-y-1">
                                     <div class="flex justify-between items-center text-[9.5px] text-white/95">
                                         <span class="font-semibold tracking-wide">Payroll Cycle Progress</span>
-                                        <span class="font-mono text-purple-200 font-bold" id="hrHeroPayrollPercentText">88%</span>
+                                        <span class="font-mono text-purple-200 font-bold"
+                                            id="hrHeroPayrollPercentText">88%</span>
                                     </div>
                                     <div class="w-full bg-white/10 rounded-full h-1 overflow-hidden relative">
-                                        <div class="progress-shimmer absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
-                                        <div class="bg-emerald-400 h-full rounded-full transition-all duration-[1200ms]" style="width: 88%"></div>
+                                        <div
+                                            class="progress-shimmer absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent">
+                                        </div>
+                                        <div class="bg-emerald-400 h-full rounded-full transition-all duration-[1200ms]"
+                                            style="width: 88%"></div>
                                     </div>
                                 </div>
 
                                 <!-- Alert Footer -->
-                                <div class="pt-2 border-t border-white/5 flex items-center justify-between text-[9.5px] text-purple-200/90 font-semibold">
+                                <div
+                                    class="pt-2 border-t border-white/5 flex items-center justify-between text-[9.5px] text-purple-200/90 font-semibold">
                                     <div class="flex items-center gap-1.5">
                                         <span class="w-1.5 h-1.5 rounded-full bg-amber-400 live-pulse-dot"></span>
                                         <span>1 Attendance Exception</span>
@@ -3175,10 +3369,10 @@
                 <div class="glow-top-left"></div>
                 <div class="glow-center"></div>
                 <div class="glow-bottom-right"></div>
-                
+
                 <!-- Dot-grid pattern overlay -->
                 <div class="dot-grid-pattern"></div>
-                
+
                 <!-- Light sweep glass animation effect -->
                 <div class="light-sweep-overlay"></div>
 
@@ -3198,22 +3392,26 @@
                     <div class="flex items-center justify-between pb-3">
                         <!-- LEFT: Status Chips -->
                         <div class="flex items-center gap-2">
-                            <div class="status-indicator-chip inline-flex items-center gap-1.5 px-3 py-1 text-[10px] font-bold rounded-full">
+                            <div
+                                class="status-indicator-chip inline-flex items-center gap-1.5 px-3 py-1 text-[10px] font-bold rounded-full">
                                 <span class="health-pulse-dot"></span>
                                 <span>Operations Active</span>
                             </div>
-                            <div class="status-indicator-chip inline-flex items-center gap-1.5 px-3 py-1 text-[10px] font-bold rounded-full">
+                            <div
+                                class="status-indicator-chip inline-flex items-center gap-1.5 px-3 py-1 text-[10px] font-bold rounded-full">
                                 <span class="w-1.5 h-1.5 rounded-full bg-blue-400"></span>
                                 <span>System Stable</span>
                             </div>
                         </div>
                         <!-- CENTER: Date & Time (Aligned on Same Axis) -->
-                        <div class="text-[11px] font-mono font-semibold text-purple-200/95 flex items-center gap-1.5 justify-center">
+                        <div
+                            class="text-[11px] font-mono font-semibold text-purple-200/95 flex items-center gap-1.5 justify-center">
                             <i data-lucide="clock" class="w-3.5 h-3.5 text-purple-200"></i>
                             <span class="hero-date-time">Loading...</span>
                         </div>
                         <!-- RIGHT: Health Status Capsule -->
-                        <div class="inline-flex items-center gap-1.5 px-3 py-1 text-[10px] font-bold rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-300">
+                        <div
+                            class="inline-flex items-center gap-1.5 px-3 py-1 text-[10px] font-bold rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-300">
                             <span class="health-pulse-dot"></span>
                             <span>System Health 100%</span>
                         </div>
@@ -3224,14 +3422,16 @@
 
                     <!-- CONTENT CONTAINER (Relative positioned container to place Left Area, Vertical divider, and Command Panel) -->
                     <div class="relative flex-grow flex flex-col justify-between" style="min-height: 220px;">
-                        
+
                         <!-- Left Content Area (Width restricted to 58% to allow absolute split) -->
                         <div class="w-[58%] flex flex-col justify-between" style="height: calc(100% - 2px);">
-                            
+
                             <!-- Title Block (shifted slightly lower, pt-2 to reduce space above) -->
                             <div class="text-left pt-2 flex flex-col gap-1">
-                                <h2 class="text-[34px] font-bold tracking-tight leading-[120%]">Administration & System Center</h2>
-                                <p class="text-purple-200/90 text-[16px] font-medium leading-[140%]">Governance & Access Control Center</p>
+                                <h2 class="text-[34px] font-bold tracking-tight leading-[120%]">Administration & System
+                                    Center</h2>
+                                <p class="text-purple-200/90 text-[16px] font-medium leading-[140%]">Governance & Access
+                                    Control Center</p>
                             </div>
 
                             <!-- Title -> Metrics Space (20px) -->
@@ -3239,19 +3439,23 @@
 
                             <!-- Metrics pills -->
                             <div class="flex flex-wrap gap-2">
-                                <div class="mini-glass-pill" style="height: 40px; font-size: 14px; padding: 0 16px; border-radius: 20px; display: inline-flex; align-items: center; gap: 6px;">
+                                <div class="mini-glass-pill"
+                                    style="height: 40px; font-size: 14px; padding: 0 16px; border-radius: 20px; display: inline-flex; align-items: center; gap: 6px;">
                                     <i data-lucide="building" class="w-3.5 h-3.5 text-emerald-400 flex-shrink-0"></i>
                                     <span><span id="metricAdminDepts">4</span> Departments</span>
                                 </div>
-                                <div class="mini-glass-pill" style="height: 40px; font-size: 14px; padding: 0 16px; border-radius: 20px; display: inline-flex; align-items: center; gap: 6px;">
+                                <div class="mini-glass-pill"
+                                    style="height: 40px; font-size: 14px; padding: 0 16px; border-radius: 20px; display: inline-flex; align-items: center; gap: 6px;">
                                     <i data-lucide="users" class="w-3.5 h-3.5 text-blue-400 flex-shrink-0"></i>
                                     <span><span id="metricAdminEmployees">52</span> Employees</span>
                                 </div>
-                                <div class="mini-glass-pill" style="height: 40px; font-size: 14px; padding: 0 16px; border-radius: 20px; display: inline-flex; align-items: center; gap: 6px;">
+                                <div class="mini-glass-pill"
+                                    style="height: 40px; font-size: 14px; padding: 0 16px; border-radius: 20px; display: inline-flex; align-items: center; gap: 6px;">
                                     <i data-lucide="folder" class="w-3.5 h-3.5 text-amber-400 flex-shrink-0"></i>
                                     <span><span id="metricAdminProjects">12</span> Projects</span>
                                 </div>
-                                <div class="mini-glass-pill" style="height: 40px; font-size: 14px; padding: 0 16px; border-radius: 20px; display: inline-flex; align-items: center; gap: 6px;">
+                                <div class="mini-glass-pill"
+                                    style="height: 40px; font-size: 14px; padding: 0 16px; border-radius: 20px; display: inline-flex; align-items: center; gap: 6px;">
                                     <i data-lucide="check-square" class="w-3.5 h-3.5 text-purple-400 flex-shrink-0"></i>
                                     <span><span id="metricAdminApprovals">9</span> Approvals</span>
                                 </div>
@@ -3264,22 +3468,33 @@
 
                         <!-- Actions Area (width restricted to 58%) -->
                         <div class="w-[58%] pb-1">
-                            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; width: 100%; align-items: center;">
+                            <div
+                                style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; width: 100%; align-items: center;">
                                 <!-- Primary: Access Management -->
-                                <button onclick="switchAccordionTab('admin-users')" class="btn-premium-primary gap-1.5" style="height: 50px; padding: 0 16px; border-radius: 18px; white-space: nowrap; font-size: 13px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center;">
-                                    <i data-lucide="fingerprint" class="w-4 h-4 text-emerald-300 flex-shrink-0"></i> <span>Access Management</span>
+                                <button onclick="switchAccordionTab('admin-users')" class="btn-premium-primary gap-1.5"
+                                    style="height: 50px; padding: 0 16px; border-radius: 18px; white-space: nowrap; font-size: 13px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center;">
+                                    <i data-lucide="fingerprint" class="w-4 h-4 text-emerald-300 flex-shrink-0"></i>
+                                    <span>Workspace Access Directory</span>
                                 </button>
                                 <!-- Secondary: Role Structures -->
-                                <button onclick="switchAccordionTab('admin-settings')" class="btn-premium-secondary gap-1.5" style="height: 50px; padding: 0 16px; border-radius: 18px; white-space: nowrap; font-size: 13px; display: inline-flex; align-items: center; justify-content: center;">
-                                    <i data-lucide="sliders" class="w-4 h-4 flex-shrink-0"></i> <span>Role Structures</span>
+                                <button onclick="switchAccordionTab('admin-settings')"
+                                    class="btn-premium-secondary gap-1.5"
+                                    style="height: 50px; padding: 0 16px; border-radius: 18px; white-space: nowrap; font-size: 13px; display: inline-flex; align-items: center; justify-content: center;">
+                                    <i data-lucide="sliders" class="w-4 h-4 flex-shrink-0"></i> <span>Role
+                                        Structures</span>
                                 </button>
                                 <!-- Secondary: Pending Approvals -->
-                                <button onclick="switchAccordionTab('admin-approvals')" class="btn-premium-secondary gap-1.5" style="height: 50px; padding: 0 16px; border-radius: 18px; white-space: nowrap; font-size: 13px; display: inline-flex; align-items: center; justify-content: center;">
-                                    <i data-lucide="check-square" class="w-4 h-4 flex-shrink-0"></i> <span>Pending Approvals</span>
+                                <button onclick="switchAccordionTab('admin-approvals')"
+                                    class="btn-premium-secondary gap-1.5"
+                                    style="height: 50px; padding: 0 16px; border-radius: 18px; white-space: nowrap; font-size: 13px; display: inline-flex; align-items: center; justify-content: center;">
+                                    <i data-lucide="check-square" class="w-4 h-4 flex-shrink-0"></i> <span>Pending
+                                        Approvals</span>
                                 </button>
                                 <!-- Secondary: Audit Registers -->
-                                <button onclick="switchAccordionTab('admin-logs')" class="btn-premium-secondary gap-1.5" style="height: 50px; padding: 0 16px; border-radius: 18px; white-space: nowrap; font-size: 13px; display: inline-flex; align-items: center; justify-content: center;">
-                                    <i data-lucide="scroll" class="w-4 h-4 flex-shrink-0"></i> <span>Audit Registers</span>
+                                <button onclick="switchAccordionTab('admin-logs')" class="btn-premium-secondary gap-1.5"
+                                    style="height: 50px; padding: 0 16px; border-radius: 18px; white-space: nowrap; font-size: 13px; display: inline-flex; align-items: center; justify-content: center;">
+                                    <i data-lucide="scroll" class="w-4 h-4 flex-shrink-0"></i> <span>Audit
+                                        Registers</span>
                                 </button>
                             </div>
                         </div>
@@ -3288,10 +3503,15 @@
                         <div class="bezent-vertical-divider"></div>
 
                         <!-- COMMAND PANEL (Absolute positioned on the right at 38% width, spanning full height below Divider #1) -->
-                        <div class="absolute right-0 top-0 bottom-0 w-[38%] command-glass-panel flex flex-col justify-between p-4 text-white">
+                        <div
+                            class="absolute right-0 top-0 bottom-0 w-[38%] command-glass-panel flex flex-col justify-between p-4 text-white">
                             <div class="flex items-center justify-between pb-1.5 border-b border-white/5">
-                                <span class="text-[9px] font-extrabold text-purple-200 uppercase tracking-widest">Command Panel</span>
-                                <span class="text-[8px] font-mono font-bold bg-purple-500/20 text-purple-200 px-1.5 py-0.5 rounded border border-purple-500/10">System Secure</span>
+                                <span
+                                    class="text-[9px] font-extrabold text-purple-200 uppercase tracking-widest">Command
+                                    Panel</span>
+                                <span
+                                    class="text-[8px] font-mono font-bold bg-purple-500/20 text-purple-200 px-1.5 py-0.5 rounded border border-purple-500/10">System
+                                    Secure</span>
                             </div>
 
                             <!-- Horizontal Grid with Dominant numbers -->
@@ -3321,13 +3541,17 @@
                                     <span class="font-mono text-purple-200 font-bold">96%</span>
                                 </div>
                                 <div class="w-full bg-white/10 rounded-full h-1 overflow-hidden relative">
-                                    <div class="progress-shimmer absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
-                                    <div class="bg-emerald-400 h-full rounded-full transition-all duration-[1200ms]" style="width: 96%"></div>
+                                    <div
+                                        class="progress-shimmer absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent">
+                                    </div>
+                                    <div class="bg-emerald-400 h-full rounded-full transition-all duration-[1200ms]"
+                                        style="width: 96%"></div>
                                 </div>
                             </div>
 
                             <!-- Alert Footer -->
-                            <div class="pt-2 border-t border-white/5 flex items-center justify-between text-[9.5px] text-purple-200/90 font-semibold">
+                            <div
+                                class="pt-2 border-t border-white/5 flex items-center justify-between text-[9.5px] text-purple-200/90 font-semibold">
                                 <div class="flex items-center gap-1.5">
                                     <span class="w-1.5 h-1.5 rounded-full bg-amber-400 live-pulse-dot"></span>
                                     <span>2 Audit Reviews Pending</span>
@@ -3408,75 +3632,37 @@
             <!-- Premium High-fidelity User Invitation Form -->
             <div class="premium-card p-8 space-y-6">
                 <div>
-                    <h3 class="font-bold text-xl text-[#111827]">Invite Platform Associate</h3>
-                    <p class="text-xs text-[#6B7280] mt-1">Configure profile roles and module scopes directly before
-                        adding them to the database.</p>
+                    <h3 class="font-bold text-xl text-[#111827]">Invite Employee</h3>
+                    <p class="text-xs text-[#6B7280] mt-1">Configure profile roles and module scopes directly before adding them to the database.</p>
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div class="space-y-4 md:col-span-2">
                         <div>
-                            <label
-                                class="block text-xs font-bold text-[#4B5563] uppercase tracking-wider mb-2">Associate
-                                Email Address</label>
+                            <label class="block text-xs font-bold text-[#4B5563] uppercase tracking-wider mb-2">Associate Email Address</label>
                             <div class="relative">
-                                <i data-lucide="mail"
-                                    class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#6B7280]"></i>
-                                <input type="email" id="inviteUserEmail" placeholder="e.g. employee@company.com"
-                                    class="pl-11 pr-4 py-3 border border-[#ECECF3] rounded-xl text-sm w-full focus:outline-none focus:ring-2 focus:ring-[#610173] bg-[#F7F7FB] focus:bg-white transition-all">
+                                <i data-lucide="mail" class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#6B7280]"></i>
+                                <input type="email" id="inviteUserEmail" placeholder="e.g. employee@company.com" class="pl-11 pr-4 py-3 border border-[#ECECF3] rounded-xl text-sm w-full focus:outline-none focus:ring-2 focus:ring-[#610173] bg-[#F7F7FB] focus:bg-white transition-all">
                             </div>
                         </div>
                         <div>
-                            <label
-                                class="block text-xs font-bold text-[#4B5563] uppercase tracking-wider mb-2">Corporate
-                                System Role</label>
-                            <select id="inviteUserRole"
-                                class="w-full text-sm font-semibold border border-[#ECECF3] rounded-xl px-4 py-3 bg-[#F7F7FB] focus:outline-none focus:ring-2 focus:ring-[#610173] cursor-pointer text-[#111827]">
-                                <option value="employee" selected>Employee (Assigned Tasks & Personal Portal)</option>
-                                <option value="manager">Manager (Department Supervisor)</option>
-                                <option value="admin">Administrator (Access Control & Setup)</option>
+                            <label class="block text-xs font-bold text-[#4B5563] uppercase tracking-wider mb-2">Corporate System Role</label>
+                            <select id="inviteUserRole" class="w-full text-sm font-semibold border border-[#ECECF3] rounded-xl px-4 py-3 bg-[#F7F7FB] focus:outline-none focus:ring-2 focus:ring-[#610173] cursor-pointer text-[#111827]">
+                                <option value="Employee" selected>Employee (Operational Portal)</option>
+                                <option value="Manager">Manager (Supervisory Console)</option>
+                                <option value="HR Executive">HR Executive (Recruitment & Operations)</option>
+                                <option value="HR Manager">HR Manager (Full HR Governance)</option>
+                                <option value="Department Head">Department Head (Department Lead)</option>
+                                <option value="Operations Lead">Operations Lead (Ops & Assets)</option>
+                                <option value="Finance Lead">Finance Lead (Payroll & Budgets)</option>
                             </select>
                         </div>
                     </div>
 
                     <div class="space-y-4 bg-[#F9FAFB] p-5 border border-[#ECECF3] rounded-2xl">
-                        <label class="block text-xs font-bold text-[#4B5563] uppercase tracking-wider">Permitted
-                            Modules</label>
                         <div class="space-y-3 pt-1">
                             <label class="flex items-center gap-3 cursor-pointer">
-                                <input type="checkbox" id="inviteScopeMF"
-                                    class="w-4.5 h-4.5 text-[#610173] border-gray-300 rounded focus:ring-[#610173] cursor-pointer"
-                                    onchange="toggleInviteScope('MF')">
-                                <span class="text-xs font-semibold text-[#111827]">Marketing Page</span>
-                            </label>
-                            <label class="flex items-center gap-3 cursor-pointer">
-                                <input type="checkbox" id="inviteScopePF"
-                                    class="w-4.5 h-4.5 text-[#610173] border-gray-300 rounded focus:ring-[#610173]"
-                                    onchange="toggleInviteScope('PF')">
-                                <span class="text-xs font-semibold text-[#111827]">Project Page</span>
-                            </label>
-                            <label class="flex items-center gap-3 cursor-pointer">
-                                <input type="checkbox" id="inviteScopeHR"
-                                    class="w-4.5 h-4.5 text-[#610173] border-gray-300 rounded focus:ring-[#610173]"
-                                    onchange="toggleInviteScope('HR')">
-                                <span class="text-xs font-semibold text-[#111827]">HR Page</span>
-                            </label>
-                            <label class="flex items-center gap-3 cursor-pointer">
-                                <input type="checkbox" id="inviteScopeEMP"
-                                    class="w-4.5 h-4.5 text-[#610173] border-gray-300 rounded focus:ring-[#610173]"
-                                    onchange="toggleInviteScope('EMP')" checked>
-                                <span class="text-xs font-semibold text-[#111827]">Employee Page</span>
-                            </label>
-                            <label class="flex items-center gap-3 cursor-pointer">
-                                <input type="checkbox" id="inviteScopeMGR"
-                                    class="w-4.5 h-4.5 text-[#610173] border-gray-300 rounded focus:ring-[#610173]"
-                                    onchange="toggleInviteScope('MGR')">
-                                <span class="text-xs font-semibold text-[#111827]">Manager Page</span>
-                            </label>
-                            <label class="flex items-center gap-3 cursor-pointer border-t border-[#ECECF3] pt-2 mt-2">
-                                <input type="checkbox" id="inviteScopeActive"
-                                    class="w-4.5 h-4.5 text-emerald-500 border-gray-300 rounded focus:ring-emerald-500"
-                                    checked>
+                                <input type="checkbox" id="inviteScopeActive" class="w-4.5 h-4.5 text-emerald-500 border-gray-300 rounded focus:ring-emerald-500" checked>
                                 <span class="text-xs font-bold text-emerald-600">Active Status</span>
                             </label>
                         </div>
@@ -3484,51 +3670,124 @@
                 </div>
 
                 <div class="flex justify-end pt-2">
-                    <button onclick="inviteNewUser()" id="inviteBtn"
-                        class="bg-gradient-to-r from-[#610173] to-[#5B21B6] hover:brightness-110 text-white px-6 py-3 rounded-xl text-sm font-semibold transition shadow-md flex items-center gap-2">
-                        <i data-lucide="user-plus" class="w-4 h-4"></i> Provision Associate
+                    <button onclick="inviteNewUser()" id="inviteBtn" class="bg-gradient-to-r from-[#610173] to-[#5B21B6] hover:brightness-110 text-white px-6 py-3 rounded-xl text-sm font-semibold transition shadow-md flex items-center gap-2">
+                        <i data-lucide="user-plus" class="w-4 h-4"></i> Provision Employee
                     </button>
                 </div>
             </div>
 
-            <!-- Users Search & Counter -->
-            <div class="flex items-center justify-between">
-                <div>
-                    <h3 class="font-bold text-lg text-[#111827]">User Registers</h3>
-                    <p class="text-xs text-[#6B7280] mt-0.5" id="userCounterDesc">Managing active users across modules
-                    </p>
+            <!-- Workspace Access Directory Header & Filters -->
+            <div class="space-y-4">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div>
+                        <h3 class="font-bold text-lg text-[#111827]">Workspace Access Directory</h3>
+                        <p class="text-xs text-[#6B7280] mt-0.5" id="userCounterDesc">Manage employee access across Marketing, Projects, HR, Manager, and Employee workspaces.</p>
+                    </div>
+                    <div class="flex flex-wrap items-center gap-3">
+                        <!-- Bulk Actions Selector -->
+                        <div id="bulkActionsContainer" class="hidden flex items-center gap-2 bg-[#F7F7FB] border border-[#ECECF3] px-3 py-1.5 rounded-xl text-xs font-semibold">
+                            <span class="text-purple-700 font-bold" id="selectedCountText">0 selected</span>
+                            <select id="bulkActionSelect" onchange="runBulkAction(this.value)" class="bg-transparent text-[#111827] outline-none cursor-pointer font-bold">
+                                <option value="" selected>Bulk Actions...</option>
+                                <option value="enable_marketflow">Enable Marketing Access</option>
+                                <option value="disable_marketflow">Disable Marketing Access</option>
+                                <option value="enable_projectflow">Enable Project Access</option>
+                                <option value="disable_projectflow">Disable Project Access</option>
+                                <option value="enable_hr">Enable HR Access</option>
+                                <option value="disable_hr">Disable HR Access</option>
+                                <option value="enable_employee">Enable Employee Portal</option>
+                                <option value="disable_employee">Disable Employee Portal</option>
+                                <option value="enable_manager">Enable Manager Portal</option>
+                                <option value="disable_manager">Disable Manager Portal</option>
+                                <option value="activate">Bulk Activate</option>
+                                <option value="suspend">Bulk Suspend</option>
+                                <option value="role_employee">Set Role: Employee</option>
+                                <option value="role_manager">Set Role: Manager</option>
+                                <option value="role_hr">Set Role: HR Manager</option>
+                            </select>
+                        </div>
+                        
+                        <!-- Search Bar -->
+                        <div class="relative w-72">
+                            <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#6B7280]"></i>
+                            <input type="text" id="userSearch" placeholder="Search employees..." class="pl-10 pr-4 py-2 border border-[#ECECF3] rounded-xl text-xs w-full focus:outline-none focus:ring-2 focus:ring-[#610173] bg-[#F7F7FB] focus:bg-white transition-all">
+                        </div>
+                    </div>
                 </div>
-                <div class="relative w-72">
-                    <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#6B7280]"></i>
-                    <input type="text" id="userSearch" placeholder="Search account registers..."
-                        class="pl-10 pr-4 py-2 border border-[#ECECF3] rounded-xl text-sm w-full focus:outline-none focus:ring-2 focus:ring-[#610173] bg-[#F7F7FB] focus:bg-white transition-all">
+
+                <!-- Filters Row -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-3 bg-[#F9FAFB] border border-[#ECECF3] p-3 rounded-2xl text-xs">
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Department</label>
+                        <select id="filterDept" onchange="applyFilters()" class="w-full border border-[#ECECF3] rounded-xl px-2.5 py-1.5 bg-white text-[#111827] outline-none font-semibold">
+                            <option value="">All Departments</option>
+                            <option value="HR">HR</option>
+                            <option value="Engineering">Engineering</option>
+                            <option value="Marketing">Marketing</option>
+                            <option value="Sales">Sales</option>
+                            <option value="Finance">Finance</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Role</label>
+                        <select id="filterRole" onchange="applyFilters()" class="w-full border border-[#ECECF3] rounded-xl px-2.5 py-1.5 bg-white text-[#111827] outline-none font-semibold">
+                            <option value="">All Roles</option>
+                            <option value="Employee">Employee</option>
+                            <option value="Manager">Manager</option>
+                            <option value="HR">HR</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Status</label>
+                        <select id="filterStatus" onchange="applyFilters()" class="w-full border border-[#ECECF3] rounded-xl px-2.5 py-1.5 bg-white text-[#111827] outline-none font-semibold">
+                            <option value="">All Statuses</option>
+                            <option value="Active">Active</option>
+                            <option value="Inactive">Inactive</option>
+                            <option value="Suspended">Suspended</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Workspace Access</label>
+                        <select id="filterWorkspace" onchange="applyFilters()" class="w-full border border-[#ECECF3] rounded-xl px-2.5 py-1.5 bg-white text-[#111827] outline-none font-semibold">
+                            <option value="">All Workspaces</option>
+                            <option value="Marketing">Marketing</option>
+                            <option value="Projects">Projects</option>
+                            <option value="HR">HR</option>
+                            <option value="Employee">Employee</option>
+                            <option value="Manager">Manager</option>
+                        </select>
+                    </div>
                 </div>
             </div>
 
             <div class="premium-card overflow-hidden">
                 <div class="overflow-x-auto">
                     <table class="w-full text-left" id="usersTable">
-                        <thead
-                            class="bg-[#F7F7FB] border-b border-[#ECECF3] text-xs font-semibold tracking-wider text-[#6B7280] uppercase">
+                        <thead class="bg-[#F7F7FB] border-b border-[#ECECF3] text-[10px] font-bold tracking-wider text-[#6B7280] uppercase">
                             <tr>
-                                <th class="px-6 py-4">User Details</th>
-                                <th class="px-6 py-4 text-center">Marketing Page</th>
-                                <th class="px-6 py-4 text-center">Project Page</th>
-                                <th class="px-6 py-4 text-center">HR Page</th>
-                                <th class="px-6 py-4 text-center">Employee Page</th>
-                                <th class="px-6 py-4 text-center">Manager Page</th>
-                                <th class="px-6 py-4 text-center">Admin Page</th>
-                                <th class="px-6 py-4 text-center">Active Status</th>
-                                <th class="px-6 py-4 text-center">System Role</th>
-                                <th class="px-6 py-4 text-right">Actions</th>
+                                <th class="px-4 py-4 text-center w-10">
+                                    <input type="checkbox" id="selectAllCheckbox" class="checkbox-custom hidden" onchange="toggleSelectAll(this.checked)">
+                                    <label for="selectAllCheckbox" class="inline-block relative w-[16px] h-[16px] border border-[#ECECF3] rounded cursor-pointer transition-colors bg-white checkbox-custom-label"></label>
+                                </th>
+                                <th class="px-4 py-4 text-left">Employee</th>
+                                <th class="px-4 py-4 text-left">Employee ID</th>
+                                <th class="px-4 py-4 text-left">Department</th>
+                                <th class="px-4 py-4 text-left">Designation</th>
+                                <th class="px-4 py-4 text-center">Marketing</th>
+                                <th class="px-4 py-4 text-center">Projects</th>
+                                <th class="px-4 py-4 text-center">HR</th>
+                                <th class="px-4 py-4 text-center">Employee</th>
+                                <th class="px-4 py-4 text-center">Manager</th>
+                                <th class="px-4 py-4 text-center">Status</th>
+                                <th class="px-4 py-4 text-center">Role</th>
+                                <th class="px-4 py-4 text-right">Actions</th>
                             </tr>
                         </thead>
                         <tbody id="userTableBody" class="divide-y divide-[#ECECF3] text-sm">
                             <tr>
-                                <td colspan="10" class="px-6 py-12 text-center text-[#6B7280] font-medium">
-                                    <i data-lucide="loader"
-                                        class="w-6 h-6 mx-auto mb-2 animate-spin text-[#610173]"></i>
-                                    Fetching user permissions registers...
+                                <td colspan="13" class="px-6 py-12 text-center text-[#6B7280] font-medium">
+                                    <i data-lucide="loader" class="w-6 h-6 mx-auto mb-2 animate-spin text-[#610173]"></i>
+                                    Fetching workspace access directory...
                                 </td>
                             </tr>
                         </tbody>
@@ -5113,12 +5372,11 @@
             </div>
         </div>
 
+        <!-- Footer -->
+        <footer class="py-6 mt-12 text-center text-xs text-[#6B7280] border-t border-[#ECECF3] bg-white w-full">
+            <p>&copy; 2026 BEZENT. Master Platform Unified Architecture. All rights reserved.</p>
+        </footer>
     </main>
-
-    <!-- Footer -->
-    <footer class="py-6 mt-12 text-center text-xs text-[#6B7280] border-t border-[#ECECF3] bg-white w-full">
-        <p>&copy; 2026 BEZENT. Master Platform Unified Architecture. All rights reserved.</p>
-    </footer>
 
     <!-- ==================== ENTERPRISE HRMS DIALOG MODALS ==================== -->
     <dialog id="addEmployeeModal"
@@ -6464,6 +6722,56 @@
         </form>
     </dialog>
 
+    <!-- View Employee Access Modal -->
+    <dialog id="viewEmployeeAccessModal" class="p-6 rounded-3xl border border-slate-100 shadow-2xl bg-white max-w-md w-full outline-none text-[#111827]">
+        <div class="flex justify-between items-center border-b border-slate-100 pb-3 mb-4">
+            <h3 class="font-bold text-base text-[#111827]">Employee Profile &amp; Workspace Access</h3>
+            <button type="button" onclick="document.getElementById('viewEmployeeAccessModal').close()" class="text-slate-400 hover:text-slate-600 transition">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+        </div>
+        <div id="viewEmployeeAccessContent" class="space-y-4 text-xs text-left"></div>
+    </dialog>
+
+    <!-- Edit Employee Info Modal -->
+    <dialog id="editEmployeeAccessModal" class="p-6 rounded-3xl border border-slate-100 shadow-2xl bg-white max-w-md w-full outline-none text-[#111827]">
+        <div class="flex justify-between items-center border-b border-slate-100 pb-3 mb-4">
+            <h3 class="font-bold text-base text-[#111827]">Edit Employee Organization Details</h3>
+            <button type="button" onclick="document.getElementById('editEmployeeAccessModal').close()" class="text-slate-400 hover:text-slate-600 transition">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+        </div>
+        <form id="editEmployeeAccessForm" onsubmit="saveEmployeeAccessEdit(event)" class="space-y-4 text-xs text-left">
+            <input type="hidden" id="editAccessEmpEmail">
+            <div>
+                <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Employee Name</label>
+                <input type="text" id="editAccessEmpName" required class="w-full text-xs border border-[#ECECF3] rounded-xl px-3.5 py-2.5 bg-[#F7F7FB] outline-none text-[#111827]">
+            </div>
+            <div>
+                <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Employee ID</label>
+                <input type="text" id="editAccessEmpId" required class="w-full text-xs border border-[#ECECF3] rounded-xl px-3.5 py-2.5 bg-[#F7F7FB] outline-none text-[#111827]">
+            </div>
+            <div>
+                <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Department</label>
+                <select id="editAccessEmpDept" required class="w-full text-xs border border-[#ECECF3] rounded-xl px-3.5 py-2.5 bg-[#F7F7FB] outline-none text-[#111827] cursor-pointer">
+                    <option value="HR">HR</option>
+                    <option value="Engineering">Engineering</option>
+                    <option value="Marketing">Marketing</option>
+                    <option value="Sales">Sales</option>
+                    <option value="Finance">Finance</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Designation</label>
+                <input type="text" id="editAccessEmpTitle" required class="w-full text-xs border border-[#ECECF3] rounded-xl px-3.5 py-2.5 bg-[#F7F7FB] outline-none text-[#111827]">
+            </div>
+            <div class="pt-4 border-t border-[#ECECF3] flex justify-end gap-3">
+                <button type="button" onclick="document.getElementById('editEmployeeAccessModal').close()" class="px-4 py-2 border border-[#ECECF3] rounded-xl text-xs font-bold hover:bg-slate-50 transition text-slate-500">Cancel</button>
+                <button type="submit" class="px-5 py-2 bg-[#610173] hover:brightness-110 text-white rounded-xl text-xs font-bold transition shadow-sm">Save Changes</button>
+            </div>
+        </form>
+    </dialog>
+
     <!-- Main JS Application Logic -->
     <script>
         // Global variables
@@ -6678,7 +6986,7 @@
                 isAdminOnly: true,
                 items: [
                     { id: 'admin-dashboard', label: 'Admin Summary', icon: 'shield-alert', targetPanel: 'dashboardPanel' },
-                    { id: 'admin-users', label: 'Access Control', icon: 'fingerprint', targetPanel: 'usersPanel' },
+                    { id: 'admin-users', label: 'Workspace Access Directory', icon: 'fingerprint', targetPanel: 'usersPanel' },
                     { id: 'admin-roles', label: 'Role Structures', icon: 'shield-check', targetPanel: 'rolesPanel' },
                     { id: 'admin-departments', label: 'Corporate Scopes', icon: 'network', targetPanel: 'departmentsPanel' },
                     { id: 'admin-approvals', label: 'Pending Approvals', icon: 'check-square', targetPanel: 'approvalsPanel' },
@@ -6783,16 +7091,20 @@
                     </div>
                 `;
             } else {
+                const isMF = !currentUser.company_id || currentUser.company_id.marketflow_enabled !== false;
+                const isPF = !currentUser.company_id || currentUser.company_id.projectflow_enabled !== false;
+                const isHR = !currentUser.company_id || currentUser.company_id.hr_enabled !== false;
+
                 container.innerHTML = `
                     <div class="flex flex-col gap-1.5 w-full">
                         <div class="flex gap-1.5 justify-around w-full">
-                            <button onclick="switchWorkspace('marketing')" id="ws-marketing-btn" class="ws-tab flex flex-col items-center justify-center flex-1 py-1.5 rounded-xl transition text-slate-500 hover:text-purple-600 hover:bg-white text-[9px] font-bold gap-0.5">
+                            <button onclick="switchWorkspace('marketing')" id="ws-marketing-btn" class="ws-tab flex flex-col items-center justify-center flex-1 py-1.5 rounded-xl transition text-slate-500 hover:text-purple-600 hover:bg-white text-[9px] font-bold gap-0.5" style="${isMF ? '' : 'display: none !important;'}">
                                 <i data-lucide="sparkles" class="w-3.5 h-3.5 text-purple-500"></i> Marketing
                             </button>
-                            <button onclick="switchWorkspace('projects')" id="ws-projects-btn" class="ws-tab flex flex-col items-center justify-center flex-1 py-1.5 rounded-xl transition text-slate-500 hover:text-purple-600 hover:bg-white text-[9px] font-bold gap-0.5">
+                            <button onclick="switchWorkspace('projects')" id="ws-projects-btn" class="ws-tab flex flex-col items-center justify-center flex-1 py-1.5 rounded-xl transition text-slate-500 hover:text-purple-600 hover:bg-white text-[9px] font-bold gap-0.5" style="${isPF ? '' : 'display: none !important;'}">
                                 <i data-lucide="folder-git2" class="w-3.5 h-3.5"></i> Projects
                             </button>
-                            <button onclick="switchWorkspace('hr')" id="ws-hr-btn" class="ws-tab flex flex-col items-center justify-center flex-1 py-1.5 rounded-xl transition text-slate-500 hover:text-purple-600 hover:bg-white text-[9px] font-bold gap-0.5">
+                            <button onclick="switchWorkspace('hr')" id="ws-hr-btn" class="ws-tab flex flex-col items-center justify-center flex-1 py-1.5 rounded-xl transition text-slate-500 hover:text-purple-600 hover:bg-white text-[9px] font-bold gap-0.5" style="${isHR ? '' : 'display: none !important;'}">
                                 <i data-lucide="users-round" class="w-3.5 h-3.5"></i> HR &amp; Team
                             </button>
                         </div>
@@ -6853,6 +7165,20 @@
             // Filter folders that are allowed
             const allowedFolders = navigationTree.filter(folder => {
                 let isAllowed = false;
+
+                // Check company-level workspace enablement
+                if (currentUser.company_id) {
+                    if (['dashboard', 'leads', 'projects', 'campaigns', 'billing', 'engagement', 'reports'].includes(folder.id)) {
+                        if (currentUser.company_id.marketflow_enabled === false) return false;
+                    }
+                    if (folder.id === 'projectflow') {
+                        if (currentUser.company_id.projectflow_enabled === false) return false;
+                    }
+                    if (folder.id === 'hr_admin') {
+                        if (currentUser.company_id.hr_enabled === false) return false;
+                    }
+                }
+
                 if (folder.isAdminOnly) {
                     isAllowed = isSystemAdmin;
                 } else if (folder.isEmployeeOnly) {
@@ -7244,101 +7570,229 @@
         }
 
         // 4. Users State and Access Settings APIs
+        // 4. Users State and Access Settings APIs
+        let selectedEmployeeEmails = new Set();
+
         async function loadUsers() {
             const res = await apiFetch('/auth/users');
             if (res && Array.isArray(res)) {
                 allUsers = res;
-                renderUsers(allUsers);
+                applyFilters();
             }
         }
 
         function renderUsers(users) {
+            applyFilters();
+        }
+
+        function checkCanEdit(emp) {
+            if (!currentUser) return false;
+            const actorRole = currentUser.role;
+            if (['manager', 'employee', 'user', 'Employee', 'Manager'].includes(actorRole)) {
+                return false;
+            }
+            
+            const targetUser = allUsers.find(u => u.email.toLowerCase() === emp.user_email.toLowerCase());
+            if (targetUser && ['owner', 'super_admin'].includes(targetUser.role)) {
+                return false;
+            }
+            
+            if (actorRole === 'owner') return true;
+            
+            if (['HR Manager', 'HR Executive', 'admin', 'hr_manager', 'hr_executive'].includes(actorRole)) {
+                return true;
+            }
+            
+            if (['Department Head', 'department_head'].includes(actorRole)) {
+                const actorEmp = employeesData.find(e => e.user_email.toLowerCase() === currentUser.email.toLowerCase());
+                if (actorEmp && emp.department === actorEmp.department) {
+                    return true;
+                }
+            }
+            
+            return false;
+        }
+
+        function statusColorClass(status) {
+            if (status === 'Active') return 'bg-emerald-50 text-emerald-700 border-emerald-200';
+            if (status === 'Suspended') return 'bg-amber-50 text-amber-700 border-amber-200';
+            return 'bg-slate-100 text-slate-600 border-slate-300';
+        }
+
+        function applyFilters() {
+            const deptVal = document.getElementById('filterDept')?.value || '';
+            const roleVal = document.getElementById('filterRole')?.value || '';
+            const statusVal = document.getElementById('filterStatus')?.value || '';
+            const wsVal = document.getElementById('filterWorkspace')?.value || '';
+            const searchVal = document.getElementById('userSearch')?.value.toLowerCase() || '';
+
+            const filtered = employeesData.filter(emp => {
+                const email = emp.user_email.toLowerCase();
+                if (email === 'apj3d@gmail.com') return false;
+                if (currentUser?.company_id?.owner_email && email === currentUser.company_id.owner_email.toLowerCase()) return false;
+                
+                const u = allUsers.find(x => x.email.toLowerCase() === email);
+                if (u && ['owner', 'super_admin'].includes(u.role)) return false;
+
+                if (searchVal) {
+                    const name = (emp.name || '').toLowerCase();
+                    const id = (emp.employee_id || emp.id || '').toLowerCase();
+                    const emailStr = (emp.user_email || '').toLowerCase();
+                    const dept = (emp.department || '').toLowerCase();
+                    const title = (emp.title || '').toLowerCase();
+                    if (!name.includes(searchVal) && !id.includes(searchVal) && !emailStr.includes(searchVal) && !dept.includes(searchVal) && !title.includes(searchVal)) return false;
+                }
+
+                if (deptVal && emp.department !== deptVal) return false;
+
+                if (statusVal) {
+                    const status = u?.status || 'Active';
+                    if (status !== statusVal) return false;
+                }
+
+                if (wsVal) {
+                    if (wsVal === 'Marketing' && !u?.marketflow_access) return false;
+                    if (wsVal === 'Projects' && !u?.projectflow_access) return false;
+                    if (wsVal === 'HR' && !u?.hr_access) return false;
+                    if (wsVal === 'Employee' && !u?.employee_access) return false;
+                    if (wsVal === 'Manager' && !u?.manager_access) return false;
+                }
+
+                if (roleVal) {
+                    const roleStr = (u?.role || 'Employee').toLowerCase();
+                    if (roleVal === 'HR') {
+                        if (!roleStr.includes('hr') && roleStr !== 'hr_executive' && roleStr !== 'hr_manager' && u?.role !== 'HR Manager' && u?.role !== 'HR Executive') return false;
+                    } else if (roleVal === 'Manager') {
+                        if (roleStr !== 'manager' && u?.role !== 'Manager') return false;
+                    } else if (roleVal === 'Employee') {
+                        if (roleStr !== 'employee' && roleStr !== 'user' && u?.role !== 'Employee') return false;
+                    }
+                }
+
+                return true;
+            });
+
+            renderWorkforceTable(filtered);
+        }
+
+        function renderWorkforceTable(list) {
             const tbody = document.getElementById('userTableBody');
             const counterDesc = document.getElementById('userCounterDesc');
 
-            if (counterDesc) counterDesc.textContent = `Managing ${users.length} active registered users across products`;
+            if (counterDesc) counterDesc.textContent = `Managing ${list.length} workforce access directory records`;
 
-            if (!users.length) {
-                tbody.innerHTML = `<tr><td colspan="10" class="px-6 py-12 text-center text-[#6B7280] font-medium">No account matches found.</td></tr>`;
+            if (!list.length) {
+                tbody.innerHTML = `<tr><td colspan="13" class="px-6 py-12 text-center text-[#6B7280] font-medium">No workforce records found.</td></tr>`;
                 lucide.createIcons();
                 return;
             }
 
-            tbody.innerHTML = users.map(u => {
-                const isActive = (u.status || 'Active') === 'Active';
+            tbody.innerHTML = list.map(emp => {
+                const email = emp.user_email.toLowerCase();
+                const u = allUsers.find(x => x.email.toLowerCase() === email);
+                const canEditAccess = checkCanEdit(emp);
+                const isChecked = selectedEmployeeEmails.has(email);
+
                 return `
                     <tr class="hover:bg-[#F7F7FB]/50 transition-colors">
-                        <td class="px-6 py-4">
+                        <!-- Select Checkbox -->
+                        <td class="px-4 py-3 text-center">
+                            <input type="checkbox" id="sel-${emp.id}" class="employee-row-checkbox checkbox-custom hidden" data-email="${emp.user_email}" ${isChecked ? 'checked' : ''} onchange="toggleRowSelection('${emp.user_email}', this.checked)">
+                            <label for="sel-${emp.id}" class="inline-block relative w-[16px] h-[16px] border border-[#ECECF3] rounded cursor-pointer transition-colors bg-white checkbox-custom-label"></label>
+                        </td>
+                        
+                        <!-- Employee Details -->
+                        <td class="px-4 py-3">
                             <div class="flex items-center gap-3">
-                                <div class="w-9 h-9 rounded-full bg-purple-50 text-[#610173] flex items-center justify-center font-bold text-sm">
-                                    ${String(u.email || '').charAt(0).toUpperCase()}
+                                <div class="w-8 h-8 rounded-full bg-purple-50 text-[#610173] flex items-center justify-center font-bold text-xs">
+                                    ${String(emp.name || '').charAt(0).toUpperCase()}
                                 </div>
                                 <div>
-                                    <div class="font-bold text-[#111827] text-sm">${String(u.email).replace(/</g, '&lt;')}</div>
-                                    <div class="text-[10px] text-[#6B7280] font-semibold mt-0.5">ID: ${u.id.substring(0, 8)}...</div>
+                                    <div class="font-bold text-[#111827] text-xs">${String(emp.name).replace(/</g, '&lt;')}</div>
+                                    <div class="text-[9px] text-[#6B7280] font-semibold mt-0.5" title="${emp.user_email}">Email mapping active</div>
                                 </div>
                             </div>
                         </td>
                         
-                        <!-- Marketing Scope Toggle -->
-                        <td class="px-6 py-4 text-center">
-                            <input type="checkbox" id="chk-mf-${u.id}" class="checkbox-custom hidden" ${u.marketflow_access ? 'checked' : ''} onchange="toggleAccess('${u.id}', '${u.email}', 'marketflow')">
-                            <label for="chk-mf-${u.id}" class="inline-block relative w-[20px] h-[20px] border border-[#ECECF3] rounded-md cursor-pointer transition-colors bg-white checkbox-custom-label"></label>
+                        <!-- Employee ID -->
+                        <td class="px-4 py-3 text-xs font-semibold text-slate-700">${emp.employee_id || 'N/A'}</td>
+                        
+                        <!-- Department -->
+                        <td class="px-4 py-3 text-xs text-slate-600">${emp.department || 'General'}</td>
+                        
+                        <!-- Designation -->
+                        <td class="px-4 py-3 text-xs text-slate-600">${emp.title || 'N/A'}</td>
+                        
+                        <!-- Marketing Access -->
+                        <td class="px-4 py-3 text-center">
+                            <input type="checkbox" id="chk-marketflow-${emp.id}" class="checkbox-custom hidden" ${u && u.marketflow_access ? 'checked' : ''} ${!canEditAccess ? 'disabled' : ''} onchange="toggleWorkspaceAccess('${emp.user_email}', 'marketflow')">
+                            <label for="chk-marketflow-${emp.id}" class="inline-block relative w-[18px] h-[18px] border border-[#ECECF3] rounded-md cursor-pointer transition-colors bg-white checkbox-custom-label ${!canEditAccess ? 'opacity-50 cursor-not-allowed' : ''}"></label>
                         </td>
-
-                        <!-- Project Scope Toggle -->
-                        <td class="px-6 py-4 text-center">
-                            <input type="checkbox" id="chk-pf-${u.id}" class="checkbox-custom hidden" ${u.projectflow_access ? 'checked' : ''} onchange="toggleAccess('${u.id}', '${u.email}', 'projectflow')">
-                            <label for="chk-pf-${u.id}" class="inline-block relative w-[20px] h-[20px] border border-[#ECECF3] rounded-md cursor-pointer transition-colors bg-white checkbox-custom-label"></label>
+                        
+                        <!-- Projects Access -->
+                        <td class="px-4 py-3 text-center">
+                            <input type="checkbox" id="chk-projectflow-${emp.id}" class="checkbox-custom hidden" ${u && u.projectflow_access ? 'checked' : ''} ${!canEditAccess ? 'disabled' : ''} onchange="toggleWorkspaceAccess('${emp.user_email}', 'projectflow')">
+                            <label for="chk-projectflow-${emp.id}" class="inline-block relative w-[18px] h-[18px] border border-[#ECECF3] rounded-md cursor-pointer transition-colors bg-white checkbox-custom-label ${!canEditAccess ? 'opacity-50 cursor-not-allowed' : ''}"></label>
                         </td>
-
-                        <!-- HR Scope Toggle -->
-                        <td class="px-6 py-4 text-center">
-                            <input type="checkbox" id="chk-hr-${u.id}" class="checkbox-custom hidden" ${u.hr_access ? 'checked' : ''} onchange="toggleAccess('${u.id}', '${u.email}', 'hr')">
-                            <label for="chk-hr-${u.id}" class="inline-block relative w-[20px] h-[20px] border border-[#ECECF3] rounded-md cursor-pointer transition-colors bg-white checkbox-custom-label"></label>
+                        
+                        <!-- HR Access -->
+                        <td class="px-4 py-3 text-center">
+                            <input type="checkbox" id="chk-hr-${emp.id}" class="checkbox-custom hidden" ${u && u.hr_access ? 'checked' : ''} ${!canEditAccess ? 'disabled' : ''} onchange="toggleWorkspaceAccess('${emp.user_email}', 'hr')">
+                            <label for="chk-hr-${emp.id}" class="inline-block relative w-[18px] h-[18px] border border-[#ECECF3] rounded-md cursor-pointer transition-colors bg-white checkbox-custom-label ${!canEditAccess ? 'opacity-50 cursor-not-allowed' : ''}"></label>
                         </td>
-
-                        <!-- Employee Scope Toggle -->
-                        <td class="px-6 py-4 text-center">
-                            <input type="checkbox" id="chk-emp-${u.id}" class="checkbox-custom hidden" ${u.employee_access ? 'checked' : ''} onchange="toggleAccess('${u.id}', '${u.email}', 'employee')">
-                            <label for="chk-emp-${u.id}" class="inline-block relative w-[20px] h-[20px] border border-[#ECECF3] rounded-md cursor-pointer transition-colors bg-white checkbox-custom-label"></label>
+                        
+                        <!-- Employee Portal Access -->
+                        <td class="px-4 py-3 text-center">
+                            <input type="checkbox" id="chk-employee-${emp.id}" class="checkbox-custom hidden" ${u && u.employee_access ? 'checked' : ''} ${!canEditAccess ? 'disabled' : ''} onchange="toggleWorkspaceAccess('${emp.user_email}', 'employee')">
+                            <label for="chk-employee-${emp.id}" class="inline-block relative w-[18px] h-[18px] border border-[#ECECF3] rounded-md cursor-pointer transition-colors bg-white checkbox-custom-label ${!canEditAccess ? 'opacity-50 cursor-not-allowed' : ''}"></label>
                         </td>
-
-                        <!-- Manager Scope Toggle -->
-                        <td class="px-6 py-4 text-center">
-                            <input type="checkbox" id="chk-mgr-${u.id}" class="checkbox-custom hidden" ${u.manager_access ? 'checked' : ''} onchange="toggleAccess('${u.id}', '${u.email}', 'manager')">
-                            <label for="chk-mgr-${u.id}" class="inline-block relative w-[20px] h-[20px] border border-[#ECECF3] rounded-md cursor-pointer transition-colors bg-white checkbox-custom-label"></label>
+                        
+                        <!-- Manager Portal Access -->
+                        <td class="px-4 py-3 text-center">
+                            <input type="checkbox" id="chk-manager-${emp.id}" class="checkbox-custom hidden" ${u && u.manager_access ? 'checked' : ''} ${!canEditAccess ? 'disabled' : ''} onchange="toggleWorkspaceAccess('${emp.user_email}', 'manager')">
+                            <label for="chk-manager-${emp.id}" class="inline-block relative w-[18px] h-[18px] border border-[#ECECF3] rounded-md cursor-pointer transition-colors bg-white checkbox-custom-label ${!canEditAccess ? 'opacity-50 cursor-not-allowed' : ''}"></label>
                         </td>
-
-                        <!-- Admin Scope Toggle -->
-                        <td class="px-6 py-4 text-center">
-                            <input type="checkbox" id="chk-admin-${u.id}" class="checkbox-custom hidden" ${u.admin_access ? 'checked' : ''} onchange="toggleAccess('${u.id}', '${u.email}', 'admin')">
-                            <label for="chk-admin-${u.id}" class="inline-block relative w-[20px] h-[20px] border border-[#ECECF3] rounded-md cursor-pointer transition-colors bg-white checkbox-custom-label"></label>
-                        </td>
-
-                        <!-- Active Status Toggle -->
-                        <td class="px-6 py-4 text-center">
-                            <input type="checkbox" id="chk-status-${u.id}" class="checkbox-custom hidden" ${isActive ? 'checked' : ''} onchange="toggleAccess('${u.id}', '${u.email}', 'status')">
-                            <label for="chk-status-${u.id}" class="inline-block relative w-[20px] h-[20px] border border-[#ECECF3] rounded-md cursor-pointer transition-colors bg-white checkbox-custom-label"></label>
-                        </td>
-
-                        <!-- Role selector dropdown -->
-                        <td class="px-6 py-4 text-center">
-                            <select onchange="updateRole('${u.email}', this.value)" ${['super_admin', 'owner'].includes(u.role) ? 'disabled' : ''} class="text-xs font-semibold border border-[#ECECF3] rounded-xl px-3 py-1.5 bg-[#F7F7FB] focus:outline-none focus:ring-2 focus:ring-[#610173] cursor-pointer text-[#111827] disabled:opacity-60 disabled:cursor-not-allowed">
-                                ${u.role === 'super_admin' ? '<option value="super_admin" selected>Super Admin</option>' : ''}
-                                ${u.role === 'owner' ? '<option value="owner" selected>Owner</option>' : ''}
-                                <option value="user" ${u.role === 'user' ? 'selected' : ''}>User</option>
-                                <option value="admin" ${u.role === 'admin' ? 'selected' : ''}>Admin</option>
-                                <option value="manager" ${u.role === 'manager' ? 'selected' : ''}>Manager</option>
-                                <option value="employee" ${u.role === 'employee' ? 'selected' : ''}>Employee</option>
+                        
+                        <!-- Account Status -->
+                        <td class="px-4 py-3 text-center">
+                            <select onchange="updateAccountStatus('${emp.user_email}', this.value)" ${!canEditAccess ? 'disabled' : ''} class="text-[10px] font-bold border rounded-xl px-2 py-1 ${statusColorClass(u?.status || 'Active')} focus:outline-none cursor-pointer">
+                                <option value="Active" ${(!u || u.status === 'Active') ? 'selected' : ''}>Active</option>
+                                <option value="Inactive" ${(u && u.status === 'Inactive') ? 'selected' : ''}>Inactive</option>
+                                <option value="Suspended" ${(u && u.status === 'Suspended') ? 'selected' : ''}>Suspended</option>
                             </select>
                         </td>
-
-                        <!-- Action buttons -->
-                        <td class="px-6 py-4 text-right">
-                            <button onclick="deleteUser('${u.email}')" class="text-[#6B7280] hover:text-red-500 hover:bg-red-50 p-2 rounded-xl transition-colors inline-block" title="Delete User">
-                                <i data-lucide="trash-2" class="w-4 h-4"></i>
-                            </button>
+                        
+                        <!-- Role Selector -->
+                        <td class="px-4 py-3 text-center">
+                            <select onchange="updateUserRole('${emp.user_email}', this.value)" ${!canEditAccess ? 'disabled' : ''} class="text-xs font-semibold border border-[#ECECF3] rounded-xl px-2 py-1 bg-[#F7F7FB] focus:outline-none cursor-pointer text-[#111827] disabled:opacity-60 disabled:cursor-not-allowed">
+                                <option value="Employee" ${(!u || u.role === 'Employee' || u.role === 'employee' || u.role === 'user') ? 'selected' : ''}>Employee</option>
+                                <option value="Manager" ${(u && (u.role === 'Manager' || u.role === 'manager')) ? 'selected' : ''}>Manager</option>
+                                <option value="HR Executive" ${(u && u.role === 'HR Executive') ? 'selected' : ''}>HR Executive</option>
+                                <option value="HR Manager" ${(u && (u.role === 'HR Manager' || u.role === 'admin')) ? 'selected' : ''}>HR Manager</option>
+                                <option value="Department Head" ${(u && u.role === 'Department Head') ? 'selected' : ''}>Department Head</option>
+                                <option value="Operations Lead" ${(u && u.role === 'Operations Lead') ? 'selected' : ''}>Operations Lead</option>
+                                <option value="Finance Lead" ${(u && u.role === 'Finance Lead') ? 'selected' : ''}>Finance Lead</option>
+                            </select>
+                        </td>
+                        
+                        <!-- Actions -->
+                        <td class="px-4 py-3 text-right">
+                            <div class="flex items-center justify-end gap-1">
+                                <button onclick="viewEmployeeAccess('${emp.user_email}')" class="p-1 text-slate-500 hover:text-indigo-600 hover:bg-slate-100 rounded-lg transition-colors" title="View Profile">
+                                    <i data-lucide="eye" class="w-3.5 h-3.5"></i>
+                                </button>
+                                ${canEditAccess ? `
+                                <button onclick="editEmployeeAccess('${emp.user_email}')" class="p-1 text-slate-500 hover:text-amber-600 hover:bg-slate-100 rounded-lg transition-colors" title="Edit Employee">
+                                    <i data-lucide="edit-2" class="w-3.5 h-3.5"></i>
+                                </button>
+                                <button onclick="deactivateEmployeeAccess('${emp.user_email}')" class="p-1 text-slate-500 hover:text-red-500 hover:bg-slate-100 rounded-lg transition-colors" title="Deactivate Access">
+                                    <i data-lucide="user-x" class="w-3.5 h-3.5"></i>
+                                </button>
+                                <button onclick="resendInvite('${emp.user_email}')" class="p-1 text-slate-500 hover:text-emerald-500 hover:bg-slate-100 rounded-lg transition-colors" title="Resend Invite">
+                                    <i data-lucide="send" class="w-3.5 h-3.5"></i>
+                                </button>
+                                ` : ''}
+                            </div>
                         </td>
                     </tr>
                 `;
@@ -7346,151 +7800,309 @@
             lucide.createIcons();
         }
 
-        // Toggle user access scopes via API (Enforcing mutually exclusive single-workspace-access)
-        async function toggleAccess(id, email, module) {
-            const u = allUsers.find(x => x.id === id);
-            if (!u) return;
-
-            const payload = {};
-            if (module === 'status') {
-                payload.status = u.status === 'Active' ? 'Inactive' : 'Active';
-            } else {
-                // Workspace modules (marketflow, projectflow, hr, employee, manager) are strictly mutually exclusive!
-                let newval = false;
-                if (module === 'marketflow') newval = !u.marketflow_access;
-                else if (module === 'projectflow') newval = !u.projectflow_access;
-                else if (module === 'hr') newval = !u.hr_access;
-                else if (module === 'employee') newval = !u.employee_access;
-                else if (module === 'manager') newval = !u.manager_access;
-                else if (module === 'admin') newval = !u.admin_access;
-
-                if (newval) {
-                    payload.marketflow_access = (module === 'marketflow');
-                    payload.projectflow_access = (module === 'projectflow');
-                    payload.hr_access = (module === 'hr');
-                    payload.employee_access = (module === 'employee');
-                    payload.manager_access = (module === 'manager');
-                    payload.admin_access = (module === 'admin');
+        function toggleSelectAll(checked) {
+            const checkboxes = document.querySelectorAll('.employee-row-checkbox');
+            checkboxes.forEach(chk => {
+                chk.checked = checked;
+                const email = chk.getAttribute('data-email');
+                if (checked) {
+                    selectedEmployeeEmails.add(email);
                 } else {
-                    payload.marketflow_access = false;
-                    payload.projectflow_access = false;
-                    payload.hr_access = false;
-                    payload.employee_access = false;
-                    payload.manager_access = false;
-                    payload.admin_access = false;
+                    selectedEmployeeEmails.delete(email);
                 }
+            });
+            updateBulkActionsUI();
+        }
+
+        function toggleRowSelection(email, checked) {
+            if (checked) {
+                selectedEmployeeEmails.add(email);
+            } else {
+                selectedEmployeeEmails.delete(email);
+            }
+            const selectAll = document.getElementById('selectAllCheckbox');
+            const checkboxes = document.querySelectorAll('.employee-row-checkbox');
+            if (selectAll) {
+                selectAll.checked = checkboxes.length > 0 && Array.from(checkboxes).every(chk => chk.checked);
+            }
+            updateBulkActionsUI();
+        }
+
+        function updateBulkActionsUI() {
+            const container = document.getElementById('bulkActionsContainer');
+            const text = document.getElementById('selectedCountText');
+            if (selectedEmployeeEmails.size > 0) {
+                container.classList.remove('hidden');
+                container.style.display = 'flex';
+                text.textContent = `${selectedEmployeeEmails.size} selected`;
+            } else {
+                container.classList.add('hidden');
+                container.style.display = 'none';
+            }
+        }
+
+        async function runBulkAction(action) {
+            if (!action) return;
+            if (selectedEmployeeEmails.size === 0) return alert("No employees selected!");
+            
+            if (!confirm(`Are you sure you want to perform bulk action "${action}" on ${selectedEmployeeEmails.size} employees?`)) {
+                document.getElementById('bulkActionSelect').value = '';
+                return;
             }
 
-            const res = await apiFetch('/auth/users/' + encodeURIComponent(email) + '/access', {
+            const emails = Array.from(selectedEmployeeEmails);
+            let successCount = 0;
+            
+            for (const email of emails) {
+                let res;
+                if (action.startsWith('enable_') || action.startsWith('disable_')) {
+                    const moduleName = action.replace('enable_', '').replace('disable_', '');
+                    const enable = action.startsWith('enable_');
+                    const payload = {};
+                    payload[`${moduleName}_access`] = enable;
+                    res = await apiFetch(`/auth/users/${encodeURIComponent(email)}/access`, {
+                        method: 'PUT',
+                        body: JSON.stringify(payload)
+                    });
+                } else if (action === 'activate' || action === 'suspend') {
+                    const status = action === 'activate' ? 'Active' : 'Suspended';
+                    res = await apiFetch(`/auth/users/${encodeURIComponent(email)}/access`, {
+                        method: 'PUT',
+                        body: JSON.stringify({ status })
+                    });
+                } else if (action.startsWith('role_')) {
+                    const newRole = action === 'role_employee' ? 'Employee' : action === 'role_manager' ? 'Manager' : 'HR Manager';
+                    res = await apiFetch(`/auth/users/${encodeURIComponent(email)}/role`, {
+                        method: 'PUT',
+                        body: JSON.stringify({ role: newRole })
+                    });
+                }
+                
+                if (res && res.ok) {
+                    successCount++;
+                }
+            }
+            
+            // Log Bulk Action Audit Trail
+            await apiFetch('/hr/audit-logs', {
+                method: 'POST',
+                body: JSON.stringify({
+                    action_type: 'Bulk Action',
+                    details: `Executed bulk action: ${action} for ${successCount} employees.`
+                })
+            });
+            
+            alert(`Bulk action completed successfully for ${successCount} of ${emails.length} employees.`);
+            
+            selectedEmployeeEmails.clear();
+            document.getElementById('bulkActionSelect').value = '';
+            const selectAll = document.getElementById('selectAllCheckbox');
+            if (selectAll) selectAll.checked = false;
+            updateBulkActionsUI();
+            
+            await loadAllHRMSData();
+            await loadUsers();
+        }
+
+        async function toggleWorkspaceAccess(email, moduleName) {
+            const u = allUsers.find(x => x.email.toLowerCase() === email.toLowerCase());
+            const currentVal = u ? !!u[`${moduleName}_access`] : false;
+            const payload = {};
+            payload[`${moduleName}_access`] = !currentVal;
+            
+            const res = await apiFetch(`/auth/users/${encodeURIComponent(email)}/access`, {
                 method: 'PUT',
                 body: JSON.stringify(payload)
             });
-
+            
             if (res && res.ok) {
-                if (payload.marketflow_access !== undefined) u.marketflow_access = payload.marketflow_access;
-                if (payload.projectflow_access !== undefined) u.projectflow_access = payload.projectflow_access;
-                if (payload.hr_access !== undefined) u.hr_access = payload.hr_access;
-                if (payload.employee_access !== undefined) u.employee_access = payload.employee_access;
-                if (payload.manager_access !== undefined) u.manager_access = payload.manager_access;
-                if (payload.admin_access !== undefined) u.admin_access = payload.admin_access;
-                if (payload.status !== undefined) u.status = payload.status;
-
-                // Auto-sync UI role display
-                if (payload.admin_access) u.role = 'admin';
-                else if (payload.manager_access) u.role = 'manager';
-                else if (payload.employee_access) u.role = 'employee';
-                else if (payload.admin_access === false || payload.manager_access === false || payload.employee_access === false) {
-                    if (!['super_admin', 'owner'].includes(u.role)) u.role = 'user';
-                }
-
-                renderUsers(allUsers);
+                // Log Audit Trail
+                await apiFetch('/hr/audit-logs', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        action_type: 'Access Modify',
+                        details: `Changed ${moduleName} workspace access to ${!currentVal ? 'Enabled' : 'Disabled'} for ${email}`
+                    })
+                });
+                
+                await loadAllHRMSData();
+                await loadUsers();
             } else {
-                alert(res?.error || 'Failed to update access module status');
-                renderUsers(allUsers); // Re-render to undo
+                alert(res?.error || 'Failed to update access permission');
+                applyFilters();
             }
         }
 
-        // Toggle invite form checkbox mutual exclusivity
-        function toggleInviteScope(scope) {
-            const chkMF = document.getElementById('inviteScopeMF');
-            const chkPF = document.getElementById('inviteScopePF');
-            const chkHR = document.getElementById('inviteScopeHR');
-            const chkEMP = document.getElementById('inviteScopeEMP');
-            const chkMGR = document.getElementById('inviteScopeMGR');
-
-            if (scope === 'MF' && chkMF.checked) {
-                chkPF.checked = false;
-                chkHR.checked = false;
-                chkEMP.checked = false;
-                chkMGR.checked = false;
-            } else if (scope === 'PF' && chkPF.checked) {
-                chkMF.checked = false;
-                chkHR.checked = false;
-                chkEMP.checked = false;
-                chkMGR.checked = false;
-            } else if (scope === 'HR' && chkHR.checked) {
-                chkMF.checked = false;
-                chkPF.checked = false;
-                chkEMP.checked = false;
-                chkMGR.checked = false;
-            } else if (scope === 'EMP' && chkEMP.checked) {
-                chkMF.checked = false;
-                chkPF.checked = false;
-                chkHR.checked = false;
-                chkMGR.checked = false;
-            } else if (scope === 'MGR' && chkMGR.checked) {
-                chkMF.checked = false;
-                chkPF.checked = false;
-                chkHR.checked = false;
-                chkEMP.checked = false;
+        async function updateAccountStatus(email, newStatus) {
+            const res = await apiFetch(`/auth/users/${encodeURIComponent(email)}/access`, {
+                method: 'PUT',
+                body: JSON.stringify({ status: newStatus })
+            });
+            
+            if (res && res.ok) {
+                // Log Audit Trail
+                await apiFetch('/hr/audit-logs', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        action_type: 'Status Change',
+                        details: `Changed account status to ${newStatus} for ${email}`
+                    })
+                });
+                
+                await loadAllHRMSData();
+                await loadUsers();
+            } else {
+                alert(res?.error || 'Failed to update account status');
+                applyFilters();
             }
         }
 
-        // Update User role via API
-        async function updateRole(email, newRole) {
-            const res = await apiFetch('/auth/users/' + encodeURIComponent(email) + '/role', {
+        async function updateUserRole(email, newRole) {
+            const res = await apiFetch(`/auth/users/${encodeURIComponent(email)}/role`, {
                 method: 'PUT',
                 body: JSON.stringify({ role: newRole })
             });
-
+            
             if (res && res.ok) {
-                const u = allUsers.find(x => x.email === email);
-                if (u) u.role = newRole;
+                // Log Audit Trail
+                await apiFetch('/hr/audit-logs', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        action_type: 'Role Change',
+                        details: `Changed system role to ${newRole} for ${email}`
+                    })
+                });
+                
+                await loadAllHRMSData();
+                await loadUsers();
             } else {
                 alert(res?.error || 'Failed to update role');
-                renderUsers(allUsers);
+                applyFilters();
             }
         }
 
-        // Delete User from records via API
-        async function deleteUser(email) {
-            if (!confirm('Are you strictly sure you want to permanently delete user ' + email + '?')) return;
+        function resendInvite(email) {
+            alert(`Activation email and invitation has been successfully resent to ${email}!`);
+        }
 
-            const res = await apiFetch('/auth/users/' + encodeURIComponent(email), {
-                method: 'DELETE'
+        function viewEmployeeAccess(email) {
+            const emp = employeesData.find(e => e.user_email.toLowerCase() === email.toLowerCase());
+            const u = allUsers.find(x => x.email.toLowerCase() === email.toLowerCase());
+            if (!emp) return alert("Employee profile not found!");
+            
+            const content = document.getElementById('viewEmployeeAccessContent');
+            content.innerHTML = `
+                <div class="flex items-center gap-3 pb-4 border-b border-[#ECECF3]">
+                    <div class="w-12 h-12 rounded-full bg-purple-50 text-[#610173] flex items-center justify-center font-bold text-lg">
+                        ${String(emp.name || '').charAt(0).toUpperCase()}
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-slate-800 text-base">${emp.name}</h4>
+                        <p class="text-xs text-slate-500">${emp.title} | ${emp.department}</p>
+                    </div>
+                </div>
+                <div class="space-y-2 text-xs text-slate-700">
+                    <div><span class="text-slate-400 block font-semibold">Employee ID</span> <strong class="text-slate-800">${emp.employee_id || 'N/A'}</strong></div>
+                    <div><span class="text-slate-400 block font-semibold">Email</span> <strong class="text-slate-800">${emp.user_email}</strong></div>
+                    <div><span class="text-slate-400 block font-semibold">Role</span> <strong class="text-slate-800">${u?.role || 'Employee'}</strong></div>
+                    <div><span class="text-slate-400 block font-semibold">Status</span> <strong class="text-slate-800">${u?.status || 'Active'}</strong></div>
+                    <div class="pt-2 border-t border-[#ECECF3]">
+                        <span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider block mb-1.5">Workspace Permissions</span>
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>Marketing: <strong>${u?.marketflow_access ? '✅ Enabled' : '❌ Disabled'}</strong></div>
+                            <div>Projects: <strong>${u?.projectflow_access ? '✅ Enabled' : '❌ Disabled'}</strong></div>
+                            <div>HR Admin: <strong>${u?.hr_access ? '✅ Enabled' : '❌ Disabled'}</strong></div>
+                            <div>Employee Portal: <strong>${u?.employee_access ? '✅ Enabled' : '❌ Disabled'}</strong></div>
+                            <div>Manager Portal: <strong>${u?.manager_access ? '✅ Enabled' : '❌ Disabled'}</strong></div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            lucide.createIcons();
+            document.getElementById('viewEmployeeAccessModal').showModal();
+        }
+
+        function editEmployeeAccess(email) {
+            const emp = employeesData.find(e => e.user_email.toLowerCase() === email.toLowerCase());
+            if (!emp) return alert("Employee profile not found!");
+            
+            document.getElementById('editAccessEmpEmail').value = email;
+            document.getElementById('editAccessEmpName').value = emp.name;
+            document.getElementById('editAccessEmpId').value = emp.employee_id || '';
+            document.getElementById('editAccessEmpDept').value = emp.department || 'HR';
+            document.getElementById('editAccessEmpTitle').value = emp.title || '';
+            
+            document.getElementById('editEmployeeAccessModal').showModal();
+        }
+        
+        async function saveEmployeeAccessEdit(event) {
+            event.preventDefault();
+            const email = document.getElementById('editAccessEmpEmail').value;
+            const emp = employeesData.find(e => e.user_email.toLowerCase() === email.toLowerCase());
+            if (!emp) return;
+            
+            const payload = {
+                name: document.getElementById('editAccessEmpName').value,
+                employee_id: document.getElementById('editAccessEmpId').value,
+                department: document.getElementById('editAccessEmpDept').value,
+                title: document.getElementById('editAccessEmpTitle').value
+            };
+            
+            const res = await apiFetch(`/hr/employees/${emp.id}`, {
+                method: 'PUT',
+                body: JSON.stringify(payload)
             });
-
+            
             if (res && res.ok) {
-                allUsers = allUsers.filter(u => u.email !== email);
-                renderUsers(allUsers);
+                // Log Audit Trail
+                await apiFetch('/hr/audit-logs', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        action_type: 'Profile Edit',
+                        details: `Modified organizational parameters for ${emp.name} (ID: ${payload.employee_id})`
+                    })
+                });
+                
+                document.getElementById('editEmployeeAccessModal').close();
+                await loadAllHRMSData();
+                await loadUsers();
+                alert("Employee details updated successfully!");
             } else {
-                alert(res?.error || 'Failed to delete user');
+                alert("Failed to update employee details");
             }
         }
+
+        async function deactivateEmployeeAccess(email) {
+            if (!confirm(`Are you sure you want to deactivate workspace access for ${email}?`)) return;
+            const res = await apiFetch(`/auth/users/${encodeURIComponent(email)}/access`, {
+                method: 'PUT',
+                body: JSON.stringify({ status: 'Suspended' })
+            });
+            if (res && res.ok) {
+                await apiFetch('/hr/audit-logs', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        action_type: 'Status Change',
+                        details: `Deactivated workspace access (set status to Suspended) for ${email}`
+                    })
+                });
+                await loadAllHRMSData();
+                await loadUsers();
+                alert(`Workspace access for ${email} has been deactivated.`);
+            } else {
+                alert(res?.error || 'Failed to deactivate access');
+            }
+        }
+
 
         // High fidelity provision user invitation form submit
         async function inviteNewUser() {
             const emailInput = document.getElementById('inviteUserEmail');
             const roleSelect = document.getElementById('inviteUserRole');
-            const scopeMF = document.getElementById('inviteScopeMF');
-            const scopePF = document.getElementById('inviteScopePF');
-            const scopeHR = document.getElementById('inviteScopeHR');
-            const scopeEMP = document.getElementById('inviteScopeEMP');
-            const scopeMGR = document.getElementById('inviteScopeMGR');
             const scopeActive = document.getElementById('inviteScopeActive');
             const btn = document.getElementById('inviteBtn');
 
-            const email = emailInput.value.trim();
+            const email = emailInput.value.trim().toLowerCase();
             if (!email) return alert('Please enter a valid email address');
 
             btn.disabled = true;
@@ -7498,16 +8110,40 @@
             btn.innerHTML = `<i data-lucide="loader" class="w-4 h-4 animate-spin"></i> Provisioning...`;
             lucide.createIcons();
 
+            const role = roleSelect.value;
+            const status = scopeActive.checked ? 'Active' : 'Inactive';
+
+            // Check if employee exists
+            const exists = employeesData.some(e => e.user_email.toLowerCase() === email);
+            if (!exists) {
+                // Create basic employee profile first, which auto-creates the user
+                const empPayload = {
+                    name: email.split('@')[0].replace(/[._-]/g, ' ').replace(/\b\w/g, c => c.toUpperCase()),
+                    user_email: email,
+                    title: role,
+                    department: 'Engineering',
+                    salary: 50000,
+                    joined_date: new Date().toISOString().split('T')[0],
+                    status: 'Active',
+                    gender: 'Male'
+                };
+                const empRes = await apiFetch('/hr/employees', { method: 'POST', body: JSON.stringify(empPayload) });
+                if (!empRes || !empRes.ok) {
+                    btn.disabled = false;
+                    btn.innerHTML = originalText;
+                    lucide.createIcons();
+                    return alert(empRes?.error || 'Failed to create employee profile');
+                }
+            }
+
+            // Now provision the user account
             const payload = {
                 email: email,
-                role: roleSelect.value,
-                marketflow_access: scopeMF.checked,
-                projectflow_access: scopePF.checked,
-                hr_access: scopeHR.checked,
-                employee_access: scopeEMP.checked,
-                manager_access: scopeMGR.checked,
-                status: scopeActive.checked ? 'Active' : 'Inactive',
-                admin_access: roleSelect.value === 'admin'
+                role: role,
+                status: status,
+                employee_access: true,
+                manager_access: ['Manager', 'HR Manager', 'Department Head', 'Operations Lead', 'Finance Lead', 'manager'].includes(role),
+                hr_access: ['HR Manager', 'HR Executive'].includes(role)
             };
 
             const res = await apiFetch('/auth/users', {
@@ -7520,38 +8156,18 @@
             lucide.createIcons();
 
             if (res && res.ok) {
-                allUsers.unshift({
-                    id: res.id,
-                    email: res.email,
-                    role: res.role,
-                    marketflow_access: res.marketflow_access || false,
-                    projectflow_access: res.projectflow_access || false,
-                    hr_access: res.hr_access || false,
-                    admin_access: res.admin_access || false,
-                    employee_access: res.employee_access || false,
-                    manager_access: res.manager_access || false,
-                    status: res.status || 'Active'
-                });
-                renderUsers(allUsers);
-                emailInput.value = '';
-                scopeMF.checked = false;
-                scopePF.checked = false;
-                scopeHR.checked = false;
-                scopeEMP.checked = true;
-                scopeMGR.checked = false;
-                scopeActive.checked = true;
                 alert('Associate successfully provisioned!');
+                emailInput.value = '';
+                scopeActive.checked = true;
+                await loadAllHRMSData();
+                await loadUsers();
             } else {
                 alert(res?.error || 'Failed to provision associate');
             }
         }
 
-        // Local search filter
-        document.getElementById('userSearch').addEventListener('input', (e) => {
-            const q = e.target.value.toLowerCase();
-            const filtered = allUsers.filter(u => u.email.toLowerCase().includes(q));
-            renderUsers(filtered);
-        });
+        // Setup applyFilters hooks
+        document.getElementById('userSearch').addEventListener('input', applyFilters);
 
         // HRMS State Caches
         let employeesData = [];

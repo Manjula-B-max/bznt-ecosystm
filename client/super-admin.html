@@ -1,10 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Super Admin Center - BEZENT</title>
-        <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
             theme: {
@@ -41,7 +42,7 @@
             --bg-page: #fcf8fd;
             --hero-gradient: linear-gradient(135deg, #610173 0%, #7a118f 35%, #9e2dc0 65%, #210026 100%);
             --card-radius: 20px;
-            
+
             --purple-50: #fdf6ff;
             --purple-100: #faebff;
             --purple-200: #f3bdfc;
@@ -63,20 +64,33 @@
         body {
             background-color: var(--bg-page) !important;
             animation: appFadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-            overflow-x: hidden;
+            height: 100vh !important;
+            overflow: hidden !important;
+            display: flex !important;
+            flex-direction: column !important;
+            position: relative !important;
         }
-        
+
         @keyframes appFadeIn {
-            from { opacity: 0; transform: translateY(8px); }
-            to { opacity: 1; transform: translateY(0); }
+            from {
+                opacity: 0;
+                transform: translateY(8px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         /* ==================== BEZENT PREMIUM HERO COMMAND CENTER STYLES ==================== */
         .command-center-hero {
             position: relative;
             background: linear-gradient(135deg, #a402bf 0%, #210026 100%) !important;
-            border-radius: 36px !important; /* Standardized radius: 36px */
-            padding: 24px 28px !important; /* Spacing */
+            border-radius: 36px !important;
+            /* Standardized radius: 36px */
+            padding: 24px 28px !important;
+            /* Spacing */
             overflow: hidden !important;
             box-shadow: 0 12px 40px rgba(97, 1, 115, 0.18) !important;
             border: none !important;
@@ -86,13 +100,21 @@
             animation: hero-load 400ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
             background-size: 110% 110% !important;
             will-change: transform;
-            mask-image: radial-gradient(white, black); /* force clean edge clipping */
+            mask-image: radial-gradient(white, black);
+            /* force clean edge clipping */
             -webkit-mask-image: -webkit-radial-gradient(white, black);
         }
 
         @keyframes hero-load {
-            from { opacity: 0; transform: translateY(12px); }
-            to { opacity: 1; transform: translateY(0); }
+            from {
+                opacity: 0;
+                transform: translateY(12px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         /* 3 Cinematic Ambient depth layers */
@@ -103,8 +125,10 @@
             width: 400px;
             height: 400px;
             border-radius: 50%;
-            background: rgba(243, 189, 252, 0.20) !important; /* 20% opacity */
-            filter: blur(250px) !important; /* 250px blur */
+            background: rgba(243, 189, 252, 0.20) !important;
+            /* 20% opacity */
+            filter: blur(250px) !important;
+            /* 250px blur */
             pointer-events: none;
             z-index: 1;
         }
@@ -116,8 +140,10 @@
             width: 500px;
             height: 500px;
             border-radius: 50%;
-            background: rgba(221, 115, 240, 0.10) !important; /* 10% opacity */
-            filter: blur(300px) !important; /* 300px blur */
+            background: rgba(221, 115, 240, 0.10) !important;
+            /* 10% opacity */
+            filter: blur(300px) !important;
+            /* 300px blur */
             pointer-events: none;
             z-index: 1;
         }
@@ -129,8 +155,10 @@
             width: 600px;
             height: 600px;
             border-radius: 50%;
-            background: rgba(33, 0, 38, 0.45) !important; /* 45% opacity */
-            filter: blur(400px) !important; /* 400px blur */
+            background: rgba(33, 0, 38, 0.45) !important;
+            /* 45% opacity */
+            filter: blur(400px) !important;
+            /* 400px blur */
             pointer-events: none;
             z-index: 1;
         }
@@ -161,9 +189,17 @@
         }
 
         @keyframes light-sweep-anim {
-            0% { transform: translateX(-150%); }
-            40% { transform: translateX(250%); }
-            100% { transform: translateX(250%); }
+            0% {
+                transform: translateX(-150%);
+            }
+
+            40% {
+                transform: translateX(250%);
+            }
+
+            100% {
+                transform: translateX(250%);
+            }
         }
 
         /* Status indicators & pulse */
@@ -187,8 +223,19 @@
         }
 
         @keyframes health-pulse-anim {
-            0%, 100% { opacity: 0.5; transform: scale(0.9); box-shadow: 0 0 4px rgba(52, 211, 153, 0.4); }
-            50% { opacity: 1; transform: scale(1.1); box-shadow: 0 0 10px rgba(52, 211, 153, 0.8); }
+
+            0%,
+            100% {
+                opacity: 0.5;
+                transform: scale(0.9);
+                box-shadow: 0 0 4px rgba(52, 211, 153, 0.4);
+            }
+
+            50% {
+                opacity: 1;
+                transform: scale(1.1);
+                box-shadow: 0 0 10px rgba(52, 211, 153, 0.8);
+            }
         }
 
         /* Mini Glass Pills for Role Metrics */
@@ -220,12 +267,10 @@
         .bezent-hero-divider {
             width: 100% !important;
             height: 1px !important;
-            background: linear-gradient(
-                90deg,
-                rgba(255, 255, 255, 0.04),
-                rgba(255, 255, 255, 0.18),
-                rgba(255, 255, 255, 0.04)
-            ) !important;
+            background: linear-gradient(90deg,
+                    rgba(255, 255, 255, 0.04),
+                    rgba(255, 255, 255, 0.18),
+                    rgba(255, 255, 255, 0.04)) !important;
             margin-top: 18px !important;
             margin-bottom: 18px !important;
             border: none !important;
@@ -244,6 +289,7 @@
                 opacity: 0;
                 transform: translateY(-4px);
             }
+
             to {
                 opacity: 1;
                 transform: translateY(0);
@@ -254,12 +300,10 @@
         .bezent-vertical-divider {
             width: 1px !important;
             height: 100% !important;
-            background: linear-gradient(
-                180deg,
-                rgba(255, 255, 255, 0),
-                rgba(255, 255, 255, 0.15),
-                rgba(255, 255, 255, 0)
-            ) !important;
+            background: linear-gradient(180deg,
+                    rgba(255, 255, 255, 0),
+                    rgba(255, 255, 255, 0.15),
+                    rgba(255, 255, 255, 0)) !important;
             opacity: 0.6 !important;
             position: absolute !important;
             left: 60% !important;
@@ -281,8 +325,15 @@
         }
 
         @keyframes panel-load {
-            from { opacity: 0; transform: scale(0.98); }
-            to { opacity: 1; transform: scale(1); }
+            from {
+                opacity: 0;
+                transform: scale(0.98);
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
         }
 
         /* Dominant KPI Card inside Command Panel */
@@ -380,11 +431,13 @@
             color: #ffffff !important;
         }
 
-        .btn-premium-primary i, .btn-premium-secondary i {
+        .btn-premium-primary i,
+        .btn-premium-secondary i {
             transition: transform 150ms ease;
         }
 
-        .btn-premium-primary:hover i, .btn-premium-secondary:hover i {
+        .btn-premium-primary:hover i,
+        .btn-premium-secondary:hover i {
             transform: scale(1.1);
         }
 
@@ -396,19 +449,126 @@
             pointer-events: none;
             will-change: transform;
         }
-        .command-center-hero .particle-1 { width: 50px; height: 50px; left: 10%; top: 15%; animation: float-p-1 20s linear infinite; }
-        .command-center-hero .particle-2 { width: 60px; height: 60px; right: 20%; top: 35%; animation: float-p-2 20s linear infinite; }
-        .command-center-hero .particle-3 { width: 35px; height: 35px; left: 40%; bottom: 10%; animation: float-p-3 20s linear infinite; }
-        .command-center-hero .particle-4 { width: 55px; height: 55px; right: 8%; top: 10%; animation: float-p-4 20s linear infinite; }
-        .command-center-hero .particle-5 { width: 45px; height: 45px; left: 25%; bottom: 25%; animation: float-p-5 20s linear infinite; }
-        .command-center-hero .particle-6 { width: 50px; height: 50px; right: 35%; bottom: 15%; animation: float-p-6 20s linear infinite; }
 
-        @keyframes float-p-1 { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(20px, -10px); } }
-        @keyframes float-p-2 { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(-15px, 15px); } }
-        @keyframes float-p-3 { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(15px, 20px); } }
-        @keyframes float-p-4 { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(-20px, -15px); } }
-        @keyframes float-p-5 { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(10px, -15px); } }
-        @keyframes float-p-6 { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(-10px, 10px); } }
+        .command-center-hero .particle-1 {
+            width: 50px;
+            height: 50px;
+            left: 10%;
+            top: 15%;
+            animation: float-p-1 20s linear infinite;
+        }
+
+        .command-center-hero .particle-2 {
+            width: 60px;
+            height: 60px;
+            right: 20%;
+            top: 35%;
+            animation: float-p-2 20s linear infinite;
+        }
+
+        .command-center-hero .particle-3 {
+            width: 35px;
+            height: 35px;
+            left: 40%;
+            bottom: 10%;
+            animation: float-p-3 20s linear infinite;
+        }
+
+        .command-center-hero .particle-4 {
+            width: 55px;
+            height: 55px;
+            right: 8%;
+            top: 10%;
+            animation: float-p-4 20s linear infinite;
+        }
+
+        .command-center-hero .particle-5 {
+            width: 45px;
+            height: 45px;
+            left: 25%;
+            bottom: 25%;
+            animation: float-p-5 20s linear infinite;
+        }
+
+        .command-center-hero .particle-6 {
+            width: 50px;
+            height: 50px;
+            right: 35%;
+            bottom: 15%;
+            animation: float-p-6 20s linear infinite;
+        }
+
+        @keyframes float-p-1 {
+
+            0%,
+            100% {
+                transform: translate(0, 0);
+            }
+
+            50% {
+                transform: translate(20px, -10px);
+            }
+        }
+
+        @keyframes float-p-2 {
+
+            0%,
+            100% {
+                transform: translate(0, 0);
+            }
+
+            50% {
+                transform: translate(-15px, 15px);
+            }
+        }
+
+        @keyframes float-p-3 {
+
+            0%,
+            100% {
+                transform: translate(0, 0);
+            }
+
+            50% {
+                transform: translate(15px, 20px);
+            }
+        }
+
+        @keyframes float-p-4 {
+
+            0%,
+            100% {
+                transform: translate(0, 0);
+            }
+
+            50% {
+                transform: translate(-20px, -15px);
+            }
+        }
+
+        @keyframes float-p-5 {
+
+            0%,
+            100% {
+                transform: translate(0, 0);
+            }
+
+            50% {
+                transform: translate(10px, -15px);
+            }
+        }
+
+        @keyframes float-p-6 {
+
+            0%,
+            100% {
+                transform: translate(0, 0);
+            }
+
+            50% {
+                transform: translate(-10px, 10px);
+            }
+        }
 
         /* Progress Bars Gradient & Loading Animation */
         .command-center-hero div[class*="bg-white/10"]>div,
@@ -422,18 +582,32 @@
         }
 
         @keyframes progress-gradient {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
+            0% {
+                background-position: 0% 50%;
+            }
+
+            50% {
+                background-position: 100% 50%;
+            }
+
+            100% {
+                background-position: 0% 50%;
+            }
         }
 
         @keyframes progress-load {
-            from { transform: scaleX(0); }
-            to { transform: scaleX(1); }
+            from {
+                transform: scaleX(0);
+            }
+
+            to {
+                transform: scaleX(1);
+            }
         }
 
         /* 5. Flat Premium Sidebar Navigation */
-        .sidebar-tab, .submenu-item {
+        .sidebar-tab,
+        .submenu-item {
             display: flex !important;
             align-items: center !important;
             gap: 12px !important;
@@ -447,12 +621,16 @@
             cursor: pointer !important;
             position: relative;
         }
-        .sidebar-tab:hover, .submenu-item:hover {
+
+        .sidebar-tab:hover,
+        .submenu-item:hover {
             background: var(--purple-50) !important;
             color: var(--primary-color) !important;
             padding-left: 20px !important;
         }
-        .sidebar-tab.active, .submenu-item.active {
+
+        .sidebar-tab.active,
+        .submenu-item.active {
             background: var(--purple-100) !important;
             color: var(--primary-color) !important;
             font-weight: 600 !important;
@@ -467,6 +645,7 @@
             box-shadow: 0 4px 20px rgba(97, 1, 115, 0.02) !important;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
         }
+
         .premium-card:hover {
             transform: translateY(-3px) scale(1.01) !important;
             box-shadow: 0 12px 30px rgba(97, 1, 115, 0.06) !important;
@@ -479,6 +658,7 @@
             border-collapse: separate !important;
             border-spacing: 0 !important;
         }
+
         th {
             position: sticky !important;
             top: 0 !important;
@@ -490,32 +670,34 @@
             padding: 14px 18px !important;
             font-size: 13px !important;
         }
+
         td {
             border-bottom: 1px solid #F1F5F9 !important;
             padding: 14px 18px !important;
             color: #334155 !important;
             font-size: 13px !important;
         }
+
         tr:hover td {
             background-color: var(--purple-50) !important;
         }
 
         /* 8. Progress Visualization Fill */
-        .progress-bar-fill, 
-        .h-1\.5 > div,
+        .progress-bar-fill,
+        .h-1\.5>div,
         div[class*="bg-purple-500"],
         div[class*="bg-indigo-500"] {
             background: linear-gradient(90deg, var(--primary-color), var(--secondary-accent)) !important;
         }
 
         /* 9. Glowing Pill Status Badges */
-        .status-badge, 
-        span[class*="bg-emerald-50"], 
+        .status-badge,
+        span[class*="bg-emerald-50"],
         span[class*="bg-green-50"],
-        span[class*="bg-red-50"], 
-        span[class*="bg-amber-50"], 
+        span[class*="bg-red-50"],
+        span[class*="bg-amber-50"],
         span[class*="bg-orange-50"],
-        span[class*="bg-blue-50"], 
+        span[class*="bg-blue-50"],
         span[class*="bg-purple-50"] {
             border-radius: 9999px !important;
             padding: 4px 12px !important;
@@ -527,26 +709,33 @@
             font-size: 11px !important;
             box-shadow: 0 2px 8px rgba(97, 1, 115, 0.03) !important;
         }
-        span[class*="bg-emerald-50"], span[class*="bg-green-50"] {
+
+        span[class*="bg-emerald-50"],
+        span[class*="bg-green-50"] {
             background-color: #ECFDF5 !important;
             color: #059669 !important;
             border: 1px solid #A7F3D0 !important;
         }
+
         span[class*="bg-red-50"] {
             background-color: #FEF2F2 !important;
             color: #DC2626 !important;
             border: 1px solid #FCA5A5 !important;
         }
-        span[class*="bg-amber-50"], span[class*="bg-orange-50"] {
+
+        span[class*="bg-amber-50"],
+        span[class*="bg-orange-50"] {
             background-color: #FFFBEB !important;
             color: #D97706 !important;
             border: 1px solid #FDE68A !important;
         }
+
         span[class*="bg-blue-50"] {
             background-color: #EFF6FF !important;
             color: #2563EB !important;
             border: 1px solid #BFDBFE !important;
         }
+
         span[class*="bg-purple-50"] {
             background-color: var(--purple-50) !important;
             color: var(--primary-color) !important;
@@ -565,46 +754,69 @@
             background: #FFFFFF;
             border: 1px dashed #E2E8F0;
         }
+
         .premium-empty-state i {
             color: var(--secondary-accent);
             margin-bottom: 16px;
         }
+
         .premium-empty-state h4 {
             font-size: 16px;
             font-weight: 700;
             color: var(--dark-accent);
             margin-bottom: 8px;
         }
+
         .premium-empty-state p {
             font-size: 13px;
             color: #64748B;
             max-width: 320px;
             margin-bottom: 16px;
         }
+
         .skeleton {
             background: linear-gradient(90deg, #FAFAFC 25%, #F1F5F9 50%, #FAFAFC 75%);
             background-size: 200% 100%;
             animation: skeleton-loading 1.5s infinite;
             border-radius: 8px;
         }
+
         @keyframes skeleton-loading {
-            0% { background-position: 200% 0; }
-            100% { background-position: -200% 0; }
+            0% {
+                background-position: 200% 0;
+            }
+
+            100% {
+                background-position: -200% 0;
+            }
         }
 
         /* Layout elements */
         .floating-sidebar {
             width: 230px;
             position: fixed;
-            top: 24px;
-            left: 24px;
-            bottom: 24px;
+            top: 0 !important;
+            left: 0 !important;
+            bottom: 0 !important;
+            height: 100vh !important;
             background: #FFFFFF;
-            border: 1px solid #ECECF3;
-            border-radius: var(--card-radius);
+            border-right: 1px solid #ECECF3 !important;
+            border-left: none !important;
+            border-top: none !important;
+            border-bottom: none !important;
+            border-radius: 0 !important;
             box-shadow: 0 10px 35px rgba(97, 1, 115, 0.02);
             z-index: 40;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex !important;
+            flex-direction: column !important;
+            overflow: hidden !important;
+        }
+
+        .floating-sidebar nav {
+            flex: 1 1 auto !important;
+            overflow-y: auto !important;
+            min-height: 0 !important;
         }
 
         .floating-navbar {
@@ -623,6 +835,9 @@
         .main-workspace {
             margin: 12px 24px 24px 278px;
             transition: all 0.3s ease;
+            flex: 1 1 auto !important;
+            overflow-y: auto !important;
+            min-height: 0 !important;
         }
 
         /* Checkbox overrides */
@@ -651,6 +866,7 @@
                 opacity: 0;
                 transform: translateY(12px);
             }
+
             to {
                 opacity: 1;
                 transform: translateY(0);
@@ -710,6 +926,7 @@
                 opacity: 0;
                 transform: translateY(10px) scale(0.98);
             }
+
             to {
                 opacity: 1;
                 transform: translateY(0) scale(1);
@@ -723,6 +940,7 @@
         }
     </style>
 </head>
+
 <body class="min-h-screen flex flex-col text-[#111827]">
 
     <!-- Floating Sidebar -->
@@ -749,6 +967,9 @@
             <div class="sidebar-tab" data-tab="companies">
                 <i data-lucide="building-2" class="w-4 h-4"></i> Companies
             </div>
+            <div class="sidebar-tab" data-tab="users">
+                <i data-lucide="users" class="w-4 h-4"></i> Platform Access
+            </div>
             <div class="sidebar-tab" data-tab="plans">
                 <i data-lucide="credit-card" class="w-4 h-4"></i> Subscription Plans
             </div>
@@ -765,7 +986,8 @@
 
         <!-- ZONE 3: INTEGRATED LOGOUT FOOTER -->
         <div class="flex-shrink-0 p-4 border-t border-[#ECECF3] bg-[#F9FAFB]">
-            <button onclick="logout()" class="w-full flex items-center justify-center gap-2 py-3 hover:bg-[#F7F7FB] border border-[#ECECF3] rounded-xl text-sm font-semibold transition text-[#6B7280] hover:text-red-500">
+            <button onclick="logout()"
+                class="w-full flex items-center justify-center gap-2 py-3 hover:bg-[#F7F7FB] border border-[#ECECF3] rounded-xl text-sm font-semibold transition text-[#6B7280] hover:text-red-500">
                 <i data-lucide="log-out" class="w-4 h-4"></i> Log out
             </button>
         </div>
@@ -782,17 +1004,22 @@
         <!-- Global Search Trigger Input -->
         <div class="relative w-40 sm:w-56 cursor-pointer" onclick="toggleSearchDrawer(true)">
             <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#6B7280]"></i>
-            <input type="text" placeholder="Search (Cmd + K)..." class="w-full text-[11px] border border-[#ECECF3] rounded-xl pl-8 pr-3 py-1.5 bg-[#F7F7FB]/80 hover:bg-[#F7F7FB] focus:outline-none cursor-pointer transition-all" readonly>
+            <input type="text" placeholder="Search (Cmd + K)..."
+                class="w-full text-[11px] border border-[#ECECF3] rounded-xl pl-8 pr-3 py-1.5 bg-[#F7F7FB]/80 hover:bg-[#F7F7FB] focus:outline-none cursor-pointer transition-all"
+                readonly>
         </div>
 
         <!-- Profile, Notifications, Settings -->
         <div class="flex items-center gap-4">
-            <button class="relative p-2 text-[#6B7280] hover:text-[#111827] hover:bg-[#F7F7FB] rounded-xl transition-colors">
+            <button
+                class="relative p-2 text-[#6B7280] hover:text-[#111827] hover:bg-[#F7F7FB] rounded-xl transition-colors">
                 <i data-lucide="bell" class="w-5 h-5"></i>
-                <span class="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white"></span>
+                <span
+                    class="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white"></span>
             </button>
 
-            <div class="w-9 h-9 rounded-full bg-gradient-to-tr from-[#610173] to-[#312E81] text-white flex items-center justify-center text-xs font-bold ring-2 ring-purple-100 shadow-sm cursor-pointer" id="profileBubble">
+            <div class="w-9 h-9 rounded-full bg-gradient-to-tr from-[#610173] to-[#312E81] text-white flex items-center justify-center text-xs font-bold ring-2 ring-purple-100 shadow-sm cursor-pointer"
+                id="profileBubble">
                 SA
             </div>
         </div>
@@ -800,10 +1027,10 @@
 
     <!-- Main Workspace Dashboard Content -->
     <main class="main-workspace flex-1">
-        
+
         <!-- ==================== DASHBOARD PANEL ==================== -->
         <div id="dashboardPanel" class="tab-panel active space-y-6 fade-up-view">
-            
+
             <!-- SECTION 1: Large Gradient Hero Banner -->
             <!-- SECTION 1: Large Gradient Hero Banner -->
             <div class="command-center-hero text-white flex flex-col justify-between">
@@ -811,10 +1038,10 @@
                 <div class="glow-top-left"></div>
                 <div class="glow-center"></div>
                 <div class="glow-bottom-right"></div>
-                
+
                 <!-- Dot-grid pattern overlay -->
                 <div class="dot-grid-pattern"></div>
-                
+
                 <!-- Light sweep glass animation effect -->
                 <div class="light-sweep-overlay"></div>
 
@@ -834,22 +1061,26 @@
                     <div class="flex items-center justify-between pb-1">
                         <!-- LEFT: Status Chips -->
                         <div class="flex items-center gap-2">
-                            <div class="status-indicator-chip inline-flex items-center gap-1.5 px-3 py-1 text-[10px] font-bold rounded-full">
+                            <div
+                                class="status-indicator-chip inline-flex items-center gap-1.5 px-3 py-1 text-[10px] font-bold rounded-full">
                                 <span class="health-pulse-dot"></span>
                                 <span>Platform Active</span>
                             </div>
-                            <div class="status-indicator-chip inline-flex items-center gap-1.5 px-3 py-1 text-[10px] font-bold rounded-full">
+                            <div
+                                class="status-indicator-chip inline-flex items-center gap-1.5 px-3 py-1 text-[10px] font-bold rounded-full">
                                 <span class="w-1.5 h-1.5 rounded-full bg-blue-400"></span>
                                 <span>System Stable</span>
                             </div>
                         </div>
                         <!-- CENTER: Date & Time (Aligned on Same Axis) -->
-                        <div class="text-[11px] font-mono font-semibold text-purple-200/95 flex items-center gap-1.5 justify-center">
+                        <div
+                            class="text-[11px] font-mono font-semibold text-purple-200/95 flex items-center gap-1.5 justify-center">
                             <i data-lucide="clock" class="w-3.5 h-3.5 text-purple-200"></i>
                             <span class="hero-date-time">Loading...</span>
                         </div>
                         <!-- RIGHT: Health Status Capsule -->
-                        <div class="inline-flex items-center gap-1.5 px-3 py-1 text-[10px] font-bold rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-300">
+                        <div
+                            class="inline-flex items-center gap-1.5 px-3 py-1 text-[10px] font-bold rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-300">
                             <span class="health-pulse-dot"></span>
                             <span>System Health 100%</span>
                         </div>
@@ -860,14 +1091,16 @@
 
                     <!-- CONTENT CONTAINER (Relative positioned container to place Left Area, Vertical divider, and Command Panel) -->
                     <div class="relative flex-grow flex flex-col justify-between" style="min-height: 220px;">
-                        
+
                         <!-- Left Content Area (Width restricted to 58% to allow absolute split) -->
                         <div class="w-[58%] flex flex-col justify-between" style="height: calc(100% - 2px);">
-                            
+
                             <!-- Title Block (shifted slightly lower, with pt-2 to reduce space above) -->
                             <div class="text-left pt-2 flex flex-col gap-1">
-                                <h2 class="text-[34px] font-bold tracking-tight leading-[120%]">BEZENT Platform Control Center</h2>
-                                <p class="text-purple-200/90 text-[16px] font-medium leading-[140%]">Platform Operations Command Center</p>
+                                <h2 class="text-[34px] font-bold tracking-tight leading-[120%]">BEZENT Platform Control
+                                    Center</h2>
+                                <p class="text-purple-200/90 text-[16px] font-medium leading-[140%]">Platform Operations
+                                    Command Center</p>
                             </div>
 
                             <!-- Title -> Metrics Space (20px) -->
@@ -900,7 +1133,8 @@
 
                         <!-- Actions Area (width restricted to 58%) -->
                         <div class="w-[58%] pb-1">
-                            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; width: 100%; align-items: center;">
+                            <div
+                                style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; width: 100%; align-items: center;">
                                 <button onclick="openCreateCompanyModal()" class="btn-premium-primary gap-2">
                                     <i data-lucide="plus-circle" class="w-4 h-4 text-emerald-300"></i> Add Company
                                 </button>
@@ -920,10 +1154,15 @@
                         <div class="bezent-vertical-divider"></div>
 
                         <!-- COMMAND PANEL (Absolute positioned on the right at 38% width, spanning full height below Divider #1) -->
-                        <div class="absolute right-0 top-0 bottom-0 w-[38%] command-glass-panel flex flex-col justify-between p-4 text-white">
+                        <div
+                            class="absolute right-0 top-0 bottom-0 w-[38%] command-glass-panel flex flex-col justify-between p-4 text-white">
                             <div class="flex items-center justify-between pb-1.5 border-b border-white/5">
-                                <span class="text-[9px] font-extrabold text-purple-200 uppercase tracking-widest">Command Panel</span>
-                                <span class="text-[8px] font-mono font-bold bg-purple-500/20 text-purple-200 px-1.5 py-0.5 rounded border border-purple-500/10">Uptime Stable</span>
+                                <span
+                                    class="text-[9px] font-extrabold text-purple-200 uppercase tracking-widest">Command
+                                    Panel</span>
+                                <span
+                                    class="text-[8px] font-mono font-bold bg-purple-500/20 text-purple-200 px-1.5 py-0.5 rounded border border-purple-500/10">Uptime
+                                    Stable</span>
                             </div>
 
                             <!-- Horizontal Grid with Dominant numbers -->
@@ -953,13 +1192,17 @@
                                     <span class="font-mono text-purple-200 font-bold">99.99%</span>
                                 </div>
                                 <div class="w-full bg-white/10 rounded-full h-1 overflow-hidden relative">
-                                    <div class="progress-shimmer absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
-                                    <div class="bg-emerald-400 h-full rounded-full transition-all duration-[1200ms]" style="width: 100%"></div>
+                                    <div
+                                        class="progress-shimmer absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent">
+                                    </div>
+                                    <div class="bg-emerald-400 h-full rounded-full transition-all duration-[1200ms]"
+                                        style="width: 100%"></div>
                                 </div>
                             </div>
 
                             <!-- Alert Footer -->
-                            <div class="pt-2 border-t border-white/5 flex items-center justify-between text-[9.5px] text-purple-200/90 font-semibold">
+                            <div
+                                class="pt-2 border-t border-white/5 flex items-center justify-between text-[9.5px] text-purple-200/90 font-semibold">
                                 <div class="flex items-center gap-1.5">
                                     <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 live-pulse-dot"></span>
                                     <span>All Services Operational</span>
@@ -1013,7 +1256,8 @@
                             </div>
                         </div>
                     </div>
-                    <button onclick="switchTab('logs')" class="w-full mt-4 py-2 bg-[#F7F7FB] hover:bg-[#F5F3FF] border border-[#ECECF3] rounded-xl text-xs font-semibold transition text-[#610173]">
+                    <button onclick="switchTab('logs')"
+                        class="w-full mt-4 py-2 bg-[#F7F7FB] hover:bg-[#F5F3FF] border border-[#ECECF3] rounded-xl text-xs font-semibold transition text-[#610173]">
                         View Full System Logs
                     </button>
                 </div>
@@ -1023,14 +1267,16 @@
 
         <!-- ==================== COMPANIES PANEL (REGISTRAR GRID) ==================== -->
         <div id="companiesPanel" class="tab-panel space-y-6 fade-up-view">
-            
+
             <!-- Company Registrar Header & Trigger -->
             <div class="premium-card p-6 flex flex-col md:flex-row gap-6 justify-between items-center">
                 <div>
                     <h3 class="font-bold text-lg text-[#111827]">Provision Company Environment</h3>
-                    <p class="text-xs text-[#6B7280] mt-0.5">Spin up a brand new virtual company workspace. Owner will be auto-provisioned.</p>
+                    <p class="text-xs text-[#6B7280] mt-0.5">Spin up a brand new virtual company workspace. Owner will
+                        be auto-provisioned.</p>
                 </div>
-                <button onclick="openCreateCompanyModal()" class="bg-gradient-to-r from-[#610173] to-[#5B21B6] hover:brightness-110 text-white px-5 py-2.5 rounded-xl text-sm font-semibold transition shadow-md shadow-purple-200 flex items-center gap-2">
+                <button onclick="openCreateCompanyModal()"
+                    class="bg-gradient-to-r from-[#610173] to-[#5B21B6] hover:brightness-110 text-white px-5 py-2.5 rounded-xl text-sm font-semibold transition shadow-md shadow-purple-200 flex items-center gap-2">
                     <i data-lucide="plus-circle" class="w-4 h-4"></i> Provision Workspace
                 </button>
             </div>
@@ -1039,11 +1285,13 @@
             <div class="flex items-center justify-between">
                 <div>
                     <h3 class="font-bold text-lg text-[#111827]">Workspace Registry</h3>
-                    <p class="text-xs text-[#6B7280] mt-0.5" id="companyCountDesc">Managing active SaaS company workspaces</p>
+                    <p class="text-xs text-[#6B7280] mt-0.5" id="companyCountDesc">Managing active SaaS company
+                        workspaces</p>
                 </div>
                 <div class="relative w-72">
                     <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#6B7280]"></i>
-                    <input type="text" id="companySearch" placeholder="Search company workspace registrar..." class="pl-10 pr-4 py-2 border border-[#ECECF3] rounded-xl text-sm w-full focus:outline-none focus:ring-2 focus:ring-[#610173] bg-[#F7F7FB] focus:bg-white transition-all">
+                    <input type="text" id="companySearch" placeholder="Search company workspace registrar..."
+                        class="pl-10 pr-4 py-2 border border-[#ECECF3] rounded-xl text-sm w-full focus:outline-none focus:ring-2 focus:ring-[#610173] bg-[#F7F7FB] focus:bg-white transition-all">
                 </div>
             </div>
 
@@ -1051,11 +1299,13 @@
             <div class="premium-card overflow-hidden">
                 <div class="overflow-x-auto">
                     <table class="w-full text-left" id="companiesTable">
-                        <thead class="bg-[#F7F7FB] border-b border-[#ECECF3] text-xs font-semibold tracking-wider text-[#6B7280] uppercase">
+                        <thead
+                            class="bg-[#F7F7FB] border-b border-[#ECECF3] text-xs font-semibold tracking-wider text-[#6B7280] uppercase">
                             <tr>
                                 <th class="px-6 py-4">Workspace Environment</th>
                                 <th class="px-6 py-4">Owner Email</th>
                                 <th class="px-6 py-4 text-center">Subscription</th>
+                                <th class="px-6 py-4 text-center">Enabled Workspaces</th>
                                 <th class="px-6 py-4 text-center">Status</th>
                                 <th class="px-6 py-4 text-center">Date Created</th>
                                 <th class="px-6 py-4 text-right">Actions</th>
@@ -1063,8 +1313,9 @@
                         </thead>
                         <tbody id="companyTableBody" class="divide-y divide-[#ECECF3] text-sm">
                             <tr>
-                                <td colspan="6" class="px-6 py-12 text-center text-[#6B7280] font-medium">
-                                    <i data-lucide="loader" class="w-6 h-6 mx-auto mb-2 animate-spin text-[#610173]"></i>
+                                <td colspan="7" class="px-6 py-12 text-center text-[#6B7280] font-medium">
+                                    <i data-lucide="loader"
+                                        class="w-6 h-6 mx-auto mb-2 animate-spin text-[#610173]"></i>
                                     Loading workspaces registry...
                                 </td>
                             </tr>
@@ -1075,92 +1326,183 @@
 
         </div>
 
+        <!-- ==================== PLATFORM ACCESS PANEL ==================== -->
+        <div id="usersPanel" class="tab-panel space-y-6 fade-up-view">
+            <!-- Header Block -->
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                    <h3 class="font-bold text-lg text-[#111827]">Platform Access Control</h3>
+                    <p class="text-xs text-[#6B7280] mt-0.5" id="userCounterDesc">Manage SaaS-level module permissions globally across all tenants</p>
+                </div>
+                <div class="relative w-72">
+                    <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#6B7280]"></i>
+                    <input type="text" id="platformUserSearch" placeholder="Search platform users..."
+                        class="pl-10 pr-4 py-2 border border-[#ECECF3] rounded-xl text-sm w-full focus:outline-none focus:ring-2 focus:ring-[#610173] bg-[#F7F7FB] focus:bg-white transition-all">
+                </div>
+            </div>
+
+            <!-- Users Registry Table -->
+            <div class="premium-card overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left" id="platformUsersTable">
+                        <thead class="bg-[#F7F7FB] border-b border-[#ECECF3] text-xs font-semibold tracking-wider text-[#6B7280] uppercase">
+                            <tr>
+                                <th class="px-6 py-4">User Details</th>
+                                <th class="px-6 py-4">Company</th>
+                                <th class="px-6 py-4 text-center">Marketing CRM</th>
+                                <th class="px-6 py-4 text-center">Projects PM</th>
+                                <th class="px-6 py-4 text-center">HR Admin</th>
+                                <th class="px-6 py-4 text-center">Employee</th>
+                                <th class="px-6 py-4 text-center">Manager</th>
+                                <th class="px-6 py-4 text-center">Admin</th>
+                                <th class="px-6 py-4 text-center">System Role</th>
+                                <th class="px-6 py-4 text-center">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="platformUserTableBody" class="divide-y divide-[#ECECF3] text-sm">
+                            <tr>
+                                <td colspan="10" class="px-6 py-12 text-center text-[#6B7280] font-medium">
+                                    <i data-lucide="loader" class="w-6 h-6 mx-auto mb-2 animate-spin text-[#610173]"></i>
+                                    Loading platform users database...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
         <!-- ==================== PLACER PANELS ==================== -->
         <div id="plansPanel" class="tab-panel premium-card p-8 text-center space-y-4 fade-up-view">
-            <div class="bg-purple-50 text-[#610173] p-4 rounded-full w-14 h-14 flex items-center justify-center mx-auto border border-purple-100">
+            <div
+                class="bg-purple-50 text-[#610173] p-4 rounded-full w-14 h-14 flex items-center justify-center mx-auto border border-purple-100">
                 <i data-lucide="credit-card" class="w-7 h-7"></i>
             </div>
             <h3 class="text-xl font-bold text-[#111827]">Subscription Pricing Models</h3>
-            <p class="text-sm text-[#6B7280] max-w-md mx-auto">Configure price indexes, feature tiers, and subscription billing policies. Current active tiers are Basic, Premium, and Enterprise.</p>
+            <p class="text-sm text-[#6B7280] max-w-md mx-auto">Configure price indexes, feature tiers, and subscription
+                billing policies. Current active tiers are Basic, Premium, and Enterprise.</p>
         </div>
 
         <div id="healthPanel" class="tab-panel premium-card p-8 text-center space-y-4 fade-up-view">
-            <div class="bg-purple-50 text-[#610173] p-4 rounded-full w-14 h-14 flex items-center justify-center mx-auto border border-purple-100">
+            <div
+                class="bg-purple-50 text-[#610173] p-4 rounded-full w-14 h-14 flex items-center justify-center mx-auto border border-purple-100">
                 <i data-lucide="activity" class="w-7 h-7"></i>
             </div>
             <h3 class="text-xl font-bold text-[#111827]">Global Telemetry & Performance</h3>
-            <p class="text-sm text-[#6B7280] max-w-md mx-auto">Real-time status registers of microservices, server processors, database query timers, and request routing networks.</p>
+            <p class="text-sm text-[#6B7280] max-w-md mx-auto">Real-time status registers of microservices, server
+                processors, database query timers, and request routing networks.</p>
         </div>
 
         <div id="logsPanel" class="tab-panel premium-card p-8 text-center space-y-4 fade-up-view">
-            <div class="bg-purple-50 text-[#610173] p-4 rounded-full w-14 h-14 flex items-center justify-center mx-auto border border-purple-100">
+            <div
+                class="bg-purple-50 text-[#610173] p-4 rounded-full w-14 h-14 flex items-center justify-center mx-auto border border-purple-100">
                 <i data-lucide="history" class="w-7 h-7"></i>
             </div>
             <h3 class="text-xl font-bold text-[#111827]">System Event Auditor</h3>
-            <p class="text-sm text-[#6B7280] max-w-md mx-auto">Chronological log outputs tracking workspace provision actions, owner logins, subscription modifications, and API triggers.</p>
+            <p class="text-sm text-[#6B7280] max-w-md mx-auto">Chronological log outputs tracking workspace provision
+                actions, owner logins, subscription modifications, and API triggers.</p>
         </div>
 
         <div id="settingsPanel" class="tab-panel premium-card p-8 text-center space-y-4 fade-up-view">
-            <div class="bg-purple-50 text-[#610173] p-4 rounded-full w-14 h-14 flex items-center justify-center mx-auto border border-purple-100">
+            <div
+                class="bg-purple-50 text-[#610173] p-4 rounded-full w-14 h-14 flex items-center justify-center mx-auto border border-purple-100">
                 <i data-lucide="settings" class="w-7 h-7"></i>
             </div>
             <h3 class="text-xl font-bold text-[#111827]">System Configurations</h3>
-            <p class="text-sm text-[#6B7280] max-w-md mx-auto">Setup environment endpoints, default branding parameters, backup frequencies, and email SMTP servers.</p>
+            <p class="text-sm text-[#6B7280] max-w-md mx-auto">Setup environment endpoints, default branding parameters,
+                backup frequencies, and email SMTP servers.</p>
         </div>
 
+        <!-- Footer -->
+        <footer class="py-6 mt-12 text-center text-xs text-[#6B7280] border-t border-[#ECECF3] bg-white w-full">
+            <p>&copy; 2026 BEZENT. Master Platform Architecture. All rights reserved.</p>
+        </footer>
     </main>
 
     <!-- Create/Edit Company Modal -->
-    <div id="companyModal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 modal-backdrop transition-opacity duration-300">
-        <div class="bg-white rounded-3xl w-full max-w-lg shadow-2xl overflow-hidden border border-[#ECECF3] fade-up-view">
+    <div id="companyModal"
+        class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 modal-backdrop transition-opacity duration-300">
+        <div
+            class="bg-white rounded-3xl w-full max-w-lg shadow-2xl overflow-hidden border border-[#ECECF3] fade-up-view">
             <div class="px-6 py-5 border-b border-[#ECECF3] flex items-center justify-between hero-gradient text-white">
                 <h3 class="font-bold text-lg" id="modalTitle">Provision Environment</h3>
-                <button onclick="closeCompanyModal()" class="text-white/80 hover:text-white transition p-1 hover:bg-white/10 rounded-lg">
+                <button onclick="closeCompanyModal()"
+                    class="text-white/80 hover:text-white transition p-1 hover:bg-white/10 rounded-lg">
                     <i data-lucide="x" class="w-5 h-5"></i>
                 </button>
             </div>
             <form id="companyForm" onsubmit="saveCompany(event)" class="p-6 space-y-4">
                 <input type="hidden" id="companyId">
                 <div>
-                    <label class="block text-xs font-bold text-[#6B7280] uppercase tracking-wider mb-1">Company Workspace Name</label>
-                    <input type="text" id="companyName" required placeholder="e.g. Acme Corporation" class="w-full px-4 py-3 border border-[#ECECF3] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#610173] bg-[#F7F7FB] focus:bg-white transition-all">
+                    <label class="block text-xs font-bold text-[#6B7280] uppercase tracking-wider mb-1">Company
+                        Workspace Name</label>
+                    <input type="text" id="companyName" required placeholder="e.g. Acme Corporation"
+                        class="w-full px-4 py-3 border border-[#ECECF3] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#610173] bg-[#F7F7FB] focus:bg-white transition-all">
                 </div>
                 <div id="ownerEmailField">
-                    <label class="block text-xs font-bold text-[#6B7280] uppercase tracking-wider mb-1">Company Owner Email</label>
-                    <input type="email" id="companyOwnerEmail" required placeholder="e.g. ceo@acme.com" class="w-full px-4 py-3 border border-[#ECECF3] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#610173] bg-[#F7F7FB] focus:bg-white transition-all">
+                    <label class="block text-xs font-bold text-[#6B7280] uppercase tracking-wider mb-1">Company Owner
+                        Email</label>
+                    <input type="email" id="companyOwnerEmail" required placeholder="e.g. ceo@acme.com"
+                        class="w-full px-4 py-3 border border-[#ECECF3] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#610173] bg-[#F7F7FB] focus:bg-white transition-all">
                 </div>
                 <div>
-                    <label class="block text-xs font-bold text-[#6B7280] uppercase tracking-wider mb-1">Branding Logo URL</label>
-                    <input type="text" id="companyLogo" placeholder="e.g. https://logo.clearbit.com/acme.com" class="w-full px-4 py-3 border border-[#ECECF3] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#610173] bg-[#F7F7FB] focus:bg-white transition-all">
+                    <label class="block text-xs font-bold text-[#6B7280] uppercase tracking-wider mb-1">Branding Logo
+                        URL</label>
+                    <input type="text" id="companyLogo" placeholder="e.g. https://logo.clearbit.com/acme.com"
+                        class="w-full px-4 py-3 border border-[#ECECF3] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#610173] bg-[#F7F7FB] focus:bg-white transition-all">
                 </div>
                 <div class="grid grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-xs font-bold text-[#6B7280] uppercase tracking-wider mb-1">Subscription Tier</label>
-                        <select id="companySubscription" class="w-full px-4 py-3 border border-[#ECECF3] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#610173] bg-[#F7F7FB] focus:bg-white transition-all font-semibold">
+                        <label class="block text-xs font-bold text-[#6B7280] uppercase tracking-wider mb-1">Subscription
+                            Tier</label>
+                        <select id="companySubscription"
+                            class="w-full px-4 py-3 border border-[#ECECF3] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#610173] bg-[#F7F7FB] focus:bg-white transition-all font-semibold">
                             <option value="Basic">Basic Plan</option>
                             <option value="Premium">Premium Plan</option>
                             <option value="Enterprise">Enterprise Plan</option>
                         </select>
                     </div>
                     <div>
-                        <label class="block text-xs font-bold text-[#6B7280] uppercase tracking-wider mb-1">Workspace Status</label>
-                        <select id="companyStatus" class="w-full px-4 py-3 border border-[#ECECF3] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#610173] bg-[#F7F7FB] focus:bg-white transition-all font-semibold">
+                        <label class="block text-xs font-bold text-[#6B7280] uppercase tracking-wider mb-1">Workspace
+                            Status</label>
+                        <select id="companyStatus"
+                            class="w-full px-4 py-3 border border-[#ECECF3] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#610173] bg-[#F7F7FB] focus:bg-white transition-all font-semibold">
                             <option value="Active">Active Workspace</option>
                             <option value="Deactivated">Deactivated Workspace</option>
                         </select>
                     </div>
+                <div class="space-y-2 pt-2">
+                    <label class="block text-xs font-bold text-[#6B7280] uppercase tracking-wider">Enabled Workspaces</label>
+                    <div class="flex flex-wrap gap-4 pt-1">
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input type="checkbox" id="companyMarketflowEnabled" checked
+                                class="w-4 h-4 text-[#610173] border-gray-300 rounded focus:ring-[#610173] cursor-pointer">
+                            <span class="text-xs font-semibold text-slate-700">Marketing CRM</span>
+                        </label>
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input type="checkbox" id="companyProjectflowEnabled" checked
+                                class="w-4 h-4 text-[#610173] border-gray-300 rounded focus:ring-[#610173] cursor-pointer">
+                            <span class="text-xs font-semibold text-slate-700">Projects PM</span>
+                        </label>
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input type="checkbox" id="companyHrEnabled" checked
+                                class="w-4 h-4 text-[#610173] border-gray-300 rounded focus:ring-[#610173] cursor-pointer">
+                            <span class="text-xs font-semibold text-slate-700">HR Admin</span>
+                        </label>
+                    </div>
                 </div>
                 <div class="pt-4 border-t border-[#ECECF3] flex justify-end gap-2">
-                    <button type="button" onclick="closeCompanyModal()" class="px-4 py-2.5 border border-[#ECECF3] rounded-xl text-sm font-semibold text-[#6B7280] hover:bg-[#F7F7FB] transition">Cancel</button>
-                    <button type="submit" id="saveBtn" class="px-5 py-2.5 bg-gradient-to-r from-[#610173] to-[#5B21B6] hover:brightness-110 text-white rounded-xl text-sm font-semibold transition shadow-md shadow-purple-200">Provision Workspace</button>
+                    <button type="button" onclick="closeCompanyModal()"
+                        class="px-4 py-2.5 border border-[#ECECF3] rounded-xl text-sm font-semibold text-[#6B7280] hover:bg-[#F7F7FB] transition">Cancel</button>
+                    <button type="submit" id="saveBtn"
+                        class="px-5 py-2.5 bg-gradient-to-r from-[#610173] to-[#5B21B6] hover:brightness-110 text-white rounded-xl text-sm font-semibold transition shadow-md shadow-purple-200">Provision
+                        Workspace</button>
                 </div>
             </form>
         </div>
     </div>
 
-    <footer class="py-6 mt-12 text-center text-xs text-[#6B7280] border-t border-[#ECECF3] bg-white w-full">
-        <p>&copy; 2026 BEZENT. Master Platform Architecture. All rights reserved.</p>
-    </footer>
+
 
     <script>
         // Init Lucide
@@ -1171,7 +1513,7 @@
             const now = new Date();
             const timeStr = now.toLocaleTimeString('en-US', { hour12: false });
             const dateStr = now.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-            
+
             document.querySelectorAll('.hero-date-time').forEach(el => {
                 el.textContent = `${dateStr} • ${timeStr}`;
             });
@@ -1186,8 +1528,8 @@
             const userStr = localStorage.getItem('bezent_user');
             currentUser = JSON.parse(userStr);
             if (currentUser.role !== 'super_admin') window.location.replace('index.html');
-            document.getElementById('profileBubble').textContent = (currentUser.email || 'SA').substring(0,2).toUpperCase();
-        } catch(e) { window.location.replace('index.html'); }
+            document.getElementById('profileBubble').textContent = (currentUser.email || 'SA').substring(0, 2).toUpperCase();
+        } catch (e) { window.location.replace('index.html'); }
 
         const getToken = () => localStorage.getItem(TK) || '';
 
@@ -1197,14 +1539,14 @@
             const tok = getToken();
             if (tok) h['Authorization'] = 'Bearer ' + tok;
             if (options.headers) Object.assign(h, options.headers);
-            
+
             const res = await fetch('/api' + path, { ...options, headers: h });
             if (res.status === 401) {
                 localStorage.clear();
                 window.location.replace('index.html');
                 return null;
             }
-            try { return await res.json(); } catch(err) { return { error: 'Parse Error' }; }
+            try { return await res.json(); } catch (err) { return { error: 'Parse Error' }; }
         };
 
         // Switch Tabs Programmatically
@@ -1253,9 +1595,9 @@
 
         function renderCompanies(companies) {
             const tbody = document.getElementById('companyTableBody');
-            
+
             if (!companies.length) {
-                tbody.innerHTML = `<tr><td colspan="6" class="px-6 py-12 text-center text-[#6B7280] font-medium">No workspace registers found.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="7" class="px-6 py-12 text-center text-[#6B7280] font-medium">No workspace registers found.</td></tr>`;
                 lucide.createIcons();
                 return;
             }
@@ -1276,9 +1618,14 @@
 
                 const dateStr = c.created_at ? new Date(c.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) : 'N/A';
 
-                const logoHTML = c.logo 
+                const logoHTML = c.logo
                     ? `<img src="${c.logo}" class="w-9 h-9 rounded-xl object-contain border border-[#ECECF3] bg-[#F7F7FB]" onerror="this.src=''; this.innerHTML='${String(c.name).charAt(0).toUpperCase()}'">`
                     : `<div class="w-9 h-9 rounded-xl bg-purple-50 text-[#610173] border border-purple-100 flex items-center justify-center font-bold text-sm">${String(c.name).charAt(0).toUpperCase()}</div>`;
+
+                const wsMF = c.marketflow_enabled !== false ? `<span class="inline-flex items-center px-2 py-0.5 bg-purple-50 text-[#610173] border border-purple-100 rounded text-[10px] font-bold">Marketing</span>` : '';
+                const wsPF = c.projectflow_enabled !== false ? `<span class="inline-flex items-center px-2 py-0.5 bg-blue-50 text-blue-600 border border-blue-100 rounded text-[10px] font-bold">Projects</span>` : '';
+                const wsHR = c.hr_enabled !== false ? `<span class="inline-flex items-center px-2 py-0.5 bg-emerald-50 text-emerald-700 border border-emerald-100 rounded text-[10px] font-bold">HR</span>` : '';
+                const wsHTML = `<div class="flex flex-wrap gap-1 justify-center">${[wsMF, wsPF, wsHR].filter(Boolean).join('') || '<span class="text-slate-400 text-[10px]">None</span>'}</div>`;
 
                 return `
                     <tr class="hover:bg-[#F7F7FB]/50 transition-colors">
@@ -1298,6 +1645,9 @@
                         </td>
                         <td class="px-6 py-4 text-center">
                             <span class="px-3 py-1 border rounded-full text-xs font-semibold ${subColor}">${c.subscription}</span>
+                        </td>
+                        <td class="px-6 py-4 text-center">
+                            ${wsHTML}
                         </td>
                         <td class="px-6 py-4 text-center">
                             <span class="px-3 py-1 border rounded-full text-xs font-semibold ${statusColor}">${c.status}</span>
@@ -1329,7 +1679,7 @@
             document.getElementById('ownerEmailField').style.display = 'block';
             document.getElementById('companyOwnerEmail').required = true;
             document.getElementById('saveBtn').textContent = 'Provision Workspace';
-            
+
             const modal = document.getElementById('companyModal');
             modal.classList.remove('hidden');
             lucide.createIcons();
@@ -1348,6 +1698,9 @@
             document.getElementById('companyLogo').value = comp.logo || '';
             document.getElementById('companySubscription').value = comp.subscription;
             document.getElementById('companyStatus').value = comp.status;
+            document.getElementById('companyMarketflowEnabled').checked = comp.marketflow_enabled !== false;
+            document.getElementById('companyProjectflowEnabled').checked = comp.projectflow_enabled !== false;
+            document.getElementById('companyHrEnabled').checked = comp.hr_enabled !== false;
             document.getElementById('saveBtn').textContent = 'Apply Configuration';
 
             const modal = document.getElementById('companyModal');
@@ -1368,12 +1721,15 @@
             const logo = document.getElementById('companyLogo').value.trim();
             const subscription = document.getElementById('companySubscription').value;
             const status = document.getElementById('companyStatus').value;
+            const marketflow_enabled = document.getElementById('companyMarketflowEnabled').checked;
+            const projectflow_enabled = document.getElementById('companyProjectflowEnabled').checked;
+            const hr_enabled = document.getElementById('companyHrEnabled').checked;
 
             const isEdit = !!id;
             const path = isEdit ? `/auth/companies/${id}` : '/auth/companies';
             const method = isEdit ? 'PUT' : 'POST';
-            
-            const payload = { name, logo, subscription, status };
+
+            const payload = { name, logo, subscription, status, marketflow_enabled, projectflow_enabled, hr_enabled };
             if (!isEdit) payload.owner_email = owner_email;
 
             const saveBtn = document.getElementById('saveBtn');
@@ -1390,7 +1746,7 @@
 
             if (res && res.ok) {
                 closeCompanyModal();
-                
+
                 // Add event log
                 const timeline = document.getElementById('activityTimeline');
                 const logItem = document.createElement('div');
@@ -1403,7 +1759,7 @@
                     </div>
                 `;
                 timeline.insertBefore(logItem, timeline.firstChild);
-                
+
                 loadCompanies();
             } else {
                 alert(res?.error || 'Failed to save environment workspace configurations');
@@ -1429,7 +1785,7 @@
                     </div>
                 `;
                 timeline.insertBefore(logItem, timeline.firstChild);
-                
+
                 loadCompanies();
             } else {
                 alert(res?.error || 'Failed to delete workspace');
@@ -1439,8 +1795,8 @@
         // Search Filter
         document.getElementById('companySearch').addEventListener('input', (e) => {
             const q = e.target.value.toLowerCase();
-            const filtered = allCompanies.filter(c => 
-                c.name.toLowerCase().includes(q) || 
+            const filtered = allCompanies.filter(c =>
+                c.name.toLowerCase().includes(q) ||
                 c.owner_email.toLowerCase().includes(q)
             );
             renderCompanies(filtered);
@@ -1451,7 +1807,7 @@
             const canvas = document.getElementById('adoptionChart');
             if (!canvas) return;
             const ctx = canvas.getContext('2d');
-            
+
             const gradient = ctx.createLinearGradient(0, 0, 0, 240);
             gradient.addColorStop(0, 'rgba(164, 2, 191, 0.4)');
             gradient.addColorStop(1, 'rgba(164, 2, 191, 0)');
@@ -1526,7 +1882,155 @@
 
         // Run
         loadCompanies();
+        loadUsers();
         window.addEventListener('load', () => { initChart(); initKpiAnimations(); });
+
+        // Platform Access Tab Specific logic
+        let allUsers = [];
+
+        async function loadUsers() {
+            const res = await apiFetch('/auth/users');
+            if (res && Array.isArray(res)) {
+                allUsers = res;
+                renderUsers(allUsers);
+            }
+        }
+
+        function renderUsers(users) {
+            const tbody = document.getElementById('platformUserTableBody');
+            const counterDesc = document.getElementById('userCounterDesc');
+            if (counterDesc) counterDesc.textContent = `Manage platform module permissions globally across ${users.length} registered users`;
+
+            if (!users.length) {
+                tbody.innerHTML = `<tr><td colspan="10" class="px-6 py-12 text-center text-[#6B7280] font-medium">No account matches found.</td></tr>`;
+                lucide.createIcons();
+                return;
+            }
+
+            tbody.innerHTML = users.map(u => {
+                const isActive = (u.status || 'Active') === 'Active';
+                return `
+                    <tr class="hover:bg-[#F7F7FB]/50 transition-colors">
+                        <td class="px-6 py-4">
+                            <div>
+                                <div class="font-bold text-[#111827] text-sm">${String(u.email).replace(/</g, '&lt;')}</div>
+                                <div class="text-[10px] text-[#6B7280] font-semibold">Name: ${String(u.name || '').replace(/</g, '&lt;')}</div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 text-xs font-semibold text-[#6B7280]">${String(u.company || 'N/A').replace(/</g, '&lt;')}</td>
+                        
+                        <!-- Marketing CRM -->
+                        <td class="px-6 py-4 text-center">
+                            <input type="checkbox" id="sa-chk-mf-${u.id}" class="checkbox-custom hidden" ${u.marketflow_access ? 'checked' : ''} onchange="toggleUserAccess('${u.email}', 'marketflow')">
+                            <label for="sa-chk-mf-${u.id}" class="inline-block relative w-[20px] h-[20px] border border-[#ECECF3] rounded-md cursor-pointer transition-colors bg-white checkbox-custom-label"></label>
+                        </td>
+
+                        <!-- Projects PM -->
+                        <td class="px-6 py-4 text-center">
+                            <input type="checkbox" id="sa-chk-pf-${u.id}" class="checkbox-custom hidden" ${u.projectflow_access ? 'checked' : ''} onchange="toggleUserAccess('${u.email}', 'projectflow')">
+                            <label for="sa-chk-pf-${u.id}" class="inline-block relative w-[20px] h-[20px] border border-[#ECECF3] rounded-md cursor-pointer transition-colors bg-white checkbox-custom-label"></label>
+                        </td>
+
+                        <!-- HR Admin -->
+                        <td class="px-6 py-4 text-center">
+                            <input type="checkbox" id="sa-chk-hr-${u.id}" class="checkbox-custom hidden" ${u.hr_access ? 'checked' : ''} onchange="toggleUserAccess('${u.email}', 'hr')">
+                            <label for="sa-chk-hr-${u.id}" class="inline-block relative w-[20px] h-[20px] border border-[#ECECF3] rounded-md cursor-pointer transition-colors bg-white checkbox-custom-label"></label>
+                        </td>
+
+                        <!-- Employee -->
+                        <td class="px-6 py-4 text-center">
+                            <input type="checkbox" id="sa-chk-emp-${u.id}" class="checkbox-custom hidden" ${u.employee_access ? 'checked' : ''} onchange="toggleUserAccess('${u.email}', 'employee')">
+                            <label for="sa-chk-emp-${u.id}" class="inline-block relative w-[20px] h-[20px] border border-[#ECECF3] rounded-md cursor-pointer transition-colors bg-white checkbox-custom-label"></label>
+                        </td>
+
+                        <!-- Manager -->
+                        <td class="px-6 py-4 text-center">
+                            <input type="checkbox" id="sa-chk-mgr-${u.id}" class="checkbox-custom hidden" ${u.manager_access ? 'checked' : ''} onchange="toggleUserAccess('${u.email}', 'manager')">
+                            <label for="sa-chk-mgr-${u.id}" class="inline-block relative w-[20px] h-[20px] border border-[#ECECF3] rounded-md cursor-pointer transition-colors bg-white checkbox-custom-label"></label>
+                        </td>
+
+                        <!-- Admin -->
+                        <td class="px-6 py-4 text-center">
+                            <input type="checkbox" id="sa-chk-admin-${u.id}" class="checkbox-custom hidden" ${u.admin_access ? 'checked' : ''} onchange="toggleUserAccess('${u.email}', 'admin')">
+                            <label for="sa-chk-admin-${u.id}" class="inline-block relative w-[20px] h-[20px] border border-[#ECECF3] rounded-md cursor-pointer transition-colors bg-white checkbox-custom-label"></label>
+                        </td>
+
+                        <!-- System Role -->
+                        <td class="px-6 py-4 text-center text-xs font-semibold text-[#610173]">
+                            ${u.role}
+                        </td>
+
+                        <!-- Active Status -->
+                        <td class="px-6 py-4 text-center">
+                            <input type="checkbox" id="sa-chk-status-${u.id}" class="checkbox-custom hidden" ${isActive ? 'checked' : ''} onchange="toggleUserAccess('${u.email}', 'status')">
+                            <label for="sa-chk-status-${u.id}" class="inline-block relative w-[20px] h-[20px] border border-[#ECECF3] rounded-md cursor-pointer transition-colors bg-white checkbox-custom-label"></label>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+            lucide.createIcons();
+        }
+
+        async function toggleUserAccess(email, module) {
+            const u = allUsers.find(x => x.email === email);
+            if (!u) return;
+
+            const payload = {};
+            if (module === 'status') {
+                payload.status = u.status === 'Active' ? 'Inactive' : 'Active';
+            } else if (module === 'marketflow') {
+                payload.marketflow_access = !u.marketflow_access;
+            } else if (module === 'projectflow') {
+                payload.projectflow_access = !u.projectflow_access;
+            } else if (module === 'hr') {
+                payload.hr_access = !u.hr_access;
+            } else if (module === 'employee') {
+                payload.employee_access = !u.employee_access;
+            } else if (module === 'manager') {
+                payload.manager_access = !u.manager_access;
+            } else if (module === 'admin') {
+                payload.admin_access = !u.admin_access;
+            }
+
+            const res = await apiFetch('/auth/users/' + encodeURIComponent(email) + '/access', {
+                method: 'PUT',
+                body: JSON.stringify(payload)
+            });
+
+            if (res && res.ok) {
+                if (payload.status !== undefined) u.status = payload.status;
+                if (payload.marketflow_access !== undefined) u.marketflow_access = payload.marketflow_access;
+                if (payload.projectflow_access !== undefined) u.projectflow_access = payload.projectflow_access;
+                if (payload.hr_access !== undefined) u.hr_access = payload.hr_access;
+                if (payload.employee_access !== undefined) u.employee_access = payload.employee_access;
+                if (payload.manager_access !== undefined) u.manager_access = payload.manager_access;
+                if (payload.admin_access !== undefined) u.admin_access = payload.admin_access;
+
+                // Sync UI role display locally
+                if (payload.admin_access) u.role = 'admin';
+                else if (payload.manager_access) u.role = 'manager';
+                else if (payload.employee_access) u.role = 'employee';
+                else if (payload.admin_access === false || payload.manager_access === false || payload.employee_access === false) {
+                    if (!['super_admin', 'owner'].includes(u.role)) u.role = 'user';
+                }
+
+                renderUsers(allUsers);
+            } else {
+                alert(res?.error || 'Failed to update user access');
+                renderUsers(allUsers);
+            }
+        }
+
+        // Search Filter for Platform Users
+        document.getElementById('platformUserSearch').addEventListener('input', (e) => {
+            const q = e.target.value.toLowerCase();
+            const filtered = allUsers.filter(u => 
+                u.email.toLowerCase().includes(q) || 
+                (u.company && u.company.toLowerCase().includes(q)) ||
+                u.role.toLowerCase().includes(q)
+            );
+            renderUsers(filtered);
+        });
 
         // Global Search Drawer Logic
         function toggleSearchDrawer(show) {
@@ -1773,12 +2277,15 @@
 
     <!-- Global Search Drawer -->
     <div id="globalSearchDrawer">
-        <div class="p-4 border-b border-[#ECECF3] flex items-center justify-between gap-2 bg-[#fcf8fd] sticky top-0 z-10">
+        <div
+            class="p-4 border-b border-[#ECECF3] flex items-center justify-between gap-2 bg-[#fcf8fd] sticky top-0 z-10">
             <div class="relative flex-1">
                 <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#610173]"></i>
-                <input type="text" id="globalSearchInput" placeholder="Type to search workspace..." class="w-full pl-9 pr-4 py-2 border border-[#ECECF3] rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-[#610173] bg-[#FAFAFC] focus:bg-white transition-all">
+                <input type="text" id="globalSearchInput" placeholder="Type to search workspace..."
+                    class="w-full pl-9 pr-4 py-2 border border-[#ECECF3] rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-[#610173] bg-[#FAFAFC] focus:bg-white transition-all">
             </div>
-            <button onclick="toggleSearchDrawer(false)" class="p-1.5 text-slate-400 hover:text-slate-600 rounded-lg hover:bg-slate-100 transition-colors">
+            <button onclick="toggleSearchDrawer(false)"
+                class="p-1.5 text-slate-400 hover:text-slate-600 rounded-lg hover:bg-slate-100 transition-colors">
                 <i data-lucide="x" class="w-4 h-4"></i>
             </button>
         </div>
@@ -1792,10 +2299,12 @@
             <div>
                 <h4 class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-2">Content Matches</h4>
                 <div class="space-y-1.5" id="globalSearchContentResults">
-                    <div class="text-[11px] text-slate-400 italic">Start typing to filter tables and search content...</div>
+                    <div class="text-[11px] text-slate-400 italic">Start typing to filter tables and search content...
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 </body>
+
 </html>

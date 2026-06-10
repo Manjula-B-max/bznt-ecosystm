@@ -5,7 +5,10 @@ const CompanySchema = new mongoose.Schema({
   logo: { type: String, default: '' },
   owner_email: { type: String, unique: true, required: true, lowercase: true, trim: true },
   subscription: { type: String, default: 'Basic' },
-  status: { type: String, default: 'Active' }
+  status: { type: String, default: 'Active' },
+  marketflow_enabled: { type: Boolean, default: true },
+  projectflow_enabled: { type: Boolean, default: true },
+  hr_enabled: { type: Boolean, default: true }
 }, { timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' } });
 
 CompanySchema.set('toJSON', {

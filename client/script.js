@@ -1087,7 +1087,19 @@ document.addEventListener('DOMContentLoaded', () => {
                                   ['employee', 'manager'].includes(uObj.role);
 
                 if (hasAccess) {
-                    window.location.replace('admin.html');
+                    if (['owner', 'admin'].includes(uObj.role) || uObj.admin_access) {
+                        window.location.replace('admin.html');
+                    } else if (uObj.hr_access) {
+                        window.location.replace('hr-admin.html');
+                    } else if (uObj.marketflow_access) {
+                        window.location.replace('marketflow-crm.html');
+                    } else if (uObj.projectflow_access) {
+                        window.location.replace('projectflow-crm.html');
+                    } else if (['manager'].includes(uObj.role) || uObj.manager_access) {
+                        window.location.replace('manager.html');
+                    } else {
+                        window.location.replace('employee.html');
+                    }
                 } else {
                     setStatus('<span style="color:#b91c1c;">Account verified, but no product access is assigned. Please contact your administrator.</span>');
                     button.disabled = false;

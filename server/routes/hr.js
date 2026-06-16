@@ -104,13 +104,13 @@ router.post('/employees', hrAccessMiddleware, async (req, res) => {
         const data = await getDocumentScope(req, req.body);
         data.id = data.id || uid();
         if (data.user_email) data.user_email = data.user_email.toLowerCase();
-        
+
         // Auto-assign Employee ID and onboarding status of Approved since no onboarding is needed
         if (!data.employee_id) {
             data.employee_id = await generateNextEmployeeId(data.company || 'My Company');
         }
         data.onboarding_status = 'Approved';
-        
+
         await EmployeeModel.findOneAndUpdate(
             { id: data.id },
             { $set: data },
@@ -143,7 +143,7 @@ router.put('/employees/:id', hrAccessMiddleware, async (req, res) => {
         const data = req.body;
         delete data.id; delete data._id;
         if (data.user_email) data.user_email = data.user_email.toLowerCase();
-        
+
         await EmployeeModel.findOneAndUpdate({ id: req.params.id }, { $set: data });
         res.json({ ok: true });
     } catch (err) { res.status(500).json({ error: err.message }); }
@@ -202,7 +202,7 @@ router.post('/attendance', employeeAccessMiddleware, async (req, res) => {
             const currentCredits = employee.late_credits !== undefined ? employee.late_credits : 40;
             const updatedCredits = Math.max(0, currentCredits - deducted);
             const logs = employee.late_credit_logs || [];
-            
+
             if (deducted > 0) {
                 logs.push({
                     date: data.date,
@@ -212,7 +212,7 @@ router.post('/attendance', employeeAccessMiddleware, async (req, res) => {
                     remaining_credits: updatedCredits
                 });
             }
-            
+
             await EmployeeModel.findOneAndUpdate(
                 { user_email: data.user_email },
                 { $set: { late_credits: updatedCredits, late_credit_logs: logs } }
@@ -310,19 +310,19 @@ router.put('/leaves/:id', employeeAccessMiddleware, async (req, res) => {
     try {
         const data = req.body;
         delete data.id; delete data._id;
-        
+
         const user = await User.findById(req.userId);
         const leave = await LeaveModel.findOne({ id: req.params.id });
         if (!leave) return res.status(404).json({ error: 'Leave request not found' });
-        
+
         const isHr = user.hr_access || ['super_admin', 'admin', 'owner'].includes(user.role);
         const applicantEmp = await EmployeeModel.findOne({ user_email: leave.user_email });
         const isManager = applicantEmp && applicantEmp.reporting_manager && applicantEmp.reporting_manager.toLowerCase() === user.email.toLowerCase();
-        
+
         if (!isHr && !isManager) {
             return res.status(403).json({ error: 'Access denied. Only HR or Reporting Manager can approve leaves.' });
         }
-        
+
         if (data.status === 'Approved') {
             data.approved_by = user.name || user.email;
             data.approved_date = new Date().toISOString().split('T')[0];
@@ -603,14 +603,14 @@ router.get('/policies', employeeAccessMiddleware, async (req, res) => {
     try {
         const userOnly = req.query.self === 'true';
         const filter = await getScopedFilter(req, userOnly);
-        
+
         // Employees should only see active policies
         const user = await User.findById(req.userId);
         const isHrAdmin = user.hr_access || ['super_admin', 'admin', 'owner'].includes(user.role);
         if (!isHrAdmin || userOnly) {
             filter.status = 'Active';
         }
-        
+
         const list = await PolicyModel.find(filter).sort({ name: 1 }).lean();
         res.json(list.map(d => { delete d._id; delete d.__v; return d; }));
     } catch (err) { res.status(500).json({ error: err.message }); }
@@ -621,15 +621,15 @@ router.post('/policies', hrAccessMiddleware, async (req, res) => {
         const data = await getDocumentScope(req, req.body);
         data.id = data.id || uid();
         data.last_updated = new Date().toISOString().split('T')[0];
-        
+
         const isNew = !(await PolicyModel.findOne({ id: data.id }));
-        
+
         await PolicyModel.findOneAndUpdate(
             { id: data.id },
             { $set: data },
             { upsert: true, new: true }
         );
-        
+
         await logAudit(req, 'Policy Update', `${isNew ? 'Created' : 'Updated'} policy: ${data.name} (v${data.version || '1.0'})`);
         res.json({ id: data.id, ok: true });
     } catch (err) { res.status(500).json({ error: err.message }); }
@@ -640,7 +640,7 @@ router.put('/policies/:id', hrAccessMiddleware, async (req, res) => {
         const data = req.body;
         delete data.id; delete data._id;
         data.last_updated = new Date().toISOString().split('T')[0];
-        
+
         const policy = await PolicyModel.findOneAndUpdate({ id: req.params.id }, { $set: data }, { new: true });
         await logAudit(req, 'Policy Update', `Updated policy properties: ${policy?.name} (v${policy?.version})`);
         res.json({ ok: true });
@@ -707,7 +707,7 @@ router.post('/canteen-registrations', employeeAccessMiddleware, async (req, res)
             user_email: data.user_email,
             month: data.month
         });
-        
+
         if (existing) {
             const activeMonthStr = new Date().toLocaleString('en-US', { month: 'long', year: 'numeric' });
             if (data.month === activeMonthStr) {
@@ -748,14 +748,14 @@ router.post('/audit-logs', employeeAccessMiddleware, async (req, res) => {
 router.get('/compliance-telemetry', employeeAccessMiddleware, async (req, res) => {
     try {
         const filter = await getScopedFilter(req);
-        
+
         const totalEmployees = await EmployeeModel.countDocuments(filter);
         const activePolicies = await PolicyModel.countDocuments({ ...filter, status: 'Active' });
-        
+
         const totalAcks = await AcknowledgementModel.countDocuments({ ...filter, status: 'Accepted' });
         const possibleAcks = totalEmployees * activePolicies;
         const policyAcceptance = possibleAcks > 0 ? Math.round((totalAcks / possibleAcks) * 100) : 100;
-        
+
         const attendanceRecords = await AttendanceModel.find(filter).lean();
         const lates = attendanceRecords.filter(a => a.status === 'Late').length;
         const totalPunches = attendanceRecords.length;
@@ -764,7 +764,7 @@ router.get('/compliance-telemetry', employeeAccessMiddleware, async (req, res) =
         const activeMonth = new Date().toLocaleString('en-US', { month: 'long', year: 'numeric' });
         const canteenCount = await CanteenModel.countDocuments({ ...filter, month: activeMonth, selection_type: 'Company Canteen' });
         const canteenCompliance = totalEmployees > 0 ? Math.round((canteenCount / totalEmployees) * 100) : 0;
-        
+
         res.json({
             policy_compliance: policyAcceptance,
             sop_compliance: 95,
@@ -890,14 +890,14 @@ router.put('/employees/:id/onboarding', employeeAccessMiddleware, async (req, re
         const user = await User.findById(req.userId);
         const employee = await EmployeeModel.findOne({ id: req.params.id });
         if (!employee) return res.status(404).json({ error: 'Employee record not found' });
-        
+
         const isHrAdmin = user.hr_access || ['super_admin', 'admin', 'owner'].includes(user.role);
         if (!isHrAdmin && employee.user_email.toLowerCase() !== user.email.toLowerCase()) {
             return res.status(403).json({ error: 'Access denied. You can only update your own onboarding details.' });
         }
 
         data.onboarding_status = 'Pending Verification';
-        
+
         await EmployeeModel.findOneAndUpdate({ id: req.params.id }, { $set: data });
         res.json({ ok: true });
     } catch (err) { res.status(500).json({ error: err.message }); }
@@ -905,7 +905,7 @@ router.put('/employees/:id/onboarding', employeeAccessMiddleware, async (req, re
 
 router.put('/employees/:id/verify-onboarding', hrAccessMiddleware, async (req, res) => {
     try {
-        const { action, remarks } = req.body;
+        const { action, remarks, bank_details } = req.body;
         const employee = await EmployeeModel.findOne({ id: req.params.id });
         if (!employee) return res.status(404).json({ error: 'Employee not found' });
 
@@ -922,6 +922,24 @@ router.put('/employees/:id/verify-onboarding', hrAccessMiddleware, async (req, r
             if (!employee.employee_id) {
                 updates.employee_id = await generateNextEmployeeId(employee.company);
             }
+
+            if (bank_details) {
+                updates.bank_holder_name = bank_details.bank_holder_name;
+                updates.bank_name = bank_details.bank_name;
+                updates.bank_account_number = bank_details.bank_account_number;
+                updates.bank_ifsc = bank_details.bank_ifsc;
+                updates.bank_branch = bank_details.bank_branch;
+                updates.bank_account_type = bank_details.bank_account_type;
+                updates.bank_verification_status = 'Verified';
+            }
+
+            const timeline = employee.timeline || [];
+            timeline.push({
+                event: 'Verification Completed',
+                date: new Date().toISOString().split('T')[0],
+                remarks: remarks || 'HR onboarding verification completed and workspace access activated'
+            });
+            updates.timeline = timeline;
         } else if (action === 'resubmit') {
             updates.onboarding_status = 'Resubmission Required';
             updates.status = 'Inactive';
@@ -964,7 +982,7 @@ router.get('/pf/export', hrAccessMiddleware, async (req, res) => {
         const exportData = employees.map(emp => {
             const pay = payroll.find(p => p.user_email.toLowerCase() === emp.user_email.toLowerCase()) || {};
             const gross = pay.salary || pay.net_salary || emp.salary || 0;
-            
+
             const basicWages = Math.min(15000, gross * 0.5);
             const epfWages = emp.pf_eligible ? basicWages : 0;
             const epsWages = emp.eps_eligible ? basicWages : 0;
@@ -1115,13 +1133,271 @@ router.put('/employees/:id/settle-exit', hrAccessMiddleware, async (req, res) =>
         };
 
         await EmployeeModel.findOneAndUpdate({ id: req.params.id }, { $set: updates });
-        
+
         await User.findOneAndUpdate(
             { email: employee.user_email.toLowerCase() },
             { $set: { status: 'Inactive', employee_access: false } }
         );
 
         await logAudit(req, 'Exit Settlement', `Final settlement processed for ${employee.name}. Relieved on ${exit_date}`);
+        res.json({ ok: true });
+    } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// ── BANK DETAILS & CHANGE WORKFLOWS ──
+router.put('/employees/:id/bank-details', hrAccessMiddleware, async (req, res) => {
+    try {
+        const { bankName, accountNumber, ifscCode } = req.body;
+        const employee = await EmployeeModel.findOneAndUpdate(
+            { id: req.params.id },
+            { 
+                $set: { 
+                    bank_name: bankName,
+                    bank_account_number: accountNumber,
+                    bank_ifsc: ifscCode,
+                    bank_verification_status: 'Verified'
+                } 
+            },
+            { new: true }
+        );
+        if (!employee) return res.status(404).json({ error: 'Employee not found' });
+        
+        await logAudit(req, 'Bank Detail Edit', `HR direct edit of bank details for ${employee.name}`);
+        res.json(employee);
+    } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+const BankChangeRequestModel = getModel('hr_bank_change_requests');
+const BankAuditModel = getModel('hr_bank_change_audits');
+
+router.post('/bank-change-requests', employeeAccessMiddleware, async (req, res) => {
+    try {
+        const { bankName, accountNumber, ifscCode, reason, supportingDocument, bank_holder_name, bank_branch, bank_account_type } = req.body;
+        const user = await User.findById(req.userId);
+        
+        const emp = await EmployeeModel.findOne({ user_email: user.email.toLowerCase() });
+        if (!emp) return res.status(404).json({ error: 'Employee profile not found' });
+
+        const reqId = uid();
+        const requestData = {
+            id: reqId,
+            employee_id: emp.id,
+            employeeId: emp.id,
+            employee_name: emp.name,
+            bank_holder_name: bank_holder_name || emp.name,
+            bank_name: bankName,
+            bank_account_number: accountNumber,
+            bank_ifsc: ifscCode,
+            bank_branch: bank_branch || '',
+            bank_account_type: bank_account_type || 'Savings',
+            reason: reason,
+            document_proof: supportingDocument,
+            status: 'Pending',
+            created_at: new Date().toISOString()
+        };
+
+        await BankChangeRequestModel.create(requestData);
+
+        await BankAuditModel.create({
+            id: uid(),
+            employeeId: emp.id,
+            changedAt: new Date().toISOString(),
+            requestedBy: user.email.toLowerCase(),
+            status: 'Pending',
+            reason: reason
+        });
+
+        await logAudit(req, 'Bank Change Requested', `Bank change request submitted by ${emp.name}`);
+        res.status(201).json(requestData);
+    } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+router.get('/bank-change-requests', employeeAccessMiddleware, async (req, res) => {
+    try {
+        const user = await User.findById(req.userId);
+        const isHr = user.hr_access || ['super_admin', 'admin', 'owner'].includes(user.role);
+        
+        let list;
+        if (isHr) {
+            list = await BankChangeRequestModel.find({}).sort({ created_at: -1 }).lean();
+        } else {
+            const emp = await EmployeeModel.findOne({ user_email: user.email.toLowerCase() });
+            if (!emp) return res.json([]);
+            list = await BankChangeRequestModel.find({ employee_id: emp.id }).sort({ created_at: -1 }).lean();
+        }
+        res.json(list.map(d => { delete d._id; delete d.__v; return d; }));
+    } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+router.get('/bank-change-requests/audit', hrAccessMiddleware, async (req, res) => {
+    try {
+        const employeeId = req.query.employeeId;
+        if (!employeeId) return res.status(400).json({ error: 'employeeId is required.' });
+        
+        const list = await BankAuditModel.find({ employeeId }).sort({ changedAt: -1 }).lean();
+        res.json(list.map(d => { delete d._id; delete d.__v; return d; }));
+    } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+router.put('/bank-change-requests/:id', hrAccessMiddleware, async (req, res) => {
+    try {
+        const { status, clarificationMessage, reason } = req.body;
+        const request = await BankChangeRequestModel.findOne({ id: req.params.id });
+        if (!request) return res.status(404).json({ error: 'Request not found' });
+
+        const user = await User.findById(req.userId);
+        const updates = { status };
+        if (clarificationMessage) updates.clarification_message = clarificationMessage;
+        
+        await BankChangeRequestModel.findOneAndUpdate({ id: req.params.id }, { $set: updates });
+
+        if (status === 'Approved') {
+            await EmployeeModel.findOneAndUpdate(
+                { id: request.employee_id },
+                {
+                    $set: {
+                        bank_holder_name: request.bank_holder_name,
+                        bank_name: request.bank_name,
+                        bank_account_number: request.bank_account_number,
+                        bank_ifsc: request.bank_ifsc,
+                        bank_branch: request.bank_branch,
+                        bank_account_type: request.bank_account_type
+                    }
+                }
+            );
+        }
+
+        await BankAuditModel.create({
+            id: uid(),
+            employeeId: request.employee_id,
+            changedAt: new Date().toISOString(),
+            requestedBy: user.email.toLowerCase(),
+            status: status,
+            reason: reason || clarificationMessage || `Status updated to ${status}`
+        });
+
+        await logAudit(req, `Bank Request ${status}`, `Bank change request for employee ${request.employee_name} was: ${status}`);
+        res.json({ ok: true, status });
+    } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+router.put('/bank-change-requests/:id/resubmit', employeeAccessMiddleware, async (req, res) => {
+    try {
+        const { bankName, accountNumber, ifscCode, reason, supportingDocument, bank_holder_name, bank_branch, bank_account_type } = req.body;
+        const request = await BankChangeRequestModel.findOne({ id: req.params.id });
+        if (!request) return res.status(404).json({ error: 'Request not found' });
+
+        const user = await User.findById(req.userId);
+        const updates = {
+            bank_name: bankName,
+            bank_account_number: accountNumber,
+            bank_ifsc: ifscCode,
+            reason: reason,
+            document_proof: supportingDocument,
+            status: 'Pending'
+        };
+        if (bank_holder_name) updates.bank_holder_name = bank_holder_name;
+        if (bank_branch) updates.bank_branch = bank_branch;
+        if (bank_account_type) updates.bank_account_type = bank_account_type;
+
+        await BankChangeRequestModel.findOneAndUpdate({ id: req.params.id }, { $set: updates });
+
+        await BankAuditModel.create({
+            id: uid(),
+            employeeId: request.employee_id,
+            changedAt: new Date().toISOString(),
+            requestedBy: user.email.toLowerCase(),
+            status: 'Pending',
+            reason: reason || 'Resubmitted'
+        });
+
+        await logAudit(req, 'Bank Request Resubmitted', `Bank change request resubmitted by employee`);
+        res.json({ ok: true, status: 'Pending' });
+    } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// ── APPRAISAL & PERFORMANCE HIKE WORKFLOWS ──
+router.post('/employees/:id/appraisal', employeeAccessMiddleware, async (req, res) => {
+    try {
+        const { rating, hike_percent, feedback } = req.body;
+        const employee = await EmployeeModel.findOne({ id: req.params.id });
+        if (!employee) return res.status(404).json({ error: 'Employee not found' });
+
+        const updates = {
+            manager_rating: Number(rating),
+            suggested_hike_percent: Number(hike_percent),
+            appraisal_feedback: feedback,
+            appraisal_status: 'Pending HR Review'
+        };
+
+        await EmployeeModel.findOneAndUpdate({ id: req.params.id }, { $set: updates });
+        await logAudit(req, 'Appraisal Recommendation', `Appraisal score of ${rating}/10 and suggested hike of ${hike_percent}% recommended for ${employee.name}`);
+        res.json({ ok: true });
+    } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+router.post('/employees/:id/appraisal/hr-review', hrAccessMiddleware, async (req, res) => {
+    try {
+        const { rating, hike_percent, remarks } = req.body;
+        const employee = await EmployeeModel.findOne({ id: req.params.id });
+        if (!employee) return res.status(404).json({ error: 'Employee not found' });
+
+        const updates = {
+            manager_rating: Number(rating),
+            suggested_hike_percent: Number(hike_percent),
+            appraisal_hr_remarks: remarks,
+            appraisal_status: 'Pending Admin Approval'
+        };
+
+        await EmployeeModel.findOneAndUpdate({ id: req.params.id }, { $set: updates });
+        await logAudit(req, 'Appraisal HR Reviewed', `HR reviewed appraisal for ${employee.name}. Set suggested hike to ${hike_percent}%`);
+        res.json({ ok: true });
+    } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+router.post('/employees/:id/appraisal/approve', hrAccessMiddleware, async (req, res) => {
+    try {
+        const { approved, remarks } = req.body;
+        const employee = await EmployeeModel.findOne({ id: req.params.id });
+        if (!employee) return res.status(404).json({ error: 'Employee not found' });
+
+        const updates = {};
+        if (approved) {
+            updates.appraisal_status = 'Approved';
+            
+            const prevSalary = employee.salary || 0;
+            const hikePercent = employee.suggested_hike_percent || 0;
+            const newSalary = prevSalary * (1 + (hikePercent / 100));
+
+            updates.salary = Math.round(newSalary);
+
+            const revisions = employee.salary_revisions || [];
+            revisions.push({
+                id: uid(),
+                previous_salary: prevSalary,
+                current_salary: Math.round(newSalary),
+                hike_percent: hikePercent,
+                effective_date: new Date().toISOString().split('T')[0],
+                reason: 'Performance Appraisal',
+                remarks: remarks || employee.appraisal_hr_remarks || 'Performance appraisal hike approved',
+                approved_by: 'Administrator',
+                created_at: new Date().toISOString()
+            });
+            updates.salary_revisions = revisions;
+
+            const timeline = employee.timeline || [];
+            timeline.push({
+                event: 'Salary Revision',
+                date: new Date().toISOString().split('T')[0],
+                remarks: `Hike of ${hikePercent}% approved. New salary: ₹${Math.round(newSalary)}`
+            });
+            updates.timeline = timeline;
+        } else {
+            updates.appraisal_status = 'Rejected';
+        }
+
+        await EmployeeModel.findOneAndUpdate({ id: req.params.id }, { $set: updates });
+        await logAudit(req, `Appraisal ${approved ? 'Approved' : 'Rejected'}`, `Performance appraisal for ${employee.name} has been ${approved ? 'Approved' : 'Rejected'}`);
         res.json({ ok: true });
     } catch (err) { res.status(500).json({ error: err.message }); }
 });

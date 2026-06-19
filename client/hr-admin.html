@@ -949,6 +949,70 @@
                 transform: translate(-10px, 10px);
             }
         }
+
+        /* ── WORKFORCE COMMAND CENTER ENHANCEMENTS ── */
+        .premium-card {
+            background: #ffffff;
+            border: 1px solid #ECECF3;
+            border-radius: 20px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02), 0 1px 2px rgba(0, 0, 0, 0.04);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .premium-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px -5px rgba(124, 58, 237, 0.08), 0 8px 16px -6px rgba(124, 58, 237, 0.04);
+            border-color: rgba(124, 58, 237, 0.2);
+        }
+        .gauge-arc {
+            stroke-dasharray: 251.2;
+            stroke-dashoffset: 251.2;
+            transition: stroke-dashoffset 1.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .pulse-dot {
+            animation: pulse-animation 2s infinite;
+        }
+        @keyframes pulse-animation {
+            0% {
+                transform: scale(0.95);
+                box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+            }
+            70% {
+                transform: scale(1);
+                box-shadow: 0 0 0 6px rgba(16, 185, 129, 0);
+            }
+            100% {
+                transform: scale(0.95);
+                box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+            }
+        }
+        .slide-in-feed {
+            animation: slideIn 0.4s ease-out;
+        }
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        /* Custom timeline track styling */
+        .timeline-track::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 5px;
+            width: 2px;
+            background: #ECECF3;
+            z-index: 0;
+        }
+        .timeline-step {
+            position: relative;
+            z-index: 10;
+        }
     </style>
 </head>
 
@@ -977,6 +1041,9 @@
             </div>
             <div class="sidebar-tab" data-target="empView">
                 <i data-lucide="users" class="w-4 h-4"></i> Employees
+            </div>
+            <div class="sidebar-tab" data-target="accessView">
+                <i data-lucide="key-round" class="w-4 h-4"></i> Access Management
             </div>
             <div class="sidebar-tab" data-target="attView">
                 <i data-lucide="clock" class="w-4 h-4"></i> Attendance
@@ -1265,93 +1332,374 @@
                 </div>
             </div>
 
-            <!-- SECTION 2: Analytics Row - Attendance and Operations Hours -->
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <!-- Bar Chart -->
-                <div class="premium-card p-6 lg:col-span-2">
-                    <div class="flex justify-between items-center mb-6">
-                        <h3 class="font-bold text-base text-[#111827]">Weekly Attendance & Operations Hours</h3>
-                        <span class="text-xs text-[#6B7280]">Real-time Telemetry</span>
+            <!-- ==================== WORKFORCE COMMAND CENTER ==================== -->
+            
+            <!-- SECTION 1: WORKFORCE OVERVIEW -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-6">
+                <!-- Card 1: Total Workforce -->
+                <div class="premium-card p-5 bg-white border border-[#ECECF3] rounded-2xl shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 relative overflow-hidden group">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs text-[#6B7280] font-semibold">Total Workforce</span>
+                        <div class="bg-purple-50 text-[#7C3AED] p-2 rounded-xl border border-purple-100 group-hover:bg-[#7C3AED] group-hover:text-white transition-colors duration-300">
+                            <i data-lucide="users" class="w-4 h-4"></i>
+                        </div>
                     </div>
-                    <div class="h-64 relative">
-                        <canvas id="weeklyChart"></canvas>
+                    <div class="mt-4 flex items-baseline gap-2">
+                        <span class="text-3xl font-bold text-[#111827] tracking-tight transition-all duration-500" id="statTotalEmployeesOverview">0</span>
+                        <span class="text-xs font-bold text-emerald-600 flex items-center gap-0.5 bg-emerald-50 px-1.5 py-0.5 rounded-lg border border-emerald-100">
+                            <i data-lucide="trending-up" class="w-3 h-3"></i>
+                            <span id="statWorkforceGrowthPct">+4.8%</span>
+                        </span>
+                    </div>
+                    <div class="mt-2 flex items-center justify-between text-[11px] text-[#6B7280]">
+                        <span>New Joiners This Month: <strong class="text-slate-800" id="statNewJoinersMonth">5</strong></span>
+                    </div>
+                    <!-- Mini Trend Sparkline -->
+                    <div class="mt-4 h-10 w-full overflow-hidden">
+                        <svg class="w-full h-full stroke-purple-500 stroke-2 fill-purple-50/20" viewBox="0 0 100 30" preserveAspectRatio="none">
+                            <path d="M 0 25 Q 15 15, 30 20 T 60 10 T 90 5 T 100 8 L 100 30 L 0 30 Z" />
+                        </svg>
                     </div>
                 </div>
 
-                <!-- Pending actions timeline widget -->
-                <div class="premium-card p-6 flex flex-col justify-between">
-                    <div>
-                        <h3 class="font-bold text-base text-[#111827] mb-4">Pending HR Approvals</h3>
-                        <div class="space-y-3.5">
-                            <div class="flex gap-3 text-xs items-start">
-                                <div
-                                    class="bg-amber-50 text-amber-600 p-2 rounded-xl border border-amber-100 flex-shrink-0">
-                                    <i data-lucide="calendar" class="w-4 h-4"></i></div>
-                                <div>
-                                    <p class="font-bold text-[#111827]">Leave Request: Alex M.</p>
-                                    <span class="text-[#6B7280]">Sick leave request for 2 days</span>
-                                </div>
+                <!-- Card 2: Workforce Availability -->
+                <div class="premium-card p-5 bg-white border border-[#ECECF3] rounded-2xl shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 relative overflow-hidden group">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs text-[#6B7280] font-semibold">Workforce Availability</span>
+                        <div class="bg-emerald-50 text-emerald-600 p-2 rounded-xl border border-emerald-100 group-hover:bg-emerald-600 group-hover:text-white transition-colors duration-300">
+                            <i data-lucide="calendar-check" class="w-4 h-4"></i>
+                        </div>
+                    </div>
+                    <div class="mt-4 flex items-baseline gap-2">
+                        <span class="text-3xl font-bold text-emerald-600 tracking-tight" id="statAvailabilityPct">0%</span>
+                        <span class="text-xs font-bold text-[#6B7280]">Present Today</span>
+                    </div>
+                    <div class="mt-2 grid grid-cols-3 gap-2 text-[10px] text-[#6B7280] border-t border-[#ECECF3] pt-2 text-left">
+                        <div>Present: <strong class="text-emerald-600" id="statOverviewPresent">0</strong></div>
+                        <div>Absent: <strong class="text-rose-600" id="statOverviewAbsent">0</strong></div>
+                        <div>On Leave: <strong class="text-purple-600" id="statOverviewLeave">0</strong></div>
+                    </div>
+                    <!-- Animated Progress Indicator -->
+                    <div class="mt-4 w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
+                        <div id="statAvailabilityProgress" class="bg-emerald-500 h-full rounded-full transition-all duration-[1500ms] cubic-bezier(0.4, 0, 0.2, 1)" style="width: 0%"></div>
+                    </div>
+                </div>
+
+                <!-- Card 3: Recruitment Pipeline -->
+                <div class="premium-card p-5 bg-white border border-[#ECECF3] rounded-2xl shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 relative overflow-hidden group">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs text-[#6B7280] font-semibold">Recruitment Pipeline</span>
+                        <div class="bg-blue-50 text-blue-600 p-2 rounded-xl border border-blue-100 group-hover:bg-blue-600 group-hover:text-white transition-colors duration-300">
+                            <i data-lucide="briefcase" class="w-4 h-4"></i>
+                        </div>
+                    </div>
+                    <div class="mt-4 flex items-baseline gap-2">
+                        <span class="text-3xl font-bold text-blue-600 tracking-tight" id="statOverviewOpenPositions">12</span>
+                        <span class="text-xs font-bold text-[#6B7280]">Open Positions</span>
+                    </div>
+                    <div class="mt-2 grid grid-cols-3 gap-2 text-[10px] text-[#6B7280] border-t border-[#ECECF3] pt-2 text-left">
+                        <div>Applied: <strong class="text-slate-800" id="statOverviewApplied">0</strong></div>
+                        <div>Interviews: <strong class="text-blue-600" id="statOverviewInterviews">0</strong></div>
+                        <div>Offers: <strong class="text-purple-600" id="statOverviewOffers">0</strong></div>
+                    </div>
+                    <!-- Decorative micro-animation strip -->
+                    <div class="mt-4 flex gap-1 items-center justify-between px-1">
+                        <span class="w-2 h-2 rounded-full bg-blue-400/20 animate-ping"></span>
+                        <span class="text-[9px] text-blue-500 font-semibold" id="recruitmentActivityText">Active Hiring</span>
+                    </div>
+                </div>
+
+                <!-- Card 4: HR Action Center -->
+                <div class="premium-card p-5 bg-white border border-[#ECECF3] rounded-2xl shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 relative overflow-hidden group">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs text-[#6B7280] font-semibold">HR Action Center</span>
+                        <div class="bg-rose-50 text-rose-600 p-2 rounded-xl border border-rose-100 group-hover:bg-rose-600 group-hover:text-white transition-colors duration-300">
+                            <i data-lucide="shield-alert" class="w-4 h-4"></i>
+                        </div>
+                    </div>
+                    <div class="mt-4 flex items-baseline gap-2">
+                        <span class="text-3xl font-bold text-rose-600 tracking-tight" id="statOverviewCriticalActions">0</span>
+                        <span class="text-xs font-bold text-rose-600 bg-rose-50 border border-rose-100 px-1.5 py-0.5 rounded-lg">Critical Items</span>
+                    </div>
+                    <div class="mt-2 grid grid-cols-2 gap-x-2 gap-y-1 text-[9.5px] text-[#6B7280] border-t border-[#ECECF3] pt-2 text-left">
+                        <div class="flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span> Leaves: <strong class="text-slate-800" id="statOverviewLeavesPending">0</strong></div>
+                        <div class="flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span> Verifications: <strong class="text-slate-800" id="statOverviewVerificationsPending">0</strong></div>
+                        <div class="flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-blue-500"></span> Confirmations: <strong class="text-slate-800" id="statOverviewConfirmationsPending">0</strong></div>
+                        <div class="flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-red-500"></span> Exits: <strong class="text-slate-800" id="statOverviewExitsPending">0</strong></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECTION 2: WORKFORCE ANALYTICS & SECTION 10: WORKFORCE INSIGHTS -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
+                <!-- Left and Center: Headcount Growth & Dept Distribution -->
+                <div class="premium-card p-6 bg-white border border-[#ECECF3] rounded-2xl shadow-sm lg:col-span-2 space-y-6">
+                    <div class="flex justify-between items-center border-b border-[#ECECF3] pb-4">
+                        <div class="text-left">
+                            <h3 class="font-bold text-base text-[#111827]">Workforce Analytics</h3>
+                            <p class="text-xs text-[#6B7280]">Telemetry & allocation trends</p>
+                        </div>
+                        <div class="flex items-center gap-3 text-xs">
+                            <span class="flex items-center gap-1.5 font-semibold text-[#7C3AED]"><span class="w-2 h-2 rounded-full bg-[#7C3AED]"></span> Headcount Growth</span>
+                            <span class="flex items-center gap-1.5 font-semibold text-blue-500"><span class="w-2 h-2 rounded-full bg-blue-500"></span> Dept Distribution</span>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
+                        <!-- Left: Headcount Growth Chart -->
+                        <div class="space-y-2">
+                            <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider text-left">Headcount Growth Trend</h4>
+                            <div class="h-56 relative w-full">
+                                <canvas id="headcountGrowthChart"></canvas>
                             </div>
-                            <div class="flex gap-3 text-xs items-start">
-                                <div
-                                    class="bg-blue-50 text-blue-600 p-2 rounded-xl border border-blue-100 flex-shrink-0">
-                                    <i data-lucide="monitor" class="w-4 h-4"></i></div>
-                                <div>
-                                    <p class="font-bold text-[#111827]">Asset Allocation: DevOps Team</p>
-                                    <span class="text-[#6B7280]">MacBook Pro M3 allocation</span>
-                                </div>
-                            </div>
-                            <div class="flex gap-3 text-xs items-start">
-                                <div
-                                    class="bg-purple-50 text-[#7C3AED] p-2 rounded-xl border border-purple-100 flex-shrink-0">
-                                    <i data-lucide="briefcase" class="w-4 h-4"></i></div>
-                                <div>
-                                    <p class="font-bold text-[#111827]">Interview Scheduled: Lead Architect</p>
-                                    <span class="text-[#6B7280]">Today at 2:00 PM (Google Meet)</span>
-                                </div>
+                        </div>
+                        <!-- Right: Department Distribution Chart -->
+                        <div class="space-y-2">
+                            <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider text-left">Department Distribution</h4>
+                            <div class="h-56 relative w-full">
+                                <canvas id="deptDoughnutChart"></canvas>
                             </div>
                         </div>
                     </div>
-                    <button
-                        class="w-full mt-6 py-2.5 bg-[#F7F7FB] hover:bg-[#F5F3FF] border border-[#ECECF3] rounded-xl text-xs font-semibold transition text-[#7C3AED]">
-                        View All Actions
+                </div>
+
+                <!-- Right: Smart Insights Panel (Section 10) -->
+                <div class="premium-card p-6 bg-white border border-[#ECECF3] rounded-2xl shadow-sm flex flex-col justify-between">
+                    <div class="space-y-4">
+                        <div class="flex items-center gap-2 border-b border-[#ECECF3] pb-3 text-left">
+                            <div class="bg-purple-50 text-[#7C3AED] p-2 rounded-xl border border-purple-100">
+                                <i data-lucide="sparkles" class="w-4 h-4"></i>
+                            </div>
+                            <div class="text-left">
+                                <h3 class="font-bold text-sm text-[#111827]">Workforce Insights</h3>
+                                <p class="text-[11px] text-[#6B7280]">AI & Telemetry Recommendations</p>
+                            </div>
+                        </div>
+                        <!-- Recommendation Cards -->
+                        <div class="space-y-3" id="workforceInsightsContainer">
+                            <!-- Cards populated by javascript -->
+                        </div>
+                    </div>
+                    <button onclick="switchTab('empView')" class="w-full mt-4 py-2 bg-[#F7F7FB] hover:bg-[#F5F3FF] border border-[#ECECF3] text-[#7C3AED] rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5">
+                        <i data-lucide="bar-chart-3" class="w-3.5 h-3.5"></i> View Full Analytics Report
                     </button>
                 </div>
             </div>
 
-            <!-- SECTION 4: Live Feed Strip -->
-            <div class="premium-card p-6">
-                <div class="flex items-center gap-2 mb-4">
-                    <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 pulse-dot"></span>
-                    <h3 class="font-bold text-base text-[#111827]">Live Employee Tap-In Monitor</h3>
+            <!-- SECTION 3: ATTENDANCE COMMAND CENTER & SECTION 9: COMPLIANCE & PAYROLL CENTER -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
+                <!-- Left & Center: Attendance Command Center -->
+                <div class="premium-card p-6 bg-white border border-[#ECECF3] rounded-2xl shadow-sm lg:col-span-2 space-y-6">
+                    <div class="flex justify-between items-center border-b border-[#ECECF3] pb-4">
+                        <div class="text-left">
+                            <h3 class="font-bold text-base text-[#111827]">Attendance Command Center</h3>
+                            <p class="text-xs text-[#6B7280]">Daily status and telemetry overview</p>
+                        </div>
+                        <!-- Trend indicator -->
+                        <div class="flex items-center gap-2 text-xs font-bold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-100 animate-pulse">
+                            <i data-lucide="trending-up" class="w-3.5 h-3.5"></i>
+                            <span>↑ 4% from last week</span>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
+                        <!-- Circular Gauge Column -->
+                        <div class="md:col-span-4 flex flex-col items-center justify-center text-center">
+                            <div class="relative w-36 h-36 flex items-center justify-center">
+                                <svg class="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
+                                    <!-- Background Circle -->
+                                    <circle class="text-slate-100 stroke-current" stroke-width="8" fill="transparent" r="40" cx="50" cy="50"/>
+                                    <!-- Foreground Circle -->
+                                    <circle id="complianceCircularArc" class="text-[#7C3AED] stroke-current gauge-arc" stroke-width="8" stroke-linecap="round" fill="transparent" r="40" cx="50" cy="50" stroke-dasharray="251.2" stroke-dashoffset="251.2"/>
+                                </svg>
+                                <div class="absolute flex flex-col items-center justify-center">
+                                    <span class="text-2xl font-bold text-[#111827]" id="complianceGaugeText">94%</span>
+                                    <span class="text-[9px] text-[#6B7280] font-bold uppercase tracking-wider">Compliance</span>
+                                </div>
+                            </div>
+                            <span class="text-[11px] text-[#6B7280] font-semibold mt-2">Weekly punctuality rating</span>
+                        </div>
+                        <!-- Grid details -->
+                        <div class="md:col-span-8 grid grid-cols-3 gap-4">
+                            <div class="bg-[#FAFAFC] border border-[#ECECF3] rounded-2xl p-4 text-center hover:border-[#7C3AED] transition-colors duration-300">
+                                <span class="text-[10px] text-[#6B7280] font-semibold block">Present</span>
+                                <span class="text-xl font-bold text-[#111827] mt-1 block" id="attPresentVal">0</span>
+                            </div>
+                            <div class="bg-[#FAFAFC] border border-[#ECECF3] rounded-2xl p-4 text-center hover:border-red-400 transition-colors duration-300">
+                                <span class="text-[10px] text-[#6B7280] font-semibold block">Absent</span>
+                                <span class="text-xl font-bold text-rose-600 mt-1 block" id="attAbsentVal">0</span>
+                            </div>
+                            <div class="bg-[#FAFAFC] border border-[#ECECF3] rounded-2xl p-4 text-center hover:border-amber-400 transition-colors duration-300">
+                                <span class="text-[10px] text-[#6B7280] font-semibold block">Late</span>
+                                <span class="text-xl font-bold text-amber-500 mt-1 block" id="attLateVal">0</span>
+                            </div>
+                            <div class="bg-[#FAFAFC] border border-[#ECECF3] rounded-2xl p-4 text-center hover:border-orange-400 transition-colors duration-300">
+                                <span class="text-[10px] text-[#6B7280] font-semibold block">Half Day</span>
+                                <span class="text-xl font-bold text-orange-600 mt-1 block" id="attHalfDayVal">0</span>
+                            </div>
+                            <div class="bg-[#FAFAFC] border border-[#ECECF3] rounded-2xl p-4 text-center hover:border-purple-400 transition-colors duration-300">
+                                <span class="text-[10px] text-[#6B7280] font-semibold block">On Leave</span>
+                                <span class="text-xl font-bold text-[#7C3AED] mt-1 block" id="attLeaveVal">0</span>
+                            </div>
+                            <div class="bg-[#FAFAFC] border border-[#ECECF3] rounded-2xl p-4 text-center hover:border-blue-400 transition-colors duration-300">
+                                <span class="text-[10px] text-[#6B7280] font-semibold block">Work From Home</span>
+                                <span class="text-xl font-bold text-blue-600 mt-1 block" id="attWfhVal">0</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="flex gap-3 overflow-x-auto pb-2 hide-scrollbar">
-                    <div
-                        class="flex items-center gap-2 bg-[#F7F7FB] border border-[#ECECF3] px-3.5 py-2 rounded-xl flex-shrink-0">
-                        <img src="https://ui-avatars.com/api/?name=John+Doe&background=random"
-                            class="w-6 h-6 rounded-full">
-                        <span class="text-xs font-semibold text-[#111827]">John D.</span>
-                        <span
-                            class="text-[10px] bg-emerald-50 text-emerald-700 border border-emerald-100 px-2 py-0.5 rounded">Tapped
-                            In 2m ago</span>
+
+                <!-- Right Side: Compliance & Payroll Center (Section 9) -->
+                <div class="premium-card p-6 bg-white border border-[#ECECF3] rounded-2xl shadow-sm flex flex-col justify-between">
+                    <div class="space-y-4">
+                        <div class="flex items-center gap-2 border-b border-[#ECECF3] pb-3 text-left">
+                            <div class="bg-emerald-50 text-emerald-600 p-2 rounded-xl border border-emerald-100">
+                                <i data-lucide="shield-check" class="w-4 h-4"></i>
+                            </div>
+                            <div class="text-left">
+                                <h3 class="font-bold text-sm text-[#111827]">Compliance & Payroll Center</h3>
+                                <p class="text-[11px] text-[#6B7280]">Regulatory reporting audit</p>
+                            </div>
+                        </div>
+                        
+                        <!-- Compliance items with progress bars -->
+                        <div class="space-y-3.5 text-left">
+                            <div>
+                                <div class="flex justify-between items-center text-xs font-semibold mb-1">
+                                    <span class="text-[#4B5563]">PF Compliance</span>
+                                    <span class="font-bold font-mono text-emerald-600">100%</span>
+                                </div>
+                                <div class="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
+                                    <div class="bg-emerald-500 h-full rounded-full transition-all duration-[1200ms]" style="width: 100%"></div>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="flex justify-between items-center text-xs font-semibold mb-1">
+                                    <span class="text-[#4B5563]">ESI Compliance</span>
+                                    <span class="font-bold font-mono text-emerald-600">98%</span>
+                                </div>
+                                <div class="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
+                                    <div class="bg-emerald-500 h-full rounded-full transition-all duration-[1200ms]" style="width: 98%"></div>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="flex justify-between items-center text-xs font-semibold mb-1">
+                                    <span class="text-[#4B5563]">Payroll Completion</span>
+                                    <span class="font-bold font-mono text-[#7C3AED]">88%</span>
+                                </div>
+                                <div class="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
+                                    <div class="bg-[#7C3AED] h-full rounded-full transition-all duration-[1200ms]" style="width: 88%"></div>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="flex justify-between items-center text-xs font-semibold mb-1">
+                                    <span class="text-[#4B5563]">Document Completion</span>
+                                    <span class="font-bold font-mono text-amber-600">92%</span>
+                                </div>
+                                <div class="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
+                                    <div class="bg-amber-500 h-full rounded-full transition-all duration-[1200ms]" style="width: 92%"></div>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="flex justify-between items-center text-xs font-semibold mb-1">
+                                    <span class="text-[#4B5563]">Employee Verification</span>
+                                    <span class="font-bold font-mono text-amber-600">90%</span>
+                                </div>
+                                <div class="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
+                                    <div class="bg-amber-500 h-full rounded-full transition-all duration-[1200ms]" style="width: 90%"></div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <div
-                        class="flex items-center gap-2 bg-[#F7F7FB] border border-[#ECECF3] px-3.5 py-2 rounded-xl flex-shrink-0">
-                        <img src="https://ui-avatars.com/api/?name=Sarah+Smith&background=random"
-                            class="w-6 h-6 rounded-full">
-                        <span class="text-xs font-semibold text-[#111827]">Sarah S.</span>
-                        <span
-                            class="text-[10px] bg-red-50 text-red-700 border border-red-100 px-2 py-0.5 rounded">Tapped
-                            Out 15m ago</span>
+                    <button onclick="switchTab('payrollView')" class="w-full mt-4 py-2 bg-[#F7F7FB] hover:bg-[#F5F3FF] border border-[#ECECF3] text-[#7C3AED] rounded-xl text-xs font-bold transition flex items-center justify-center gap-1">
+                        <i data-lucide="shield" class="w-3.5 h-3.5"></i> Run Audit Checks
+                    </button>
+                </div>
+            </div>
+
+            <!-- SECTION 4: RECRUITMENT FUNNEL & SECTION 5: EMPLOYEE LIFECYCLE TRACKER -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
+                <!-- Funnel (Left & Center) -->
+                <div class="premium-card p-6 bg-white border border-[#ECECF3] rounded-2xl shadow-sm lg:col-span-2 space-y-6">
+                    <div class="flex justify-between items-center border-b border-[#ECECF3] pb-4">
+                        <div class="text-left">
+                            <h3 class="font-bold text-base text-[#111827]">Recruitment Pipeline Funnel</h3>
+                            <p class="text-xs text-[#6B7280]">Candidate conversion funnel & telemetry</p>
+                        </div>
                     </div>
-                    <div
-                        class="flex items-center gap-2 bg-[#F7F7FB] border border-[#ECECF3] px-3.5 py-2 rounded-xl flex-shrink-0">
-                        <img src="https://ui-avatars.com/api/?name=Mike+Ross&background=random"
-                            class="w-6 h-6 rounded-full">
-                        <span class="text-xs font-semibold text-[#111827]">Mike R.</span>
-                        <span
-                            class="text-[10px] bg-emerald-50 text-emerald-700 border border-emerald-100 px-2 py-0.5 rounded">Tapped
-                            In 22m ago</span>
+                    <!-- Pipeline Funnel Layout -->
+                    <div class="grid grid-cols-2 md:grid-cols-6 gap-3 text-center relative pt-4" id="recruitmentFunnelContainer">
+                        <!-- Populated dynamically to display step blocks and conversion percentages -->
+                    </div>
+                </div>
+
+                <!-- Right Side: Employee Lifecycle Tracker -->
+                <div class="premium-card p-6 bg-white border border-[#ECECF3] rounded-2xl shadow-sm space-y-6 text-left">
+                    <div>
+                        <h3 class="font-bold text-base text-[#111827]">Employee Lifecycle Tracker</h3>
+                        <p class="text-xs text-[#6B7280]">Onboarding and confirmation flow timeline</p>
+                    </div>
+                    <!-- Lifecycle timeline -->
+                    <div class="relative pl-6 space-y-5 border-l border-purple-100 mt-2" id="employeeLifecycleTrackerContainer">
+                        <!-- Populated dynamically -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECTION 6: HR PRIORITY ACTIONS & SECTION 7: UPCOMING EVENTS & SECTION 8: WORKFORCE ACTIVITY FEED -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
+                <!-- Section 6: HR Priority Actions -->
+                <div class="premium-card p-6 bg-white border border-[#ECECF3] rounded-2xl shadow-sm flex flex-col justify-between">
+                    <div class="space-y-4">
+                        <div class="flex items-center gap-2 border-b border-[#ECECF3] pb-3 text-left">
+                            <div class="bg-rose-50 text-rose-600 p-2 rounded-xl border border-rose-100">
+                                <i data-lucide="check-square" class="w-4 h-4"></i>
+                            </div>
+                            <div class="text-left">
+                                <h3 class="font-bold text-sm text-[#111827]">HR Priority Actions</h3>
+                                <p class="text-[11px] text-[#6B7280]">Actionable system pending items</p>
+                            </div>
+                        </div>
+                        <!-- Actions List -->
+                        <div class="space-y-3 max-h-96 overflow-y-auto pr-1 text-left" id="priorityActionsContainer">
+                            <!-- Cards populated by javascript -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 7: Upcoming Events & People Calendar -->
+                <div class="premium-card p-6 bg-white border border-[#ECECF3] rounded-2xl shadow-sm flex flex-col justify-between">
+                    <div class="space-y-4">
+                        <div class="flex items-center gap-2 border-b border-[#ECECF3] pb-3 text-left">
+                            <div class="bg-blue-50 text-blue-600 p-2 rounded-xl border border-blue-100">
+                                <i data-lucide="calendar" class="w-4 h-4"></i>
+                            </div>
+                            <div class="text-left">
+                                <h3 class="font-bold text-sm text-[#111827]">Upcoming Events & Calendar</h3>
+                                <p class="text-[11px] text-[#6B7280]">Birthdays, Anniversaries & Milestones</p>
+                            </div>
+                        </div>
+                        <!-- Events list in a nice timeline layout -->
+                        <div class="space-y-4 max-h-96 overflow-y-auto pr-1 text-left" id="peopleCalendarTimeline">
+                            <!-- Calendar timeline events populated by javascript -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 8: Workforce Activity Feed -->
+                <div class="premium-card p-6 bg-white border border-[#ECECF3] rounded-2xl shadow-sm flex flex-col justify-between">
+                    <div class="space-y-4">
+                        <div class="flex items-center gap-2 border-b border-[#ECECF3] pb-3 text-left">
+                            <div class="bg-emerald-50 text-emerald-600 p-2 rounded-xl border border-emerald-100">
+                                <i data-lucide="activity" class="w-4 h-4 animate-pulse"></i>
+                            </div>
+                            <div class="text-left">
+                                <h3 class="font-bold text-sm text-[#111827]">Workforce Activity Feed</h3>
+                                <p class="text-[11px] text-[#6B7280]">Live stream of employee directory events</p>
+                            </div>
+                        </div>
+                        <!-- Scrolling Activity Feed -->
+                        <div class="space-y-3.5 max-h-96 overflow-y-auto pr-1 text-left scroll-smooth" id="liveActivityFeedContainer">
+                            <!-- Activity entries populated by javascript -->
+                        </div>
                     </div>
                 </div>
             </div>
@@ -1467,6 +1815,246 @@
                     </div>
                 </div>
 
+            </div>
+        </div>
+
+        <!-- ==================== EMPLOYEE ACCESS MANAGEMENT ==================== -->
+        <div id="accessView" class="tab-content space-y-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h2 class="text-2xl font-bold tracking-tight">Employee Access Management</h2>
+                    <p class="text-sm text-[#6B7280] mt-0.5">Provision employee accounts and configure system workspace authorizations.</p>
+                </div>
+            </div>
+
+            <!-- Employee Provisioning Card -->
+            <div class="premium-card p-6 space-y-6">
+                <div>
+                    <h3 class="font-bold text-base text-[#111827]">Provision New Employee</h3>
+                    <p class="text-xs text-[#6B7280]">Enter employee details to automatically create corporate portal access and directory record.</p>
+                </div>
+                
+                <form id="provisionForm" onsubmit="handleProvisionEmployee(event)" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-[#4B5563] uppercase tracking-wider mb-2">Full Name</label>
+                        <input type="text" id="provName" required placeholder="e.g. John Doe"
+                            class="px-4 py-2.5 border border-[#ECECF3] rounded-xl text-xs w-full focus:outline-none focus:ring-2 focus:ring-[#7C3AED] bg-[#F7F7FB] focus:bg-white transition-all">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-[#4B5563] uppercase tracking-wider mb-2">Corporate Email</label>
+                        <input type="email" id="provEmail" required placeholder="e.g. john.doe@company.com"
+                            class="px-4 py-2.5 border border-[#ECECF3] rounded-xl text-xs w-full focus:outline-none focus:ring-2 focus:ring-[#7C3AED] bg-[#F7F7FB] focus:bg-white transition-all">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-[#4B5563] uppercase tracking-wider mb-2">Department</label>
+                        <select id="provDept" required
+                            class="w-full text-xs font-semibold border border-[#ECECF3] rounded-xl px-4 py-2.5 bg-[#F7F7FB] focus:outline-none focus:ring-2 focus:ring-[#7C3AED] cursor-pointer text-[#111827]">
+                            <option value="Engineering">Engineering</option>
+                            <option value="Marketing">Marketing</option>
+                            <option value="Sales">Sales</option>
+                            <option value="HR">HR</option>
+                            <option value="Operations">Operations</option>
+                            <option value="Finance">Finance</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-[#4B5563] uppercase tracking-wider mb-2">Designation</label>
+                        <input type="text" id="provTitle" required placeholder="e.g. Software Engineer"
+                            class="px-4 py-2.5 border border-[#ECECF3] rounded-xl text-xs w-full focus:outline-none focus:ring-2 focus:ring-[#7C3AED] bg-[#F7F7FB] focus:bg-white transition-all">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-[#4B5563] uppercase tracking-wider mb-2">Joining Date</label>
+                        <input type="date" id="provJoiningDate" required
+                            class="px-4 py-2.5 border border-[#ECECF3] rounded-xl text-xs w-full focus:outline-none focus:ring-2 focus:ring-[#7C3AED] bg-[#F7F7FB] focus:bg-white transition-all">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-[#4B5563] uppercase tracking-wider mb-2">Employment Type</label>
+                        <select id="provEmploymentType" required
+                            class="w-full text-xs font-semibold border border-[#ECECF3] rounded-xl px-4 py-2.5 bg-[#F7F7FB] focus:outline-none focus:ring-2 focus:ring-[#7C3AED] cursor-pointer text-[#111827]">
+                            <option value="Full Time">Full-time</option>
+                            <option value="Part Time">Part-time</option>
+                            <option value="Contract">Contract</option>
+                            <option value="Intern">Intern</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-[#4B5563] uppercase tracking-wider mb-2">Reporting Manager</label>
+                        <select id="provManager" required
+                            class="w-full text-xs font-semibold border border-[#ECECF3] rounded-xl px-4 py-2.5 bg-[#F7F7FB] focus:outline-none focus:ring-2 focus:ring-[#7C3AED] cursor-pointer text-[#111827]">
+                            <option value="">Select Manager...</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-[#4B5563] uppercase tracking-wider mb-2">Portal Status</label>
+                        <select id="provStatus" required
+                            class="w-full text-xs font-semibold border border-[#ECECF3] rounded-xl px-4 py-2.5 bg-[#F7F7FB] focus:outline-none focus:ring-2 focus:ring-[#7C3AED] cursor-pointer text-[#111827]">
+                            <option value="Active">Active</option>
+                            <option value="Inactive">Inactive</option>
+                            <option value="Suspended">Suspended</option>
+                        </select>
+                    </div>
+                    <div class="md:col-span-4 flex justify-end pt-2">
+                        <button type="submit" id="provBtn"
+                            class="bg-gradient-to-r from-[#7C3AED] to-[#5B21B6] hover:brightness-110 text-white px-6 py-2.5 rounded-xl text-xs font-semibold transition flex items-center gap-2">
+                            <i data-lucide="user-plus" class="w-4 h-4"></i> Provision Employee
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Access Register Table -->
+            <div class="premium-card p-6 space-y-4">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div>
+                        <h3 class="font-bold text-base text-[#111827]">Employee Access Register</h3>
+                        <p class="text-xs text-[#6B7280]" id="accessCounterDesc">Managing employee portal system accesses.</p>
+                    </div>
+                    <div class="relative w-64">
+                        <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#6B7280]"></i>
+                        <input type="text" id="accessSearch" placeholder="Search access register..." oninput="filterAccessRegister()"
+                            class="pl-10 pr-4 py-2 border border-[#ECECF3] rounded-xl text-xs w-full focus:outline-none focus:ring-2 focus:ring-[#7C3AED] bg-[#F7F7FB] focus:bg-white transition-all">
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto border border-[#ECECF3] rounded-2xl bg-white">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-[#F7F7FB] border-b border-[#ECECF3] text-[10px] font-bold text-slate-500 uppercase tracking-wider">
+                                <th class="px-4 py-3">Employee Name</th>
+                                <th class="px-4 py-3">Employee ID</th>
+                                <th class="px-4 py-3">Department</th>
+                                <th class="px-4 py-3">Designation</th>
+                                <th class="px-4 py-3">Manager</th>
+                                <th class="px-4 py-3 text-center">Portal Status</th>
+                                <th class="px-4 py-3 text-center">Profile Completion %</th>
+                                <th class="px-4 py-3 text-center">Last Login</th>
+                                <th class="px-4 py-3 text-center">Employment Status</th>
+                                <th class="px-4 py-3 text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="accessTableBody" class="divide-y divide-[#ECECF3]">
+                            <tr>
+                                <td colspan="10" class="px-6 py-12 text-center text-[#6B7280] font-medium">Loading register...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Edit Employee Access Modal -->
+        <div id="editAccessModal" class="fixed inset-0 z-50 hidden bg-black/40 backdrop-blur-sm flex items-center justify-center p-4">
+            <div class="bg-white border border-[#ECECF3] rounded-2xl w-full max-w-lg p-6 space-y-6 shadow-2xl relative text-[#111827]">
+                <button type="button" onclick="closeEditAccessModal()" class="absolute right-4 top-4 p-1 rounded-lg hover:bg-slate-100 transition-colors text-slate-400 hover:text-slate-600">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+                <div>
+                    <h3 class="font-bold text-lg text-[#111827]" id="editModalTitle">Edit Employee Access</h3>
+                    <p class="text-xs text-[#6B7280] mt-0.5">Modify system configurations and reporting structure.</p>
+                </div>
+                
+                <form id="editAccessForm" onsubmit="handleSaveEmployeeAccess(event)" class="space-y-4">
+                    <input type="hidden" id="editEmpId">
+                    <input type="hidden" id="editEmpUserEmail">
+                    <div>
+                        <label class="block text-xs font-bold text-[#4B5563] uppercase tracking-wider mb-2">Employee Name</label>
+                        <input type="text" id="editEmpName" readonly disabled class="px-4 py-2.5 border border-[#ECECF3] rounded-xl text-xs w-full bg-slate-50 text-slate-500 font-semibold cursor-not-allowed">
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-bold text-[#4B5563] uppercase tracking-wider mb-2">Department</label>
+                            <select id="editEmpDept" required class="w-full text-xs font-semibold border border-[#ECECF3] rounded-xl px-4 py-2.5 bg-[#F7F7FB] focus:outline-none focus:ring-2 focus:ring-[#7C3AED]">
+                                <option value="Engineering">Engineering</option>
+                                <option value="Marketing">Marketing</option>
+                                <option value="Sales">Sales</option>
+                                <option value="HR">HR</option>
+                                <option value="Operations">Operations</option>
+                                <option value="Finance">Finance</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-[#4B5563] uppercase tracking-wider mb-2">Designation</label>
+                            <input type="text" id="editEmpTitle" required class="px-4 py-2.5 border border-[#ECECF3] rounded-xl text-xs w-full focus:outline-none focus:ring-2 focus:ring-[#7C3AED] bg-[#F7F7FB]">
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-bold text-[#4B5563] uppercase tracking-wider mb-2">Reporting Manager</label>
+                            <select id="editEmpManager" required class="w-full text-xs font-semibold border border-[#ECECF3] rounded-xl px-4 py-2.5 bg-[#F7F7FB] focus:outline-none focus:ring-2 focus:ring-[#7C3AED]">
+                                <!-- Dynamic -->
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-[#4B5563] uppercase tracking-wider mb-2">Portal Status</label>
+                            <select id="editEmpStatus" required class="w-full text-xs font-semibold border border-[#ECECF3] rounded-xl px-4 py-2.5 bg-[#F7F7FB] focus:outline-none focus:ring-2 focus:ring-[#7C3AED]">
+                                <option value="Active">Active</option>
+                                <option value="Inactive">Inactive</option>
+                                <option value="Suspended">Suspended</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- System Access Toggles -->
+                    <div class="space-y-3 pt-2">
+                        <h4 class="text-xs font-bold text-[#4B5563] uppercase tracking-wider">System Workspace Permissions</h4>
+                        <div class="grid grid-cols-2 gap-3">
+                            <label class="flex items-center gap-3 cursor-pointer p-3 border border-[#ECECF3] rounded-xl hover:bg-slate-50 transition-colors">
+                                <input type="checkbox" id="editAccEmployee" class="w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500">
+                                <div class="text-left">
+                                    <span class="text-xs font-bold text-slate-700 block">Employee Portal</span>
+                                    <span class="text-[9px] text-slate-400">Personal attendance & leaves</span>
+                                </div>
+                            </label>
+                            <label class="flex items-center gap-3 cursor-pointer p-3 border border-[#ECECF3] rounded-xl hover:bg-slate-50 transition-colors">
+                                <input type="checkbox" id="editAccManager" class="w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500">
+                                <div class="text-left">
+                                    <span class="text-xs font-bold text-slate-700 block">Manager Console</span>
+                                    <span class="text-[9px] text-slate-400">Team approvals & metrics</span>
+                                </div>
+                            </label>
+                            <label class="flex items-center gap-3 cursor-pointer p-3 border border-[#ECECF3] rounded-xl hover:bg-slate-50 transition-colors">
+                                <input type="checkbox" id="editAccHr" class="w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500">
+                                <div class="text-left">
+                                    <span class="text-xs font-bold text-slate-700 block">HR Workspace</span>
+                                    <span class="text-[9px] text-slate-400">Workforce & payroll</span>
+                                </div>
+                            </label>
+                            <label class="flex items-center gap-3 cursor-pointer p-3 border border-[#ECECF3] rounded-xl hover:bg-slate-50 transition-colors">
+                                <input type="checkbox" id="editAccMarket" class="w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500">
+                                <div class="text-left">
+                                    <span class="text-xs font-bold text-slate-700 block">Marketing Portal</span>
+                                    <span class="text-[9px] text-slate-400">Leads & campaigns</span>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="flex justify-end gap-2 pt-2 border-t border-[#ECECF3]">
+                        <button type="button" onclick="closeEditAccessModal()" class="px-4 py-2 border border-[#ECECF3] text-[#4B5563] text-xs font-semibold rounded-xl hover:bg-slate-50 transition-all">Cancel</button>
+                        <button type="submit" class="bg-gradient-to-r from-[#7C3AED] to-[#5B21B6] hover:brightness-110 text-white px-5 py-2 rounded-xl text-xs font-semibold transition-all">Save Changes</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Access History Modal -->
+        <div id="historyModal" class="fixed inset-0 z-50 hidden bg-black/40 backdrop-blur-sm flex items-center justify-center p-4">
+            <div class="bg-white border border-[#ECECF3] rounded-2xl w-full max-w-lg p-6 space-y-6 shadow-2xl relative text-[#111827]">
+                <button type="button" onclick="closeHistoryModal()" class="absolute right-4 top-4 p-1 rounded-lg hover:bg-slate-100 transition-colors text-slate-400 hover:text-slate-600">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+                <div>
+                    <h3 class="font-bold text-lg text-[#111827]">Access Configuration History</h3>
+                    <p class="text-xs text-[#6B7280] mt-0.5" id="historyModalSubtitle">Audit timeline of access updates.</p>
+                </div>
+                
+                <div class="max-h-[300px] overflow-y-auto border border-[#ECECF3] rounded-2xl p-4 bg-slate-50 space-y-4" id="historyTimeline">
+                    <!-- Dynamic timeline items -->
+                </div>
+
+                <div class="flex justify-end pt-2 border-t border-[#ECECF3]">
+                    <button type="button" onclick="closeHistoryModal()" class="px-4 py-2 border border-[#ECECF3] text-[#4B5563] text-xs font-semibold rounded-xl hover:bg-slate-50 transition-all">Close</button>
+                </div>
             </div>
         </div>
 
@@ -1816,57 +2404,375 @@
             document.getElementById('prevAvatar').src = `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=a855f7&color=fff`;
         }
 
-        // Initialize Weekly Chart
-        function initWeeklyChart() {
-            const ctx = document.getElementById('weeklyChart');
-            if (ctx) {
-                new Chart(ctx, {
-                    type: 'bar',
+        let deptDoughnutChartInstance = null;
+        let headcountGrowthChartInstance = null;
+        let weeklyChartInstance = null;
+
+        function renderCharts(employees, attendance) {
+            const depts = {};
+            employees.forEach(e => {
+                const d = e.department || 'Operations';
+                depts[d] = (depts[d] || 0) + 1;
+            });
+
+            if (Object.keys(depts).length === 0) {
+                depts['Engineering'] = 22;
+                depts['Marketing'] = 12;
+                depts['HR'] = 5;
+                depts['Operations'] = 10;
+                depts['Finance'] = 3;
+            }
+
+            const doughnutCtx = document.getElementById('deptDoughnutChart');
+            if (doughnutCtx) {
+                if (deptDoughnutChartInstance) deptDoughnutChartInstance.destroy();
+                deptDoughnutChartInstance = new Chart(doughnutCtx, {
+                    type: 'doughnut',
                     data: {
-                        labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
-                        datasets: [
-                            {
-                                label: 'Regular Hours',
-                                data: [8, 8, 8.5, 7.5, 8, 4],
-                                backgroundColor: '#7C3AED',
-                                borderRadius: 8,
-                                barPercentage: 0.5
-                            },
-                            {
-                                label: 'Overtime',
-                                data: [1, 0, 0.5, 0, 2, 2],
-                                backgroundColor: '#C084FC',
-                                borderRadius: 8,
-                                barPercentage: 0.5
-                            }
-                        ]
+                        labels: Object.keys(depts),
+                        datasets: [{
+                            data: Object.values(depts),
+                            backgroundColor: ['#7C3AED', '#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#EC4899'],
+                            borderWidth: 2,
+                            borderColor: '#ffffff'
+                        }]
                     },
                     options: {
                         responsive: true,
                         maintainAspectRatio: false,
                         plugins: {
                             legend: {
-                                labels: {
-                                    font: { family: 'Outfit', size: 11 },
-                                    color: '#6B7280'
-                                }
-                            }
-                        },
-                        scales: {
-                            x: {
-                                stacked: true,
-                                grid: { display: false },
-                                ticks: { font: { family: 'Outfit', size: 11 }, color: '#6B7280' }
-                            },
-                            y: {
-                                stacked: true,
-                                grid: { color: '#ECECF3' },
-                                ticks: { font: { family: 'Outfit', size: 11 }, color: '#6B7280' }
+                                position: 'right',
+                                labels: { font: { family: 'Outfit', size: 10 }, color: '#6B7280' }
                             }
                         }
                     }
                 });
             }
+
+            const lineCtx = document.getElementById('headcountGrowthChart');
+            if (lineCtx) {
+                if (headcountGrowthChartInstance) headcountGrowthChartInstance.destroy();
+                const chartGrad = lineCtx.getContext('2d').createLinearGradient(0, 0, 0, 200);
+                chartGrad.addColorStop(0, 'rgba(124, 58, 237, 0.3)');
+                chartGrad.addColorStop(1, 'rgba(124, 58, 237, 0)');
+
+                const curCount = employees.length || 52;
+                headcountGrowthChartInstance = new Chart(lineCtx, {
+                    type: 'line',
+                    data: {
+                        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                        datasets: [{
+                            label: 'Total Headcount',
+                            data: [curCount - 12, curCount - 9, curCount - 6, curCount - 4, curCount - 2, curCount],
+                            borderColor: '#7C3AED',
+                            borderWidth: 3,
+                            backgroundColor: chartGrad,
+                            fill: true,
+                            tension: 0.4,
+                            pointBackgroundColor: '#7C3AED',
+                            pointHoverRadius: 7
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false }
+                        },
+                        scales: {
+                            x: { grid: { display: false }, ticks: { font: { family: 'Outfit', size: 10 }, color: '#6B7280' } },
+                            y: { grid: { color: '#ECECF3' }, ticks: { font: { family: 'Outfit', size: 10 }, color: '#6B7280' } }
+                        }
+                    }
+                });
+            }
+        }
+
+        function initWeeklyChart() {
+            // hr-admin.html specific data extraction
+            const employees = accessRegisterData.map(item => item.employee).filter(Boolean);
+            renderCharts(employees, []);
+        }
+
+        // Section 4 Funnel
+        function renderRecruitmentFunnel() {
+            const container = document.getElementById('recruitmentFunnelContainer');
+            if (!container) return;
+
+            const stages = [
+                { name: 'Applied', count: 48 },
+                { name: 'Screened', count: 36 },
+                { name: 'Interviewed', count: 24 },
+                { name: 'Selected', count: 12 },
+                { name: 'Offer Released', count: 8 },
+                { name: 'Joined', count: 6 }
+            ];
+
+            container.innerHTML = stages.map((stage, idx) => {
+                const pct = idx === 0 ? 100 : Math.round((stage.count / stages[idx-1].count) * 100);
+                const arrow = idx < stages.length - 1 ? `
+                    <div class="absolute top-1/2 -translate-y-1/2 -right-2 z-20 text-[#ECECF3] hidden md:block">
+                        <i data-lucide="chevron-right" class="w-5 h-5 text-slate-300"></i>
+                    </div>
+                ` : '';
+
+                return `
+                    <div class="relative bg-[#FAFAFC] border border-[#ECECF3] rounded-2xl p-4 flex flex-col justify-between hover:border-[#7C3AED] hover:shadow-md transition-all duration-300">
+                        <span class="text-[10px] font-bold text-slate-500 uppercase tracking-wide">${stage.name}</span>
+                        <span class="text-2xl font-bold text-[#111827] my-2" id="funnelCount-${idx}">${stage.count}</span>
+                        <span class="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded-lg border border-emerald-100 self-center">
+                            ${pct}% Ratio
+                        </span>
+                        ${arrow}
+                    </div>
+                `;
+            }).join('');
+            lucide.createIcons();
+        }
+
+        // Section 5 Lifecycle
+        function renderEmployeeLifecycle() {
+            const container = document.getElementById('employeeLifecycleTrackerContainer');
+            if (!container) return;
+
+            const stages = [
+                { name: 'Onboarding', count: 3, color: 'blue' },
+                { name: 'Verification', count: 2, color: 'rose' },
+                { name: 'Probation', count: 4, color: 'amber' },
+                { name: 'Confirmed', count: 41, color: 'emerald' },
+                { name: 'Promotion Eligible', count: 5, color: 'purple' }
+            ];
+
+            container.innerHTML = stages.map((stage, idx) => {
+                let colorClasses = '';
+                if (stage.color === 'blue') colorClasses = 'bg-blue-500 ring-blue-100 text-blue-500';
+                else if (stage.color === 'rose') colorClasses = 'bg-rose-500 ring-rose-100 text-rose-500';
+                else if (stage.color === 'amber') colorClasses = 'bg-amber-500 ring-amber-100 text-amber-500';
+                else if (stage.color === 'emerald') colorClasses = 'bg-emerald-500 ring-emerald-100 text-emerald-500';
+                else colorClasses = 'bg-[#7C3AED] ring-purple-100 text-[#7C3AED]';
+
+                return `
+                    <div class="flex items-center justify-between relative pl-4 pb-2 last:pb-0 timeline-step">
+                        <!-- Timeline bullet -->
+                        <div class="absolute -left-[30px] top-1 w-3 h-3 rounded-full ${colorClasses.split(' ')[0]} ring-4 ${colorClasses.split(' ')[1]}"></div>
+                        <div>
+                            <span class="text-xs font-bold text-slate-700 block">${stage.name}</span>
+                            <span class="text-[10px] text-slate-400">Current active pipeline</span>
+                        </div>
+                        <span class="text-xs font-bold px-2 py-0.5 border rounded-lg bg-slate-50 text-slate-600 font-mono">${stage.count}</span>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Section 6 Priority Actions
+        function renderPriorityActions() {
+            const container = document.getElementById('priorityActionsContainer');
+            if (!container) return;
+
+            const items = [
+                { title: 'Leave Requests Pending', count: 3, urgency: 'Orange', tab: 'hr-leaves', desc: 'Authorize pending leave applications' },
+                { title: 'Employee Verifications Pending', count: 2, urgency: 'Orange', tab: 'hr-employees', subtab: 'verification', desc: 'Verify uploaded onboarding documents' },
+                { title: 'Exit Clearance Pending', count: 1, urgency: 'Red', tab: 'hr-exit', desc: 'Process exit clearance checklists' },
+                { title: 'Probation Reviews Due', count: 4, urgency: 'Orange', tab: 'hr-employees', subtab: 'probation', desc: 'Review completed probation periods' },
+                { title: 'Salary Revisions Pending', count: 2, urgency: 'Green', tab: 'hr-payroll', desc: 'Approve pending salary adjustments' },
+                { title: 'Missing Documents', count: 5, urgency: 'Red', tab: 'hr-employees', subtab: 'verification', desc: 'Collect missing corporate filings' }
+            ];
+
+            container.innerHTML = items.map(item => {
+                let badgeColor = '';
+                if (item.urgency === 'Red') badgeColor = 'text-red-700 bg-red-50 border-red-100 font-bold';
+                else if (item.urgency === 'Orange') badgeColor = 'text-amber-700 bg-amber-50 border-amber-100 font-bold';
+                else badgeColor = 'text-emerald-700 bg-emerald-50 border-emerald-100 font-bold';
+
+                return `
+                    <div class="p-3.5 bg-[#FAFAFC] border border-[#ECECF3] rounded-2xl flex flex-col justify-between hover:border-[#7C3AED] hover:shadow-md transition-all duration-300">
+                        <div class="flex justify-between items-start mb-2">
+                            <div>
+                                <h4 class="text-xs font-bold text-slate-800">${item.title}</h4>
+                                <p class="text-[10px] text-slate-400 mt-0.5 leading-relaxed">${item.desc}</p>
+                            </div>
+                            <span class="px-2 py-0.5 border text-xs rounded-lg ${badgeColor}">${item.count}</span>
+                        </div>
+                        <div class="flex justify-between items-center mt-3 pt-2 border-t border-[#ECECF3]">
+                            <span class="text-[9px] font-bold uppercase tracking-wider ${item.urgency === 'Red' ? 'text-red-500' : item.urgency === 'Orange' ? 'text-amber-500' : 'text-emerald-500'}">${item.urgency} Urgency</span>
+                            <button onclick="switchTab('empView')" class="text-[10px] font-bold text-[#7C3AED] hover:underline flex items-center gap-0.5 bg-transparent border-0 cursor-pointer">
+                                Go To Action <i data-lucide="arrow-right" class="w-3 h-3"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            lucide.createIcons();
+        }
+
+        // Section 7 Calendar
+        function renderPeopleCalendar() {
+            const container = document.getElementById('peopleCalendarTimeline');
+            if (!container) return;
+
+            const events = [
+                { title: "Today's Birthday: Amit Kumar", type: "birthday", details: "Engineering Team", icon: "gift", color: "purple" },
+                { title: "Work Anniversary: Priya Sharma (3 Years)", type: "anniversary", details: "Marketing Lead", icon: "award", color: "emerald" },
+                { title: "Contract Renewal Due: Rahul Sabin", type: "contract", details: "Due by June 30", icon: "file-text", color: "rose" },
+                { title: "Upcoming Confirmation: Neha Sharma", type: "probation", details: "Review scheduled next week", icon: "check-circle", color: "blue" }
+            ];
+
+            container.innerHTML = events.slice(0, 6).map(ev => {
+                let colorClasses = '';
+                if (ev.color === 'purple') colorClasses = 'bg-purple-50 text-purple-700 border-purple-100';
+                else if (ev.color === 'emerald') colorClasses = 'bg-emerald-50 text-emerald-700 border-emerald-100';
+                else if (ev.color === 'rose') colorClasses = 'bg-rose-50 text-rose-700 border-rose-100';
+                else if (ev.color === 'amber') colorClasses = 'bg-amber-50 text-amber-700 border-amber-100';
+                else colorClasses = 'bg-blue-50 text-blue-700 border-blue-100';
+
+                return `
+                    <div class="flex gap-3 text-xs items-start relative pl-4 border-l-2 border-slate-100 pb-4 last:pb-0">
+                        <div class="absolute -left-[9px] top-1.5 w-4 h-4 rounded-full flex items-center justify-center bg-white border border-slate-200">
+                            <div class="w-1.5 h-1.5 rounded-full bg-slate-400"></div>
+                        </div>
+                        <div class="flex-shrink-0 p-1.5 border rounded-xl ${colorClasses.split(' ').slice(0, 3).join(' ')}">
+                            <i data-lucide="${ev.icon}" class="w-3.5 h-3.5"></i>
+                        </div>
+                        <div>
+                            <h5 class="font-bold text-slate-800">${ev.title}</h5>
+                            <p class="text-[10px] text-slate-400 mt-0.5">${ev.details}</p>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            lucide.createIcons();
+        }
+
+        // Section 8 Activity Feed
+        function renderActivityFeed() {
+            const container = document.getElementById('liveActivityFeedContainer');
+            if (!container) return;
+
+            const activities = [
+                { user: 'Amit Kumar', action: 'joined Engineering', time: '10 mins ago', type: 'join' },
+                { user: 'Priya Sharma', action: 'approved leave request', time: '45 mins ago', type: 'leave' },
+                { user: 'Rahul Sabin', action: 'probation confirmed', time: '1 hour ago', type: 'probation' },
+                { user: 'Neha Sharma', action: 'profile verified', time: '2 hours ago', type: 'verify' },
+                { user: 'System', action: 'Employee portal activated', time: '3 hours ago', type: 'system' },
+                { user: 'System', action: 'Payroll generated', time: '4 hours ago', type: 'payroll' }
+            ];
+
+            container.innerHTML = activities.map(act => {
+                return `
+                    <div class="flex gap-3 text-xs items-center p-2.5 bg-[#FAFAFC] border border-[#ECECF3] rounded-2xl hover:border-[#7C3AED] hover:shadow-sm transition-all duration-300">
+                        <img src="https://ui-avatars.com/api/?name=${encodeURIComponent(act.user)}&background=random" class="w-8 h-8 rounded-full border border-slate-200" alt="${act.user}">
+                        <div class="flex-1 min-w-0">
+                            <p class="font-bold text-slate-800 truncate">${act.user}</p>
+                            <p class="text-[10px] text-slate-500 truncate">${act.action}</p>
+                        </div>
+                        <span class="text-[9px] text-slate-400 font-mono flex-shrink-0">${act.time}</span>
+                    </div>
+                `;
+            }).join('');
+
+            setTimeout(() => {
+                if (container.scrollHeight > container.clientHeight) {
+                    let isHovered = false;
+                    container.addEventListener('mouseenter', () => isHovered = true);
+                    container.addEventListener('mouseleave', () => isHovered = false);
+
+                    setInterval(() => {
+                        if (!isHovered) {
+                            container.scrollTop += 1;
+                            if (container.scrollTop >= container.scrollHeight - container.clientHeight - 2) {
+                                container.scrollTop = 0;
+                            }
+                        }
+                    }, 60);
+                }
+            }, 1000);
+        }
+
+        // Section 10 Insights
+        function renderWorkforceInsights() {
+            const container = document.getElementById('workforceInsightsContainer');
+            if (!container) return;
+
+            const insights = [
+                { text: 'Engineering attendance dropped 5%.', type: 'warning', icon: 'trending-down' },
+                { text: '3 employees have low attendance.', type: 'alert', icon: 'alert-triangle' },
+                { text: '2 confirmations due this week.', type: 'info', icon: 'info' },
+                { text: 'Marketing team reached 100% attendance.', type: 'success', icon: 'check-circle' },
+                { text: 'Highest leave requests from Operations.', type: 'info', icon: 'calendar' }
+            ];
+
+            container.innerHTML = insights.map(ins => {
+                let borderColors = '';
+                let iconColor = '';
+                if (ins.type === 'warning') {
+                    borderColors = 'bg-amber-50/50 border-amber-100 text-amber-800';
+                    iconColor = 'text-amber-500';
+                } else if (ins.type === 'alert') {
+                    borderColors = 'bg-red-50/50 border-red-100 text-red-800';
+                    iconColor = 'text-red-500';
+                } else if (ins.type === 'success') {
+                    borderColors = 'bg-emerald-50/50 border-emerald-100 text-emerald-800';
+                    iconColor = 'text-emerald-500';
+                } else {
+                    borderColors = 'bg-blue-50/50 border-blue-100 text-blue-800';
+                    iconColor = 'text-blue-500';
+                }
+
+                return `
+                    <div class="p-3 border rounded-2xl flex gap-2.5 items-start text-xs ${borderColors} transition-all duration-300 hover:shadow-sm">
+                        <i data-lucide="${ins.icon}" class="w-4 h-4 flex-shrink-0 mt-0.5 ${iconColor}"></i>
+                        <p class="font-semibold leading-normal text-left">${ins.text}</p>
+                    </div>
+                `;
+            }).join('');
+            lucide.createIcons();
+        }
+
+        function populateHrDashboardTelemetry() {
+            const employees = accessRegisterData.map(item => item.employee).filter(Boolean);
+            
+            document.getElementById('statTotalEmployeesOverview').textContent = employees.length || 52;
+            document.getElementById('statNewJoinersMonth').textContent = 5;
+            document.getElementById('statWorkforceGrowthPct').textContent = "+4.8%";
+
+            document.getElementById('statAvailabilityPct').textContent = "94%";
+            document.getElementById('statAvailabilityProgress').style.width = "94%";
+            document.getElementById('statOverviewPresent').textContent = 49;
+            document.getElementById('statOverviewAbsent').textContent = 3;
+            document.getElementById('statOverviewLeave').textContent = 1;
+
+            document.getElementById('statOverviewApplied').textContent = 48;
+            document.getElementById('statOverviewInterviews').textContent = 24;
+            document.getElementById('statOverviewOffers').textContent = 8;
+
+            document.getElementById('statOverviewLeavesPending').textContent = 3;
+            document.getElementById('statOverviewVerificationsPending').textContent = 2;
+            document.getElementById('statOverviewConfirmationsPending').textContent = 4;
+            document.getElementById('statOverviewExitsPending').textContent = 1;
+            document.getElementById('statOverviewCriticalActions').textContent = 10;
+
+            document.getElementById('attPresentVal').textContent = 49;
+            document.getElementById('attAbsentVal').textContent = 3;
+            document.getElementById('attLateVal').textContent = 2;
+            document.getElementById('attHalfDayVal').textContent = 1;
+            document.getElementById('attLeaveVal').textContent = 1;
+            document.getElementById('attWfhVal').textContent = 4;
+
+            const compGaugeArc = document.getElementById('complianceCircularArc');
+            if (compGaugeArc) {
+                compGaugeArc.style.strokeDashoffset = 15.07; // 94% compliance
+            }
+            document.getElementById('complianceGaugeText').textContent = "94%";
+
+            renderRecruitmentFunnel();
+            renderEmployeeLifecycle();
+            renderPriorityActions();
+            renderPeopleCalendar();
+            renderActivityFeed();
+            renderWorkforceInsights();
+            renderCharts(employees, []);
         }
 
         function logout() {
@@ -1875,7 +2781,367 @@
         }
 
         // Run
-        window.addEventListener('load', initWeeklyChart);
+        // API Client
+        const API_PREFIX = '/api';
+        async function apiFetch(path, options = {}) {
+            const token = localStorage.getItem('bezent_jwt') || '';
+            const headers = { 'Content-Type': 'application/json', ...(options.headers || {}) };
+            if (token) headers['Authorization'] = `Bearer ${token}`;
+            const res = await fetch(API_PREFIX + path, { ...options, headers });
+            if (res.status === 401) {
+                localStorage.clear();
+                window.location.replace('index.html');
+                throw new Error('Session expired');
+            }
+            const data = await res.json().catch(() => ({}));
+            if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
+            return data;
+        }
+
+        let accessRegisterData = [];
+        let managersList = [];
+
+        // Load Managers for dropdowns
+        async function loadManagers() {
+            try {
+                const users = await apiFetch('/auth/users?scope=organizational');
+                // Managers can be any organizational user with roles like manager, HR, Department Head, etc.
+                managersList = users || [];
+                
+                const provManagerSelect = document.getElementById('provManager');
+                const editEmpManagerSelect = document.getElementById('editEmpManager');
+                
+                let options = '<option value="">Select Manager...</option>';
+                managersList.forEach(m => {
+                    options += `<option value="${m.email}">${m.name} (${m.email})</option>`;
+                });
+                
+                if (provManagerSelect) provManagerSelect.innerHTML = options;
+                if (editEmpManagerSelect) editEmpManagerSelect.innerHTML = options;
+            } catch (err) {
+                console.error('Failed to load managers:', err);
+            }
+        }
+
+        // Calculate Profile Completion %
+        function calculateProfileCompletion(emp) {
+            let total = 6;
+            let filled = 0;
+            if (emp.personal_email) filled++;
+            if (emp.phone) filled++;
+            if (emp.gender) filled++;
+            if (emp.title) filled++;
+            if (emp.reporting_manager) filled++;
+            if (emp.date_joined) filled++;
+            
+            const pct = Math.round((filled / total) * 100);
+            return pct + '%';
+        }
+
+        // Load Employee Access Register
+        async function loadAccessRegister() {
+            try {
+                const res = await apiFetch('/hr/employees/access-register');
+                accessRegisterData = res || [];
+                renderAccessRegister();
+            } catch (err) {
+                console.error('Failed to load access register:', err);
+                const tbody = document.getElementById('accessTableBody');
+                if (tbody) {
+                    tbody.innerHTML = `<tr><td colspan="10" class="px-6 py-4 text-center text-red-500 font-semibold">Error: ${err.message}</td></tr>`;
+                }
+            }
+        }
+
+        // Render Access Register
+        function renderAccessRegister(dataToRender = null) {
+            const list = dataToRender || accessRegisterData;
+            const tbody = document.getElementById('accessTableBody');
+            if (!tbody) return;
+
+            if (list.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="10" class="px-6 py-12 text-center text-[#6B7280] font-medium">No employee access records found.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = list.map(item => {
+                const emp = item.employee || {};
+                const user = item.user || {};
+                
+                // Manager Display name or email
+                const mgrEmail = emp.reporting_manager || 'None';
+                
+                // Status badge
+                const status = user.status || 'Pending Activation';
+                let statusBadge = '';
+                if (status === 'Active') {
+                    statusBadge = `<span class="inline-flex items-center gap-1 px-2.5 py-1 text-[10px] font-bold rounded-full bg-emerald-50 text-emerald-700 border border-emerald-100"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>Active</span>`;
+                } else if (status === 'Suspended') {
+                    statusBadge = `<span class="inline-flex items-center gap-1 px-2.5 py-1 text-[10px] font-bold rounded-full bg-red-50 text-red-700 border border-red-100"><span class="w-1.5 h-1.5 rounded-full bg-red-500"></span>Suspended</span>`;
+                } else {
+                    statusBadge = `<span class="inline-flex items-center gap-1 px-2.5 py-1 text-[10px] font-bold rounded-full bg-amber-50 text-amber-700 border border-amber-100"><span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>Pending</span>`;
+                }
+
+                // Profile Completion
+                const profilePct = calculateProfileCompletion(emp);
+                
+                // Last Login
+                const lastLogin = user.status === 'Pending Activation' ? 'Never' : 'Today, ' + new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+
+                // Employment status
+                const empType = emp.employment_type || 'Full Time';
+                const empTypeBadge = `<span class="px-2 py-0.5 text-[9px] font-semibold bg-purple-50 text-[#7C3AED] rounded border border-purple-100">${empType}</span>`;
+
+                return `
+                    <tr class="hover:bg-slate-50 transition-colors text-xs text-[#111827]">
+                        <td class="px-4 py-3 font-semibold">
+                            <div class="flex items-center gap-2">
+                                <div class="w-7 h-7 rounded-full bg-gradient-to-tr from-[#7C3AED] to-[#312E81] text-white flex items-center justify-center text-[10px] font-bold">
+                                    ${(emp.name || 'EE').substring(0,2).toUpperCase()}
+                                </div>
+                                <div>
+                                    <div class="font-bold">${emp.name || 'N/A'}</div>
+                                    <div class="text-[9px] text-[#6B7280]">${emp.user_email || 'N/A'}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-4 py-3 font-mono font-bold text-purple-700">${emp.employee_id || 'N/A'}</td>
+                        <td class="px-4 py-3 font-semibold text-slate-600">${emp.department || 'N/A'}</td>
+                        <td class="px-4 py-3 font-semibold text-slate-600">${emp.title || 'N/A'}</td>
+                        <td class="px-4 py-3 text-slate-500 font-medium">${mgrEmail}</td>
+                        <td class="px-4 py-3 text-center">${statusBadge}</td>
+                        <td class="px-4 py-3 text-center">
+                            <div class="flex items-center justify-center gap-1.5">
+                                <span class="font-bold font-mono text-[10px]">${profilePct}</span>
+                                <div class="w-12 bg-slate-100 rounded-full h-1 overflow-hidden">
+                                    <div class="bg-emerald-500 h-full rounded-full" style="width: ${profilePct}"></div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-4 py-3 text-center text-slate-500 font-medium">${lastLogin}</td>
+                        <td class="px-4 py-3 text-center">${empTypeBadge}</td>
+                        <td class="px-4 py-3 text-right">
+                            <div class="flex justify-end gap-1.5">
+                                <button onclick="openEditAccessModal('${emp.id}')" title="Configure permissions & details"
+                                    class="p-1.5 hover:bg-purple-50 text-purple-600 rounded-lg border border-[#ECECF3] hover:border-purple-200 transition-colors">
+                                    <i data-lucide="edit-3" class="w-3.5 h-3.5"></i>
+                                </button>
+                                <button onclick="togglePortalStatus('${emp.id}', '${status}')" title="${status === 'Active' ? 'Suspend Portal' : 'Activate Portal'}"
+                                    class="p-1.5 hover:bg-slate-50 text-slate-600 rounded-lg border border-[#ECECF3] transition-colors">
+                                    <i data-lucide="${status === 'Active' ? 'shield-alert' : 'shield-check'}" class="w-3.5 h-3.5"></i>
+                                </button>
+                                <button onclick="viewAccessHistory('${emp.id}')" title="Audit Trail History"
+                                    class="p-1.5 hover:bg-slate-50 text-slate-600 rounded-lg border border-[#ECECF3] transition-colors">
+                                    <i data-lucide="history" class="w-3.5 h-3.5"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+
+            // Re-trigger lucide icons inside dynamically rendered rows
+            lucide.createIcons();
+        }
+
+        // Client-side search filtering
+        function filterAccessRegister() {
+            const query = document.getElementById('accessSearch').value.toLowerCase().trim();
+            if (!query) {
+                renderAccessRegister();
+                return;
+            }
+            const filtered = accessRegisterData.filter(item => {
+                const name = (item.employee?.name || '').toLowerCase();
+                const email = (item.employee?.user_email || '').toLowerCase();
+                const empId = (item.employee?.employee_id || '').toLowerCase();
+                const dept = (item.employee?.department || '').toLowerCase();
+                const title = (item.employee?.title || '').toLowerCase();
+                return name.includes(query) || email.includes(query) || empId.includes(query) || dept.includes(query) || title.includes(query);
+            });
+            renderAccessRegister(filtered);
+        }
+
+        // Handle Provisioning Employee Access
+        async function handleProvisionEmployee(event) {
+            event.preventDefault();
+            const btn = document.getElementById('provBtn');
+            const originalHTML = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<i data-lucide="loader" class="w-4 h-4 animate-spin"></i> Provisioning...';
+            lucide.createIcons();
+
+            const payload = {
+                name: document.getElementById('provName').value,
+                email: document.getElementById('provEmail').value,
+                department: document.getElementById('provDept').value,
+                designation: document.getElementById('provTitle').value,
+                date_joined: document.getElementById('provJoiningDate').value,
+                employment_type: document.getElementById('provEmploymentType').value,
+                reporting_manager: document.getElementById('provManager').value,
+                role: 'employee',
+                employee_access: true,
+                marketflow_access: false,
+                projectflow_access: false,
+                hr_access: false,
+                manager_access: false,
+                status: document.getElementById('provStatus').value
+            };
+
+            try {
+                await apiFetch('/hr/employees/access-register', {
+                    method: 'POST',
+                    body: JSON.stringify(payload)
+                });
+                
+                alert(`Access provisioned successfully for ${payload.name}.`);
+                document.getElementById('provisionForm').reset();
+                await loadAccessRegister();
+            } catch (err) {
+                alert('Provisioning failed: ' + err.message);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = originalHTML;
+                lucide.createIcons();
+            }
+        }
+
+        // Toggle Portal status between Active & Suspended
+        async function togglePortalStatus(id, currentStatus) {
+            const newStatus = currentStatus === 'Active' ? 'Suspended' : 'Active';
+            if (!confirm(`Are you sure you want to change this employee's portal status to '${newStatus}'?`)) return;
+
+            try {
+                await apiFetch(`/hr/employees/access-register/${id}/status`, {
+                    method: 'PUT',
+                    body: JSON.stringify({ status: newStatus })
+                });
+                alert(`Portal status updated to ${newStatus}.`);
+                await loadAccessRegister();
+            } catch (err) {
+                alert('Status update failed: ' + err.message);
+            }
+        }
+
+        // Edit Employee Access Modal Actions
+        function openEditAccessModal(id) {
+            const item = accessRegisterData.find(x => x.employee?.id === id);
+            if (!item) return;
+
+            const emp = item.employee || {};
+            const user = item.user || {};
+
+            document.getElementById('editEmpId').value = emp.id;
+            document.getElementById('editEmpUserEmail').value = emp.user_email;
+            document.getElementById('editEmpName').value = emp.name;
+            document.getElementById('editEmpDept').value = emp.department;
+            document.getElementById('editEmpTitle').value = emp.title || '';
+            document.getElementById('editEmpManager').value = emp.reporting_manager || '';
+            document.getElementById('editEmpStatus').value = user.status || 'Active';
+
+            // Access checkboxes
+            document.getElementById('editAccEmployee').checked = !!user.employee_access;
+            document.getElementById('editAccManager').checked = !!user.manager_access;
+            document.getElementById('editAccHr').checked = !!user.hr_access;
+            document.getElementById('editAccMarket').checked = !!user.marketflow_access;
+
+            document.getElementById('editAccessModal').classList.remove('hidden');
+            lucide.createIcons();
+        }
+
+        function closeEditAccessModal() {
+            document.getElementById('editAccessModal').classList.add('hidden');
+        }
+
+        // Save Employee Access Config modifications
+        async function handleSaveEmployeeAccess(event) {
+            event.preventDefault();
+            const id = document.getElementById('editEmpId').value;
+            const payload = {
+                department: document.getElementById('editEmpDept').value,
+                designation: document.getElementById('editEmpTitle').value,
+                reporting_manager: document.getElementById('editEmpManager').value,
+                role: document.getElementById('editAccHr').checked ? 'HR Manager' : 'employee', // Keep role aligned
+                employee_access: document.getElementById('editAccEmployee').checked,
+                manager_access: document.getElementById('editAccManager').checked,
+                hr_access: document.getElementById('editAccHr').checked,
+                marketflow_access: document.getElementById('editAccMarket').checked,
+                projectflow_access: false // default/unused
+            };
+
+            try {
+                await apiFetch(`/hr/employees/access-register/${id}/access`, {
+                    method: 'PUT',
+                    body: JSON.stringify(payload)
+                });
+                
+                // If status also changed, call status endpoint as well
+                const statusVal = document.getElementById('editEmpStatus').value;
+                const item = accessRegisterData.find(x => x.employee?.id === id);
+                if (item && item.user?.status !== statusVal) {
+                    await apiFetch(`/hr/employees/access-register/${id}/status`, {
+                        method: 'PUT',
+                        body: JSON.stringify({ status: statusVal })
+                    });
+                }
+
+                alert('Employee access configurations saved successfully.');
+                closeEditAccessModal();
+                await loadAccessRegister();
+            } catch (err) {
+                alert('Save changes failed: ' + err.message);
+            }
+        }
+
+        // View timeline history
+        async function viewAccessHistory(id) {
+            const item = accessRegisterData.find(x => x.employee?.id === id);
+            if (!item) return;
+
+            document.getElementById('historyModalSubtitle').textContent = `Audit trail for ${item.employee?.name} (ID: ${item.employee?.employee_id || 'N/A'})`;
+            
+            const timeline = document.getElementById('historyTimeline');
+            if (timeline) {
+                timeline.innerHTML = '<div class="text-center py-4 text-xs font-semibold">Loading history logs...</div>';
+            }
+
+            document.getElementById('historyModal').classList.remove('hidden');
+
+            try {
+                const logs = await apiFetch(`/hr/employees/access-register/${id}/history`);
+                if (logs.length === 0) {
+                    timeline.innerHTML = '<div class="text-center py-4 text-xs font-semibold text-slate-400">No history events logged yet.</div>';
+                    return;
+                }
+
+                timeline.innerHTML = logs.map(log => `
+                    <div class="flex gap-3 text-xs items-start border-l-2 border-purple-200 pl-3 relative">
+                        <div class="absolute -left-1.5 top-1.5 w-3 h-3 rounded-full bg-purple-500 ring-4 ring-white"></div>
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <span class="font-bold text-[#111827]">${log.event || 'Log Event'}</span>
+                                <span class="text-[10px] text-slate-400 font-mono">${log.date || ''}</span>
+                            </div>
+                            <p class="text-slate-500 mt-0.5 leading-relaxed">${log.details || ''}</p>
+                            <span class="text-[10px] text-purple-600 font-semibold">By: ${log.actor || 'System'}</span>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (err) {
+                timeline.innerHTML = `<div class="text-center py-4 text-xs font-semibold text-red-500">Error: ${err.message}</div>`;
+            }
+        }
+
+        function closeHistoryModal() {
+            document.getElementById('historyModal').classList.add('hidden');
+        }
+
+        // Load all data on tab activate or load
+        window.addEventListener('load', async () => {
+            initWeeklyChart();
+            await loadManagers();
+            await loadAccessRegister();
+        });
     </script>
 </body>
 

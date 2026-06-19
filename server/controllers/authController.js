@@ -111,7 +111,7 @@ export const verifyOtp = async (req, res) => {
         }
 
         let userDoc = await User.findOne({ email }).populate('company_id');
-        
+
         if (!userDoc) {
             if (isSuperAdminEmail(email)) {
                 const name = email.split('@')[0].replace(/[._-]/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
@@ -198,8 +198,15 @@ export const listUsers = async (req, res) => {
             return res.status(403).json({ error: 'Forbidden' });
         }
 
+        const { scope } = req.query;
+        if (scope === 'organizational') {
+            query.role = { $nin: ['employee', 'super_admin'] };
+        } else if (scope === 'employee') {
+            query.role = 'employee';
+        }
+
         const users = await User.find(query).sort({ created_at: -1 }).lean();
-        
+
         res.json(users.map(u => ({
             id: u._id.toString(),
             email: u.email,
@@ -226,6 +233,10 @@ export const createUser = async (req, res) => {
         let { email: rawEmail, name: reqName, department, role, marketflow_access, projectflow_access, hr_access, employee_access, manager_access, status } = req.body;
         const email = (rawEmail || '').toLowerCase().trim();
 
+        if (adminUser.role !== 'super_admin' && (String(role || '').toLowerCase() === 'employee' || employee_access)) {
+            return res.status(403).json({ error: 'Forbidden. Admin cannot manage or provision regular employee access accounts.' });
+        }
+
         if (adminUser.role !== 'super_admin') {
             // Non-super_admins cannot assign platform modules, default to role-based access
             marketflow_access = false;
@@ -241,8 +252,8 @@ export const createUser = async (req, res) => {
         let userDoc = await User.findOne({ email });
         if (userDoc) {
             const isPlaceholderCompany = !userDoc.company_id || userDoc.company === 'My Company';
-            const isSameCompany = userDoc.company_id?.toString() === adminUser.company_id?.toString() || 
-                                  (!userDoc.company_id && !adminUser.company_id && userDoc.company === adminUser.company);
+            const isSameCompany = userDoc.company_id?.toString() === adminUser.company_id?.toString() ||
+                (!userDoc.company_id && !adminUser.company_id && userDoc.company === adminUser.company);
             const hasNewCompany = adminUser.company_id || (adminUser.company && adminUser.company !== 'My Company');
 
             if (isPlaceholderCompany && !isSameCompany && hasNewCompany) {
@@ -278,7 +289,7 @@ export const createUser = async (req, res) => {
         }
 
         const name = reqName || email.split('@')[0].replace(/[._-]/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
-        
+
         userDoc = await User.create({
             email,
             name,
@@ -317,21 +328,21 @@ export const updateUserAccess = async (req, res) => {
     try {
         const adminUser = await User.findById(req.userId);
         if (!adminUser) return res.status(404).json({ error: 'User not found' });
-        
+
         const normalizedRole = String(adminUser.role || '').toLowerCase();
         const isAuthorized = ['super_admin', 'owner', 'admin', 'hr manager', 'hr executive', 'department head'].includes(normalizedRole);
         if (!isAuthorized) return res.status(403).json({ error: 'Forbidden' });
 
         const targetEmail = (req.params.email || '').toLowerCase().trim();
         let { marketflow_access, projectflow_access, hr_access, admin_access, employee_access, manager_access, status } = req.body;
-        
+
         if (adminUser.role !== 'super_admin') {
             // Prevent changing platform admin access
             admin_access = undefined;
         }
-        
+
         if (!targetEmail) return res.status(400).json({ error: 'Email required' });
-        
+
         const targetUser = await User.findOne({ email: targetEmail });
         if (!targetUser) return res.status(404).json({ error: 'User not found' });
         if (targetUser.role === 'super_admin') return res.status(400).json({ error: 'Cannot modify super admin' });
@@ -340,6 +351,15 @@ export const updateUserAccess = async (req, res) => {
         if (adminUser.role !== 'super_admin') {
             if (String(targetUser.company_id || '') !== String(adminUser.company_id || '')) {
                 return res.status(403).json({ error: 'Forbidden. You can only modify employees in your own company.' });
+            }
+        }
+
+        // Enforce employee access ownership: Only HR or Super Admin can modify regular employee access
+        const isTargetEmployee = targetUser.role === 'employee' || targetUser.employee_access;
+        if (isTargetEmployee) {
+            const isHrOrSuper = adminUser.hr_access || ['super_admin', 'HR Manager', 'HR Executive'].includes(adminUser.role) || ['hr manager', 'hr executive'].includes(normalizedRole);
+            if (!isHrOrSuper) {
+                return res.status(403).json({ error: 'Forbidden. Only HR managers can manage employee portal and access settings.' });
             }
         }
 
@@ -365,7 +385,7 @@ export const updateUserAccess = async (req, res) => {
         if (employee_access !== undefined) targetUser.employee_access = !!employee_access;
         if (manager_access !== undefined) targetUser.manager_access = !!manager_access;
         if (status !== undefined) targetUser.status = status;
-        
+
         // Auto-sync user role based on the toggled access flags
         if (adminUser.role === 'super_admin' && targetUser.role !== 'super_admin' && targetUser.role !== 'owner') {
             if (targetUser.admin_access) targetUser.role = 'admin';
@@ -375,7 +395,7 @@ export const updateUserAccess = async (req, res) => {
         }
 
         await targetUser.save();
-        
+
         res.json({
             ok: true,
             email: targetUser.email,
@@ -414,16 +434,16 @@ export const updateUserRole = async (req, res) => {
     try {
         const adminUser = await User.findById(req.userId);
         if (!adminUser) return res.status(404).json({ error: 'User not found' });
-        
+
         const normalizedRole = String(adminUser.role || '').toLowerCase();
         const isAuthorized = ['super_admin', 'owner', 'admin', 'hr manager', 'hr executive', 'department head'].includes(normalizedRole);
         if (!isAuthorized) return res.status(403).json({ error: 'Forbidden' });
 
         const targetEmail = (req.params.email || '').toLowerCase().trim();
         const { role } = req.body;
-        
+
         if (!targetEmail) return res.status(400).json({ error: 'Email required' });
-        
+
         const targetUser = await User.findOne({ email: targetEmail });
         if (!targetUser) return res.status(404).json({ error: 'User not found' });
         if (targetUser.role === 'super_admin') return res.status(400).json({ error: 'Cannot modify super admin role' });
@@ -463,7 +483,7 @@ export const updateUserRole = async (req, res) => {
             targetUser.admin_access = ['admin', 'HR Manager', 'hr_manager'].includes(role);
             await targetUser.save();
         }
-        
+
         res.json({ ok: true, email: targetUser.email, role: targetUser.role });
     } catch (e) { res.status(500).json({ error: e.message }); }
 };

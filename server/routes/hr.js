@@ -39,20 +39,69 @@ const employeeAccessMiddleware = async (req, res, next) => {
 };
 
 // Helper to determine the database query filter
-const getScopedFilter = async (req, restrictToUser = false) => {
+const EmployeeModel = getModel('hr_employees');
+
+export const getTeamEmails = async (managerEmail, companyId, company) => {
+    const filter = { reporting_manager: managerEmail.toLowerCase() };
+    if (companyId) {
+        let companyIdObj = null;
+        try {
+            companyIdObj = typeof companyId === 'string' ? new mongoose.Types.ObjectId(companyId) : companyId;
+        } catch (e) { }
+        if (companyIdObj) {
+            filter.$or = [
+                { company_id: companyId.toString() },
+                { company_id: companyIdObj }
+            ];
+        } else {
+            filter.company_id = companyId.toString();
+        }
+    } else {
+        filter.company = company;
+    }
+    const reports = await EmployeeModel.find(filter).select('user_email').lean();
+    const emails = reports.map(r => r.user_email ? r.user_email.toLowerCase().trim() : '').filter(Boolean);
+    emails.push(managerEmail.toLowerCase());
+    return emails;
+};
+
+export const getScopedFilter = async (req, restrictToUser = false) => {
     const user = await User.findById(req.userId);
     if (!user) throw new Error('User not found');
 
-    const isHrAdmin = user.hr_access || ['super_admin', 'admin', 'owner'].includes(user.role);
-    if (restrictToUser || !isHrAdmin) {
+    if (restrictToUser) {
         return { user_email: user.email.toLowerCase() };
+    }
+
+    const isHrAdmin = user.hr_access || ['super_admin', 'admin', 'owner'].includes(user.role);
+    if (!isHrAdmin) {
+        const isManager = user.manager_access || user.role === 'manager';
+        if (isManager) {
+            const teamEmails = await getTeamEmails(user.email, user.company_id, user.company);
+            return { user_email: { $in: teamEmails } };
+        } else {
+            return { user_email: user.email.toLowerCase() };
+        }
     }
 
     if (user.role === 'super_admin') {
         return {};
     }
     if (user.company_id) {
-        return { company_id: user.company_id };
+        let companyIdObj = null;
+        try {
+            companyIdObj = typeof user.company_id === 'string' ? new mongoose.Types.ObjectId(user.company_id) : user.company_id;
+        } catch (e) { }
+        if (companyIdObj) {
+            return {
+                $or: [
+                    { company_id: user.company_id.toString() },
+                    { company_id: companyIdObj }
+                ]
+            };
+        } else {
+            return { company_id: user.company_id.toString() };
+        }
     }
     return { company: user.company };
 };
@@ -74,7 +123,6 @@ const uid = () => Math.random().toString(36).slice(2) + Date.now().toString(36);
 // ─────────────────────────────────────────────────────────────────────────────
 // 1. EMPLOYEES DIRECTORY (HR Admin writes/reads, Employees read directory)
 // ─────────────────────────────────────────────────────────────────────────────
-const EmployeeModel = getModel('hr_employees');
 
 const generateNextEmployeeId = async (company) => {
     const employees = await EmployeeModel.find({ company, employee_id: { $exists: true, $ne: '' } }).lean();
@@ -314,6 +362,11 @@ router.put('/leaves/:id', employeeAccessMiddleware, async (req, res) => {
         const user = await User.findById(req.userId);
         const leave = await LeaveModel.findOne({ id: req.params.id });
         if (!leave) return res.status(404).json({ error: 'Leave request not found' });
+
+        // Prevent self-approval of leaves
+        if (leave.user_email.toLowerCase() === user.email.toLowerCase()) {
+            return res.status(403).json({ error: 'Access denied. You cannot approve your own leave request.' });
+        }
 
         const isHr = user.hr_access || ['super_admin', 'admin', 'owner'].includes(user.role);
         const applicantEmp = await EmployeeModel.findOne({ user_email: leave.user_email });
@@ -911,6 +964,10 @@ router.put('/employees/:id/verify-onboarding', hrAccessMiddleware, async (req, r
 
         const updates = { onboarding_remarks: remarks };
         if (action === 'approve') {
+            if (!bank_details || !bank_details.bank_holder_name || !bank_details.bank_name || !bank_details.bank_account_number || !bank_details.bank_ifsc || !bank_details.bank_branch) {
+                return res.status(400).json({ error: 'Bank details (holder, bank name, account number, IFSC, and branch) are required to approve onboarding.' });
+            }
+
             updates.onboarding_status = 'Approved';
             updates.status = 'Active';
             updates.probation_status = 'Probation';
@@ -1094,6 +1151,11 @@ router.put('/employees/:id/approve-resignation', hrAccessMiddleware, async (req,
         const employee = await EmployeeModel.findOne({ id: req.params.id });
         if (!employee) return res.status(404).json({ error: 'Employee not found' });
 
+        const user = await User.findById(req.userId);
+        if (employee.user_email.toLowerCase() === user.email.toLowerCase()) {
+            return res.status(403).json({ error: 'Access denied. You cannot approve your own resignation request.' });
+        }
+
         const updates = {};
         if (approval_type === 'manager') {
             updates.manager_approval = approved ? 'Approved' : 'Rejected';
@@ -1150,18 +1212,18 @@ router.put('/employees/:id/bank-details', hrAccessMiddleware, async (req, res) =
         const { bankName, accountNumber, ifscCode } = req.body;
         const employee = await EmployeeModel.findOneAndUpdate(
             { id: req.params.id },
-            { 
-                $set: { 
+            {
+                $set: {
                     bank_name: bankName,
                     bank_account_number: accountNumber,
                     bank_ifsc: ifscCode,
                     bank_verification_status: 'Verified'
-                } 
+                }
             },
             { new: true }
         );
         if (!employee) return res.status(404).json({ error: 'Employee not found' });
-        
+
         await logAudit(req, 'Bank Detail Edit', `HR direct edit of bank details for ${employee.name}`);
         res.json(employee);
     } catch (err) { res.status(500).json({ error: err.message }); }
@@ -1174,12 +1236,12 @@ router.post('/bank-change-requests', employeeAccessMiddleware, async (req, res) 
     try {
         const { bankName, accountNumber, ifscCode, reason, supportingDocument, bank_holder_name, bank_branch, bank_account_type } = req.body;
         const user = await User.findById(req.userId);
-        
+
         const emp = await EmployeeModel.findOne({ user_email: user.email.toLowerCase() });
         if (!emp) return res.status(404).json({ error: 'Employee profile not found' });
 
         const reqId = uid();
-        const requestData = {
+        const requestData = await getDocumentScope(req, {
             id: reqId,
             employee_id: emp.id,
             employeeId: emp.id,
@@ -1194,11 +1256,11 @@ router.post('/bank-change-requests', employeeAccessMiddleware, async (req, res) 
             document_proof: supportingDocument,
             status: 'Pending',
             created_at: new Date().toISOString()
-        };
+        });
 
         await BankChangeRequestModel.create(requestData);
 
-        await BankAuditModel.create({
+        const auditData = await getDocumentScope(req, {
             id: uid(),
             employeeId: emp.id,
             changedAt: new Date().toISOString(),
@@ -1206,6 +1268,7 @@ router.post('/bank-change-requests', employeeAccessMiddleware, async (req, res) 
             status: 'Pending',
             reason: reason
         });
+        await BankAuditModel.create(auditData);
 
         await logAudit(req, 'Bank Change Requested', `Bank change request submitted by ${emp.name}`);
         res.status(201).json(requestData);
@@ -1216,7 +1279,7 @@ router.get('/bank-change-requests', employeeAccessMiddleware, async (req, res) =
     try {
         const user = await User.findById(req.userId);
         const isHr = user.hr_access || ['super_admin', 'admin', 'owner'].includes(user.role);
-        
+
         let list;
         if (isHr) {
             list = await BankChangeRequestModel.find({}).sort({ created_at: -1 }).lean();
@@ -1233,7 +1296,7 @@ router.get('/bank-change-requests/audit', hrAccessMiddleware, async (req, res) =
     try {
         const employeeId = req.query.employeeId;
         if (!employeeId) return res.status(400).json({ error: 'employeeId is required.' });
-        
+
         const list = await BankAuditModel.find({ employeeId }).sort({ changedAt: -1 }).lean();
         res.json(list.map(d => { delete d._id; delete d.__v; return d; }));
     } catch (err) { res.status(500).json({ error: err.message }); }
@@ -1248,7 +1311,7 @@ router.put('/bank-change-requests/:id', hrAccessMiddleware, async (req, res) => 
         const user = await User.findById(req.userId);
         const updates = { status };
         if (clarificationMessage) updates.clarification_message = clarificationMessage;
-        
+
         await BankChangeRequestModel.findOneAndUpdate({ id: req.params.id }, { $set: updates });
 
         if (status === 'Approved') {
@@ -1267,7 +1330,7 @@ router.put('/bank-change-requests/:id', hrAccessMiddleware, async (req, res) => 
             );
         }
 
-        await BankAuditModel.create({
+        const auditData = await getDocumentScope(req, {
             id: uid(),
             employeeId: request.employee_id,
             changedAt: new Date().toISOString(),
@@ -1275,6 +1338,7 @@ router.put('/bank-change-requests/:id', hrAccessMiddleware, async (req, res) => 
             status: status,
             reason: reason || clarificationMessage || `Status updated to ${status}`
         });
+        await BankAuditModel.create(auditData);
 
         await logAudit(req, `Bank Request ${status}`, `Bank change request for employee ${request.employee_name} was: ${status}`);
         res.json({ ok: true, status });
@@ -1302,7 +1366,7 @@ router.put('/bank-change-requests/:id/resubmit', employeeAccessMiddleware, async
 
         await BankChangeRequestModel.findOneAndUpdate({ id: req.params.id }, { $set: updates });
 
-        await BankAuditModel.create({
+        const auditData = await getDocumentScope(req, {
             id: uid(),
             employeeId: request.employee_id,
             changedAt: new Date().toISOString(),
@@ -1310,6 +1374,7 @@ router.put('/bank-change-requests/:id/resubmit', employeeAccessMiddleware, async
             status: 'Pending',
             reason: reason || 'Resubmitted'
         });
+        await BankAuditModel.create(auditData);
 
         await logAudit(req, 'Bank Request Resubmitted', `Bank change request resubmitted by employee`);
         res.json({ ok: true, status: 'Pending' });
@@ -1364,7 +1429,7 @@ router.post('/employees/:id/appraisal/approve', hrAccessMiddleware, async (req, 
         const updates = {};
         if (approved) {
             updates.appraisal_status = 'Approved';
-            
+
             const prevSalary = employee.salary || 0;
             const hikePercent = employee.suggested_hike_percent || 0;
             const newSalary = prevSalary * (1 + (hikePercent / 100));
@@ -1400,6 +1465,328 @@ router.post('/employees/:id/appraisal/approve', hrAccessMiddleware, async (req, 
         await logAudit(req, `Appraisal ${approved ? 'Approved' : 'Rejected'}`, `Performance appraisal for ${employee.name} has been ${approved ? 'Approved' : 'Rejected'}`);
         res.json({ ok: true });
     } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// EMPLOYEE ACCESS MANAGEMENT ENDPOINTS
+// ─────────────────────────────────────────────────────────────────────────────
+
+router.get('/employees/access-register', hrAccessMiddleware, async (req, res) => {
+    try {
+        const filter = await getScopedFilter(req);
+        // Find all employees matching company scope
+        const employees = await EmployeeModel.find(filter).sort({ name: 1 }).lean();
+
+        // For each, fetch user access details
+        const results = [];
+        for (const emp of employees) {
+            const uEmail = emp.user_email ? emp.user_email.toLowerCase().trim() : '';
+            let userObj = null;
+            if (uEmail) {
+                userObj = await User.findOne({ email: uEmail }).lean();
+            }
+
+            // Filter out super_admin and owner
+            if (userObj && ['super_admin', 'owner'].includes(userObj.role)) {
+                continue;
+            }
+
+            results.push({
+                employee: {
+                    id: emp.id,
+                    employee_id: emp.employee_id,
+                    name: emp.name,
+                    user_email: emp.user_email,
+                    personal_email: emp.personal_email || '',
+                    phone: emp.phone || '',
+                    gender: emp.gender || '',
+                    department: emp.department,
+                    title: emp.title || emp.designation || '',
+                    date_joined: emp.date_joined || emp.joining_date || '',
+                    employment_type: emp.employment_type || 'Full Time',
+                    salary: emp.salary || 0,
+                    reporting_manager: emp.reporting_manager || '',
+                    created_by: emp.created_by || 'Admin',
+                    created_at: emp.created_at || emp.created_at_date || ''
+                },
+                user: userObj ? {
+                    role: userObj.role,
+                    marketflow_access: !!userObj.marketflow_access,
+                    projectflow_access: !!userObj.projectflow_access,
+                    hr_access: !!userObj.hr_access,
+                    manager_access: !!userObj.manager_access,
+                    employee_access: !!userObj.employee_access,
+                    status: userObj.status || 'Active'
+                } : {
+                    role: 'employee',
+                    marketflow_access: false,
+                    projectflow_access: false,
+                    hr_access: false,
+                    manager_access: false,
+                    employee_access: true,
+                    status: 'Pending Activation'
+                }
+            });
+        }
+
+        res.json(results);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+router.post('/employees/access-register', hrAccessMiddleware, async (req, res) => {
+    try {
+        const actor = await User.findById(req.userId);
+        const {
+            name,
+            email,
+            department,
+            designation,
+            date_joined,
+            employment_type,
+            role,
+            marketflow_access,
+            projectflow_access,
+            hr_access,
+            manager_access,
+            employee_access,
+            reporting_manager,
+            appraiser,
+            status
+        } = req.body;
+
+        const corporateEmail = (email || '').toLowerCase().trim();
+        if (!corporateEmail) return res.status(400).json({ error: 'Corporate email is required.' });
+
+        const existingUser = await User.findOne({ email: corporateEmail });
+        if (existingUser) return res.status(400).json({ error: 'A user account with this corporate email already exists.' });
+
+        const nextEmpId = await generateNextEmployeeId(actor.company || 'My Company');
+
+        const newUser = await User.create({
+            email: corporateEmail,
+            name: name || 'Employee',
+            company: actor.company,
+            company_id: actor.company_id,
+            department: department || 'General',
+            role: role || 'employee',
+            marketflow_access: !!marketflow_access,
+            projectflow_access: !!projectflow_access,
+            hr_access: !!hr_access,
+            manager_access: !!manager_access,
+            employee_access: !!employee_access,
+            admin_access: false,
+            status: status || 'Pending Activation'
+        });
+
+        const todayStr = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+
+        const newEmp = await EmployeeModel.create({
+            id: uid(),
+            user_id: newUser._id.toString(),
+            employee_id: nextEmpId,
+            name: name || 'Employee',
+            user_email: corporateEmail,
+            department: department || 'General',
+            title: designation || '',
+            date_joined: date_joined || todayStr,
+            employment_type: employment_type || 'Full Time',
+            onboarding_status: 'Approved',
+            reporting_manager: reporting_manager || '',
+            appraiser: appraiser || '',
+            access_history: [{
+                event: 'Profile Created',
+                date: todayStr,
+                actor: actor.email,
+                details: `Initial employee profile created. Manager: ${reporting_manager || 'None'}. Appraiser: ${appraiser || 'None'}. OTP activation email queued.`
+            }],
+            created_by: actor.email,
+            created_at_date: todayStr,
+            company: actor.company,
+            company_id: actor.company_id
+        });
+
+        await logAudit(req, 'Employee Access Created', `Created Employee access for ${name} (ID: ${nextEmpId}, Email: ${corporateEmail})`);
+
+        res.json({ ok: true, employee_id: nextEmpId, id: newEmp.id });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+router.put('/employees/access-register/:id/status', hrAccessMiddleware, async (req, res) => {
+    try {
+        const actor = await User.findById(req.userId);
+        const { status } = req.body;
+
+        const emp = await EmployeeModel.findOne({ id: req.params.id });
+        if (!emp) return res.status(404).json({ error: 'Employee not found.' });
+
+        const uEmail = emp.user_email ? emp.user_email.toLowerCase().trim() : '';
+        if (uEmail) {
+            await User.findOneAndUpdate({ email: uEmail }, { $set: { status } });
+        }
+
+        const todayStr = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+        const accessHistory = emp.access_history || [];
+        accessHistory.push({
+            event: 'Status Changed',
+            date: todayStr,
+            actor: actor.email,
+            details: `Account status updated to '${status}'.`
+        });
+
+        await EmployeeModel.findOneAndUpdate(
+            { id: req.params.id },
+            { $set: { access_history: accessHistory } }
+        );
+
+        await logAudit(req, 'Employee Access Status Change', `Changed status for ${emp.name} to ${status}`);
+        res.json({ ok: true });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+router.put('/employees/access-register/:id/access', hrAccessMiddleware, async (req, res) => {
+    try {
+        const actor = await User.findById(req.userId);
+        const {
+            department,
+            designation,
+            reporting_manager,
+            appraiser,
+            role,
+            marketflow_access,
+            projectflow_access,
+            hr_access,
+            manager_access,
+            employee_access
+        } = req.body;
+
+        const emp = await EmployeeModel.findOne({ id: req.params.id });
+        if (!emp) return res.status(404).json({ error: 'Employee not found.' });
+
+        const todayStr = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+
+        const updates = {
+            department: department || emp.department,
+            title: designation || emp.title || emp.designation,
+            reporting_manager: reporting_manager !== undefined ? reporting_manager : emp.reporting_manager,
+            appraiser: appraiser !== undefined ? appraiser : (emp.appraiser || '')
+        };
+
+        const accessHistory = emp.access_history || [];
+        accessHistory.push({
+            event: 'Access Configuration Edited',
+            date: todayStr,
+            actor: actor.email,
+            details: `Updated role: ${role || 'N/A'}, manager: ${reporting_manager || 'N/A'}, appraiser: ${appraiser || 'N/A'}.`
+        });
+        updates.access_history = accessHistory;
+
+        await EmployeeModel.findOneAndUpdate({ id: req.params.id }, { $set: updates });
+
+        const uEmail = emp.user_email ? emp.user_email.toLowerCase().trim() : '';
+        if (uEmail) {
+            await User.findOneAndUpdate({ email: uEmail }, {
+                $set: {
+                    department: department || emp.department,
+                    role: role || 'employee',
+                    marketflow_access: !!marketflow_access,
+                    projectflow_access: !!projectflow_access,
+                    hr_access: !!hr_access,
+                    manager_access: !!manager_access,
+                    employee_access: !!employee_access
+                }
+            });
+        }
+
+        await logAudit(req, 'Employee Access Details Edit', `Edited access permissions/reporting lines for ${emp.name}`);
+        res.json({ ok: true });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+router.post('/employees/access-register/:id/reset-password', hrAccessMiddleware, async (req, res) => {
+    try {
+        const actor = await User.findById(req.userId);
+        const emp = await EmployeeModel.findOne({ id: req.params.id });
+        if (!emp) return res.status(404).json({ error: 'Employee not found.' });
+
+        const todayStr = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+        const accessHistory = emp.access_history || [];
+        accessHistory.push({
+            event: 'Password Reset',
+            date: todayStr,
+            actor: actor.email,
+            details: 'Mock password reset link triggered and sent.'
+        });
+
+        await EmployeeModel.findOneAndUpdate({ id: req.params.id }, { $set: { access_history: accessHistory } });
+        await logAudit(req, 'Employee Password Reset', `Requested password reset link for ${emp.name}`);
+        res.json({ ok: true, message: 'Password reset link simulated and sent.' });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+router.post('/employees/access-register/:id/resend-welcome', hrAccessMiddleware, async (req, res) => {
+    try {
+        const actor = await User.findById(req.userId);
+        const emp = await EmployeeModel.findOne({ id: req.params.id });
+        if (!emp) return res.status(404).json({ error: 'Employee not found.' });
+
+        const todayStr = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+        const accessHistory = emp.access_history || [];
+        accessHistory.push({
+            event: 'Welcome Email Resent',
+            date: todayStr,
+            actor: actor.email,
+            details: 'Mock onboarding welcome credentials resent.'
+        });
+
+        await EmployeeModel.findOneAndUpdate({ id: req.params.id }, { $set: { access_history: accessHistory } });
+        await logAudit(req, 'Welcome Invite Resent', `Resent welcome credentials to ${emp.name}`);
+        res.json({ ok: true, message: 'Welcome email resent successfully (simulated).' });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+router.get('/employees/access-register/:id/history', hrAccessMiddleware, async (req, res) => {
+    try {
+        const emp = await EmployeeModel.findOne({ id: req.params.id }).lean();
+        if (!emp) return res.status(404).json({ error: 'Employee not found.' });
+        res.json(emp.access_history || []);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// Delete employee access record
+router.delete('/employees/access-register/:id', hrAccessMiddleware, async (req, res) => {
+    try {
+        const actor = await User.findById(req.userId);
+        const emp = await EmployeeModel.findOne({ id: req.params.id });
+        if (!emp) return res.status(404).json({ error: 'Employee not found.' });
+
+        // Delete associated user account
+        const uEmail = emp.user_email ? emp.user_email.toLowerCase().trim() : '';
+        if (uEmail) {
+            await User.findOneAndDelete({ email: uEmail });
+        }
+
+        // Delete employee record
+        await EmployeeModel.findOneAndDelete({ id: req.params.id });
+
+        await logAudit(req, 'Employee Access Deleted', `Deleted employee access record for ${emp.name} (ID: ${emp.employee_id || emp.id}) by ${actor.email}`);
+        res.json({ ok: true, message: 'Employee access record deleted.' });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
 });
 
 export default router;

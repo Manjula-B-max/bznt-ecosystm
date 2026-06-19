@@ -1,7 +1,7 @@
 import { employeeState } from './employee-state.js';
 import { apiClient } from './employee-api.js';
 
-let currentAttendanceSubView = 'landing';
+let currentAttendanceSubView = 'calendar';
 let calendarSelectedDate = null;
 let calendarMonth = new Date().getMonth() + 1; // 1-12
 let calendarYear = new Date().getFullYear();
@@ -29,7 +29,7 @@ function getSubViewHeader(title, label) {
     return `
         <div class="flex items-center justify-between pb-4 border-b border-[#ECECF3] mb-6 animate-fade-in">
             <div class="flex items-center gap-3">
-                <button onclick="setAttendanceSubView('landing')" class="p-2 border border-[#ECECF3] hover:border-[#610173] hover:text-[#610173] bg-white rounded-xl transition shadow-sm">
+                <button onclick="setAttendanceSubView('calendar')" class="p-2 border border-[#ECECF3] hover:border-[#610173] hover:text-[#610173] bg-white rounded-xl transition shadow-sm">
                     <i data-lucide="arrow-left" class="w-4 h-4"></i>
                 </button>
                 <div>
@@ -41,156 +41,162 @@ function getSubViewHeader(title, label) {
     `;
 }
 
-function renderAttendanceLanding(state) {
+function renderAttendanceHybrid() {
+    const FEATURES = [
+        {
+            id: 'calendar', label: 'Calendar', icon: 'calendar', navAway: false,
+            illusBg: 'bg-[#F4F2FF]', iconColor: 'text-[#7C3AED]',
+            desc: 'View your daily attendance\nin calendar view',
+            illusEmoji: `<span style="font-size:54px;line-height:1;filter:drop-shadow(0 4px 10px rgba(124,58,237,0.18))">🗓️</span>
+                         <span style="position:absolute;bottom:8px;right:8px;font-size:22px;line-height:1">🌿</span>`
+        },
+        {
+            id: 'history', label: 'History', icon: 'refresh-cw', navAway: true,
+            illusBg: 'bg-[#F0FDF9]', iconColor: 'text-[#059669]',
+            desc: 'View and export your\nattendance history',
+            illusEmoji: `<span style="font-size:54px;line-height:1;filter:drop-shadow(0 4px 10px rgba(5,150,105,0.18))">📋</span>
+                         <span style="position:absolute;bottom:10px;right:10px;font-size:20px;line-height:1">✅</span>`
+        },
+        {
+            id: 'corrections', label: 'Corrections', icon: 'edit-3', navAway: true,
+            illusBg: 'bg-[#FFFBEB]', iconColor: 'text-[#D97706]',
+            desc: 'Request corrections &\ntrack their status',
+            illusEmoji: `<span style="font-size:54px;line-height:1;filter:drop-shadow(0 4px 10px rgba(217,119,6,0.18))">✏️</span>
+                         <span style="position:absolute;bottom:8px;right:8px;font-size:20px;line-height:1">📝</span>`
+        },
+        {
+            id: 'late-credits', label: 'Late Credits', icon: 'wallet', navAway: false,
+            illusBg: 'bg-[#EFF6FF]', iconColor: 'text-[#2563EB]',
+            desc: 'View late credits and\nusage history',
+            illusEmoji: `<span style="font-size:54px;line-height:1;filter:drop-shadow(0 4px 10px rgba(37,99,235,0.18))">💳</span>
+                         <span style="position:absolute;bottom:8px;right:10px;font-size:20px;line-height:1">💰</span>`
+        },
+        {
+            id: 'leaderboard', label: 'Leaderboard', icon: 'trophy', navAway: false,
+            illusBg: 'bg-[#FDF4FF]', iconColor: 'text-[#9333EA]',
+            desc: 'See top performers and\nyour ranking',
+            illusEmoji: `<span style="font-size:54px;line-height:1;filter:drop-shadow(0 4px 10px rgba(147,51,234,0.18))">🏆</span>
+                         <span style="position:absolute;bottom:8px;right:8px;font-size:20px;line-height:1">🥇</span>`
+        },
+        {
+            id: 'analytics', label: 'Analytics', icon: 'bar-chart-2', navAway: false,
+            illusBg: 'bg-[#FFF1F2]', iconColor: 'text-[#E11D48]',
+            desc: 'Explore attendance\ninsights & trends',
+            illusEmoji: `<span style="font-size:54px;line-height:1;filter:drop-shadow(0 4px 10px rgba(225,29,72,0.18))">📊</span>
+                         <span style="position:absolute;bottom:8px;right:8px;font-size:20px;line-height:1">📈</span>`
+        },
+    ];
+
+    const featureCardsHtml = FEATURES.map(f => {
+        const isActive = currentAttendanceSubView === f.id;
+        const ringCls  = isActive ? 'ring-2 ring-[#7C3AED] ring-offset-1 shadow-md' : '';
+        const descLines = f.desc.split('\n').join('<br>');
+        return `
+            <div class="att-feature-card ${ringCls}" onclick="setAttendanceSubView('${f.id}')">
+                <!-- Illustration area -->
+                <div class="att-feature-illus ${f.illusBg} relative overflow-hidden" style="height:138px">
+                    <!-- Decorative blobs -->
+                    <div style="position:absolute;top:-18px;right:-18px;width:64px;height:64px;border-radius:50%;background:rgba(255,255,255,0.55)"></div>
+                    <div style="position:absolute;bottom:-12px;left:-12px;width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,0.45)"></div>
+                    <!-- Small icon badge top-left -->
+                    <div style="position:absolute;top:10px;left:10px;width:28px;height:28px;border-radius:10px;background:rgba(255,255,255,0.92);box-shadow:0 2px 6px rgba(0,0,0,0.08);display:flex;align-items:center;justify-content:center;z-index:2">
+                        <i data-lucide="${f.icon}" style="width:13px;height:13px" class="${f.iconColor}"></i>
+                    </div>
+                    <!-- Main illustration -->
+                    <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding-top:14px">
+                        ${f.illusEmoji}
+                    </div>
+                </div>
+                <!-- Text body -->
+                <div class="att-feature-body">
+                    <div class="flex-1">
+                        <h4 class="font-bold text-slate-800 text-[13px] mb-0.5 leading-tight">${f.label}</h4>
+                        <p class="text-[11px] text-[#9CA3AF] leading-relaxed">${descLines}</p>
+                    </div>
+                    <div class="flex justify-end pt-2">
+                        <div class="att-feature-arrow ${isActive ? 'att-feature-arrow--active' : ''}">
+                            <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }).join('');
+
+    let workspaceHtml = '';
+    if (currentAttendanceSubView === 'calendar')          workspaceHtml = renderCalendarWorkspace();
+    else if (currentAttendanceSubView === 'late-credits') workspaceHtml = renderLateCreditsWorkspace();
+    else if (currentAttendanceSubView === 'leaderboard')  workspaceHtml = renderLeaderboardWorkspace();
+    else if (currentAttendanceSubView === 'analytics')    workspaceHtml = renderAnalyticsWorkspace();
+
     return `
-        <div class="space-y-6 animate-fade-in">
-            <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
+        <div class="space-y-5 animate-fade-in w-full min-w-0">
+            <!-- KPI Cards -->
+            <div class="grid grid-cols-5 gap-4">
                 <div class="att-kpi-card">
-                    <div class="att-icon-wrapper bg-emerald-50 text-emerald-600">
-                        <i data-lucide="check-square" class="w-5 h-5"></i>
+                    <div class="att-kpi-icon" style="background:#ECFDF5">
+                        <i data-lucide="user-check" class="w-7 h-7 text-emerald-500"></i>
                     </div>
-                    <div>
-                        <p class="text-[10px] text-[#6B7280] font-bold uppercase tracking-wider">Present Days</p>
-                        <h3 class="text-xl font-extrabold text-slate-800 mt-0.5" id="landing-present">-</h3>
+                    <div class="min-w-0">
+                        <p class="att-kpi-label">Present Days</p>
+                        <p class="att-kpi-value" id="landing-present">-</p>
+                        <p class="att-kpi-sub">This Month</p>
                     </div>
                 </div>
                 <div class="att-kpi-card">
-                    <div class="att-icon-wrapper bg-rose-50 text-rose-600">
-                        <i data-lucide="x-circle" class="w-5 h-5"></i>
+                    <div class="att-kpi-icon" style="background:#FEF2F2">
+                        <i data-lucide="user-x" class="w-7 h-7 text-red-400"></i>
                     </div>
-                    <div>
-                        <p class="text-[10px] text-[#6B7280] font-bold uppercase tracking-wider">Absent Days</p>
-                        <h3 class="text-xl font-extrabold text-slate-800 mt-0.5" id="landing-absent">-</h3>
-                    </div>
-                </div>
-                <div class="att-kpi-card">
-                    <div class="att-icon-wrapper bg-amber-50 text-amber-600">
-                        <i data-lucide="clock" class="w-5 h-5"></i>
-                    </div>
-                    <div>
-                        <p class="text-[10px] text-[#6B7280] font-bold uppercase tracking-wider">Half Days</p>
-                        <h3 class="text-xl font-extrabold text-slate-800 mt-0.5" id="landing-half">-</h3>
+                    <div class="min-w-0">
+                        <p class="att-kpi-label">Absent Days</p>
+                        <p class="att-kpi-value" id="landing-absent">-</p>
+                        <p class="att-kpi-sub">This Month</p>
                     </div>
                 </div>
                 <div class="att-kpi-card">
-                    <div class="att-icon-wrapper bg-purple-50 text-purple-600">
-                        <i data-lucide="alert-circle" class="w-5 h-5"></i>
+                    <div class="att-kpi-icon" style="background:#FFFBEB">
+                        <i data-lucide="clock" class="w-7 h-7 text-amber-500"></i>
                     </div>
-                    <div>
-                        <p class="text-[10px] text-[#6B7280] font-bold uppercase tracking-wider">Late Arrivals</p>
-                        <h3 class="text-xl font-extrabold text-slate-800 mt-0.5" id="landing-late">-</h3>
+                    <div class="min-w-0">
+                        <p class="att-kpi-label">Half Days</p>
+                        <p class="att-kpi-value" id="landing-half">-</p>
+                        <p class="att-kpi-sub">This Month</p>
                     </div>
                 </div>
                 <div class="att-kpi-card">
-                    <div class="att-icon-wrapper bg-blue-50 text-blue-600">
-                        <i data-lucide="award" class="w-5 h-5"></i>
+                    <div class="att-kpi-icon" style="background:#F5F3FF">
+                        <i data-lucide="alarm-clock" class="w-7 h-7 text-violet-500"></i>
                     </div>
-                    <div>
-                        <p class="text-[10px] text-[#6B7280] font-bold uppercase tracking-wider">Late Credits</p>
-                        <h3 class="text-xl font-extrabold text-slate-800 mt-0.5" id="landing-credits">-</h3>
+                    <div class="min-w-0">
+                        <p class="att-kpi-label">Late Arrivals</p>
+                        <p class="att-kpi-value" id="landing-late">-</p>
+                        <p class="att-kpi-sub">This Month</p>
+                    </div>
+                </div>
+                <div class="att-kpi-card">
+                    <div class="att-kpi-icon" style="background:#FFF1F2">
+                        <i data-lucide="wallet" class="w-7 h-7 text-rose-400"></i>
+                    </div>
+                    <div class="min-w-0">
+                        <p class="att-kpi-label">Late Credits</p>
+                        <p class="att-kpi-value" id="landing-credits">-</p>
+                        <p class="att-kpi-sub">Remaining</p>
                     </div>
                 </div>
             </div>
 
-            <div class="att-snapshot-card">
-                <div class="flex items-center gap-6">
-                    <div class="flex flex-col">
-                        <span class="text-[10px] text-[#6B7280] font-bold uppercase tracking-wider">Attendance Rate</span>
-                        <span class="text-2xl font-extrabold text-slate-800 mt-1" id="landing-percent">-%</span>
-                    </div>
-                    <div class="h-10 w-[1px] bg-slate-200"></div>
-                    <div class="flex flex-col">
-                        <span class="text-[10px] text-[#6B7280] font-bold uppercase tracking-wider">On Duty Days</span>
-                        <span class="text-2xl font-extrabold text-slate-800 mt-1" id="landing-onduty">-</span>
-                    </div>
-                    <div class="h-10 w-[1px] bg-slate-200"></div>
-                    <div class="flex flex-col">
-                        <span class="text-[10px] text-[#6B7280] font-bold uppercase tracking-wider">Worked Hours This Month</span>
-                        <span class="text-2xl font-extrabold text-slate-800 mt-1" id="landing-hours">-</span>
-                    </div>
-                </div>
-                <div class="flex items-center gap-2 text-xs font-semibold text-purple-600 bg-purple-50 px-4 py-2 rounded-xl border border-purple-100">
-                    <span class="w-2 h-2 rounded-full bg-purple-500 animate-pulse"></span>
-                    <span>Real DB Data Sync</span>
+            <!-- Attendance Center -->
+            <div>
+                <h2 class="text-[18px] font-bold text-slate-800 mb-0.5">Attendance Center</h2>
+                <p class="text-[12px] text-[#9CA3AF] mb-4">Choose an option below to manage and view your attendance</p>
+                <div class="grid grid-cols-6 gap-3">
+                    ${featureCardsHtml}
                 </div>
             </div>
 
-            <div class="space-y-4">
-                <h3 class="font-bold text-xs text-slate-400 uppercase tracking-wider">Attendance Center</h3>
-                <div class="grid grid-cols-1 md:grid-cols-6 gap-4">
-                    <div class="att-feature-card" onclick="setAttendanceSubView('calendar')">
-                        <div class="w-12 h-12 bg-purple-50 border border-purple-100 rounded-2xl flex items-center justify-center text-[#610173] mb-4">
-                            <i data-lucide="calendar" class="w-6 h-6"></i>
-                        </div>
-                        <div class="flex-grow flex flex-col justify-center">
-                            <h4 class="font-bold text-slate-800 text-sm mb-1">Calendar</h4>
-                            <p class="text-[10.5px] text-[#6B7280] leading-relaxed">Interactive calendar workspace & date logs</p>
-                        </div>
-                        <div class="mt-4 arrow-btn">
-                            <i data-lucide="arrow-right" class="w-4 h-4"></i>
-                        </div>
-                    </div>
-                    <div class="att-feature-card" onclick="setAttendanceSubView('history')">
-                        <div class="w-12 h-12 bg-emerald-50 border border-emerald-100 rounded-2xl flex items-center justify-center text-emerald-600 mb-4">
-                            <i data-lucide="file-text" class="w-6 h-6"></i>
-                        </div>
-                        <div class="flex-grow flex flex-col justify-center">
-                            <h4 class="font-bold text-slate-800 text-sm mb-1">History</h4>
-                            <p class="text-[10.5px] text-[#6B7280] leading-relaxed">Filters, pagination, and exports (CSV/PDF)</p>
-                        </div>
-                        <div class="mt-4 arrow-btn">
-                            <i data-lucide="arrow-right" class="w-4 h-4"></i>
-                        </div>
-                    </div>
-                    <div class="att-feature-card" onclick="setAttendanceSubView('corrections')">
-                        <div class="w-12 h-12 bg-blue-50 border border-blue-100 rounded-2xl flex items-center justify-center text-blue-600 mb-4">
-                            <i data-lucide="edit-3" class="w-6 h-6"></i>
-                        </div>
-                        <div class="flex-grow flex flex-col justify-center">
-                            <h4 class="font-bold text-slate-800 text-sm mb-1">Corrections</h4>
-                            <p class="text-[10.5px] text-[#6B7280] leading-relaxed">Request corrections & check manager remarks</p>
-                        </div>
-                        <div class="mt-4 arrow-btn">
-                            <i data-lucide="arrow-right" class="w-4 h-4"></i>
-                        </div>
-                    </div>
-                    <div class="att-feature-card" onclick="setAttendanceSubView('late-credits')">
-                        <div class="w-12 h-12 bg-pink-50 border border-pink-100 rounded-2xl flex items-center justify-center text-pink-600 mb-4">
-                            <i data-lucide="award" class="w-6 h-6"></i>
-                        </div>
-                        <div class="flex-grow flex flex-col justify-center">
-                            <h4 class="font-bold text-slate-800 text-sm mb-1">Late Credits</h4>
-                            <p class="text-[10.5px] text-[#6B7280] leading-relaxed">Check balance and monthly deduction logs</p>
-                        </div>
-                        <div class="mt-4 arrow-btn">
-                            <i data-lucide="arrow-right" class="w-4 h-4"></i>
-                        </div>
-                    </div>
-                    <div class="att-feature-card" onclick="setAttendanceSubView('leaderboard')">
-                        <div class="w-12 h-12 bg-amber-50 border border-amber-100 rounded-2xl flex items-center justify-center text-amber-600 mb-4">
-                            <i data-lucide="trophy" class="w-6 h-6"></i>
-                        </div>
-                        <div class="flex-grow flex flex-col justify-center">
-                            <h4 class="font-bold text-slate-800 text-sm mb-1">Leaderboard</h4>
-                            <p class="text-[10.5px] text-[#6B7280] leading-relaxed">Monthly attendance ranks & movement</p>
-                        </div>
-                        <div class="mt-4 arrow-btn">
-                            <i data-lucide="arrow-right" class="w-4 h-4"></i>
-                        </div>
-                    </div>
-                    <div class="att-feature-card" onclick="setAttendanceSubView('analytics')">
-                        <div class="w-12 h-12 bg-teal-50 border border-teal-100 rounded-2xl flex items-center justify-center text-teal-600 mb-4">
-                            <i data-lucide="pie-chart" class="w-6 h-6"></i>
-                        </div>
-                        <div class="flex-grow flex flex-col justify-center">
-                            <h4 class="font-bold text-slate-800 text-sm mb-1">Analytics</h4>
-                            <p class="text-[10.5px] text-[#6B7280] leading-relaxed">Visual trends, charts & distributions</p>
-                        </div>
-                        <div class="mt-4 arrow-btn">
-                            <i data-lucide="arrow-right" class="w-4 h-4"></i>
-                        </div>
-                    </div>
-                </div>
+            <!-- Dynamic Workspace -->
+            <div id="att-workspace-area" class="animate-fade-in">
+                ${workspaceHtml}
             </div>
         </div>
     `;
@@ -199,149 +205,192 @@ function renderAttendanceLanding(state) {
 async function initAttendanceLanding(state) {
     try {
         const overview = await apiClient('/employee/attendance/overview');
-        document.getElementById('landing-present').innerText = overview.present_days;
-        document.getElementById('landing-absent').innerText = overview.absent_days;
-        document.getElementById('landing-half').innerText = overview.half_days;
-        document.getElementById('landing-late').innerText = overview.late_arrivals;
-        document.getElementById('landing-credits').innerText = overview.late_credits;
-        document.getElementById('landing-percent').innerText = `${overview.attendance_percent}%`;
-        document.getElementById('landing-onduty').innerText = overview.on_duty_days;
-        document.getElementById('landing-hours').innerText = `${overview.worked_hours} hrs`;
+        const setEl = (id, val) => { const el = document.getElementById(id); if (el) el.innerText = val; };
+        setEl('landing-present', overview.present_days);
+        setEl('landing-absent',  overview.absent_days);
+        setEl('landing-half',    overview.half_days);
+        setEl('landing-late',    overview.late_arrivals);
+        setEl('landing-credits', overview.late_credits);
     } catch (e) {
         console.error('Failed to load overview data', e);
         showToast('Failed to load overview metrics', 'error');
     }
 }
 
-function renderAttendanceCalendar(state) {
-    return `
-        <div class="space-y-6 animate-fade-in">
-            ${getSubViewHeader('Calendar Workspace', 'Calendar')}
+function renderCalendarWorkspace() {
+    const MONTH_NAMES = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+    const monthOpts = MONTH_NAMES.map((m, i) => `<option value="${i+1}" ${calendarMonth === i+1 ? 'selected' : ''}>${m}</option>`).join('');
+    const yearOpts = [2024,2025,2026,2027].map(y => `<option value="${y}" ${calendarYear === y ? 'selected' : ''}>${y}</option>`).join('');
 
-            <div class="calendar-wrapper">
-                <div class="bg-white rounded-2xl border border-[#ECECF3] p-6 shadow-sm">
-                    <div class="flex items-center justify-between mb-6">
-                        <h3 class="font-bold text-sm text-slate-800 uppercase tracking-wider">Interactive Calendar</h3>
+    const LEGEND_ITEMS = [
+        { label: 'Present',  color: '#22C55E' },
+        { label: 'Absent',   color: '#EF4444' },
+        { label: 'Half Day', color: '#F59E0B' },
+        { label: 'On Duty',  color: '#2563EB' },
+        { label: 'Leave',    color: '#06B6D4' },
+        { label: 'Holiday',  color: '#8B5CF6' },
+    ];
+    const legendHtml = LEGEND_ITEMS.map(l =>
+        `<span class="cal-legend-item">
+            <span style="width:8px;height:8px;border-radius:50%;background:${l.color};display:inline-block;flex-shrink:0"></span>${l.label}
+        </span>`
+    ).join('');
+
+    const dayHeaders = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun']
+        .map((d,i) => `<div class="cal-day-header ${i>=5?'cal-day-header--weekend':''}">${d}</div>`).join('');
+
+    return `
+        <div class="cal-workspace">
+            <!-- Header row -->
+            <div class="flex items-center gap-3">
+                <div class="cal-workspace-icon">
+                    <i data-lucide="calendar-days" class="w-5 h-5 text-violet-600"></i>
+                </div>
+                <div>
+                    <h2 class="cal-workspace-title">Calendar</h2>
+                    <p class="cal-workspace-subtitle">View your attendance for the selected date</p>
+                </div>
+            </div>
+
+            <div class="cal-layout">
+                <!-- Left: Calendar (65%) -->
+                <div>
+                    <!-- Controls -->
+                    <div class="cal-controls">
                         <div class="flex items-center gap-2">
-                            <select id="cal-month-select" class="text-xs font-bold border border-[#ECECF3] rounded-lg px-2 py-1 focus:outline-none" onchange="changeCalendarMonth(this.value)">
-                                ${[
-                                    'January', 'February', 'March', 'April', 'May', 'June',
-                                    'July', 'August', 'September', 'October', 'November', 'December'
-                                ].map((m, idx) => `<option value="${idx + 1}" ${calendarMonth === idx + 1 ? 'selected' : ''}>${m}</option>`).join('')}
-                            </select>
-                            <select id="cal-year-select" class="text-xs font-bold border border-[#ECECF3] rounded-lg px-2 py-1 focus:outline-none" onchange="changeCalendarYear(this.value)">
-                                ${[2024, 2025, 2026, 2027].map(y => `<option value="${y}" ${calendarYear === y ? 'selected' : ''}>${y}</option>`).join('')}
-                            </select>
+                            <div class="cal-month-pill">
+                                <select id="cal-month-select" onchange="changeCalendarMonth(this.value)">${monthOpts}</select>
+                                <i data-lucide="chevron-down" class="w-3 h-3 text-slate-400 pointer-events-none flex-shrink-0"></i>
+                            </div>
+                            <div class="cal-month-pill">
+                                <select id="cal-year-select" onchange="changeCalendarYear(this.value)">${yearOpts}</select>
+                                <i data-lucide="chevron-down" class="w-3 h-3 text-slate-400 pointer-events-none flex-shrink-0"></i>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <button class="cal-nav-btn" onclick="prevCalendarMonth()">
+                                <i data-lucide="chevron-left" class="w-4 h-4"></i>
+                            </button>
+                            <button class="cal-nav-btn" onclick="nextCalendarMonth()">
+                                <i data-lucide="chevron-right" class="w-4 h-4"></i>
+                            </button>
+                            <button class="cal-today-btn" onclick="goToToday()">Today</button>
+                            <button class="cal-legend-btn" onclick="toggleCalLegend(this)">
+                                <i data-lucide="layout-grid" class="w-3 h-3"></i>
+                                <span>Legend</span>
+                                <i data-lucide="chevron-down" class="w-3 h-3 opacity-50" id="cal-legend-arrow" style="transition:transform 0.2s"></i>
+                            </button>
                         </div>
                     </div>
-                    
-                    <div class="grid grid-cols-7 gap-2 text-center text-[10px] font-extrabold text-[#6B7280] uppercase tracking-wider mb-2">
-                        <div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div class="text-purple-400">Sat</div><div class="text-purple-400">Sun</div>
-                    </div>
-                    
-                    <div id="calendar-grid-container" class="grid grid-cols-7 gap-2">
-                    </div>
+
+                    <!-- Day-of-week labels -->
+                    <div class="cal-day-headers">${dayHeaders}</div>
+
+                    <!-- Calendar grid (filled by initAttendanceCalendar) -->
+                    <div id="calendar-grid-container" class="cal-grid"></div>
+
+                    <!-- Permanent legend row -->
+                    <div class="cal-legend-row">${legendHtml}</div>
                 </div>
 
-                <div class="bg-white rounded-2xl border border-[#ECECF3] p-6 shadow-sm flex flex-col justify-between" style="min-height: 400px;">
-                    <div id="cal-right-panel-content" class="flex-grow flex flex-col justify-center">
-                    </div>
+                <!-- Right: Details panel (35%) -->
+                <div class="cal-right-panel">
+                    <div id="cal-right-panel-content" class="flex-1 flex flex-col"></div>
                 </div>
             </div>
         </div>
     `;
 }
 
-async function initAttendanceCalendar(state) {
+async function initAttendanceCalendar() {
     try {
         const list = await apiClient(`/employee/attendance/calendar?year=${calendarYear}&month=${calendarMonth}`);
-        
+
         const firstDay = new Date(calendarYear, calendarMonth - 1, 1).getDay();
         const startOffset = firstDay === 0 ? 6 : firstDay - 1;
         const totalDays = new Date(calendarYear, calendarMonth, 0).getDate();
-        
+        const today = new Date();
+        const todayStr = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
+
+        // Previous month's trailing days
+        const prevMonthLastDay = new Date(calendarYear, calendarMonth - 1, 0).getDate();
         let gridHtml = '';
         for (let i = 0; i < startOffset; i++) {
-            gridHtml += `<div class="calendar-day-tile inactive-day"></div>`;
+            const prevDay = prevMonthLastDay - (startOffset - 1 - i);
+            gridHtml += `<div class="cal-tile cal-tile--inactive"><span class="cal-tile__day">${prevDay}</span><span class="cal-tile__dot cal-tile__dot--empty"></span></div>`;
         }
-        
+
+        // Current month days
         for (let day = 1; day <= totalDays; day++) {
-            const dateStr = `${calendarYear}-${String(calendarMonth).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+            const dateStr = `${calendarYear}-${String(calendarMonth).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
             const record = list.find(r => r.date === dateStr);
-            
-            let dotHtml = '';
-            let labelText = '';
-            if (record) {
-                dotHtml = `<span class="status-dot ${record.status.replace(' ', '-')}"></span>`;
-                labelText = record.status;
-            }
-            
-            const isSelected = calendarSelectedDate === dateStr ? 'active-day' : '';
+            const isSelected = calendarSelectedDate === dateStr;
+            const isToday = dateStr === todayStr;
+            const dotCls = record ? `cal-tile__dot--${record.status.replace(/\s+/g,'-')}` : 'cal-tile__dot--empty';
+            let extraCls = isSelected ? 'cal-tile--selected' : isToday ? 'cal-tile--today' : '';
             gridHtml += `
-                <div class="calendar-day-tile ${isSelected}" onclick="selectCalendarDate('${dateStr}')">
-                    <span class="text-xs font-bold text-slate-700">${day}</span>
-                    <div class="flex items-center gap-1 mt-1.5 justify-center">
-                        ${dotHtml}
-                        <span class="text-[8px] font-bold text-slate-400 truncate max-w-[40px]">${labelText}</span>
-                    </div>
-                </div>
-            `;
+                <div class="cal-tile ${extraCls}" onclick="selectCalendarDate('${dateStr}')">
+                    <span class="cal-tile__day">${day}</span>
+                    <span class="cal-tile__dot ${dotCls}"></span>
+                </div>`;
         }
-        
+
+        // Next month's leading days to complete the grid
+        const totalCells = Math.ceil((startOffset + totalDays) / 7) * 7;
+        const trailingCount = totalCells - (startOffset + totalDays);
+        for (let i = 1; i <= trailingCount; i++) {
+            gridHtml += `<div class="cal-tile cal-tile--inactive"><span class="cal-tile__day">${i}</span><span class="cal-tile__dot cal-tile__dot--empty"></span></div>`;
+        }
+
         const container = document.getElementById('calendar-grid-container');
         if (container) container.innerHTML = gridHtml;
-        
+
         if (calendarSelectedDate) {
             await selectCalendarDate(calendarSelectedDate);
         } else {
-            const summary = await apiClient(`/employee/attendance/month-summary?year=${calendarYear}&month=${calendarMonth}`);
-            const rightPanel = document.getElementById('cal-right-panel-content');
-            if (rightPanel) {
-                rightPanel.innerHTML = `
-                    <div class="space-y-6 animate-fade-in text-center flex flex-col items-center">
-                        <div class="w-16 h-16 bg-purple-50 text-[#610173] border border-purple-100 rounded-full flex items-center justify-center mb-2 shadow-sm">
-                            <i data-lucide="bar-chart-2" class="w-8 h-8"></i>
-                        </div>
-                        <div>
-                            <h4 class="font-extrabold text-slate-800 text-base">Month Summary</h4>
-                            <p class="text-[10px] text-[#6B7280] font-bold tracking-wider uppercase mt-1">Calendar Overview</p>
-                        </div>
-                        
-                        <div class="grid grid-cols-2 gap-4 w-full text-left mt-2 border-t border-b border-[#ECECF3] py-4">
-                            <div>
-                                <span class="text-[10px] text-[#6B7280] font-bold uppercase tracking-wider block">Present Days</span>
-                                <span class="text-lg font-bold text-slate-800 mt-0.5">${summary.present_days}</span>
-                            </div>
-                            <div>
-                                <span class="text-[10px] text-[#6B7280] font-bold uppercase tracking-wider block">Absent Days</span>
-                                <span class="text-lg font-bold text-slate-800 mt-0.5">${summary.absent_days}</span>
-                            </div>
-                            <div>
-                                <span class="text-[10px] text-[#6B7280] font-bold uppercase tracking-wider block">Half Days</span>
-                                <span class="text-lg font-bold text-slate-800 mt-0.5">${summary.half_days}</span>
-                            </div>
-                            <div>
-                                <span class="text-[10px] text-[#6B7280] font-bold uppercase tracking-wider block">On Duty Days</span>
-                                <span class="text-lg font-bold text-slate-800 mt-0.5">${summary.on_duty_days}</span>
-                            </div>
-                            <div>
-                                <span class="text-[10px] text-[#6B7280] font-bold uppercase tracking-wider block">Attendance Rate</span>
-                                <span class="text-lg font-bold text-emerald-600 mt-0.5">${summary.attendance_percent}%</span>
-                            </div>
-                            <div>
-                                <span class="text-[10px] text-[#6B7280] font-bold uppercase tracking-wider block">Worked Hours</span>
-                                <span class="text-lg font-bold text-slate-800 mt-0.5">${summary.worked_hours}</span>
-                            </div>
-                        </div>
-                    </div>
-                `;
-                if (typeof lucide !== 'undefined') lucide.createIcons();
-            }
+            renderCalRightEmpty();
         }
     } catch (e) {
         console.error('Calendar error', e);
         showToast('Failed to load calendar logs', 'error');
     }
+}
+
+function renderCalRightEmpty() {
+    const rightPanel = document.getElementById('cal-right-panel-content');
+    if (!rightPanel) return;
+    rightPanel.innerHTML = `
+        <div class="flex flex-col items-center justify-between h-full py-8 px-6">
+            <div class="flex-1 flex flex-col items-center justify-center gap-5">
+                <div class="cal-illus-wrap">
+                    <div class="cal-illus-circle">
+                        <i data-lucide="calendar-days" class="w-12 h-12 text-violet-300"></i>
+                    </div>
+                    <div class="cal-illus-plant">🌿</div>
+                </div>
+                <div class="text-center">
+                    <p class="text-[14px] font-semibold text-slate-500 mb-1">Select a date</p>
+                    <p class="text-[12px] text-[#9CA3AF] leading-relaxed">Click on any calendar tile<br>to view attendance details</p>
+                </div>
+            </div>
+            <!-- Bottom decoration -->
+            <div class="opacity-20 pointer-events-none select-none">
+                <svg width="120" height="56" viewBox="0 0 120 56" fill="none">
+                    <rect x="4" y="8" width="48" height="44" rx="9" fill="#7C3AED"/>
+                    <rect x="4" y="8" width="48" height="16" rx="9" fill="#5B21B6"/>
+                    <rect x="17" y="2" width="4" height="12" rx="2" fill="#5B21B6"/>
+                    <rect x="31" y="2" width="4" height="12" rx="2" fill="#5B21B6"/>
+                    <rect x="12" y="34" width="12" height="3" rx="1.5" fill="white" opacity="0.5"/>
+                    <rect x="12" y="42" width="8" height="3" rx="1.5" fill="white" opacity="0.35"/>
+                    <circle cx="93" cy="28" r="22" fill="#7C3AED"/>
+                    <circle cx="93" cy="28" r="16" fill="#5B21B6"/>
+                    <line x1="93" y1="28" x2="93" y2="17" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                    <line x1="93" y1="28" x2="102" y2="28" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+            </div>
+        </div>
+    `;
+    if (typeof lucide !== 'undefined') lucide.createIcons();
 }
 
 window.changeCalendarMonth = (m) => {
@@ -356,61 +405,133 @@ window.changeCalendarYear = (y) => {
     loadPanel('attendance');
 };
 
+window.prevCalendarMonth = () => {
+    calendarMonth--;
+    if (calendarMonth < 1) { calendarMonth = 12; calendarYear--; }
+    calendarSelectedDate = null;
+    loadPanel('attendance');
+};
+
+window.nextCalendarMonth = () => {
+    calendarMonth++;
+    if (calendarMonth > 12) { calendarMonth = 1; calendarYear++; }
+    calendarSelectedDate = null;
+    loadPanel('attendance');
+};
+
+window.goToToday = () => {
+    const now = new Date();
+    calendarMonth = now.getMonth() + 1;
+    calendarYear = now.getFullYear();
+    calendarSelectedDate = null;
+    loadPanel('attendance');
+};
+
 window.selectCalendarDate = async (dateStr) => {
     calendarSelectedDate = dateStr;
+    // Update tile selection highlight without full reload
+    document.querySelectorAll('.cal-tile').forEach(t => t.classList.remove('cal-tile--selected'));
+    const tiles = document.querySelectorAll('.cal-tile:not(.cal-tile--inactive)');
+    const day = parseInt(dateStr.split('-')[2]);
+    if (tiles[day - 1]) tiles[day - 1].classList.add('cal-tile--selected');
+
+    const rightPanel = document.getElementById('cal-right-panel-content');
+    if (!rightPanel) return;
+
     try {
         const details = await apiClient(`/employee/attendance/date-details/${dateStr}`);
-        const rightPanel = document.getElementById('cal-right-panel-content');
-        if (rightPanel) {
-            if (!details) {
-                rightPanel.innerHTML = `
-                    <div class="text-center py-10 space-y-3">
-                        <div class="w-12 h-12 rounded-full bg-slate-50 border border-[#ECECF3] flex items-center justify-center mx-auto text-[#6B7280]">
-                            <i data-lucide="info" class="w-6 h-6"></i>
-                        </div>
-                        <h4 class="font-bold text-slate-800 text-sm">No Record Found</h4>
-                        <p class="text-xs text-[#6B7280] max-w-[200px] mx-auto">There are no attendance or approved on-duty records for ${dateStr}.</p>
+
+        const [y, m, d] = dateStr.split('-');
+        const monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+        const displayDate = `${parseInt(d)} ${monthNames[parseInt(m)-1]} ${y}`;
+
+        if (!details) {
+            rightPanel.innerHTML = `
+                <div class="flex flex-col h-full items-center justify-center p-8 text-center gap-4">
+                    <div class="w-14 h-14 rounded-2xl flex items-center justify-center" style="background:rgba(124,58,237,0.08)">
+                        <i data-lucide="calendar-x" class="w-7 h-7 text-violet-300"></i>
                     </div>
-                `;
-            } else {
-                let rowsHtml = '';
-                const fields = [
-                    { key: 'date', label: 'Date' },
-                    { key: 'status', label: 'Status' },
-                    { key: 'clock_in', label: 'Check In' },
-                    { key: 'clock_out', label: 'Check Out' },
-                    { key: 'worked_hours', label: 'Worked Hours' },
-                    { key: 'overtime', label: 'Overtime' },
-                    { key: 'late_minutes', label: 'Late Minutes' },
-                    { key: 'remarks', label: 'Remarks' }
-                ];
-                
-                fields.forEach(f => {
-                    const val = details[f.key];
-                    if (val !== undefined && val !== null && val !== '') {
-                        rowsHtml += `
-                            <div class="flex items-center justify-between py-2 border-b border-[#ECECF3]">
-                                <span class="text-[10px] text-[#6B7280] font-bold uppercase tracking-wider">${f.label}</span>
-                                <span class="text-xs font-bold text-slate-800 text-right">${val}</span>
-                            </div>
-                        `;
-                    }
-                });
-                
-                rightPanel.innerHTML = `
-                    <div class="space-y-4 animate-fade-in text-left">
-                        <div class="flex items-center justify-between mb-4 pb-2 border-b border-[#ECECF3]">
-                            <h4 class="font-extrabold text-slate-800 text-sm">Day Details</h4>
-                            <button onclick="clearSelectedDate(event)" class="text-[10px] font-extrabold text-purple-600 uppercase hover:text-purple-700 tracking-wider">Close</button>
-                        </div>
-                        <div class="space-y-1 bg-[#FAFAFC] p-3 rounded-xl border border-[#ECECF3]">
-                            ${rowsHtml}
-                        </div>
+                    <div>
+                        <p class="text-[13px] font-semibold text-slate-600 mb-1">No record found</p>
+                        <p class="text-[11px] text-[#9CA3AF]">${displayDate}</p>
                     </div>
-                `;
-            }
+                    <button onclick="clearSelectedDate(event)" class="text-[11px] font-bold text-violet-600 hover:text-violet-700 px-4 py-2 rounded-xl hover:bg-violet-50 transition-colors">← Back</button>
+                </div>`;
             if (typeof lucide !== 'undefined') lucide.createIcons();
+            return;
         }
+
+        // Status pill styles
+        const STATUS_STYLES = {
+            'Present':  { bg: '#DCFCE7', color: '#15803D' },
+            'Absent':   { bg: '#FEE2E2', color: '#DC2626' },
+            'Half Day': { bg: '#FEF3C7', color: '#D97706' },
+            'On Duty':  { bg: '#DBEAFE', color: '#1D4ED8' },
+            'Leave':    { bg: '#CFFAFE', color: '#0E7490' },
+            'Holiday':  { bg: '#EDE9FE', color: '#6D28D9' },
+        };
+        const ss = STATUS_STYLES[details.status] || { bg: '#F3F4F6', color: '#6B7280' };
+
+        // Detail rows — only render fields with values
+        const DETAIL_FIELDS = [
+            { key: 'clock_in',     label: 'Check In',     icon: 'log-in',         valueClass: 'font-bold text-slate-800' },
+            { key: 'clock_out',    label: 'Check Out',    icon: 'log-out',        valueClass: 'font-bold text-slate-800' },
+            { key: 'worked_hours', label: 'Worked Hours', icon: 'clock',          valueClass: 'font-bold text-slate-800' },
+            { key: 'overtime',     label: 'Overtime',     icon: 'zap',            valueClass: 'font-bold text-emerald-600' },
+            { key: 'late_minutes', label: 'Late Minutes', icon: 'alarm-clock',    valueClass: 'font-bold text-amber-600' },
+            { key: 'remarks',      label: 'Remarks',      icon: 'message-circle', valueClass: 'font-semibold text-slate-700' },
+        ];
+        const detailRows = DETAIL_FIELDS
+            .filter(f => details[f.key] !== undefined && details[f.key] !== null && details[f.key] !== '')
+            .map(f => `
+                <div class="flex items-center justify-between py-3 last:border-0" style="border-bottom:1px solid rgba(124,58,237,0.07)">
+                    <div class="flex items-center gap-2.5">
+                        <div class="w-7 h-7 rounded-xl flex items-center justify-center flex-shrink-0" style="background:rgba(124,58,237,0.08)">
+                            <i data-lucide="${f.icon}" class="w-3.5 h-3.5 text-violet-500"></i>
+                        </div>
+                        <span class="text-[12px] text-[#6B7280] font-medium">${f.label}</span>
+                    </div>
+                    <span class="text-[13px] ${f.valueClass} ml-2 text-right">${details[f.key]}</span>
+                </div>`).join('');
+
+        rightPanel.innerHTML = `
+            <div class="flex flex-col h-full animate-fade-in">
+                <!-- Date badge + status -->
+                <div class="flex flex-col items-center text-center pt-7 pb-5 px-5">
+                    <div class="cal-date-badge mb-3">${parseInt(d)}</div>
+                    <p class="cal-detail-date mb-2">${displayDate}</p>
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-[12px] font-bold" style="background:${ss.bg};color:${ss.color}">${details.status}</span>
+                </div>
+                <!-- Gradient divider -->
+                <div style="height:1px;background:linear-gradient(90deg,transparent,rgba(124,58,237,0.15),transparent);margin:0 20px"></div>
+                <!-- Detail rows -->
+                <div class="flex-1 px-5 py-3 overflow-y-auto">
+                    ${detailRows || '<p class="text-center text-[12px] text-[#9CA3AF] py-6 font-medium">No additional details.</p>'}
+                </div>
+                <!-- Bottom illustration + back -->
+                <div class="flex flex-col items-center pb-4 pt-2 gap-3">
+                    <div class="opacity-[0.12] pointer-events-none select-none">
+                        <svg width="130" height="60" viewBox="0 0 130 60" fill="none">
+                            <rect x="4" y="8" width="50" height="48" rx="10" fill="#7C3AED"/>
+                            <rect x="4" y="8" width="50" height="17" rx="10" fill="#5B21B6"/>
+                            <rect x="18" y="2" width="5" height="13" rx="2.5" fill="#5B21B6"/>
+                            <rect x="33" y="2" width="5" height="13" rx="2.5" fill="#5B21B6"/>
+                            <rect x="13" y="36" width="13" height="3" rx="1.5" fill="white" opacity="0.55"/>
+                            <rect x="13" y="45" width="9" height="3" rx="1.5" fill="white" opacity="0.38"/>
+                            <rect x="31" y="36" width="10" height="3" rx="1.5" fill="white" opacity="0.55"/>
+                            <circle cx="101" cy="30" r="24" fill="#7C3AED"/>
+                            <circle cx="101" cy="30" r="17" fill="#5B21B6"/>
+                            <line x1="101" y1="30" x2="101" y2="17" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+                            <line x1="101" y1="30" x2="111" y2="30" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+                            <path d="M62 58 Q72 40 84 52" stroke="#7C3AED" stroke-width="3" fill="none" stroke-linecap="round"/>
+                            <path d="M67 60 Q82 38 98 50" stroke="#5B21B6" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+                        </svg>
+                    </div>
+                    <button onclick="clearSelectedDate(event)" class="text-[11px] font-bold text-[#9CA3AF] hover:text-violet-600 transition-colors">← Back to month view</button>
+                </div>
+            </div>`;
+
+        if (typeof lucide !== 'undefined') lucide.createIcons();
     } catch (e) {
         console.error('Details fetch error', e);
         showToast('Failed to load date details', 'error');
@@ -420,7 +541,17 @@ window.selectCalendarDate = async (dateStr) => {
 window.clearSelectedDate = (e) => {
     if (e) e.stopPropagation();
     calendarSelectedDate = null;
-    loadPanel('attendance');
+    renderCalRightEmpty();
+    document.querySelectorAll('.cal-tile--selected').forEach(t => t.classList.remove('cal-tile--selected'));
+};
+
+window.toggleCalLegend = (btn) => {
+    const panel = document.getElementById('cal-legend-panel');
+    const arrow = document.getElementById('cal-legend-arrow');
+    if (!panel) return;
+    const isHidden = panel.classList.contains('hidden');
+    panel.classList.toggle('hidden', !isHidden);
+    if (arrow) arrow.style.transform = isHidden ? 'rotate(180deg)' : '';
 };
 
 function renderAttendanceHistory(state) {
@@ -755,12 +886,22 @@ window.submitCorrectionRequest = async (e) => {
     }
 };
 
-function renderAttendanceLateCredits(state) {
+function renderLateCreditsWorkspace() {
     return `
-        <div class="space-y-6 animate-fade-in">
-            ${getSubViewHeader('Late Credits Logs', 'Late Credits')}
+        <div class="space-y-5 animate-fade-in">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                    <div class="w-7 h-7 bg-pink-50 border border-pink-100 rounded-xl flex items-center justify-center text-pink-600">
+                        <i data-lucide="award" class="w-3.5 h-3.5"></i>
+                    </div>
+                    <h3 class="font-bold text-sm text-slate-800">Late Credits</h3>
+                </div>
+                <div class="text-[10px] font-extrabold text-[#6B7280] bg-[#FAFAFC] px-3 py-1.5 rounded-xl border border-[#ECECF3] uppercase tracking-wider">
+                    40 Credits / Month
+                </div>
+            </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div class="att-kpi-card">
                     <div class="att-icon-wrapper bg-slate-50 text-slate-600">
                         <i data-lucide="award" class="w-5 h-5"></i>
@@ -791,8 +932,8 @@ function renderAttendanceLateCredits(state) {
             </div>
 
             <div class="bg-white rounded-2xl border border-[#ECECF3] shadow-sm overflow-hidden">
-                <div class="px-6 py-4 border-b border-[#ECECF3]">
-                    <h3 class="font-bold text-sm text-slate-800 uppercase tracking-wider">Credits Deduction Log</h3>
+                <div class="px-6 py-4 border-b border-[#ECECF3] flex items-center justify-between">
+                    <h3 class="font-bold text-sm text-slate-800 uppercase tracking-wider">Credit History</h3>
                 </div>
                 <div class="overflow-x-auto">
                     <table class="w-full text-left border-collapse">
@@ -804,8 +945,7 @@ function renderAttendanceLateCredits(state) {
                                 <th class="px-6 py-4 text-[10px] font-extrabold text-[#6B7280] uppercase tracking-wider">Balance</th>
                             </tr>
                         </thead>
-                        <tbody id="credits-table-body" class="divide-y divide-[#ECECF3]">
-                        </tbody>
+                        <tbody id="credits-table-body" class="divide-y divide-[#ECECF3]"></tbody>
                     </table>
                 </div>
             </div>
@@ -850,24 +990,27 @@ async function initAttendanceLateCredits(state) {
     }
 }
 
-function renderAttendanceLeaderboard(state) {
+function renderLeaderboardWorkspace() {
     return `
-        <div class="space-y-6 animate-fade-in">
-            ${getSubViewHeader('Monthly Leaderboard Rankings', 'Leaderboard')}
+        <div class="space-y-5 animate-fade-in">
+            <div class="flex items-center gap-2">
+                <div class="w-7 h-7 bg-amber-50 border border-amber-100 rounded-xl flex items-center justify-center text-amber-600">
+                    <i data-lucide="trophy" class="w-3.5 h-3.5"></i>
+                </div>
+                <h3 class="font-bold text-sm text-slate-800">Monthly Leaderboard</h3>
+            </div>
 
-            <div class="bg-gradient-to-r from-[#610173] to-[#312E81] text-white p-6 rounded-2xl shadow-md flex items-center justify-between">
+            <div class="bg-gradient-to-r from-[#610173] to-[#312E81] text-white p-5 rounded-2xl shadow-md flex items-center justify-between">
                 <div class="flex items-center gap-4">
-                    <div class="w-12 h-12 bg-white/10 rounded-full flex items-center justify-center font-bold text-lg border border-white/20">
-                        🏆
-                    </div>
+                    <div class="w-11 h-11 bg-white/10 rounded-full flex items-center justify-center text-lg border border-white/20">🏆</div>
                     <div>
-                        <h4 class="font-bold text-sm text-purple-100 uppercase tracking-wider">Your Standings</h4>
-                        <p class="text-xl font-extrabold mt-0.5">Your Current Rank: <span id="lead-my-rank" class="text-amber-300">-</span></p>
+                        <h4 class="font-bold text-xs text-purple-100 uppercase tracking-wider">Your Standings</h4>
+                        <p class="text-lg font-extrabold mt-0.5">Your Current Rank: <span id="lead-my-rank" class="text-amber-300">-</span></p>
                     </div>
                 </div>
                 <div class="text-right">
                     <span class="text-[10px] text-purple-200 font-bold uppercase tracking-wider block">Rank Movement</span>
-                    <span class="text-xl font-bold mt-0.5 inline-block px-3 py-0.5 rounded-lg bg-white/10 border border-white/10" id="lead-my-movement">—</span>
+                    <span class="text-lg font-bold mt-0.5 inline-block px-3 py-0.5 rounded-lg bg-white/10 border border-white/10" id="lead-my-movement">—</span>
                 </div>
             </div>
 
@@ -884,8 +1027,7 @@ function renderAttendanceLeaderboard(state) {
                                 <th class="px-6 py-4 text-[10px] font-extrabold text-[#6B7280] uppercase tracking-wider">Rank Movement</th>
                             </tr>
                         </thead>
-                        <tbody id="leaderboard-table-body" class="divide-y divide-[#ECECF3]">
-                        </tbody>
+                        <tbody id="leaderboard-table-body" class="divide-y divide-[#ECECF3]"></tbody>
                     </table>
                 </div>
             </div>
@@ -953,10 +1095,15 @@ async function initAttendanceLeaderboard(state) {
     }
 }
 
-function renderAttendanceAnalytics(state) {
+function renderAnalyticsWorkspace() {
     return `
-        <div class="space-y-6 animate-fade-in">
-            ${getSubViewHeader('Attendance Performance Analytics', 'Analytics')}
+        <div class="space-y-5 animate-fade-in">
+            <div class="flex items-center gap-2">
+                <div class="w-7 h-7 bg-teal-50 border border-teal-100 rounded-xl flex items-center justify-center text-teal-600">
+                    <i data-lucide="pie-chart" class="w-3.5 h-3.5"></i>
+                </div>
+                <h3 class="font-bold text-sm text-slate-800">Performance Analytics</h3>
+            </div>
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div class="bg-white rounded-2xl border border-[#ECECF3] p-5 shadow-sm flex flex-col items-center">
@@ -965,21 +1112,18 @@ function renderAttendanceAnalytics(state) {
                         <canvas id="chart-distribution" style="max-height: 220px; max-width: 220px;"></canvas>
                     </div>
                 </div>
-
-                <div class="bg-white rounded-2xl border border-[#ECECF3] p-5 shadow-sm md:col-span-2 flex flex-col justify-between" style="min-height: 300px;">
+                <div class="bg-white rounded-2xl border border-[#ECECF3] p-5 shadow-sm md:col-span-2 flex flex-col justify-between" style="min-height: 280px;">
                     <h3 class="font-bold text-xs text-slate-400 uppercase tracking-wider mb-4">Attendance Trend (%)</h3>
                     <div class="flex-grow w-full" style="height: 200px;">
                         <canvas id="chart-trend" style="height: 100%; width: 100%;"></canvas>
                     </div>
                 </div>
             </div>
-            
-            <div class="grid grid-cols-1 gap-6">
-                <div class="bg-white rounded-2xl border border-[#ECECF3] p-5 shadow-sm flex flex-col justify-between" style="min-height: 300px;">
-                    <h3 class="font-bold text-xs text-slate-400 uppercase tracking-wider mb-4">Worked Hours Trend (Weekly)</h3>
-                    <div class="flex-grow w-full" style="height: 200px;">
-                        <canvas id="chart-worked-hours" style="height: 100%; width: 100%;"></canvas>
-                    </div>
+
+            <div class="bg-white rounded-2xl border border-[#ECECF3] p-5 shadow-sm flex flex-col justify-between" style="min-height: 280px;">
+                <h3 class="font-bold text-xs text-slate-400 uppercase tracking-wider mb-4">Worked Hours Trend (Weekly)</h3>
+                <div class="flex-grow w-full" style="height: 200px;">
+                    <canvas id="chart-worked-hours" style="height: 100%; width: 100%;"></canvas>
                 </div>
             </div>
         </div>
@@ -1353,26 +1497,29 @@ const PANELS = {
         }
     },
     attendance: {
-        title: 'Attendance History',
+        title: 'Attendance',
         icon: 'calendar',
         render: (state) => {
-            if (currentAttendanceSubView === 'landing') return renderAttendanceLanding(state);
-            if (currentAttendanceSubView === 'calendar') return renderAttendanceCalendar(state);
+            // History & Corrections open as dedicated full pages
             if (currentAttendanceSubView === 'history') return renderAttendanceHistory(state);
             if (currentAttendanceSubView === 'corrections') return renderAttendanceCorrections(state);
-            if (currentAttendanceSubView === 'late-credits') return renderAttendanceLateCredits(state);
-            if (currentAttendanceSubView === 'leaderboard') return renderAttendanceLeaderboard(state);
-            if (currentAttendanceSubView === 'analytics') return renderAttendanceAnalytics(state);
-            return '<div>Invalid view</div>';
+            // All other sub-views render inside the hybrid workspace
+            return renderAttendanceHybrid();
         },
         init: (state) => {
-            if (currentAttendanceSubView === 'landing') initAttendanceLanding(state);
-            if (currentAttendanceSubView === 'calendar') initAttendanceCalendar(state);
-            if (currentAttendanceSubView === 'history') initAttendanceHistory(state);
-            if (currentAttendanceSubView === 'corrections') initAttendanceCorrections(state);
-            if (currentAttendanceSubView === 'late-credits') initAttendanceLateCredits(state);
-            if (currentAttendanceSubView === 'leaderboard') initAttendanceLeaderboard(state);
-            if (currentAttendanceSubView === 'analytics') initAttendanceAnalytics(state);
+            if (currentAttendanceSubView === 'history') {
+                initAttendanceHistory(state);
+            } else if (currentAttendanceSubView === 'corrections') {
+                initAttendanceCorrections(state);
+            } else {
+                // Always load the top KPI/snapshot data
+                initAttendanceLanding(state);
+                // Then load the active workspace content
+                if (currentAttendanceSubView === 'calendar')     initAttendanceCalendar(state);
+                else if (currentAttendanceSubView === 'late-credits') initAttendanceLateCredits(state);
+                else if (currentAttendanceSubView === 'leaderboard')  initAttendanceLeaderboard(state);
+                else if (currentAttendanceSubView === 'analytics')    initAttendanceAnalytics(state);
+            }
         }
     },
     leave: {
@@ -1470,6 +1617,22 @@ function getPlaceholderTemplate(title, iconName, description) {
 export function renderSidebar(state) {
     const nav = document.getElementById('sidebar-nav');
     if (!nav) return;
+
+    if (state.onboarding_status && state.onboarding_status !== 'Approved') {
+        nav.innerHTML = `
+            <div class="px-4 py-8 text-center text-xs text-slate-400 space-y-3">
+                <div class="w-10 h-10 bg-slate-100 rounded-xl flex items-center justify-center mx-auto text-slate-400 border border-slate-200">
+                    <i data-lucide="lock" class="w-5 h-5"></i>
+                </div>
+                <div>
+                    <p class="font-bold text-slate-700">Features Locked</p>
+                    <p class="text-[10px] text-slate-400 mt-1">Complete onboarding to unlock portal access.</p>
+                </div>
+            </div>
+        `;
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+        return;
+    }
 
     let linksHtml = '';
     const hasActiveSubitem = ['on-duty', 'reimbursement'].includes(state.activePanel);
@@ -1607,7 +1770,7 @@ export function loadPanel(panelId) {
 
     // Reset attendance sub-view state when navigating away from attendance
     if (typeof _lastPanelId !== 'undefined' && _lastPanelId === 'attendance' && panelId !== 'attendance') {
-        currentAttendanceSubView = 'landing';
+        currentAttendanceSubView = 'calendar';
         calendarSelectedDate = null;
     }
     window._lastPanelId = panelId;

@@ -8,18 +8,21 @@ const getSessionDetails = async (userId) => {
     if (!user) throw new Error('User not found');
     let employee = await Employee.findOne({ user_email: user.email.toLowerCase() });
     if (!employee) {
+        // Auto-create a skeleton employee record for users who exist in User but not Employee
         employee = new Employee({
             id: 'emp_' + Math.random().toString(36).slice(2, 9),
             user_email: user.email.toLowerCase(),
             name: user.name || 'Associate',
             department: user.department || 'General',
             designation: 'Associate',
-            status: 'Active',
+            status: 'Pending Verification',
             company: user.company || 'My Company',
             company_id: user.company_id,
             employee_id: 'EMP' + Math.random().toString(36).slice(2, 6).toUpperCase(),
             late_credits: 40,
-            onboarding_status: 'Approved'
+            onboarding_status: 'Pending Onboarding',
+            onboarding_step: 0,
+            employee_type: 'Fresher'
         });
     }
     return { user, employee };
@@ -202,7 +205,16 @@ const seedAttendanceIfEmpty = async (userId, email, companyId) => {
 export const getMe = async (req, res) => {
     try {
         const { user, employee } = await getSessionDetails(req.userId);
-        res.json({ user, employee });
+        const empData = employee.toJSON ? employee.toJSON() : (employee._doc ? { ...employee._doc } : employee);
+        res.json({
+            user,
+            employee: empData,
+            // Top-level onboarding fields for easy frontend access
+            onboarding_status: empData.onboarding_status || 'Pending Onboarding',
+            onboarding_step: empData.onboarding_step || 0,
+            employee_type: empData.employee_type || 'Fresher',
+            email_verified: empData.email_verified || false
+        });
     } catch (err) { res.status(500).json({ error: err.message }); }
 };
 

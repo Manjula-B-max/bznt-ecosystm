@@ -406,7 +406,9 @@
             transition: all 0.3s ease;
             flex: 1 1 auto !important;
             overflow-y: auto !important;
+            overflow-x: hidden !important;
             min-height: 0 !important;
+            min-width: 0 !important;
         }
 
         @keyframes sidebar-entrance {
@@ -555,206 +557,227 @@
             transition: max-height 260ms cubic-bezier(0.4, 0, 0.2, 1), opacity 260ms ease-in-out;
         }
 
-        /* BEZENT Premium Attendance CSS System */
-        .att-kpi-grid {
-            display: grid;
-            grid-template-columns: repeat(5, 1fr);
-            gap: 16px;
+        /* legacy icon wrapper still used in sub-workspace (late-credits) cards */
+        .att-icon-wrapper {
+            width: 40px; height: 40px;
+            border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
         }
 
+        /* ── KPI Cards ── */
         .att-kpi-card {
             background: #FFFFFF;
             border: 1px solid #ECECF3;
-            border-radius: 20px;
-            padding: 16px 20px;
-            box-shadow: 0 4px 12px rgba(97, 1, 115, 0.01);
+            border-radius: 18px;
+            padding: 18px 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.03);
             display: flex;
             align-items: center;
             gap: 16px;
-            transition: all 0.25s ease;
+            transition: box-shadow 0.2s ease;
         }
-
-        .att-kpi-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(97, 1, 115, 0.04);
-            border-color: #f3bdfc;
+        .att-kpi-card:hover { box-shadow: 0 6px 20px rgba(97,1,115,0.06); }
+        .att-kpi-icon {
+            width: 52px; height: 52px;
+            border-radius: 16px;
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
         }
+        .att-kpi-label { font-size: 11px; font-weight: 600; color: #9CA3AF; margin-bottom: 2px; }
+        .att-kpi-value { font-size: 28px; font-weight: 800; color: #111827; line-height: 1.1; }
+        .att-kpi-sub   { font-size: 10px; font-weight: 500; color: #9CA3AF; margin-top: 2px; }
 
-        .att-icon-wrapper {
-            width: 44px;
-            height: 44px;
-            border-radius: 12px;
+        /* ── Feature Cards ── */
+        .att-feature-card {
+            background: #FFFFFF;
+            border: 1px solid #ECECF3;
+            border-radius: 20px;
+            display: flex;
+            flex-direction: column;
+            cursor: pointer;
+            transition: all 0.25s cubic-bezier(0.4,0,0.2,1);
+            overflow: hidden;
+            min-height: 215px;
+            padding: 0;
+        }
+        .att-feature-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 32px rgba(97,1,115,0.09);
+            border-color: #DDD6FE;
+        }
+        .att-feature-illus {
+            height: 120px;
             display: flex;
             align-items: center;
             justify-content: center;
             flex-shrink: 0;
         }
-
-        .att-snapshot-card {
-            background: #FFFFFF;
-            border: 1px solid #ECECF3;
-            border-radius: 20px;
-            padding: 20px 24px;
-            box-shadow: 0 4px 12px rgba(97, 1, 115, 0.01);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            transition: all 0.25s ease;
-        }
-
-        .att-snapshot-card:hover {
-            border-color: #f3bdfc;
-            box-shadow: 0 8px 20px rgba(97, 1, 115, 0.04);
-        }
-
-        .att-center-grid {
-            display: grid;
-            grid-template-columns: repeat(6, 1fr);
-            gap: 16px;
-        }
-
-        .att-feature-card {
-            background: #FFFFFF;
-            border: 1px solid #ECECF3;
-            border-radius: 20px;
-            padding: 20px 16px;
-            box-shadow: 0 4px 12px rgba(97, 1, 115, 0.01);
+        .att-feature-body {
+            padding: 12px 14px 14px;
             display: flex;
             flex-direction: column;
-            align-items: center;
-            justify-content: space-between;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            min-height: 200px;
+            flex: 1;
+        }
+        .att-feature-arrow {
+            width: 28px; height: 28px; border-radius: 50%;
+            background: #F3F4F6; border: 1px solid #E5E7EB;
+            display: flex; align-items: center; justify-content: center;
+            transition: all 0.2s ease; flex-shrink: 0;
+            color: #9CA3AF;
+        }
+        .att-feature-arrow--active {
+            background: #7C3AED; border-color: #7C3AED; color: #FFFFFF;
+            box-shadow: 0 4px 12px rgba(124,58,237,0.30);
         }
 
-        .att-feature-card:hover {
-            transform: translateY(-4px) scale(1.02);
-            border-color: #f3bdfc;
-            box-shadow: 0 12px 28px rgba(97, 1, 115, 0.08);
-        }
-
-        .att-feature-card .arrow-btn {
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            background: #FAFAFC;
-            border: 1px solid #ECECF3;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #6B7280;
-            transition: all 0.2s ease;
-        }
-
-        .att-feature-card:hover .arrow-btn {
-            background: #610173;
-            color: #FFFFFF;
-            border-color: #610173;
-        }
-
-        /* Calendar UI */
-        .calendar-wrapper {
-            display: grid;
-            grid-template-columns: 65% 35%;
-            gap: 24px;
-        }
-
-        .calendar-header-btn {
-            padding: 6px 12px;
-            border: 1px solid #ECECF3;
-            border-radius: 10px;
-            font-size: 12px;
-            font-weight: 600;
+        /* ── Calendar Workspace (Premium) ── */
+        .cal-workspace {
             background: #FFFFFF;
+            border-radius: 24px;
+            border: 1px solid #F0F0F0;
+            box-shadow: 0 4px 32px rgba(0,0,0,0.06), 0 1px 4px rgba(0,0,0,0.04);
+            padding: 20px;
+        }
+        .cal-workspace-icon {
+            width: 42px; height: 42px; border-radius: 13px;
+            background: #F5F3FF; display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+        }
+        .cal-workspace-title  { font-size: 20px; font-weight: 700; color: #111827; line-height: 1.2; }
+        .cal-workspace-subtitle { font-size: 12.5px; color: #9CA3AF; font-weight: 500; margin-top: 2px; }
+        .cal-layout {
+            display: grid;
+            grid-template-columns: 65% 1fr;
+            gap: 16px;
+            margin-top: 18px;
+        }
+        .cal-controls {
+            display: flex; align-items: center; justify-content: space-between;
+            flex-wrap: wrap; gap: 8px; margin-bottom: 14px;
+        }
+        .cal-month-pill {
+            display: inline-flex; align-items: center; gap: 4px;
+            padding: 7px 14px; background: #F9FAFB;
+            border: 1px solid #EFEFEF; border-radius: 20px; cursor: pointer;
             transition: all 0.15s ease;
         }
-
-        .calendar-header-btn:hover {
-            background: #FAFAFC;
-            border-color: #610173;
-            color: #610173;
+        .cal-month-pill:hover { border-color: #C4B5FD; background: #F5F3FF; }
+        .cal-month-pill select {
+            border: none; outline: none; background: transparent; cursor: pointer;
+            -webkit-appearance: none; appearance: none;
+            font-weight: 700; font-size: 13px; color: #374151;
+            font-family: 'Outfit', sans-serif;
         }
-
-        .calendar-day-tile {
-            background: #FFFFFF;
-            border: 1px solid #ECECF3;
-            border-radius: 12px;
-            min-height: 52px;
-            padding: 6px 8px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: space-between;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.01);
+        .cal-nav-btn {
+            width: 34px; height: 34px; border-radius: 50%;
+            border: 1px solid #E5E7EB; background: #FFFFFF;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; color: #6B7280; transition: all 0.15s ease; flex-shrink: 0;
         }
-
-        .calendar-day-tile:hover {
+        .cal-nav-btn:hover { background: #F5F3FF; border-color: #C4B5FD; color: #7C3AED; }
+        .cal-today-btn {
+            padding: 6px 16px; border-radius: 20px; border: 1px solid #E5E7EB; background: #FFFFFF;
+            font-size: 12px; font-weight: 600; color: #374151;
+            cursor: pointer; transition: all 0.15s ease; white-space: nowrap;
+            font-family: 'Outfit', sans-serif;
+        }
+        .cal-today-btn:hover { border-color: #7C3AED; color: #7C3AED; background: #F5F3FF; }
+        .cal-legend-btn {
+            display: inline-flex; align-items: center; gap: 5px;
+            padding: 6px 14px; border-radius: 20px; border: 1px solid #E5E7EB; background: #FFFFFF;
+            font-size: 12px; font-weight: 600; color: #6B7280;
+            cursor: pointer; transition: all 0.15s ease; white-space: nowrap;
+            font-family: 'Outfit', sans-serif;
+        }
+        .cal-legend-btn:hover { background: #F5F3FF; border-color: #C4B5FD; color: #7C3AED; }
+        /* Day headers */
+        .cal-day-headers { display: grid; grid-template-columns: repeat(7,1fr); gap: 5px; margin-bottom: 6px; }
+        .cal-day-header {
+            text-align: center; font-size: 10.5px; font-weight: 700; color: #9CA3AF;
+            padding: 3px 0; letter-spacing: 0.05em; text-transform: uppercase;
+        }
+        .cal-day-header--weekend { color: #C4B5FD; }
+        /* Grid */
+        .cal-grid { display: grid; grid-template-columns: repeat(7,1fr); gap: 5px; }
+        /* Tiles – compact, day number top / dot bottom */
+        .cal-tile {
+            border: 1px solid #EFEFEF; border-radius: 14px; min-height: 62px;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: space-between;
+            padding: 10px 2px 8px;
+            cursor: pointer; background: #FFFFFF; transition: all 0.22s ease;
+        }
+        .cal-tile:hover:not(.cal-tile--inactive) {
             transform: translateY(-2px);
-            box-shadow: 0 6px 14px rgba(97, 1, 115, 0.06);
-            border-color: #dd73f0;
+            box-shadow: 0 5px 16px rgba(0,0,0,0.07);
+            border-color: #C4B5FD; background: #FDFAFF;
         }
-
-        .calendar-day-tile.active-day {
-            border: 2px solid #610173 !important;
-            background: #fdf6ff !important;
+        .cal-tile--selected {
+            border: 2px solid #7C3AED !important;
+            background: #F6F0FF !important;
+            box-shadow: 0 6px 20px rgba(124,58,237,0.14) !important;
+            transform: scale(1.04) !important;
         }
-
-        .calendar-day-tile.inactive-day {
-            background: #F9FAFB !important;
-            color: #D1D5DB !important;
-            cursor: not-allowed;
-            pointer-events: none;
+        .cal-tile--today { border-color: #7C3AED; background: #FDFAFF; }
+        .cal-tile--inactive {
+            background: transparent !important; border-color: transparent !important;
+            cursor: default; pointer-events: none;
         }
-
-        .status-dot {
-            width: 5px;
-            height: 5px;
-            border-radius: 50%;
-            display: inline-block;
+        .cal-tile__day { font-size: 14px; font-weight: 700; color: #374151; line-height: 1; }
+        .cal-tile--inactive .cal-tile__day  { color: #D1D5DB; font-weight: 400; }
+        .cal-tile--selected .cal-tile__day  { color: #5B21B6; font-weight: 800; }
+        .cal-tile--today .cal-tile__day     { color: #7C3AED; font-weight: 800; }
+        .cal-tile__dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+        .cal-tile__dot--empty    { background: transparent; }
+        .cal-tile__dot--Present  { background: #22C55E; }
+        .cal-tile__dot--Absent   { background: #EF4444; }
+        .cal-tile__dot--Half-Day { background: #F59E0B; }
+        .cal-tile__dot--On-Duty  { background: #2563EB; }
+        .cal-tile__dot--Leave    { background: #06B6D4; }
+        .cal-tile__dot--Holiday  { background: #8B5CF6; }
+        .cal-tile__dot--Late     { background: #A855F7; }
+        /* Legend */
+        .cal-legend-row {
+            display: flex; flex-wrap: wrap; align-items: center;
+            gap: 14px; padding-top: 14px; margin-top: 14px;
+            border-top: 1px solid #F3F4F6;
         }
-
-        .status-dot.Present {
-            background-color: #10B981;
+        .cal-legend-item {
+            display: inline-flex; align-items: center; gap: 6px;
+            font-size: 12px; font-weight: 600; color: #6B7280; white-space: nowrap;
         }
-
-        .status-dot.Absent {
-            background-color: #EF4444;
+        /* Right details panel */
+        .cal-right-panel {
+            background: linear-gradient(160deg, #FCFBFF 0%, #F0EBFF 100%);
+            border-radius: 20px; min-height: 360px;
+            overflow: hidden; display: flex; flex-direction: column;
+            border: 1px solid rgba(124,58,237,0.08);
         }
-
-        .status-dot.Half-Day {
-            background-color: #F59E0B;
+        .cal-date-badge {
+            width: 52px; height: 52px; border-radius: 50%;
+            background: #7C3AED; color: #FFFFFF;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 20px; font-weight: 800; line-height: 1; margin: 0 auto;
+            box-shadow: 0 6px 20px rgba(124,58,237,0.35);
         }
-
-        .status-dot.On-Duty {
-            background-color: #3B82F6;
+        .cal-detail-date { font-size: 15px; font-weight: 700; color: #111827; }
+        /* Empty state illustration */
+        .cal-illus-wrap {
+            position: relative; width: 160px; height: 160px;
+            display: flex; align-items: center; justify-content: center;
         }
-
-        .status-dot.Leave {
-            background-color: #06B6D4;
+        .cal-illus-circle {
+            width: 130px; height: 130px; border-radius: 50%;
+            background: linear-gradient(135deg, #EDE9FE 0%, #F5F3FF 100%);
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 12px 32px rgba(124,58,237,0.12);
         }
+        .cal-illus-plant { position: absolute; bottom: 0; right: 0; font-size: 40px; line-height: 1; }
 
-        .status-dot.Holiday {
-            background-color: #8B5CF6;
-        }
-
-        /* Detail/Summary Panel */
-        .details-panel-card {
-            background: #FFFFFF;
-            border: 1px solid #ECECF3;
-            border-radius: 20px;
-            padding: 24px;
-            box-shadow: 0 4px 16px rgba(97, 1, 115, 0.01);
-            height: 100%;
-        }
-
-        /* Leaderboard and items */
+        /* Leaderboard highlight */
         .rank-highlight-me {
             background: #fdf6ff !important;
-            border: 1px solid rgba(164, 2, 191, 0.2) !important;
+            border: 1px solid rgba(164,2,191,0.2) !important;
             border-radius: 12px;
         }
     </style>
@@ -878,6 +901,73 @@
         document.addEventListener('DOMContentLoaded', async () => {
             // Subscribe the UI render updates to state change
             employeeState.subscribe((state) => {
+                if (state.loading || state.onboarding_status === null) return;
+                const obStatus = state.onboarding_status;
+                if (obStatus !== 'Approved' && obStatus !== 'Pending HR Verification') {
+                    window.location.href = '/onboarding.html';
+                    return;
+                }
+
+                if (obStatus === 'Pending HR Verification') {
+                    const wsContainer = document.getElementById('workspaceSelectorContainer');
+                    if (wsContainer) wsContainer.style.display = 'none';
+                    renderSidebar(state);
+
+                    const main = document.getElementById('main-content');
+                    if (main) {
+                        main.innerHTML = `
+                            <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:80vh;text-align:center;padding:40px;">
+                                <div style="width:120px;height:120px;border-radius:50%;background:linear-gradient(135deg,#EFF6FF,#DBEAFE);border:3px solid #93C5FD;display:flex;align-items:center;justify-content:center;margin:0 auto 28px;animation:pulse-blue 2s ease infinite;">
+                                    <i data-lucide="search" style="width:48px;height:48px;color:#3B82F6;"></i>
+                                </div>
+                                <div style="display:inline-flex;align-items:center;gap:8px;padding:8px 20px;background:#EFF6FF;border:1.5px solid #BFDBFE;border-radius:100px;margin-bottom:20px;">
+                                    <span style="width:8px;height:8px;border-radius:50%;background:#3B82F6;display:inline-block;animation:blink 1.5s ease infinite;"></span>
+                                    <span style="font-size:13px;font-weight:700;color:#1D4ED8;font-family:'Outfit',sans-serif;">Pending HR Verification</span>
+                                </div>
+                                <h2 style="font-size:28px;font-weight:900;color:#111827;margin-bottom:12px;font-family:'Outfit',sans-serif;">Your Profile is Under Review</h2>
+                                <p style="font-size:15px;color:#6B7280;max-width:480px;margin:0 auto 32px;line-height:1.6;font-weight:500;font-family:'Outfit',sans-serif;">
+                                    You've successfully submitted your onboarding information. Our HR team is reviewing your documents and will activate your portal access within 1–2 business days.
+                                </p>
+                                <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;max-width:560px;margin:0 auto 36px;">
+                                    <div style="padding:20px;background:#fff;border:1px solid #E5E7EB;border-radius:16px;text-align:center;font-family:'Outfit',sans-serif;">
+                                        <div style="font-size:28px;margin-bottom:8px;">📋</div>
+                                        <div style="font-size:12px;font-weight:700;color:#111827;">Documents</div>
+                                        <div style="font-size:11px;color:#6B7280;margin-top:4px;">Under review</div>
+                                    </div>
+                                    <div style="padding:20px;background:#fff;border:1px solid #E5E7EB;border-radius:16px;text-align:center;font-family:'Outfit',sans-serif;">
+                                        <div style="font-size:28px;margin-bottom:8px;">🔍</div>
+                                        <div style="font-size:12px;font-weight:700;color:#111827;">HR Verification</div>
+                                        <div style="font-size:11px;color:#6B7280;margin-top:4px;">In progress</div>
+                                    </div>
+                                    <div style="padding:20px;background:#fff;border:1px solid #E5E7EB;border-radius:16px;text-align:center;font-family:'Outfit',sans-serif;">
+                                        <div style="font-size:28px;margin-bottom:8px;">🚀</div>
+                                        <div style="font-size:12px;font-weight:700;color:#111827;">Portal Access</div>
+                                        <div style="font-size:11px;color:#6B7280;margin-top:4px;">Pending approval</div>
+                                    </div>
+                                </div>
+                                <div style="display:flex;gap:12px;align-items:center;">
+                                    <button onclick="location.reload()" style="padding:13px 28px;background:linear-gradient(135deg,#610173,#7C3AED);color:#fff;border:none;border-radius:14px;font-size:14px;font-weight:700;cursor:pointer;font-family:'Outfit',sans-serif;display:flex;align-items:center;gap:8px;">
+                                        <i data-lucide="refresh-cw" style="width:16px;height:16px;"></i> Refresh Status
+                                    </button>
+                                    <a href="/onboarding.html" style="padding:12px 24px;background:#fff;color:#610173;border:1.5px solid #E5E7EB;border-radius:14px;font-size:13px;font-weight:700;text-decoration:none;font-family:'Outfit',sans-serif;">
+                                        View Submission
+                                    </a>
+                                </div>
+                            </div>
+                            <style>
+                                @keyframes pulse-blue { 0%,100%{box-shadow:0 0 0 0 rgba(59,130,246,0.2)} 50%{box-shadow:0 0 0 16px rgba(59,130,246,0)} }
+                                @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+                            </style>
+                        `;
+                        if (typeof lucide !== 'undefined') lucide.createIcons();
+                    }
+                    return;
+                }
+
+                // Normal Approved Flow
+                const wsContainer = document.getElementById('workspaceSelectorContainer');
+                if (wsContainer) wsContainer.style.display = 'flex';
+
                 renderSidebar(state);
                 loadPanel(state.activePanel);
 

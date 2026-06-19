@@ -95,7 +95,14 @@ router.get('/employees', employeeAccessMiddleware, async (req, res) => {
     try {
         const filter = await getScopedFilter(req);
         const list = await EmployeeModel.find(filter).sort({ name: 1 }).lean();
-        res.json(list.map(d => { delete d._id; delete d.__v; return d; }));
+        const mappedList = list.map(emp => {
+            if (emp.onboarding_status === 'Pending HR Verification') {
+                emp.onboarding_status = 'Pending Verification';
+            }
+            delete emp._id; delete emp.__v;
+            return emp;
+        });
+        res.json(mappedList);
     } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
@@ -105,11 +112,28 @@ router.post('/employees', hrAccessMiddleware, async (req, res) => {
         data.id = data.id || uid();
         if (data.user_email) data.user_email = data.user_email.toLowerCase();
 
-        // Auto-assign Employee ID and onboarding status of Approved since no onboarding is needed
+        // Map legacy title to designation
+        if (data.title && !data.designation) {
+            data.designation = data.title;
+        }
+
+        // Auto-assign Employee ID
         if (!data.employee_id) {
             data.employee_id = await generateNextEmployeeId(data.company || 'My Company');
         }
-        data.onboarding_status = 'Approved';
+
+        // Map status 'Intern' to employee_type Intern
+        if (data.status === 'Intern' && !data.employee_type) {
+            data.employee_type = 'Intern';
+        }
+
+        // Employee type defaults to Fresher
+        data.employee_type = data.employee_type || 'Fresher';
+
+        // Always start with Pending Onboarding — wizard must be completed
+        data.onboarding_status = 'Pending Onboarding';
+        data.onboarding_step = 0;
+        data.status = 'Pending Verification';
 
         await EmployeeModel.findOneAndUpdate(
             { id: data.id },

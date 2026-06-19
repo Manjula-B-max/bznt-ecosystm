@@ -31,7 +31,9 @@ export default defineConfig({
         superAdmin: resolve(__dirname, 'super-admin.html'),
         projectflow: resolve(__dirname, 'projectflow-crm.html'),
         employee: resolve(__dirname, 'employee.html'),
-        manager: resolve(__dirname, 'manager.html')
+        manager: resolve(__dirname, 'manager.html'),
+        onboarding: resolve(__dirname, 'onboarding.html')
+
       }
     }
   }

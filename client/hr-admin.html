@@ -1002,6 +1002,10 @@
             <div class="sidebar-tab" data-target="helpView">
                 <i data-lucide="life-buoy" class="w-4 h-4"></i> Helpdesk
             </div>
+            <div class="sidebar-tab" data-target="onboardingView" style="position:relative;">
+                <i data-lucide="user-check" class="w-4 h-4"></i> Onboarding
+                <span id="ob-queue-badge" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:#7C3AED;color:#fff;border-radius:100px;font-size:9px;font-weight:800;padding:2px 7px;display:none;">0</span>
+            </div>
         </nav>
 
         <!-- ZONE 3: INTEGRATED LOGOUT FOOTER -->
@@ -1366,7 +1370,7 @@
                     <p class="text-sm text-[#6B7280] mt-0.5">Manage team directory, contact logs, and preview live
                         stats.</p>
                 </div>
-                <button
+                <button onclick="openAddEmployeeModal()"
                     class="bg-gradient-to-r from-[#7C3AED] to-[#5B21B6] hover:brightness-110 text-white px-4 py-2 rounded-xl text-sm font-semibold transition flex items-center gap-2">
                     <i data-lucide="user-plus" class="w-4 h-4"></i> Add Employee
                 </button>
@@ -1747,6 +1751,41 @@
             </div>
         </div>
 
+        <!-- ==================== ONBOARDING VERIFICATION QUEUE ==================== -->
+        <div id="onboardingView" class="tab-content space-y-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h2 class="text-2xl font-bold tracking-tight">Onboarding Verification Queue</h2>
+                    <p class="text-sm text-[#6B7280] mt-0.5">Review and approve employee onboarding submissions to grant portal access.</p>
+                </div>
+                <button onclick="loadOnboardingQueue()" style="padding:10px 20px;background:#F5F3FF;border:1.5px solid #EDE9FE;border-radius:14px;font-size:13px;font-weight:700;color:#7C3AED;cursor:pointer;display:flex;align-items:center;gap:8px;font-family:'Outfit',sans-serif;">
+                    <i data-lucide="refresh-cw" style="width:14px;height:14px;"></i> Refresh
+                </button>
+            </div>
+            <div style="display:grid;grid-template-columns:380px 1fr;gap:20px;align-items:start;">
+                <!-- Left: Queue List -->
+                <div style="background:#fff;border:1px solid #E5E7EB;border-radius:20px;overflow:hidden;">
+                    <div style="padding:16px 20px;border-bottom:1px solid #E5E7EB;display:flex;align-items:center;justify-content:space-between;">
+                        <span style="font-size:13px;font-weight:800;color:#111827;">Pending Verification</span>
+                        <span id="ob-count-badge" style="font-size:11px;font-weight:700;background:#F5F3FF;color:#7C3AED;border-radius:100px;padding:3px 12px;border:1px solid #EDE9FE;">Loading...</span>
+                    </div>
+                    <div id="ob-queue-list" style="max-height:70vh;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:8px;">
+                        <div style="text-align:center;padding:40px 20px;color:#6B7280;">
+                            <div style="font-size:32px;margin-bottom:12px;">⏳</div>
+                            <div style="font-size:13px;">Loading queue...</div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Right: Detail Panel -->
+                <div id="ob-detail-panel" style="background:#fff;border:1px solid #E5E7EB;border-radius:20px;overflow:hidden;max-height:80vh;overflow-y:auto;">
+                    <div style="padding:60px 40px;text-align:center;color:#6B7280;">
+                        <div style="font-size:48px;margin-bottom:16px;">👈</div>
+                        <div style="font-size:14px;font-weight:600;">Select an employee from the queue to review their onboarding submission.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Footer -->
         <footer class="py-6 mt-12 text-center text-xs text-[#6B7280] border-t border-[#ECECF3] bg-white w-full">
             <p>&copy; 2026 BEZENT. Master Platform HR Admin. All rights reserved.</p>
@@ -1875,8 +1914,304 @@
         }
 
         // Run
-        window.addEventListener('load', initWeeklyChart);
+        window.addEventListener('load', () => {
+            initWeeklyChart();
+            loadOnboardingQueue();
+        });
+
+        // ── Add Employee Modal ─────────────────────────────────────────────
+        window.openAddEmployeeModal = () => {
+            document.getElementById('add-emp-modal').style.display = 'flex';
+        };
+        window.closeAddEmployeeModal = () => {
+            document.getElementById('add-emp-modal').style.display = 'none';
+            document.getElementById('add-emp-form').reset();
+        };
+
+        window.submitAddEmployee = async () => {
+            const btn = document.getElementById('add-emp-btn');
+            btn.disabled = true; btn.textContent = 'Saving...';
+            try {
+                const token = localStorage.getItem('bezent_jwt') || '';
+                const payload = {
+                    name: document.getElementById('ae-name').value.trim(),
+                    designation: document.getElementById('ae-designation').value.trim(),
+                    department: document.getElementById('ae-department').value.trim(),
+                    user_email: document.getElementById('ae-email').value.trim(),
+                    mobile: document.getElementById('ae-mobile').value.trim(),
+                    reporting_manager: document.getElementById('ae-manager').value.trim(),
+                    joined_date: document.getElementById('ae-join-date').value,
+                    employee_type: document.getElementById('ae-emp-type').value,
+                    salary: parseFloat(document.getElementById('ae-salary').value || '0')
+                };
+                if (!payload.name || !payload.user_email || !payload.designation) {
+                    alert('Name, Email and Designation are required.'); return;
+                }
+                const res = await fetch('/api/hr/employees', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+                    body: JSON.stringify(payload)
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || 'Failed');
+                alert(`✅ Employee created! ID: ${data.employee_id}\nOnboarding wizard will be sent to: ${payload.user_email}`);
+                closeAddEmployeeModal();
+            } catch (e) {
+                alert('Error: ' + e.message);
+            } finally {
+                btn.disabled = false; btn.textContent = 'Create Employee';
+            }
+        };
+
+        // ── Onboarding Verification Queue ─────────────────────────────────
+        window._obQueue = [];
+        window._obSelectedIdx = null;
+
+        async function loadOnboardingQueue() {
+            try {
+                const token = localStorage.getItem('bezent_jwt') || '';
+                const res = await fetch('/api/employee/onboarding/hr/queue', {
+                    headers: { 'Authorization': 'Bearer ' + token }
+                });
+                if (!res.ok) return;
+                const data = await res.json();
+                window._obQueue = data;
+                // Update badge
+                const badge = document.getElementById('ob-queue-badge');
+                if (badge) {
+                    badge.textContent = data.length;
+                    badge.style.display = data.length > 0 ? '' : 'none';
+                }
+                renderOnboardingQueue();
+            } catch (_) {}
+        }
+
+        function renderOnboardingQueue() {
+            const wrap = document.getElementById('ob-queue-list');
+            if (!wrap) return;
+            const q = window._obQueue;
+            if (!q.length) {
+                wrap.innerHTML = `
+                    <div style="text-align:center;padding:60px 20px;color:#6B7280;">
+                        <div style="font-size:48px;margin-bottom:16px;">🎉</div>
+                        <div style="font-size:15px;font-weight:700;color:#111827;margin-bottom:8px;">All Clear!</div>
+                        <div style="font-size:13px;">No employees pending onboarding verification.</div>
+                    </div>`;
+                return;
+            }
+            wrap.innerHTML = q.map((emp, i) => `
+                <div class="ob-queue-row ${window._obSelectedIdx === i ? 'selected' : ''}" onclick="selectOnboardingEmployee(${i})">
+                    <div style="display:flex;align-items:center;gap:12px;">
+                        <div style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#7C3AED,#9333EA);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:15px;flex-shrink:0;">
+                            ${(emp.name||'?').slice(0,2).toUpperCase()}
+                        </div>
+                        <div>
+                            <div style="font-size:13px;font-weight:700;color:#111827;">${emp.name}</div>
+                            <div style="font-size:11px;color:#6B7280;">${emp.designation || '—'} · ${emp.department || '—'} · ${emp.employee_type || 'Fresher'}</div>
+                        </div>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:8px;margin-top:10px;">
+                        <span style="font-size:11px;font-weight:700;color:#1D4ED8;background:#EFF6FF;border:1px solid #BFDBFE;border-radius:100px;padding:3px 10px;">${emp.employee_id}</span>
+                        <span style="font-size:11px;color:#6B7280;">${emp.onboarding_submitted_at ? new Date(emp.onboarding_submitted_at).toLocaleDateString('en-IN') : 'Submitted'}</span>
+                        <span style="margin-left:auto;font-size:10px;font-weight:700;color:#D97706;background:#FFFBEB;border:1px solid #FDE68A;border-radius:100px;padding:3px 10px;">Pending Review</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        window.selectOnboardingEmployee = (idx) => {
+            window._obSelectedIdx = idx;
+            renderOnboardingQueue();
+            renderOnboardingDetail(window._obQueue[idx]);
+        };
+
+        function renderOnboardingDetail(emp) {
+            const panel = document.getElementById('ob-detail-panel');
+            if (!panel) return;
+            const docs = emp.documents || [];
+            panel.innerHTML = `
+                <div style="display:flex;align-items:center;gap:14px;padding:20px 24px;border-bottom:1px solid #E5E7EB;">
+                    <div style="width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#7C3AED,#9333EA);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900;font-size:18px;flex-shrink:0;">${(emp.name||'?').slice(0,2).toUpperCase()}</div>
+                    <div style="flex:1;">
+                        <div style="font-size:16px;font-weight:800;color:#111827;">${emp.name}</div>
+                        <div style="font-size:12px;color:#6B7280;font-weight:500;">${emp.employee_id} · ${emp.designation || '—'} · ${emp.employee_type || 'Fresher'}</div>
+                    </div>
+                    <div style="display:flex;gap:8px;">
+                        <button onclick="approveOnboarding('${emp.employee_id}')" style="padding:9px 18px;background:#10B981;color:#fff;border:none;border-radius:12px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Outfit',sans-serif;">✅ Approve</button>
+                        <button onclick="rejectOnboarding('${emp.employee_id}')" style="padding:9px 18px;background:#EF4444;color:#fff;border:none;border-radius:12px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Outfit',sans-serif;">❌ Return</button>
+                    </div>
+                </div>
+
+                <!-- Personal Info -->
+                <div style="padding:20px 24px;border-bottom:1px solid #E5E7EB;">
+                    <div style="font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:0.05em;color:#6B7280;margin-bottom:14px;">Personal Information</div>
+                    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;">
+                        ${detailField('Mobile', emp.mobile)}
+                        ${detailField('Personal Email', emp.personal_email)}
+                        ${detailField('Date of Birth', emp.dob)}
+                        ${detailField('Gender', emp.gender)}
+                        ${detailField('Blood Group', emp.blood_group)}
+                        ${detailField('Nationality', emp.nationality)}
+                        ${detailField('Permanent Address', (emp.permanent_address||{}).line ? ((emp.permanent_address||{}).line + ', ' + ((emp.permanent_address||{}).city||'')) : '—')}
+                        ${detailField('Emergency Contact', ((emp.emergency_contacts||[])[0]||{}).name ? `${(emp.emergency_contacts[0].name)} (${emp.emergency_contacts[0].relationship}) ${emp.emergency_contacts[0].mobile}` : '—')}
+                    </div>
+                </div>
+
+                <!-- Bank Details -->
+                <div style="padding:20px 24px;border-bottom:1px solid #E5E7EB;">
+                    <div style="font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:0.05em;color:#6B7280;margin-bottom:14px;">Bank & Payroll</div>
+                    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;">
+                        ${detailField('Account Holder', emp.bank_holder_name)}
+                        ${detailField('Bank Name', emp.bank_name)}
+                        ${detailField('Account No', emp.bank_account_number ? '••••' + emp.bank_account_number.slice(-4) : '—')}
+                        ${detailField('IFSC', emp.bank_ifsc)}
+                        ${detailField('UAN', emp.uan || (emp.uan_exists === false ? 'To be created' : '—'))}
+                        ${detailField('ESI', emp.esi_number || '—')}
+                    </div>
+                </div>
+
+                <!-- Documents -->
+                <div style="padding:20px 24px;">
+                    <div style="font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:0.05em;color:#6B7280;margin-bottom:14px;">Documents (${docs.length})</div>
+                    ${docs.length === 0 ? '<div style="color:#6B7280;font-size:13px;">No documents uploaded.</div>' : ''}
+                    <div style="display:flex;flex-direction:column;gap:10px;">
+                        ${docs.map(doc => `
+                            <div style="display:flex;align-items:center;gap:12px;padding:12px 16px;background:#F9FAFB;border:1px solid #E5E7EB;border-radius:12px;">
+                                <div style="flex:1;">
+                                    <div style="font-size:13px;font-weight:700;color:#111827;">${doc.doc_label || doc.doc_type}</div>
+                                    <div style="font-size:11px;color:#6B7280;">${doc.file_name || doc.file_url || '—'}</div>
+                                </div>
+                                <span style="font-size:10px;font-weight:700;padding:3px 10px;border-radius:100px;background:${doc.status==='Verified'?'rgba(16,185,129,0.1)':doc.status==='Rejected'?'rgba(239,68,68,0.1)':'rgba(245,158,11,0.1)'};color:${doc.status==='Verified'?'#10B981':doc.status==='Rejected'?'#EF4444':'#D97706'};">${doc.status||'Pending'}</span>
+                                <div style="display:flex;gap:6px;">
+                                    <button onclick="verifyDoc('${emp.employee_id}','${doc.doc_type}','verified')" style="padding:5px 10px;background:#10B981;color:#fff;border:none;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;font-family:'Outfit',sans-serif;">✓</button>
+                                    <button onclick="verifyDoc('${emp.employee_id}','${doc.doc_type}','rejected')" style="padding:5px 10px;background:#EF4444;color:#fff;border:none;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;font-family:'Outfit',sans-serif;">✗</button>
+                                    ${doc.file_url ? `<a href="${doc.file_url}" target="_blank" style="padding:5px 10px;background:#EFF6FF;color:#3B82F6;border-radius:8px;font-size:11px;font-weight:700;text-decoration:none;">View</a>` : ''}
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+        function detailField(label, val) {
+            return `<div><div style="font-size:10px;font-weight:700;text-transform:uppercase;color:#9CA3AF;margin-bottom:2px;">${label}</div><div style="font-size:13px;font-weight:600;color:#111827;">${val||'—'}</div></div>`;
+        }
+
+        window.verifyDoc = async (empId, docType, action) => {
+            const remarks = action === 'rejected' ? (prompt('Enter rejection remarks:') || 'Document rejected') : '';
+            try {
+                const token = localStorage.getItem('bezent_jwt') || '';
+                const res = await fetch(`/api/employee/onboarding/hr/detail/${empId}/verify-doc`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+                    body: JSON.stringify({ doc_type: docType, action, remarks })
+                });
+                const data = await res.json();
+                if (data.ok) { await loadOnboardingQueue(); if (window._obSelectedIdx !== null) renderOnboardingDetail(window._obQueue[window._obSelectedIdx]); }
+            } catch (e) { alert(e.message); }
+        };
+
+        window.approveOnboarding = async (empId) => {
+            if (!confirm('Approve this employee\'s onboarding? This will grant full portal access.')) return;
+            const remarks = prompt('Add approval remarks (optional):') || 'All documents verified. Onboarding approved.';
+            try {
+                const token = localStorage.getItem('bezent_jwt') || '';
+                const res = await fetch(`/api/employee/onboarding/hr/detail/${empId}/approve`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+                    body: JSON.stringify({ remarks })
+                });
+                const data = await res.json();
+                if (data.ok) { alert('✅ ' + data.message); window._obSelectedIdx = null; document.getElementById('ob-detail-panel').innerHTML = '<div style="padding:40px;text-align:center;color:#6B7280;"><div style="font-size:40px;margin-bottom:12px;">✅</div>Employee approved successfully!</div>'; await loadOnboardingQueue(); }
+            } catch (e) { alert(e.message); }
+        };
+
+        window.rejectOnboarding = async (empId) => {
+            const remarks = prompt('Enter reason for returning to employee:');
+            if (!remarks) return;
+            try {
+                const token = localStorage.getItem('bezent_jwt') || '';
+                const res = await fetch(`/api/employee/onboarding/hr/detail/${empId}/reject`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+                    body: JSON.stringify({ remarks })
+                });
+                const data = await res.json();
+                if (data.ok) { alert('↩ ' + data.message); window._obSelectedIdx = null; document.getElementById('ob-detail-panel').innerHTML = '<div style="padding:40px;text-align:center;color:#6B7280;">Returned to employee for correction.</div>'; await loadOnboardingQueue(); }
+            } catch (e) { alert(e.message); }
+        };
+
+        // Run
+        window.addEventListener('load', () => {
+            initWeeklyChart();
+            loadOnboardingQueue();
+        });
     </script>
+
+<!-- ==================== ADD EMPLOYEE MODAL ==================== -->
+<div id="add-emp-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9999;align-items:center;justify-content:center;font-family:'Outfit',sans-serif;">
+    <div style="background:#fff;border-radius:24px;width:640px;max-height:90vh;overflow-y:auto;box-shadow:0 24px 80px rgba(0,0,0,0.2);">
+        <div style="padding:24px 28px;border-bottom:1px solid #E5E7EB;display:flex;align-items:center;justify-content:space-between;">
+            <div>
+                <div style="font-size:18px;font-weight:900;color:#111827;">Add New Employee</div>
+                <div style="font-size:12px;color:#6B7280;font-weight:500;margin-top:2px;">Employee will receive an onboarding wizard link on first login</div>
+            </div>
+            <button onclick="closeAddEmployeeModal()" style="width:36px;height:36px;border:1px solid #E5E7EB;border-radius:10px;background:#F9FAFB;cursor:pointer;font-size:18px;color:#6B7280;">×</button>
+        </div>
+        <form id="add-emp-form" onsubmit="event.preventDefault();submitAddEmployee();" style="padding:24px 28px;display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+            <div style="display:flex;flex-direction:column;gap:5px;">
+                <label style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;color:#374151;">Full Name *</label>
+                <input id="ae-name" type="text" required placeholder="Full legal name" style="padding:10px 14px;border:1.5px solid #E5E7EB;border-radius:10px;font-size:13px;font-family:'Outfit',sans-serif;outline:none;" />
+            </div>
+            <div style="display:flex;flex-direction:column;gap:5px;">
+                <label style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;color:#374151;">Official Email *</label>
+                <input id="ae-email" type="email" required placeholder="work@company.com" style="padding:10px 14px;border:1.5px solid #E5E7EB;border-radius:10px;font-size:13px;font-family:'Outfit',sans-serif;outline:none;" />
+            </div>
+            <div style="display:flex;flex-direction:column;gap:5px;">
+                <label style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;color:#374151;">Designation *</label>
+                <input id="ae-designation" type="text" required placeholder="e.g. Software Engineer" style="padding:10px 14px;border:1.5px solid #E5E7EB;border-radius:10px;font-size:13px;font-family:'Outfit',sans-serif;outline:none;" />
+            </div>
+            <div style="display:flex;flex-direction:column;gap:5px;">
+                <label style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;color:#374151;">Department</label>
+                <input id="ae-department" type="text" placeholder="e.g. Engineering" style="padding:10px 14px;border:1.5px solid #E5E7EB;border-radius:10px;font-size:13px;font-family:'Outfit',sans-serif;outline:none;" />
+            </div>
+            <div style="display:flex;flex-direction:column;gap:5px;">
+                <label style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;color:#374151;">Employee Type *</label>
+                <select id="ae-emp-type" style="padding:10px 14px;border:1.5px solid #E5E7EB;border-radius:10px;font-size:13px;font-family:'Outfit',sans-serif;outline:none;background:#fff;">
+                    <option value="Fresher">Fresher</option>
+                    <option value="Experienced">Experienced</option>
+                    <option value="Intern">Intern</option>
+                    <option value="Contract">Contract</option>
+                </select>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:5px;">
+                <label style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;color:#374151;">Date of Joining</label>
+                <input id="ae-join-date" type="date" style="padding:10px 14px;border:1.5px solid #E5E7EB;border-radius:10px;font-size:13px;font-family:'Outfit',sans-serif;outline:none;" />
+            </div>
+            <div style="display:flex;flex-direction:column;gap:5px;">
+                <label style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;color:#374151;">Mobile</label>
+                <input id="ae-mobile" type="tel" placeholder="+91 9876543210" style="padding:10px 14px;border:1.5px solid #E5E7EB;border-radius:10px;font-size:13px;font-family:'Outfit',sans-serif;outline:none;" />
+            </div>
+            <div style="display:flex;flex-direction:column;gap:5px;">
+                <label style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;color:#374151;">Reporting Manager</label>
+                <input id="ae-manager" type="text" placeholder="Manager name" style="padding:10px 14px;border:1.5px solid #E5E7EB;border-radius:10px;font-size:13px;font-family:'Outfit',sans-serif;outline:none;" />
+            </div>
+            <div style="display:flex;flex-direction:column;gap:5px;">
+                <label style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;color:#374151;">CTC / Salary (₹)</label>
+                <input id="ae-salary" type="number" placeholder="Annual CTC" style="padding:10px 14px;border:1.5px solid #E5E7EB;border-radius:10px;font-size:13px;font-family:'Outfit',sans-serif;outline:none;" />
+            </div>
+            <div style="grid-column:span 2;background:#F5F3FF;border:1.5px solid #EDE9FE;border-radius:12px;padding:12px 16px;font-size:12px;color:#7C3AED;font-weight:600;">
+                🚀 The employee will be sent an onboarding wizard to complete personal info, documents, bank details, and policy acknowledgements before portal access is granted.
+            </div>
+            <div style="grid-column:span 2;display:flex;gap:12px;justify-content:flex-end;">
+                <button type="button" onclick="closeAddEmployeeModal()" style="padding:11px 24px;border:1.5px solid #E5E7EB;border-radius:12px;font-size:13px;font-weight:700;background:#fff;cursor:pointer;font-family:'Outfit',sans-serif;">Cancel</button>
+                <button type="submit" id="add-emp-btn" style="padding:11px 28px;background:linear-gradient(135deg,#610173,#7C3AED);color:#fff;border:none;border-radius:12px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Outfit',sans-serif;">Create Employee</button>
+            </div>
+        </form>
+    </div>
+</div>
+
 </body>
 
 </html>

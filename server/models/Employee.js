@@ -12,18 +12,45 @@ const EmployeeSchema = new mongoose.Schema({
     company: { type: String },
     company_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Company' },
     reporting_manager: { type: String },
-    
+    employee_type: { type: String, default: 'Fresher' }, // Fresher | Experienced | Intern | Contract
+
     // Onboarding & Probation
-    onboarding_status: { type: String, default: 'Pending Verification' },
+    onboarding_status: { type: String, default: 'Pending Onboarding' },
+    // Statuses: Pending Onboarding | Email Verified | In Progress | Pending HR Verification | Approved | Rejected
+    onboarding_step: { type: Number, default: 0 },       // 0=welcome, 1=personal, 2=docs, 3=bank, 4=policy, 5=review
+    onboarding_token: { type: String },
+    onboarding_submitted_at: { type: Date },
+    onboarding_approved_at: { type: Date },
     onboarding_remarks: { type: String },
+    email_verified: { type: Boolean, default: false },
     joined_date: { type: String },
     probation_status: { type: String, default: 'Probation' },
     probation_end_date: { type: String },
     timeline: { type: Array, default: [] },
 
+    // Personal Info (collected during onboarding)
+    dob: { type: String },
+    gender: { type: String },
+    blood_group: { type: String },
+    marital_status: { type: String },
+    nationality: { type: String },
+    personal_email: { type: String },
+    mobile: { type: String },
+    alternate_mobile: { type: String },
+
+    // Address
+    permanent_address: { type: Object, default: {} },
+    current_address: { type: Object, default: {} },
+
+    // Emergency Contacts
+    emergency_contacts: { type: Array, default: [] },
+
     // Financial & Compliance
     salary: { type: Number, default: 0 },
     uan: { type: String },
+    uan_exists: { type: Boolean, default: false },
+    esi_number: { type: String },
+    esi_exists: { type: Boolean, default: false },
     name_as_per_uan: { type: String },
     pf_eligible: { type: Boolean, default: false },
     eps_eligible: { type: Boolean, default: false },
@@ -37,6 +64,11 @@ const EmployeeSchema = new mongoose.Schema({
     bank_account_type: { type: String },
     bank_verification_status: { type: String, default: 'Pending' },
     salary_revisions: { type: Array, default: [] },
+
+    // Policy Acknowledgement
+    policy_acknowledged_at: { type: Date },
+    esign_confirmed: { type: Boolean, default: false },
+    policies_read: { type: Array, default: [] },
 
     // Attendance & late credits
     late_credits: { type: Number, default: 40 },

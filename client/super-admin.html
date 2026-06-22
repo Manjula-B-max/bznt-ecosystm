@@ -306,7 +306,7 @@
                     rgba(255, 255, 255, 0)) !important;
             opacity: 0.6 !important;
             position: absolute !important;
-            left: 60% !important;
+            left: 57% !important;
             top: 0 !important;
             bottom: 0 !important;
             z-index: 5 !important;
@@ -342,7 +342,7 @@
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            height: 72px;
+            height: 76px !important;
             border-radius: 18px;
             background: rgba(255, 255, 255, 0.05) !important;
             border: 1px solid rgba(255, 255, 255, 0.08) !important;
@@ -1078,22 +1078,15 @@
                             <i data-lucide="clock" class="w-3.5 h-3.5 text-purple-200"></i>
                             <span class="hero-date-time">Loading...</span>
                         </div>
-                        <!-- RIGHT: Health Status Capsule -->
-                        <div
-                            class="inline-flex items-center gap-1.5 px-3 py-1 text-[10px] font-bold rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-300">
-                            <span class="health-pulse-dot"></span>
-                            <span>System Health 100%</span>
-                        </div>
                     </div>
 
                     <!-- DIVIDER #1 (Full width, below top bar, above title) -->
                     <div class="bezent-hero-divider"></div>
 
-                    <!-- CONTENT CONTAINER (Relative positioned container to place Left Area, Vertical divider, and Command Panel) -->
                     <div class="relative flex-grow flex flex-col justify-between" style="min-height: 220px;">
 
                         <!-- Left Content Area (Width restricted to 58% to allow absolute split) -->
-                        <div class="w-[58%] flex flex-col justify-between" style="height: calc(100% - 2px);">
+                        <div class="w-[56%] flex flex-col justify-between" style="height: calc(100% - 2px);">
 
                             <!-- Title Block (shifted slightly lower, with pt-2 to reduce space above) -->
                             <div class="text-left pt-2 flex flex-col gap-1">
@@ -1132,7 +1125,7 @@
                         <div class="bezent-hero-divider"></div>
 
                         <!-- Actions Area (width restricted to 58%) -->
-                        <div class="w-[58%] pb-1">
+                        <div class="w-[56%] pb-1">
                             <div
                                 style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; width: 100%; align-items: center;">
                                 <button onclick="openCreateCompanyModal()" class="btn-premium-primary gap-2">
@@ -1152,68 +1145,67 @@
 
                         <!-- VERTICAL DIVIDER (Absolute positioned at 60%) -->
                         <div class="bezent-vertical-divider"></div>
+                    </div>
+                </div>
 
-                        <!-- COMMAND PANEL (Absolute positioned on the right at 38% width, spanning full height below Divider #1) -->
-                        <div
-                            class="absolute right-0 top-0 bottom-0 w-[38%] command-glass-panel flex flex-col justify-between p-4 text-white">
-                            <div class="flex items-center justify-between pb-1.5 border-b border-white/5">
-                                <span
-                                    class="text-[9px] font-extrabold text-purple-200 uppercase tracking-widest">Command
-                                    Panel</span>
-                                <span
-                                    class="text-[8px] font-mono font-bold bg-purple-500/20 text-purple-200 px-1.5 py-0.5 rounded border border-purple-500/10">Uptime
-                                    Stable</span>
+                <!-- COMMAND PANEL (Absolute positioned relative to Main Layout Grid) -->
+                <div
+                    class="absolute right-[28px] top-[16px] bottom-[16px] w-[40%] command-glass-panel flex flex-col justify-between p-5 pb-6 text-white z-20">
+                        <div class="flex items-center justify-between pb-1.5 border-b border-white/5">
+                            <span
+                                class="text-[9px] font-extrabold text-purple-200 uppercase tracking-widest">Command
+                                Panel</span>
+                            <span
+                                class="text-[8px] font-mono font-bold bg-purple-500/20 text-purple-200 px-1.5 py-0.5 rounded border border-purple-500/10">Uptime
+                                Stable</span>
+                        </div>
+
+                        <!-- Horizontal Grid with Dominant numbers -->
+                        <div class="grid grid-cols-4 gap-2.5 my-3">
+                            <div class="premium-kpi-card">
+                                <span class="card-number" id="tenantCountHero">0</span>
+                                <span class="card-label">Companies</span>
                             </div>
-
-                            <!-- Horizontal Grid with Dominant numbers -->
-                            <div class="grid grid-cols-4 gap-2 my-2">
-                                <div class="premium-kpi-card">
-                                    <span class="card-number" id="tenantCountHero">0</span>
-                                    <span class="card-label">Companies</span>
-                                </div>
-                                <div class="premium-kpi-card">
-                                    <span class="card-number" id="subscriberCountHero">0</span>
-                                    <span class="card-label">Subs</span>
-                                </div>
-                                <div class="premium-kpi-card">
-                                    <span class="card-number">99.9%</span>
-                                    <span class="card-label">Health</span>
-                                </div>
-                                <div class="premium-kpi-card">
-                                    <span class="card-number">142d</span>
-                                    <span class="card-label">Uptime</span>
-                                </div>
+                            <div class="premium-kpi-card">
+                                <span class="card-number" id="subscriberCountHero">0</span>
+                                <span class="card-label">Subs</span>
                             </div>
-
-                            <!-- Progress Bar -->
-                            <div class="space-y-1">
-                                <div class="flex justify-between items-center text-[9.5px] text-white/95">
-                                    <span class="font-semibold tracking-wide">Platform Health Index</span>
-                                    <span class="font-mono text-purple-200 font-bold">99.99%</span>
-                                </div>
-                                <div class="w-full bg-white/10 rounded-full h-1 overflow-hidden relative">
-                                    <div
-                                        class="progress-shimmer absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent">
-                                    </div>
-                                    <div class="bg-emerald-400 h-full rounded-full transition-all duration-[1200ms]"
-                                        style="width: 100%"></div>
-                                </div>
+                            <div class="premium-kpi-card">
+                                <span class="card-number">99.9%</span>
+                                <span class="card-label">Health</span>
                             </div>
-
-                            <!-- Alert Footer -->
-                            <div
-                                class="pt-2 border-t border-white/5 flex items-center justify-between text-[9.5px] text-purple-200/90 font-semibold">
-                                <div class="flex items-center gap-1.5">
-                                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 live-pulse-dot"></span>
-                                    <span>All Services Operational</span>
-                                </div>
-                                <i data-lucide="shield-alert" class="w-3.5 h-3.5 text-purple-200/60"></i>
+                            <div class="premium-kpi-card">
+                                <span class="card-number">142d</span>
+                                <span class="card-label">Uptime</span>
                             </div>
                         </div>
 
+                        <!-- Progress Bar -->
+                        <div class="space-y-1 mt-1">
+                            <div class="flex justify-between items-center text-[11px] text-white/90">
+                                <span class="font-semibold tracking-wide">Platform Health Index</span>
+                                <span class="font-mono text-purple-200 font-bold">99.99%</span>
+                            </div>
+                            <div class="w-full bg-white/10 rounded-full h-2 overflow-hidden relative shadow-[inset_0_1px_2px_rgba(0,0,0,0.4)] border border-white/5">
+                                <div
+                                    class="progress-shimmer absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent">
+                                </div>
+                                <div class="bg-emerald-400 h-full rounded-full transition-all duration-[1200ms]"
+                                    style="width: 100%"></div>
+                            </div>
+                        </div>
+
+                        <!-- Alert Footer -->
+                        <div
+                            class="pt-1.5 border-t border-white/8 flex items-center justify-between text-[10px] text-purple-200/90 font-semibold mt-1">
+                            <div class="flex items-center gap-1.5">
+                                <span class="w-2 h-2 rounded-full bg-emerald-400 live-pulse-dot"></span>
+                                <span>All Services Operational</span>
+                            </div>
+                            <i data-lucide="shield-alert" class="w-3.5 h-3.5 text-purple-200/40"></i>
+                        </div>
                     </div>
                 </div>
-            </div>
 
             <!-- SECTION 2: Platform Overview Telemetry Cards -->
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">

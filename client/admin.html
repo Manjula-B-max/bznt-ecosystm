@@ -687,182 +687,220 @@
         /* ==================== BEZENT PREMIUM HERO COMMAND CENTER STYLES ==================== */
         .command-center-hero {
             position: relative;
-            background: linear-gradient(135deg, #a402bf 0%, #210026 100%) !important;
+            background: linear-gradient(90deg, #610173 0%, #3A006A 35%, #210057 70%, #0A0044 100%) !important;
             border-radius: 36px !important;
             padding: 24px 28px !important;
             overflow: hidden !important;
-            box-shadow: 0 12px 40px rgba(97, 1, 115, 0.18) !important;
-            border: none !important;
+            box-shadow: 0 20px 50px rgba(97, 1, 115, 0.3) !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
             height: 340px !important;
             min-height: 340px !important;
             max-height: 340px !important;
-            opacity: 1;
-            transform: none;
-            background-size: 110% 110% !important;
+            animation: hero-load 600ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            will-change: transform;
             mask-image: radial-gradient(white, black);
             -webkit-mask-image: -webkit-radial-gradient(white, black);
         }
 
-        /* 3 Cinematic Ambient depth layers */
-        .glow-top-left {
-            position: absolute;
-            left: -10%;
-            top: -10%;
-            width: 400px;
-            height: 400px;
-            border-radius: 50%;
-            background: rgba(243, 189, 252, 0.20) !important;
-            /* 20% opacity */
-            filter: blur(250px) !important;
-            /* 250px blur */
-            pointer-events: none;
-            z-index: 1;
-        }
-
-        .glow-center {
-            position: absolute;
-            left: 30%;
-            top: 20%;
-            width: 500px;
-            height: 500px;
-            border-radius: 50%;
-            background: rgba(221, 115, 240, 0.10) !important;
-            /* 10% opacity */
-            filter: blur(300px) !important;
-            /* 300px blur */
-            pointer-events: none;
-            z-index: 1;
-        }
-
-        .glow-bottom-right {
-            position: absolute;
-            right: -10%;
-            bottom: -10%;
-            width: 600px;
-            height: 600px;
-            border-radius: 50%;
-            background: rgba(33, 0, 38, 0.45) !important;
-            /* 45% opacity */
-            filter: blur(400px) !important;
-            /* 400px blur */
-            pointer-events: none;
-            z-index: 1;
-        }
-
-        /* Dot Grid pattern: 5% opacity */
-        .dot-grid-pattern {
-            position: absolute;
-            inset: 0;
-            pointer-events: none;
-            opacity: 0.05 !important;
-            background-image: radial-gradient(rgba(255, 255, 255, 0.4) 1.5px, transparent 1.5px) !important;
-            background-size: 18px 18px !important;
-            z-index: 1;
-        }
-
-        /* Light Sweep Animation: opacity 3%, duration 6s, interval 15s */
-        .light-sweep-overlay {
-            position: absolute;
-            top: 0;
-            bottom: 0;
-            width: 30%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.03), transparent) !important;
-            filter: blur(150px) !important;
-            transform: translateX(-150%);
-            pointer-events: none;
-            z-index: 2;
-            animation: light-sweep-anim 15s infinite linear;
-        }
-
-        @keyframes light-sweep-anim {
-            0% {
-                transform: translateX(-150%);
+        @keyframes hero-load {
+            from {
+                opacity: 0;
+                transform: translateY(16px);
             }
 
-            40% {
-                transform: translateX(250%);
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Ambient glow layers */
+        .premium-cinematic-glow {
+            position: absolute;
+            left: -10%;
+            top: 10%;
+            width: 500px;
+            height: 320px;
+            border-radius: 50%;
+            background: rgba(255, 120, 255, 0.15) !important;
+            filter: blur(180px) !important;
+            pointer-events: none;
+            z-index: 1;
+            animation: premium-glow-float 10s ease-in-out infinite alternate !important;
+        }
+
+        @keyframes premium-glow-float {
+            0% {
+                transform: translate(0, 0) scale(1);
             }
 
             100% {
-                transform: translateX(250%);
+                transform: translate(40px, -20px) scale(1.08);
             }
         }
 
-        /* Status indicators & pulse */
+        /* Status indicators glassmorphism */
         .status-indicator-chip {
-            background: rgba(255, 255, 255, 0.08) !important;
-            backdrop-filter: blur(18px) !important;
-            -webkit-backdrop-filter: blur(18px) !important;
-            border: 1px solid rgba(255, 255, 255, 0.08) !important;
-            color: #ffffff !important;
-            transition: all 150ms ease;
-            box-shadow: 0 4px 12px rgba(33, 0, 38, 0.05) !important;
+            background: rgba(255, 255, 255, 0.06) !important;
+            backdrop-filter: blur(20px) !important;
+            -webkit-backdrop-filter: blur(20px) !important;
+            border: 1px solid rgba(255, 255, 255, 0.15) !important;
+            color: rgba(255, 255, 255, 0.95) !important;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+            box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.1), 0 4px 12px rgba(0, 0, 0, 0.1) !important;
+            cursor: pointer;
+            padding: 6px 14px !important;
+            font-size: 11px !important;
+            font-weight: 600 !important;
+            height: 32px !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            border-radius: 9999px !important;
         }
 
-        .health-pulse-dot {
-            width: 7px;
-            height: 7px;
-            border-radius: 50%;
-            background-color: #34d399;
-            box-shadow: 0 0 6px #34d399;
-            animation: health-pulse-anim 2s infinite ease-in-out;
+        .status-indicator-chip:hover {
+            background: rgba(255, 255, 255, 0.14) !important;
+            border-color: rgba(255, 255, 255, 0.25) !important;
+            transform: translateY(-2px) !important;
+            box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.15), 0 8px 16px rgba(255, 120, 255, 0.2) !important;
         }
 
-        @keyframes health-pulse-anim {
+        /* Pulse Dots */
+        .pulse-green {
+            background-color: #10b981;
+            box-shadow: 0 0 8px #10b981;
+            animation: pulse-green-anim 2s infinite ease-in-out;
+        }
+
+        @keyframes pulse-green-anim {
 
             0%,
             100% {
-                opacity: 0.5;
-                transform: scale(0.9);
-                box-shadow: 0 0 4px rgba(52, 211, 153, 0.4);
+                opacity: 0.6;
+                transform: scale(0.95);
+                box-shadow: 0 0 4px rgba(16, 185, 129, 0.5);
             }
 
             50% {
                 opacity: 1;
-                transform: scale(1.1);
-                box-shadow: 0 0 10px rgba(52, 211, 153, 0.8);
+                transform: scale(1.15);
+                box-shadow: 0 0 12px rgba(16, 185, 129, 0.9);
             }
         }
 
-        /* Mini Glass Pills for Role Metrics */
-        .mini-glass-pill {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            padding: 5px 14px;
-            border-radius: 9999px;
-            background: rgba(255, 255, 255, 0.06) !important;
-            border: 1px solid rgba(255, 255, 255, 0.08) !important;
-            font-size: 12px !important;
-            font-weight: 600 !important;
-            color: rgba(255, 255, 255, 0.9) !important;
-            letter-spacing: 0.2px !important;
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
-            transition: all 180ms ease;
+        .pulse-blue {
+            background-color: #3b82f6;
+            box-shadow: 0 0 8px #3b82f6;
+            animation: pulse-blue-anim 2s infinite ease-in-out;
         }
 
-        .mini-glass-pill:hover {
-            background: rgba(255, 255, 255, 0.1) !important;
-            border-color: rgba(255, 255, 255, 0.15) !important;
-            transform: translateY(-1px) !important;
+        @keyframes pulse-blue-anim {
+
+            0%,
+            100% {
+                opacity: 0.6;
+                transform: scale(0.95);
+                box-shadow: 0 0 4px rgba(59, 130, 246, 0.5);
+            }
+
+            50% {
+                opacity: 1;
+                transform: scale(1.15);
+                box-shadow: 0 0 12px rgba(59, 130, 246, 0.9);
+            }
+        }
+
+        .pulse-amber {
+            background-color: #f59e0b;
+            box-shadow: 0 0 8px #f59e0b;
+            animation: pulse-amber-anim 2s infinite ease-in-out;
+        }
+
+        @keyframes pulse-amber-anim {
+
+            0%,
+            100% {
+                opacity: 0.6;
+                transform: scale(0.95);
+                box-shadow: 0 0 4px rgba(245, 158, 11, 0.5);
+            }
+
+            50% {
+                opacity: 1;
+                transform: scale(1.15);
+                box-shadow: 0 0 12px rgba(245, 158, 11, 0.9);
+            }
+        }
+
+        /* Glass KPI Chips on Left as floating glass pills */
+        .mini-glass-pill,
+        .executive-glass-pill {
+            height: 50px !important;
+            padding: 0 20px !important;
+            border-radius: 25px !important;
+            background: rgba(255, 255, 255, 0.06) !important;
+            backdrop-filter: blur(20px) !important;
+            -webkit-backdrop-filter: blur(20px) !important;
+            border: 1px solid rgba(255, 255, 255, 0.15) !important;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.05) !important;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            color: rgba(255, 255, 255, 0.95) !important;
+        }
+
+        .mini-glass-pill:hover,
+        .executive-glass-pill:hover {
+            transform: translateY(-4px) !important;
+            background: rgba(255, 255, 255, 0.12) !important;
+            border-color: rgba(255, 255, 255, 0.25) !important;
+            box-shadow: 0 12px 30px rgba(255, 120, 255, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.15) !important;
+        }
+
+        .mini-glass-pill:active,
+        .executive-glass-pill:active {
+            transform: translateY(-1px) scale(0.98) !important;
+        }
+
+        .mini-glass-pill:hover i,
+        .executive-glass-pill:hover i {
+            transform: rotate(10deg) scale(1.15) !important;
+            transition: transform 0.3s ease;
+        }
+
+        /* Gradients inside KPI icons */
+        .employee-icon svg path,
+        .employee-icon svg circle {
+            stroke: url(#gradient-employee) !important;
+        }
+
+        .leave-icon svg path,
+        .leave-icon svg rect {
+            stroke: url(#gradient-leave) !important;
+        }
+
+        .payroll-icon svg path,
+        .payroll-icon svg line {
+            stroke: url(#gradient-payroll) !important;
+        }
+
+        .pf-icon svg path,
+        .pf-icon svg circle {
+            stroke: url(#gradient-pf) !important;
         }
 
         /* Signature BEZENT Hero Divider */
         .bezent-hero-divider {
             width: 100% !important;
             height: 1px !important;
-            background: linear-gradient(90deg,
-                    rgba(255, 255, 255, 0.04),
-                    rgba(255, 255, 255, 0.18),
-                    rgba(255, 255, 255, 0.04)) !important;
-            margin-top: 18px !important;
-            margin-bottom: 18px !important;
+            background: linear-gradient(90deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.04)) !important;
+            margin-top: 14px !important;
+            margin-bottom: 14px !important;
             border: none !important;
             backdrop-filter: blur(4px) !important;
             -webkit-backdrop-filter: blur(4px) !important;
-            box-shadow: 0 0.5px 0 rgba(255, 255, 255, 0.08), 0 0 8px rgba(255, 255, 255, 0.05) !important;
             position: relative !important;
             z-index: 10 !important;
             opacity: 0 !important;
@@ -886,25 +924,25 @@
         .bezent-vertical-divider {
             width: 1px !important;
             height: 100% !important;
-            background: linear-gradient(180deg,
-                    rgba(255, 255, 255, 0),
-                    rgba(255, 255, 255, 0.15),
-                    rgba(255, 255, 255, 0)) !important;
-            opacity: 0.6 !important;
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0)) !important;
+            opacity: 0.5 !important;
             position: absolute !important;
-            left: 60% !important;
+            left: 57% !important;
             top: 0 !important;
             bottom: 0 !important;
             z-index: 5 !important;
         }
 
-        /* Command Glass Panel */
+        /* Command Glass Panel with noise texture */
         .command-glass-panel {
-            background: rgba(255, 255, 255, 0.03) !important;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.03) 0%, rgba(255, 255, 255, 0.01) 100%) !important;
+            background-image:
+                linear-gradient(to bottom, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.01)),
+                url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.04'/%3E%3C/svg%3E") !important;
             backdrop-filter: blur(20px) !important;
             -webkit-backdrop-filter: blur(20px) !important;
-            border: 1px solid rgba(255, 255, 255, 0.08) !important;
-            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 20px 40px rgba(0, 0, 0, 0.15) !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.05), 0 20px 40px rgba(0, 0, 0, 0.25) !important;
             border-radius: 32px !important;
             animation: panel-load 500ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
             will-change: transform, opacity;
@@ -922,30 +960,42 @@
             }
         }
 
-        /* Dominant KPI Card inside Command Panel */
+        /* Premium KPI card with top-glow and micro transitions */
         .premium-kpi-card {
             display: flex;
             flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            height: 72px;
-            border-radius: 18px;
-            background: rgba(255, 255, 255, 0.05) !important;
+            justify-content: space-between;
+            height: 76px !important;
+            border-radius: 18px !important;
+            background: rgba(255, 255, 255, 0.04) !important;
             border: 1px solid rgba(255, 255, 255, 0.08) !important;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08) !important;
             cursor: pointer;
-            transition: all 250ms cubic-bezier(0.4, 0, 0.2, 1) !important;
+            position: relative;
+            overflow: hidden;
+            padding: 14px 18px !important;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
         }
 
         .premium-kpi-card:hover {
-            transform: translateY(-2px) !important;
-            background: rgba(255, 255, 255, 0.1) !important;
-            border-color: rgba(255, 255, 255, 0.18) !important;
-            box-shadow: 0 8px 24px rgba(164, 2, 191, 0.25) !important;
+            transform: translateY(-6px) !important;
+            background: rgba(255, 255, 255, 0.08) !important;
+            border-color: rgba(255, 255, 255, 0.16) !important;
+            box-shadow: 0 12px 28px rgba(255, 120, 255, 0.2) !important;
+        }
+
+        .premium-kpi-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 15%;
+            right: 15%;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255, 120, 255, 0.4), transparent);
         }
 
         .premium-kpi-card .card-number {
-            font-size: 36px !important;
+            font-size: 24px !important;
             font-weight: 700 !important;
             color: #ffffff !important;
             line-height: 1.1 !important;
@@ -953,206 +1003,160 @@
         }
 
         .premium-kpi-card .card-label {
-            font-size: 11px !important;
-            font-weight: 600 !important;
-            color: rgba(243, 189, 252, 0.75) !important;
+            font-size: 9px !important;
+            font-weight: 700 !important;
+            color: rgba(255, 255, 255, 0.6) !important;
             text-transform: uppercase !important;
             letter-spacing: 0.8px !important;
-            margin-top: 8px !important;
         }
 
-        /* Premium Buttons */
-        .btn-premium-primary {
+        /* Action Buttons */
+        .btn-premium-primary,
+        .btn-executive-glass-primary {
             display: inline-flex;
             align-items: center;
             justify-content: center;
             height: 50px !important;
             padding: 0 24px !important;
             border-radius: 18px !important;
-            background: rgba(255, 255, 255, 0.14) !important;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.16) 0%, rgba(255, 255, 255, 0.05) 100%) !important;
             border: 1px solid rgba(255, 255, 255, 0.22) !important;
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
+            backdrop-filter: blur(20px) !important;
+            -webkit-backdrop-filter: blur(20px) !important;
             font-size: 13px !important;
             font-weight: 700 !important;
             color: #ffffff !important;
             cursor: pointer;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.15), 0 4px 12px rgba(0, 0, 0, 0.2) !important;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
             letter-spacing: 0.2px !important;
         }
 
-        .btn-premium-primary:hover {
-            transform: translateY(-2px) scale(1.01) !important;
-            background: rgba(255, 255, 255, 0.22) !important;
-            border-color: rgba(255, 255, 255, 0.35) !important;
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15), 0 0 15px rgba(164, 2, 191, 0.35) !important;
+        .btn-premium-primary:hover,
+        .btn-executive-glass-primary:hover {
+            transform: translateY(-6px) !important;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.24) 0%, rgba(255, 255, 255, 0.08) 100%) !important;
+            border-color: rgba(255, 255, 255, 0.38) !important;
+            box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.2), 0 15px 30px rgba(0, 0, 0, 0.25), 0 0 24px rgba(255, 120, 255, 0.35) !important;
         }
 
-        .btn-premium-secondary {
+        .btn-premium-primary:active,
+        .btn-executive-glass-primary:active {
+            transform: translateY(-1px) scale(0.98) !important;
+        }
+
+        .btn-premium-secondary,
+        .btn-executive-glass {
             display: inline-flex;
             align-items: center;
             justify-content: center;
             height: 50px !important;
             padding: 0 20px !important;
             border-radius: 18px !important;
-            background: rgba(255, 255, 255, 0.05) !important;
-            border: 1px solid rgba(255, 255, 255, 0.08) !important;
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.06) 0%, rgba(255, 255, 255, 0.02) 100%) !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            backdrop-filter: blur(20px) !important;
+            -webkit-backdrop-filter: blur(20px) !important;
             font-size: 13px !important;
             font-weight: 600 !important;
             color: rgba(255, 255, 255, 0.9) !important;
             cursor: pointer;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-            transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 2px 8px rgba(0, 0, 0, 0.15) !important;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
             letter-spacing: 0.2px !important;
         }
 
-        .btn-premium-secondary:hover {
-            transform: translateY(-2px) scale(1.01) !important;
-            background: rgba(255, 255, 255, 0.1) !important;
-            border-color: rgba(255, 255, 255, 0.18) !important;
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1), 0 0 10px rgba(164, 2, 191, 0.2) !important;
+        .btn-premium-secondary:hover,
+        .btn-executive-glass:hover {
+            transform: translateY(-6px) !important;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0.04) 100%) !important;
+            border-color: rgba(255, 255, 255, 0.2) !important;
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1), 0 12px 24px rgba(0, 0, 0, 0.2), 0 0 16px rgba(255, 120, 255, 0.2) !important;
             color: #ffffff !important;
         }
 
+        .btn-premium-secondary:active,
+        .btn-executive-glass:active {
+            transform: translateY(-1px) scale(0.98) !important;
+        }
+
         .btn-premium-primary i,
-        .btn-premium-secondary i {
-            transition: transform 150ms ease;
+        .btn-executive-glass-primary i,
+        .btn-premium-secondary i,
+        .btn-executive-glass i {
+            transition: transform 0.3s ease;
         }
 
         .btn-premium-primary:hover i,
-        .btn-premium-secondary:hover i {
-            transform: scale(1.1);
+        .btn-executive-glass-primary:hover i,
+        .btn-premium-secondary:hover i,
+        .btn-executive-glass:hover i {
+            transform: rotate(15deg) scale(1.15);
         }
 
-        /* Floating background particles */
-        .command-center-hero .particle {
-            position: absolute;
-            background: radial-gradient(circle, rgba(255, 255, 255, 0.2) 0%, transparent 70%);
+        /* Neon moving progress bar animations */
+        .executive-progress-bar {
+            background: linear-gradient(90deg, #C54CFF 0%, #7B61FF 50%, #32E6E2 100%) !important;
+            background-size: 200% auto !important;
+            animation: progress-gradient-run 3s linear infinite !important;
+            box-shadow: 0 0 12px rgba(123, 97, 255, 0.5) !important;
+        }
+
+        @keyframes progress-gradient-run {
+            0% {
+                background-position: 0% 50%;
+            }
+
+            50% {
+                background-position: 100% 50%;
+            }
+
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+
+        /* System Health Capsule */
+        .health-badge-capsule,
+        .system-health-capsule {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 14px !important;
+            font-size: 11px !important;
+            font-weight: 600 !important;
+            border-radius: 9999px !important;
+            background: rgba(16, 185, 129, 0.08) !important;
+            border: 1px solid rgba(16, 185, 129, 0.22) !important;
+            backdrop-filter: blur(10px) !important;
+            -webkit-backdrop-filter: blur(10px) !important;
+            color: #6ee7b7 !important;
+            box-shadow: 0 0 10px rgba(16, 185, 129, 0.15) !important;
+        }
+
+        .health-pulse-dot,
+        .glowing-green-dot {
+            width: 8px;
+            height: 8px;
             border-radius: 50%;
-            pointer-events: none;
-            will-change: transform;
+            background-color: #10b981;
+            box-shadow: 0 0 8px #10b981;
+            animation: health-pulse-run 2s infinite ease-in-out;
         }
 
-        .command-center-hero .particle-1 {
-            width: 50px;
-            height: 50px;
-            left: 10%;
-            top: 15%;
-            animation: float-p-1 20s linear infinite;
-        }
-
-        .command-center-hero .particle-2 {
-            width: 60px;
-            height: 60px;
-            right: 20%;
-            top: 35%;
-            animation: float-p-2 20s linear infinite;
-        }
-
-        .command-center-hero .particle-3 {
-            width: 35px;
-            height: 35px;
-            left: 40%;
-            bottom: 10%;
-            animation: float-p-3 20s linear infinite;
-        }
-
-        .command-center-hero .particle-4 {
-            width: 55px;
-            height: 55px;
-            right: 8%;
-            top: 10%;
-            animation: float-p-4 20s linear infinite;
-        }
-
-        .command-center-hero .particle-5 {
-            width: 45px;
-            height: 45px;
-            left: 25%;
-            bottom: 25%;
-            animation: float-p-5 20s linear infinite;
-        }
-
-        .command-center-hero .particle-6 {
-            width: 50px;
-            height: 50px;
-            right: 35%;
-            bottom: 15%;
-            animation: float-p-6 20s linear infinite;
-        }
-
-        @keyframes float-p-1 {
+        @keyframes health-pulse-run {
 
             0%,
             100% {
-                transform: translate(0, 0);
+                transform: scale(0.9);
+                opacity: 0.6;
+                box-shadow: 0 0 4px rgba(16, 185, 129, 0.5);
             }
 
             50% {
-                transform: translate(20px, -10px);
-            }
-        }
-
-        @keyframes float-p-2 {
-
-            0%,
-            100% {
-                transform: translate(0, 0);
-            }
-
-            50% {
-                transform: translate(-15px, 15px);
-            }
-        }
-
-        @keyframes float-p-3 {
-
-            0%,
-            100% {
-                transform: translate(0, 0);
-            }
-
-            50% {
-                transform: translate(15px, 20px);
-            }
-        }
-
-        @keyframes float-p-4 {
-
-            0%,
-            100% {
-                transform: translate(0, 0);
-            }
-
-            50% {
-                transform: translate(-20px, -15px);
-            }
-        }
-
-        @keyframes float-p-5 {
-
-            0%,
-            100% {
-                transform: translate(0, 0);
-            }
-
-            50% {
-                transform: translate(10px, -15px);
-            }
-        }
-
-        @keyframes float-p-6 {
-
-            0%,
-            100% {
-                transform: translate(0, 0);
-            }
-
-            50% {
-                transform: translate(-10px, 10px);
+                transform: scale(1.2);
+                opacity: 1;
+                box-shadow: 0 0 12px rgba(16, 185, 129, 0.9);
             }
         }
 
@@ -1477,46 +1481,56 @@
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02), 0 1px 2px rgba(0, 0, 0, 0.04);
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
+
         .premium-card:hover {
             transform: translateY(-2px);
             box-shadow: 0 10px 25px -5px rgba(124, 58, 237, 0.08), 0 8px 16px -6px rgba(124, 58, 237, 0.04);
             border-color: rgba(124, 58, 237, 0.2);
         }
+
         .gauge-arc {
             stroke-dasharray: 251.2;
             stroke-dashoffset: 251.2;
             transition: stroke-dashoffset 1.5s cubic-bezier(0.4, 0, 0.2, 1);
         }
+
         .pulse-dot {
             animation: pulse-animation 2s infinite;
         }
+
         @keyframes pulse-animation {
             0% {
                 transform: scale(0.95);
                 box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
             }
+
             70% {
                 transform: scale(1);
                 box-shadow: 0 0 0 6px rgba(16, 185, 129, 0);
             }
+
             100% {
                 transform: scale(0.95);
                 box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
             }
         }
+
         .slide-in-feed {
             animation: slideIn 0.4s ease-out;
         }
+
         @keyframes slideIn {
             from {
                 opacity: 0;
                 transform: translateY(10px);
             }
+
             to {
                 opacity: 1;
                 transform: translateY(0);
             }
         }
+
         /* Custom timeline track styling */
         .timeline-track::after {
             content: '';
@@ -1528,6 +1542,7 @@
             background: #ECECF3;
             z-index: 0;
         }
+
         .timeline-step {
             position: relative;
             z-index: 10;
@@ -1536,6 +1551,28 @@
 </head>
 
 <body class="min-h-screen flex flex-col text-[#111827] bg-[#FAFAFC]">
+
+    <!-- SVG gradients for premium icons -->
+    <svg width="0" height="0" class="absolute">
+        <defs>
+            <linearGradient id="gradient-employee" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#34d399" />
+                <stop offset="100%" stop-color="#059669" />
+            </linearGradient>
+            <linearGradient id="gradient-leave" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#60a5fa" />
+                <stop offset="100%" stop-color="#2563eb" />
+            </linearGradient>
+            <linearGradient id="gradient-payroll" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#fbbf24" />
+                <stop offset="100%" stop-color="#d97706" />
+            </linearGradient>
+            <linearGradient id="gradient-pf" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#c084fc" />
+                <stop offset="100%" stop-color="#7c3aed" />
+            </linearGradient>
+        </defs>
+    </svg>
 
     <!-- Floating Sidebar Accordion -->
     <aside class="floating-sidebar flex flex-col justify-between overflow-hidden">
@@ -1646,6 +1683,7 @@
             <!-- 1. HR Dashboard View -->
             <div id="dashView" class="tab-content active space-y-6">
                 <!-- Hero Banner -->
+                <!-- SECTION 1: Gradient Hero banner with rich information -->
                 <div class="command-center-hero text-white flex flex-col justify-between">
                     <!-- Cinematic glows -->
                     <div class="glow-top-left"></div>
@@ -1674,258 +1712,276 @@
                         <div class="flex items-center justify-between pb-3">
                             <!-- LEFT: Status Chips -->
                             <div class="flex items-center gap-2">
-                                <div
-                                    class="status-indicator-chip inline-flex items-center gap-1.5 px-3 py-1 text-[10px] font-bold rounded-full">
-                                    <span class="health-pulse-dot"></span>
+                                <div class="status-indicator-chip inline-flex items-center gap-1.5 px-3 py-1 text-[10px] font-bold rounded-full">
+                                    <span class="w-1.5 h-1.5 rounded-full pulse-green"></span>
                                     <span>Operations Active</span>
                                 </div>
-                                <div
-                                    class="status-indicator-chip inline-flex items-center gap-1.5 px-3 py-1 text-[10px] font-bold rounded-full">
-                                    <span class="w-1.5 h-1.5 rounded-full bg-blue-400"></span>
+                                <div class="status-indicator-chip inline-flex items-center gap-1.5 px-3 py-1 text-[10px] font-bold rounded-full">
+                                    <span class="w-1.5 h-1.5 rounded-full pulse-blue"></span>
                                     <span>Payroll Ready</span>
                                 </div>
-                                <div
-                                    class="status-indicator-chip inline-flex items-center gap-1.5 px-3 py-1 text-[10px] font-bold rounded-full">
-                                    <span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
+                                <div class="status-indicator-chip inline-flex items-center gap-1.5 px-3 py-1 text-[10px] font-bold rounded-full">
+                                    <span class="w-1.5 h-1.5 rounded-full pulse-amber"></span>
                                     <span>Attendance Synced</span>
                                 </div>
-                            </div>
-                            <!-- CENTER: Date & Time (Aligned on Same Axis) -->
-                            <div
-                                class="text-[11px] font-mono font-semibold text-purple-200/95 flex items-center gap-1.5 justify-center">
-                                <i data-lucide="clock" class="w-3.5 h-3.5 text-purple-200"></i>
-                                <span class="hero-date-time">Loading...</span>
-                            </div>
-                            <!-- RIGHT: Health Status Capsule -->
-                            <div
-                                class="inline-flex items-center gap-1.5 px-3 py-1 text-[10px] font-bold rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-300">
-                                <span class="health-pulse-dot"></span>
-                                <span>System Health 100%</span>
                             </div>
                         </div>
 
                         <!-- GLOBAL DIVIDER LINE -->
                         <div class="bezent-hero-divider"></div>
 
-                        <!-- CONTENT CONTAINER (Relative positioned container to place Left Area, Vertical divider, and Command Panel) -->
+                        <!-- CONTENT CONTAINER -->
                         <div class="relative flex-grow flex flex-col justify-between" style="min-height: 220px;">
-
-                            <!-- Left Content Area (Width restricted to 58% to allow absolute split) -->
-                            <div class="w-[58%] flex flex-col justify-between" style="height: calc(100% - 2px);">
-
-                                <!-- Title Block (shifted slightly lower, pt-2 to reduce space above) -->
+                            <!-- Left Content Area -->
+                            <div class="w-[56%] flex flex-col justify-between" style="height: calc(100% - 2px);">
+                                <!-- Title Block -->
                                 <div class="text-left pt-2 flex flex-col gap-1">
-                                    <h2 class="text-[34px] font-bold tracking-tight leading-[120%]">HR Control Dashboard
-                                    </h2>
-                                    <p class="text-purple-200/90 text-[16px] font-medium leading-[140%]">Workforce
-                                        Operations Command Center</p>
+                                    <h2 class="text-[34px] font-bold tracking-tight leading-[120%]">HR Control Dashboard</h2>
+                                    <p class="text-purple-200/90 text-[16px] font-medium leading-[140%]">Workforce Operations Command Center</p>
                                 </div>
-
-                                <!-- Title -> Metrics Space (20px) -->
+                                <!-- Title -> Metrics Space -->
                                 <div class="h-[20px]"></div>
-
                                 <!-- Metrics pills -->
                                 <div class="flex flex-wrap gap-2">
-                                    <div class="mini-glass-pill"
-                                        style="height: 40px; font-size: 14px; padding: 0 16px; border-radius: 20px; display: inline-flex; align-items: center; gap: 6px;">
+                                    <div class="mini-glass-pill" style="height: 40px; font-size: 14px; padding: 0 16px; border-radius: 20px; display: inline-flex; align-items: center; gap: 6px;">
                                         <i data-lucide="users" class="w-3.5 h-3.5 text-emerald-400 flex-shrink-0"></i>
-                                        <span><span id="metricHrEmployees">52</span> Employees</span>
+                                        <span><span id="metricHrEmployees" class="font-bold">0</span> Total Employees</span>
                                     </div>
-                                    <div class="mini-glass-pill"
-                                        style="height: 40px; font-size: 14px; padding: 0 16px; border-radius: 20px; display: inline-flex; align-items: center; gap: 6px;">
+                                    <div class="mini-glass-pill" style="height: 40px; font-size: 14px; padding: 0 16px; border-radius: 20px; display: inline-flex; align-items: center; gap: 6px;">
                                         <i data-lucide="calendar" class="w-3.5 h-3.5 text-blue-400 flex-shrink-0"></i>
-                                        <span><span id="metricHrPendingLeaves">1</span> Pending Leave</span>
+                                        <span><span id="metricHrPresentToday" class="font-bold">0</span> Present Today</span>
                                     </div>
-                                    <div class="mini-glass-pill"
-                                        style="height: 40px; font-size: 14px; padding: 0 16px; border-radius: 20px; display: inline-flex; align-items: center; gap: 6px;">
-                                        <i data-lucide="wallet" class="w-3.5 h-3.5 text-amber-400 flex-shrink-0"></i>
-                                        <span><span id="metricHrPayroll">88%</span> Payroll</span>
+                                    <div class="mini-glass-pill" style="height: 40px; font-size: 14px; padding: 0 16px; border-radius: 20px; display: inline-flex; align-items: center; gap: 6px;">
+                                        <i data-lucide="calendar-off" class="w-3.5 h-3.5 text-amber-400 flex-shrink-0"></i>
+                                        <span><span id="metricHrPendingLeaves" class="font-bold">0</span> Pending Leaves</span>
                                     </div>
-                                    <div class="mini-glass-pill"
-                                        style="height: 40px; font-size: 14px; padding: 0 16px; border-radius: 20px; display: inline-flex; align-items: center; gap: 6px;">
-                                        <i data-lucide="shield-check"
-                                            class="w-3.5 h-3.5 text-purple-400 flex-shrink-0"></i>
-                                        <span><span id="metricHrPfSynced">100%</span> PF Synced</span>
+                                    <div class="mini-glass-pill" style="height: 40px; font-size: 14px; padding: 0 16px; border-radius: 20px; display: inline-flex; align-items: center; gap: 6px;">
+                                        <i data-lucide="wallet" class="w-3.5 h-3.5 text-purple-400 flex-shrink-0"></i>
+                                        <span><span id="metricHrPayroll" class="font-bold">0%</span> Payroll Completion</span>
                                     </div>
                                 </div>
-
                             </div>
 
-                            <!-- DIVIDER #2 (Full width, below metrics, above actions) -->
+                            <!-- DIVIDER #2 -->
                             <div class="bezent-hero-divider"></div>
 
-                            <!-- Actions Area (width restricted to 58%) -->
-                            <div class="w-[58%] pb-1">
-                                <div
-                                    style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; width: 100%; align-items: center;">
+                            <!-- Actions Area -->
+                            <div class="w-[56%] pb-1">
+                                <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; width: 100%; align-items: center;">
                                     <!-- Primary: Add Employee -->
-                                    <button onclick="openAddEmployeeModal()" class="btn-premium-primary gap-1.5"
-                                        style="height: 50px; padding: 0 16px; border-radius: 18px; white-space: nowrap; font-size: 13px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center;">
-                                        <i data-lucide="user-plus" class="w-4 h-4 text-emerald-300 flex-shrink-0"></i>
+                                    <button onclick="openAddEmployeeModal()" class="btn-premium-primary gap-1.5" style="height: 50px; padding: 0 16px; border-radius: 18px; white-space: nowrap; font-size: 13px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center;">
+                                        <i data-lucide="user-plus" class="w-4 h-4 text-white flex-shrink-0"></i>
                                         <span>Add Employee</span>
                                     </button>
                                     <!-- Secondary: Recruitment -->
-                                    <button onclick="switchAccordionTab('hr-recruitment')"
-                                        class="btn-premium-secondary gap-1.5"
-                                        style="height: 50px; padding: 0 16px; border-radius: 18px; white-space: nowrap; font-size: 13px; display: inline-flex; align-items: center; justify-content: center;">
-                                        <i data-lucide="briefcase" class="w-4 h-4 flex-shrink-0"></i>
-                                        <span>Recruitment</span>
+                                    <button onclick="switchAccordionTab('hr-recruitment')" class="btn-premium-secondary gap-1.5" style="height: 50px; padding: 0 16px; border-radius: 18px; white-space: nowrap; font-size: 13px; display: inline-flex; align-items: center; justify-content: center;">
+                                        <i data-lucide="briefcase" class="w-4 h-4 flex-shrink-0"></i> <span>Recruitment</span>
                                     </button>
                                     <!-- Secondary: Generate Payroll -->
-                                    <button onclick="switchAccordionTab('hr-payroll')"
-                                        class="btn-premium-secondary gap-1.5"
-                                        style="height: 50px; padding: 0 16px; border-radius: 18px; white-space: nowrap; font-size: 13px; display: inline-flex; align-items: center; justify-content: center;">
-                                        <i data-lucide="wallet" class="w-4 h-4 flex-shrink-0"></i> <span>Generate
-                                            Payroll</span>
+                                    <button onclick="switchAccordionTab('hr-payroll')" class="btn-premium-secondary gap-1.5" style="height: 50px; padding: 0 16px; border-radius: 18px; white-space: nowrap; font-size: 13px; display: inline-flex; align-items: center; justify-content: center;">
+                                        <i data-lucide="wallet" class="w-4 h-4 flex-shrink-0"></i> <span>Generate Payroll</span>
                                     </button>
                                     <!-- Secondary: Attendance Review -->
-                                    <button onclick="switchAccordionTab('hr-attendance')"
-                                        class="btn-premium-secondary gap-1.5"
-                                        style="height: 50px; padding: 0 16px; border-radius: 18px; white-space: nowrap; font-size: 13px; display: inline-flex; align-items: center; justify-content: center;">
-                                        <i data-lucide="clock" class="w-4 h-4 flex-shrink-0"></i> <span>Attendance
-                                            Review</span>
+                                    <button onclick="switchAccordionTab('hr-attendance')" class="btn-premium-secondary gap-1.5" style="height: 50px; padding: 0 16px; border-radius: 18px; white-space: nowrap; font-size: 13px; display: inline-flex; align-items: center; justify-content: center;">
+                                        <i data-lucide="clock" class="w-4 h-4 flex-shrink-0"></i> <span>Attendance Review</span>
                                     </button>
                                     <!-- Secondary: PF Export -->
-                                    <button onclick="switchAccordionTab('hr-pf')" class="btn-premium-secondary gap-1.5"
-                                        style="height: 50px; padding: 0 16px; border-radius: 18px; white-space: nowrap; font-size: 13px; display: inline-flex; align-items: center; justify-content: center;">
-                                        <i data-lucide="shield-check" class="w-4 h-4 flex-shrink-0"></i> <span>PF
-                                            Export</span>
+                                    <button onclick="switchAccordionTab('hr-pf')" class="btn-premium-secondary gap-1.5" style="height: 50px; padding: 0 16px; border-radius: 18px; white-space: nowrap; font-size: 13px; display: inline-flex; align-items: center; justify-content: center;">
+                                        <i data-lucide="shield-check" class="w-4 h-4 flex-shrink-0"></i> <span>PF Export</span>
                                     </button>
                                 </div>
                             </div>
 
-                            <!-- VERTICAL DIVIDER (Absolute positioned at 60%) -->
+                            <!-- VERTICAL DIVIDER -->
                             <div class="bezent-vertical-divider"></div>
+                        </div>
+                    </div>
 
-                            <!-- COMMAND PANEL (Absolute positioned on the right at 38% width, spanning full height below Divider #1) -->
-                            <div
-                                class="absolute right-0 top-0 bottom-0 w-[38%] command-glass-panel flex flex-col justify-between p-4 text-white">
-                                <div class="flex items-center justify-between pb-1.5 border-b border-white/5">
-                                    <span
-                                        class="text-[9px] font-extrabold text-purple-200 uppercase tracking-widest">Command
-                                        Panel</span>
-                                    <span
-                                        class="text-[8px] font-mono font-bold bg-purple-500/20 text-purple-200 px-1.5 py-0.5 rounded border border-purple-500/10">Roster
-                                        Stable</span>
+                    <!-- COMMAND PANEL -->
+                    <div class="absolute right-[28px] top-[16px] bottom-[16px] w-[40%] command-glass-panel flex flex-col justify-between p-5 pb-6 text-white z-20">
+                            <div class="flex items-center justify-between pb-1.5 border-b border-white/5">
+                                <div class="flex items-center gap-1.5">
+                                    <i data-lucide="cpu" class="w-3.5 h-3.5 text-purple-400"></i>
+                                    <span class="text-[9px] font-extrabold text-purple-200 uppercase tracking-widest">Executive Command Center</span>
                                 </div>
+                                <span class="text-[8px] font-mono font-bold bg-purple-500/20 text-purple-200 px-1.5 py-0.5 rounded border border-purple-500/10">Roster Stable</span>
+                            </div>
 
-                                <!-- Horizontal Grid with Dominant numbers -->
-                                <div class="grid grid-cols-4 gap-2 my-2">
-                                    <div class="premium-kpi-card">
-                                        <span class="card-number" id="hrHeroTotalEmp">52</span>
-                                        <span class="card-label">Employees</span>
+                            <!-- KPI Blocks (4 columns, top-glow cards, sparklines) -->
+                            <div class="grid grid-cols-4 gap-2 my-2.5">
+                                <!-- Card 1: Attendance Compliance -->
+                                <div class="premium-kpi-card">
+                                    <div class="flex items-center justify-between w-full">
+                                        <span class="card-number text-[18px]" id="hrHeroAttendanceCompliance">0%</span>
+                                        <svg class="w-8 h-3 stroke-emerald-400 stroke-[1.5] fill-none opacity-90" viewBox="0 0 30 10">
+                                            <path d="M 0 8 L 6 6 L 12 7 L 18 3 L 24 5 L 30 2" />
+                                        </svg>
                                     </div>
-                                    <div class="premium-kpi-card">
-                                        <span class="card-number" id="hrHeroLateIn">0</span>
-                                        <span class="card-label">Late In</span>
-                                    </div>
-                                    <div class="premium-kpi-card">
-                                        <span class="card-number" id="hrHeroLeaveReq">1</span>
-                                        <span class="card-label">Leave Req</span>
-                                    </div>
-                                    <div class="premium-kpi-card">
-                                        <span class="card-number" id="hrHeroPayroll">88%</span>
-                                        <span class="card-label">Payroll</span>
-                                    </div>
+                                    <span class="card-label">Compliance</span>
                                 </div>
+                                <!-- Card 2: New Joiners -->
+                                <div class="premium-kpi-card">
+                                    <div class="flex items-center justify-between w-full">
+                                        <span class="card-number text-[18px]" id="hrHeroNewJoiners">0</span>
+                                        <svg class="w-8 h-3 stroke-emerald-400 stroke-[1.5] fill-none opacity-90" viewBox="0 0 30 10">
+                                            <path d="M 0 9 L 8 7 L 16 5 L 24 2 L 30 1" />
+                                        </svg>
+                                    </div>
+                                    <span class="card-label">New Joiners</span>
+                                </div>
+                                <!-- Card 3: Probation -->
+                                <div class="premium-kpi-card">
+                                    <div class="flex items-center justify-between w-full">
+                                        <span class="card-number text-[18px]" id="hrHeroProbation">0</span>
+                                        <svg class="w-8 h-3 stroke-amber-400 stroke-[1.5] fill-none opacity-90" viewBox="0 0 30 10">
+                                            <path d="M 0 5 L 10 5 L 20 4 L 30 5" />
+                                        </svg>
+                                    </div>
+                                    <span class="card-label">Probation</span>
+                                </div>
+                                <!-- Card 4: Pending Verification -->
+                                <div class="premium-kpi-card">
+                                    <div class="flex items-center justify-between w-full">
+                                        <span class="card-number text-[18px]" id="hrHeroVerifications">0</span>
+                                        <svg class="w-8 h-3 stroke-rose-400 stroke-[1.5] fill-none opacity-90" viewBox="0 0 30 10">
+                                            <path d="M 0 2 L 10 4 L 20 6 L 30 8" />
+                                        </svg>
+                                    </div>
+                                    <span class="card-label">Pending</span>
+                                </div>
+                            </div>
 
-                                <!-- Progress Bar -->
-                                <div class="space-y-1">
-                                    <div class="flex justify-between items-center text-[9.5px] text-white/95">
-                                        <span class="font-semibold tracking-wide">Payroll Cycle Progress</span>
-                                        <span class="font-mono text-purple-200 font-bold"
-                                            id="hrHeroPayrollPercentText">88%</span>
-                                    </div>
-                                    <div class="w-full bg-white/10 rounded-full h-1 overflow-hidden relative">
-                                        <div
-                                            class="progress-shimmer absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent">
-                                        </div>
-                                        <div class="bg-emerald-400 h-full rounded-full transition-all duration-[1200ms]"
-                                            style="width: 88%"></div>
-                                    </div>
+                            <!-- Progress Bar -->
+                            <div class="space-y-1 mt-1">
+                                <div class="flex justify-between items-center text-[11px] text-white/90">
+                                    <span class="font-semibold tracking-wide">Payroll Cycle Progress</span>
+                                    <span class="font-mono text-purple-200 font-bold" id="hrHeroPayrollPercentText">0%</span>
                                 </div>
+                                <div class="w-full bg-white/10 rounded-full h-2 overflow-hidden relative shadow-[inset_0_1px_2px_rgba(0,0,0,0.4)] border border-white/5">
+                                    <div class="progress-shimmer absolute inset-0 bg-gradient-to-r from-transparent via-white/15 to-transparent"></div>
+                                    <div id="payrollProgressBar" class="executive-progress-bar h-full rounded-full transition-all duration-[1200ms]" style="width: 0%"></div>
+                                </div>
+                            </div>
 
-                                <!-- Alert Footer -->
-                                <div
-                                    class="pt-2 border-t border-white/5 flex items-center justify-between text-[9.5px] text-purple-200/90 font-semibold">
-                                    <div class="flex items-center gap-1.5">
-                                        <span class="w-1.5 h-1.5 rounded-full bg-amber-400 live-pulse-dot"></span>
-                                        <span>1 Attendance Exception</span>
-                                    </div>
-                                    <i data-lucide="shield-alert" class="w-3.5 h-3.5 text-purple-200/60"></i>
+                            <!-- AI Insights -->
+                            <div class="pt-2 border-t border-white/8 flex flex-col gap-1.5 text-left mt-1">
+                                <div class="flex items-center gap-1.5 text-[10px] text-purple-300 font-bold uppercase tracking-wider">
+                                    <i data-lucide="sparkles" class="w-3.5 h-3.5 text-purple-400 animate-pulse"></i>
+                                    <span>Workforce AI Insights</span>
                                 </div>
+                                <div class="grid grid-cols-2 gap-x-4 gap-y-1 text-[10px] text-white/80 font-medium">
+                                    <div class="flex justify-between items-center py-0.5 border-b border-white/8">
+                                        <span class="text-white/55">Compliance:</span>
+                                        <span class="font-mono text-emerald-400 font-bold" id="aiComplianceVal">98%</span>
+                                    </div>
+                                    <div class="flex justify-between items-center py-0.5 border-b border-white/8">
+                                        <span class="text-white/55">Leave Risk:</span>
+                                        <span class="text-rose-400 font-bold" id="aiLeaveRiskVal">Low</span>
+                                    </div>
+                                    <div class="flex justify-between items-center py-0.5 border-b border-white/8">
+                                        <span class="text-white/55">Payroll Ready:</span>
+                                        <span class="font-mono text-blue-400 font-bold" id="aiPayrollReadyVal">88%</span>
+                                    </div>
+                                    <div class="flex justify-between items-center py-0.5 border-b border-white/8">
+                                        <span class="text-white/55">Onboarding Queue:</span>
+                                        <span class="font-mono text-purple-300 font-bold" id="aiOnboardVal">3</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Alert Footer -->
+                            <div class="pt-1.5 border-t border-white/8 flex items-center justify-between text-[10px] text-purple-200/90 font-semibold mt-1">
+                                <div class="flex items-center gap-1.5">
+                                    <span class="w-2 h-2 rounded-full bg-amber-400 live-pulse-dot"></span>
+                                    <span>1 Attendance Exception</span>
+                                </div>
+                                <i data-lucide="shield-alert" class="w-3.5 h-3.5 text-purple-200/40"></i>
                             </div>
                         </div>
                     </div>
-                </div>
-
 
                 <!-- ==================== WORKFORCE COMMAND CENTER ==================== -->
-                
+
                 <!-- SECTION 1: WORKFORCE OVERVIEW -->
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-6">
                     <!-- Card 1: Total Workforce -->
-                    <div class="premium-card p-5 bg-white border border-[#ECECF3] rounded-2xl shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 relative overflow-hidden group">
+                    <div
+                        class="premium-card p-5 bg-white border border-[#ECECF3] rounded-2xl shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 relative overflow-hidden group">
                         <div class="flex items-center justify-between">
                             <span class="text-xs text-[#6B7280] font-semibold">Total Workforce</span>
-                            <div class="bg-purple-50 text-[#7C3AED] p-2 rounded-xl border border-purple-100 group-hover:bg-[#7C3AED] group-hover:text-white transition-colors duration-300">
+                            <div
+                                class="bg-purple-50 text-[#7C3AED] p-2 rounded-xl border border-purple-100 group-hover:bg-[#7C3AED] group-hover:text-white transition-colors duration-300">
                                 <i data-lucide="users" class="w-4 h-4"></i>
                             </div>
                         </div>
                         <div class="mt-4 flex items-baseline gap-2">
-                            <span class="text-3xl font-bold text-[#111827] tracking-tight transition-all duration-500" id="statTotalEmployeesOverview">0</span>
-                            <span class="text-xs font-bold text-emerald-600 flex items-center gap-0.5 bg-emerald-50 px-1.5 py-0.5 rounded-lg border border-emerald-100">
+                            <span class="text-3xl font-bold text-[#111827] tracking-tight transition-all duration-500"
+                                id="statTotalEmployeesOverview">0</span>
+                            <span
+                                class="text-xs font-bold text-emerald-600 flex items-center gap-0.5 bg-emerald-50 px-1.5 py-0.5 rounded-lg border border-emerald-100">
                                 <i data-lucide="trending-up" class="w-3 h-3"></i>
                                 <span id="statWorkforceGrowthPct">+4.8%</span>
                             </span>
                         </div>
                         <div class="mt-2 flex items-center justify-between text-[11px] text-[#6B7280]">
-                            <span>New Joiners This Month: <strong class="text-slate-800" id="statNewJoinersMonth">5</strong></span>
+                            <span>New Joiners This Month: <strong class="text-slate-800"
+                                    id="statNewJoinersMonth">5</strong></span>
                         </div>
                         <!-- Mini Trend Sparkline -->
                         <div class="mt-4 h-10 w-full overflow-hidden">
-                            <svg class="w-full h-full stroke-purple-500 stroke-2 fill-purple-50/20" viewBox="0 0 100 30" preserveAspectRatio="none">
+                            <svg class="w-full h-full stroke-purple-500 stroke-2 fill-purple-50/20" viewBox="0 0 100 30"
+                                preserveAspectRatio="none">
                                 <path d="M 0 25 Q 15 15, 30 20 T 60 10 T 90 5 T 100 8 L 100 30 L 0 30 Z" />
                             </svg>
                         </div>
                     </div>
 
                     <!-- Card 2: Workforce Availability -->
-                    <div class="premium-card p-5 bg-white border border-[#ECECF3] rounded-2xl shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 relative overflow-hidden group">
+                    <div
+                        class="premium-card p-5 bg-white border border-[#ECECF3] rounded-2xl shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 relative overflow-hidden group">
                         <div class="flex items-center justify-between">
                             <span class="text-xs text-[#6B7280] font-semibold">Workforce Availability</span>
-                            <div class="bg-emerald-50 text-emerald-600 p-2 rounded-xl border border-emerald-100 group-hover:bg-emerald-600 group-hover:text-white transition-colors duration-300">
+                            <div
+                                class="bg-emerald-50 text-emerald-600 p-2 rounded-xl border border-emerald-100 group-hover:bg-emerald-600 group-hover:text-white transition-colors duration-300">
                                 <i data-lucide="calendar-check" class="w-4 h-4"></i>
                             </div>
                         </div>
                         <div class="mt-4 flex items-baseline gap-2">
-                            <span class="text-3xl font-bold text-emerald-600 tracking-tight" id="statAvailabilityPct">0%</span>
+                            <span class="text-3xl font-bold text-emerald-600 tracking-tight"
+                                id="statAvailabilityPct">0%</span>
                             <span class="text-xs font-bold text-[#6B7280]">Present Today</span>
                         </div>
-                        <div class="mt-2 grid grid-cols-3 gap-2 text-[10px] text-[#6B7280] border-t border-[#ECECF3] pt-2 text-left">
+                        <div
+                            class="mt-2 grid grid-cols-3 gap-2 text-[10px] text-[#6B7280] border-t border-[#ECECF3] pt-2 text-left">
                             <div>Present: <strong class="text-emerald-600" id="statOverviewPresent">0</strong></div>
                             <div>Absent: <strong class="text-rose-600" id="statOverviewAbsent">0</strong></div>
                             <div>On Leave: <strong class="text-purple-600" id="statOverviewLeave">0</strong></div>
                         </div>
                         <!-- Animated Progress Indicator -->
                         <div class="mt-4 w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
-                            <div id="statAvailabilityProgress" class="bg-emerald-500 h-full rounded-full transition-all duration-[1500ms] cubic-bezier(0.4, 0, 0.2, 1)" style="width: 0%"></div>
+                            <div id="statAvailabilityProgress"
+                                class="bg-emerald-500 h-full rounded-full transition-all duration-[1500ms] cubic-bezier(0.4, 0, 0.2, 1)"
+                                style="width: 0%"></div>
                         </div>
                     </div>
 
                     <!-- Card 3: Recruitment Pipeline -->
-                    <div class="premium-card p-5 bg-white border border-[#ECECF3] rounded-2xl shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 relative overflow-hidden group">
+                    <div
+                        class="premium-card p-5 bg-white border border-[#ECECF3] rounded-2xl shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 relative overflow-hidden group">
                         <div class="flex items-center justify-between">
                             <span class="text-xs text-[#6B7280] font-semibold">Recruitment Pipeline</span>
-                            <div class="bg-blue-50 text-blue-600 p-2 rounded-xl border border-blue-100 group-hover:bg-blue-600 group-hover:text-white transition-colors duration-300">
+                            <div
+                                class="bg-blue-50 text-blue-600 p-2 rounded-xl border border-blue-100 group-hover:bg-blue-600 group-hover:text-white transition-colors duration-300">
                                 <i data-lucide="briefcase" class="w-4 h-4"></i>
                             </div>
                         </div>
                         <div class="mt-4 flex items-baseline gap-2">
-                            <span class="text-3xl font-bold text-blue-600 tracking-tight" id="statOverviewOpenPositions">12</span>
+                            <span class="text-3xl font-bold text-blue-600 tracking-tight"
+                                id="statOverviewOpenPositions">12</span>
                             <span class="text-xs font-bold text-[#6B7280]">Open Positions</span>
                         </div>
-                        <div class="mt-2 grid grid-cols-3 gap-2 text-[10px] text-[#6B7280] border-t border-[#ECECF3] pt-2 text-left">
+                        <div
+                            class="mt-2 grid grid-cols-3 gap-2 text-[10px] text-[#6B7280] border-t border-[#ECECF3] pt-2 text-left">
                             <div>Applied: <strong class="text-slate-800" id="statOverviewApplied">0</strong></div>
                             <div>Interviews: <strong class="text-blue-600" id="statOverviewInterviews">0</strong></div>
                             <div>Offers: <strong class="text-purple-600" id="statOverviewOffers">0</strong></div>
@@ -1933,27 +1989,42 @@
                         <!-- Decorative micro-animation strip -->
                         <div class="mt-4 flex gap-1 items-center justify-between px-1">
                             <span class="w-2 h-2 rounded-full bg-blue-400/20 animate-ping"></span>
-                            <span class="text-[9px] text-blue-500 font-semibold" id="recruitmentActivityText">Active Hiring</span>
+                            <span class="text-[9px] text-blue-500 font-semibold" id="recruitmentActivityText">Active
+                                Hiring</span>
                         </div>
                     </div>
 
                     <!-- Card 4: HR Action Center -->
-                    <div class="premium-card p-5 bg-white border border-[#ECECF3] rounded-2xl shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 relative overflow-hidden group">
+                    <div
+                        class="premium-card p-5 bg-white border border-[#ECECF3] rounded-2xl shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 relative overflow-hidden group">
                         <div class="flex items-center justify-between">
                             <span class="text-xs text-[#6B7280] font-semibold">HR Action Center</span>
-                            <div class="bg-rose-50 text-rose-600 p-2 rounded-xl border border-rose-100 group-hover:bg-rose-600 group-hover:text-white transition-colors duration-300">
+                            <div
+                                class="bg-rose-50 text-rose-600 p-2 rounded-xl border border-rose-100 group-hover:bg-rose-600 group-hover:text-white transition-colors duration-300">
                                 <i data-lucide="shield-alert" class="w-4 h-4"></i>
                             </div>
                         </div>
                         <div class="mt-4 flex items-baseline gap-2">
-                            <span class="text-3xl font-bold text-rose-600 tracking-tight" id="statOverviewCriticalActions">0</span>
-                            <span class="text-xs font-bold text-rose-600 bg-rose-50 border border-rose-100 px-1.5 py-0.5 rounded-lg">Critical Items</span>
+                            <span class="text-3xl font-bold text-rose-600 tracking-tight"
+                                id="statOverviewCriticalActions">0</span>
+                            <span
+                                class="text-xs font-bold text-rose-600 bg-rose-50 border border-rose-100 px-1.5 py-0.5 rounded-lg">Critical
+                                Items</span>
                         </div>
-                        <div class="mt-2 grid grid-cols-2 gap-x-2 gap-y-1 text-[9.5px] text-[#6B7280] border-t border-[#ECECF3] pt-2 text-left">
-                            <div class="flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span> Leaves: <strong class="text-slate-800" id="statOverviewLeavesPending">0</strong></div>
-                            <div class="flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span> Verifications: <strong class="text-slate-800" id="statOverviewVerificationsPending">0</strong></div>
-                            <div class="flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-blue-500"></span> Confirmations: <strong class="text-slate-800" id="statOverviewConfirmationsPending">0</strong></div>
-                            <div class="flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-red-500"></span> Exits: <strong class="text-slate-800" id="statOverviewExitsPending">0</strong></div>
+                        <div
+                            class="mt-2 grid grid-cols-2 gap-x-2 gap-y-1 text-[9.5px] text-[#6B7280] border-t border-[#ECECF3] pt-2 text-left">
+                            <div class="flex items-center gap-1"><span
+                                    class="w-1.5 h-1.5 rounded-full bg-amber-500"></span> Leaves: <strong
+                                    class="text-slate-800" id="statOverviewLeavesPending">0</strong></div>
+                            <div class="flex items-center gap-1"><span
+                                    class="w-1.5 h-1.5 rounded-full bg-rose-500"></span> Verifications: <strong
+                                    class="text-slate-800" id="statOverviewVerificationsPending">0</strong></div>
+                            <div class="flex items-center gap-1"><span
+                                    class="w-1.5 h-1.5 rounded-full bg-blue-500"></span> Confirmations: <strong
+                                    class="text-slate-800" id="statOverviewConfirmationsPending">0</strong></div>
+                            <div class="flex items-center gap-1"><span
+                                    class="w-1.5 h-1.5 rounded-full bg-red-500"></span> Exits: <strong
+                                    class="text-slate-800" id="statOverviewExitsPending">0</strong></div>
                         </div>
                     </div>
                 </div>
@@ -1961,28 +2032,33 @@
                 <!-- SECTION 2: WORKFORCE ANALYTICS & SECTION 10: WORKFORCE INSIGHTS -->
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
                     <!-- Left and Center: Headcount Growth & Dept Distribution -->
-                    <div class="premium-card p-6 bg-white border border-[#ECECF3] rounded-2xl shadow-sm lg:col-span-2 space-y-6">
+                    <div
+                        class="premium-card p-6 bg-white border border-[#ECECF3] rounded-2xl shadow-sm lg:col-span-2 space-y-6">
                         <div class="flex justify-between items-center border-b border-[#ECECF3] pb-4">
                             <div class="text-left">
                                 <h3 class="font-bold text-base text-[#111827]">Workforce Analytics</h3>
                                 <p class="text-xs text-[#6B7280]">Telemetry & allocation trends</p>
                             </div>
                             <div class="flex items-center gap-3 text-xs">
-                                <span class="flex items-center gap-1.5 font-semibold text-[#7C3AED]"><span class="w-2 h-2 rounded-full bg-[#7C3AED]"></span> Headcount Growth</span>
-                                <span class="flex items-center gap-1.5 font-semibold text-blue-500"><span class="w-2 h-2 rounded-full bg-blue-500"></span> Dept Distribution</span>
+                                <span class="flex items-center gap-1.5 font-semibold text-[#7C3AED]"><span
+                                        class="w-2 h-2 rounded-full bg-[#7C3AED]"></span> Headcount Growth</span>
+                                <span class="flex items-center gap-1.5 font-semibold text-blue-500"><span
+                                        class="w-2 h-2 rounded-full bg-blue-500"></span> Dept Distribution</span>
                             </div>
                         </div>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
                             <!-- Left: Headcount Growth Chart -->
                             <div class="space-y-2">
-                                <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider text-left">Headcount Growth Trend</h4>
+                                <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider text-left">
+                                    Headcount Growth Trend</h4>
                                 <div class="h-56 relative w-full">
                                     <canvas id="headcountGrowthChart"></canvas>
                                 </div>
                             </div>
                             <!-- Right: Department Distribution Chart -->
                             <div class="space-y-2">
-                                <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider text-left">Department Distribution</h4>
+                                <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider text-left">
+                                    Department Distribution</h4>
                                 <div class="h-56 relative w-full">
                                     <canvas id="deptDoughnutChart"></canvas>
                                 </div>
@@ -1991,7 +2067,8 @@
                     </div>
 
                     <!-- Right: Smart Insights Panel (Section 10) -->
-                    <div class="premium-card p-6 bg-white border border-[#ECECF3] rounded-2xl shadow-sm flex flex-col justify-between">
+                    <div
+                        class="premium-card p-6 bg-white border border-[#ECECF3] rounded-2xl shadow-sm flex flex-col justify-between">
                         <div class="space-y-4">
                             <div class="flex items-center gap-2 border-b border-[#ECECF3] pb-3 text-left">
                                 <div class="bg-purple-50 text-[#7C3AED] p-2 rounded-xl border border-purple-100">
@@ -2007,7 +2084,8 @@
                                 <!-- Cards populated by javascript -->
                             </div>
                         </div>
-                        <button onclick="switchAccordionTab('hr-reports')" class="w-full mt-4 py-2 bg-[#F7F7FB] hover:bg-[#F5F3FF] border border-[#ECECF3] text-[#7C3AED] rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5">
+                        <button onclick="switchAccordionTab('hr-reports')"
+                            class="w-full mt-4 py-2 bg-[#F7F7FB] hover:bg-[#F5F3FF] border border-[#ECECF3] text-[#7C3AED] rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5">
                             <i data-lucide="bar-chart-3" class="w-3.5 h-3.5"></i> View Full Analytics Report
                         </button>
                     </div>
@@ -2016,14 +2094,16 @@
                 <!-- SECTION 3: ATTENDANCE COMMAND CENTER & SECTION 9: COMPLIANCE & PAYROLL CENTER -->
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
                     <!-- Left & Center: Attendance Command Center -->
-                    <div class="premium-card p-6 bg-white border border-[#ECECF3] rounded-2xl shadow-sm lg:col-span-2 space-y-6">
+                    <div
+                        class="premium-card p-6 bg-white border border-[#ECECF3] rounded-2xl shadow-sm lg:col-span-2 space-y-6">
                         <div class="flex justify-between items-center border-b border-[#ECECF3] pb-4">
                             <div class="text-left">
                                 <h3 class="font-bold text-base text-[#111827]">Attendance Command Center</h3>
                                 <p class="text-xs text-[#6B7280]">Daily status and telemetry overview</p>
                             </div>
                             <!-- Trend indicator -->
-                            <div class="flex items-center gap-2 text-xs font-bold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-100 animate-pulse">
+                            <div
+                                class="flex items-center gap-2 text-xs font-bold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-100 animate-pulse">
                                 <i data-lucide="trending-up" class="w-3.5 h-3.5"></i>
                                 <span>↑ 4% from last week</span>
                             </div>
@@ -2034,40 +2114,55 @@
                                 <div class="relative w-36 h-36 flex items-center justify-center">
                                     <svg class="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
                                         <!-- Background Circle -->
-                                        <circle class="text-slate-100 stroke-current" stroke-width="8" fill="transparent" r="40" cx="50" cy="50"/>
+                                        <circle class="text-slate-100 stroke-current" stroke-width="8"
+                                            fill="transparent" r="40" cx="50" cy="50" />
                                         <!-- Foreground Circle -->
-                                        <circle id="complianceCircularArc" class="text-[#7C3AED] stroke-current gauge-arc" stroke-width="8" stroke-linecap="round" fill="transparent" r="40" cx="50" cy="50" stroke-dasharray="251.2" stroke-dashoffset="251.2"/>
+                                        <circle id="complianceCircularArc"
+                                            class="text-[#7C3AED] stroke-current gauge-arc" stroke-width="8"
+                                            stroke-linecap="round" fill="transparent" r="40" cx="50" cy="50"
+                                            stroke-dasharray="251.2" stroke-dashoffset="251.2" />
                                     </svg>
                                     <div class="absolute flex flex-col items-center justify-center">
-                                        <span class="text-2xl font-bold text-[#111827]" id="complianceGaugeText">94%</span>
-                                        <span class="text-[9px] text-[#6B7280] font-bold uppercase tracking-wider">Compliance</span>
+                                        <span class="text-2xl font-bold text-[#111827]"
+                                            id="complianceGaugeText">94%</span>
+                                        <span
+                                            class="text-[9px] text-[#6B7280] font-bold uppercase tracking-wider">Compliance</span>
                                     </div>
                                 </div>
-                                <span class="text-[11px] text-[#6B7280] font-semibold mt-2">Weekly punctuality rating</span>
+                                <span class="text-[11px] text-[#6B7280] font-semibold mt-2">Weekly punctuality
+                                    rating</span>
                             </div>
                             <!-- Grid details -->
                             <div class="md:col-span-8 grid grid-cols-3 gap-4">
-                                <div class="bg-[#FAFAFC] border border-[#ECECF3] rounded-2xl p-4 text-center hover:border-[#7C3AED] transition-colors duration-300">
+                                <div
+                                    class="bg-[#FAFAFC] border border-[#ECECF3] rounded-2xl p-4 text-center hover:border-[#7C3AED] transition-colors duration-300">
                                     <span class="text-[10px] text-[#6B7280] font-semibold block">Present</span>
-                                    <span class="text-xl font-bold text-[#111827] mt-1 block" id="attPresentVal">0</span>
+                                    <span class="text-xl font-bold text-[#111827] mt-1 block"
+                                        id="attPresentVal">0</span>
                                 </div>
-                                <div class="bg-[#FAFAFC] border border-[#ECECF3] rounded-2xl p-4 text-center hover:border-red-400 transition-colors duration-300">
+                                <div
+                                    class="bg-[#FAFAFC] border border-[#ECECF3] rounded-2xl p-4 text-center hover:border-red-400 transition-colors duration-300">
                                     <span class="text-[10px] text-[#6B7280] font-semibold block">Absent</span>
                                     <span class="text-xl font-bold text-rose-600 mt-1 block" id="attAbsentVal">0</span>
                                 </div>
-                                <div class="bg-[#FAFAFC] border border-[#ECECF3] rounded-2xl p-4 text-center hover:border-amber-400 transition-colors duration-300">
+                                <div
+                                    class="bg-[#FAFAFC] border border-[#ECECF3] rounded-2xl p-4 text-center hover:border-amber-400 transition-colors duration-300">
                                     <span class="text-[10px] text-[#6B7280] font-semibold block">Late</span>
                                     <span class="text-xl font-bold text-amber-500 mt-1 block" id="attLateVal">0</span>
                                 </div>
-                                <div class="bg-[#FAFAFC] border border-[#ECECF3] rounded-2xl p-4 text-center hover:border-orange-400 transition-colors duration-300">
+                                <div
+                                    class="bg-[#FAFAFC] border border-[#ECECF3] rounded-2xl p-4 text-center hover:border-orange-400 transition-colors duration-300">
                                     <span class="text-[10px] text-[#6B7280] font-semibold block">Half Day</span>
-                                    <span class="text-xl font-bold text-orange-600 mt-1 block" id="attHalfDayVal">0</span>
+                                    <span class="text-xl font-bold text-orange-600 mt-1 block"
+                                        id="attHalfDayVal">0</span>
                                 </div>
-                                <div class="bg-[#FAFAFC] border border-[#ECECF3] rounded-2xl p-4 text-center hover:border-purple-400 transition-colors duration-300">
+                                <div
+                                    class="bg-[#FAFAFC] border border-[#ECECF3] rounded-2xl p-4 text-center hover:border-purple-400 transition-colors duration-300">
                                     <span class="text-[10px] text-[#6B7280] font-semibold block">On Leave</span>
                                     <span class="text-xl font-bold text-[#7C3AED] mt-1 block" id="attLeaveVal">0</span>
                                 </div>
-                                <div class="bg-[#FAFAFC] border border-[#ECECF3] rounded-2xl p-4 text-center hover:border-blue-400 transition-colors duration-300">
+                                <div
+                                    class="bg-[#FAFAFC] border border-[#ECECF3] rounded-2xl p-4 text-center hover:border-blue-400 transition-colors duration-300">
                                     <span class="text-[10px] text-[#6B7280] font-semibold block">Work From Home</span>
                                     <span class="text-xl font-bold text-blue-600 mt-1 block" id="attWfhVal">0</span>
                                 </div>
@@ -2076,7 +2171,8 @@
                     </div>
 
                     <!-- Right Side: Compliance & Payroll Center (Section 9) -->
-                    <div class="premium-card p-6 bg-white border border-[#ECECF3] rounded-2xl shadow-sm flex flex-col justify-between">
+                    <div
+                        class="premium-card p-6 bg-white border border-[#ECECF3] rounded-2xl shadow-sm flex flex-col justify-between">
                         <div class="space-y-4">
                             <div class="flex items-center gap-2 border-b border-[#ECECF3] pb-3 text-left">
                                 <div class="bg-emerald-50 text-emerald-600 p-2 rounded-xl border border-emerald-100">
@@ -2087,7 +2183,7 @@
                                     <p class="text-[11px] text-[#6B7280]">Regulatory reporting audit</p>
                                 </div>
                             </div>
-                            
+
                             <!-- Compliance items with progress bars -->
                             <div class="space-y-3.5 text-left">
                                 <div>
@@ -2096,7 +2192,8 @@
                                         <span class="font-bold font-mono text-emerald-600">100%</span>
                                     </div>
                                     <div class="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
-                                        <div class="bg-emerald-500 h-full rounded-full transition-all duration-[1200ms]" style="width: 100%"></div>
+                                        <div class="bg-emerald-500 h-full rounded-full transition-all duration-[1200ms]"
+                                            style="width: 100%"></div>
                                     </div>
                                 </div>
                                 <div>
@@ -2105,7 +2202,8 @@
                                         <span class="font-bold font-mono text-emerald-600">98%</span>
                                     </div>
                                     <div class="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
-                                        <div class="bg-emerald-500 h-full rounded-full transition-all duration-[1200ms]" style="width: 98%"></div>
+                                        <div class="bg-emerald-500 h-full rounded-full transition-all duration-[1200ms]"
+                                            style="width: 98%"></div>
                                     </div>
                                 </div>
                                 <div>
@@ -2114,7 +2212,8 @@
                                         <span class="font-bold font-mono text-[#7C3AED]">88%</span>
                                     </div>
                                     <div class="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
-                                        <div class="bg-[#7C3AED] h-full rounded-full transition-all duration-[1200ms]" style="width: 88%"></div>
+                                        <div class="bg-[#7C3AED] h-full rounded-full transition-all duration-[1200ms]"
+                                            style="width: 88%"></div>
                                     </div>
                                 </div>
                                 <div>
@@ -2123,7 +2222,8 @@
                                         <span class="font-bold font-mono text-amber-600">92%</span>
                                     </div>
                                     <div class="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
-                                        <div class="bg-amber-500 h-full rounded-full transition-all duration-[1200ms]" style="width: 92%"></div>
+                                        <div class="bg-amber-500 h-full rounded-full transition-all duration-[1200ms]"
+                                            style="width: 92%"></div>
                                     </div>
                                 </div>
                                 <div>
@@ -2132,12 +2232,14 @@
                                         <span class="font-bold font-mono text-amber-600">90%</span>
                                     </div>
                                     <div class="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
-                                        <div class="bg-amber-500 h-full rounded-full transition-all duration-[1200ms]" style="width: 90%"></div>
+                                        <div class="bg-amber-500 h-full rounded-full transition-all duration-[1200ms]"
+                                            style="width: 90%"></div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                        <button onclick="switchAccordionTab('hr-pf')" class="w-full mt-4 py-2 bg-[#F7F7FB] hover:bg-[#F5F3FF] border border-[#ECECF3] text-[#7C3AED] rounded-xl text-xs font-bold transition flex items-center justify-center gap-1">
+                        <button onclick="switchAccordionTab('hr-pf')"
+                            class="w-full mt-4 py-2 bg-[#F7F7FB] hover:bg-[#F5F3FF] border border-[#ECECF3] text-[#7C3AED] rounded-xl text-xs font-bold transition flex items-center justify-center gap-1">
                             <i data-lucide="shield" class="w-3.5 h-3.5"></i> Run Audit Checks
                         </button>
                     </div>
@@ -2146,7 +2248,8 @@
                 <!-- SECTION 4: RECRUITMENT FUNNEL & SECTION 5: EMPLOYEE LIFECYCLE TRACKER -->
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
                     <!-- Funnel (Left & Center) -->
-                    <div class="premium-card p-6 bg-white border border-[#ECECF3] rounded-2xl shadow-sm lg:col-span-2 space-y-6">
+                    <div
+                        class="premium-card p-6 bg-white border border-[#ECECF3] rounded-2xl shadow-sm lg:col-span-2 space-y-6">
                         <div class="flex justify-between items-center border-b border-[#ECECF3] pb-4">
                             <div class="text-left">
                                 <h3 class="font-bold text-base text-[#111827]">Recruitment Pipeline Funnel</h3>
@@ -2154,19 +2257,22 @@
                             </div>
                         </div>
                         <!-- Pipeline Funnel Layout -->
-                        <div class="grid grid-cols-2 md:grid-cols-6 gap-3 text-center relative pt-4" id="recruitmentFunnelContainer">
+                        <div class="grid grid-cols-2 md:grid-cols-6 gap-3 text-center relative pt-4"
+                            id="recruitmentFunnelContainer">
                             <!-- Populated dynamically to display step blocks and conversion percentages -->
                         </div>
                     </div>
 
                     <!-- Right Side: Employee Lifecycle Tracker -->
-                    <div class="premium-card p-6 bg-white border border-[#ECECF3] rounded-2xl shadow-sm space-y-6 text-left">
+                    <div
+                        class="premium-card p-6 bg-white border border-[#ECECF3] rounded-2xl shadow-sm space-y-6 text-left">
                         <div>
                             <h3 class="font-bold text-base text-[#111827]">Employee Lifecycle Tracker</h3>
                             <p class="text-xs text-[#6B7280]">Onboarding and confirmation flow timeline</p>
                         </div>
                         <!-- Lifecycle timeline -->
-                        <div class="relative pl-6 space-y-5 border-l border-purple-100 mt-2" id="employeeLifecycleTrackerContainer">
+                        <div class="relative pl-6 space-y-5 border-l border-purple-100 mt-2"
+                            id="employeeLifecycleTrackerContainer">
                             <!-- Populated dynamically -->
                         </div>
                     </div>
@@ -2175,7 +2281,8 @@
                 <!-- SECTION 6: HR PRIORITY ACTIONS & SECTION 7: UPCOMING EVENTS & SECTION 8: WORKFORCE ACTIVITY FEED -->
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
                     <!-- Section 6: HR Priority Actions -->
-                    <div class="premium-card p-6 bg-white border border-[#ECECF3] rounded-2xl shadow-sm flex flex-col justify-between">
+                    <div
+                        class="premium-card p-6 bg-white border border-[#ECECF3] rounded-2xl shadow-sm flex flex-col justify-between">
                         <div class="space-y-4">
                             <div class="flex items-center gap-2 border-b border-[#ECECF3] pb-3 text-left">
                                 <div class="bg-rose-50 text-rose-600 p-2 rounded-xl border border-rose-100">
@@ -2187,14 +2294,16 @@
                                 </div>
                             </div>
                             <!-- Actions List -->
-                            <div class="space-y-3 max-h-96 overflow-y-auto pr-1 text-left" id="priorityActionsContainer">
+                            <div class="space-y-3 max-h-96 overflow-y-auto pr-1 text-left"
+                                id="priorityActionsContainer">
                                 <!-- Cards populated by javascript -->
                             </div>
                         </div>
                     </div>
 
                     <!-- Section 7: Upcoming Events & People Calendar -->
-                    <div class="premium-card p-6 bg-white border border-[#ECECF3] rounded-2xl shadow-sm flex flex-col justify-between">
+                    <div
+                        class="premium-card p-6 bg-white border border-[#ECECF3] rounded-2xl shadow-sm flex flex-col justify-between">
                         <div class="space-y-4">
                             <div class="flex items-center gap-2 border-b border-[#ECECF3] pb-3 text-left">
                                 <div class="bg-blue-50 text-blue-600 p-2 rounded-xl border border-blue-100">
@@ -2213,7 +2322,8 @@
                     </div>
 
                     <!-- Section 8: Workforce Activity Feed -->
-                    <div class="premium-card p-6 bg-white border border-[#ECECF3] rounded-2xl shadow-sm flex flex-col justify-between">
+                    <div
+                        class="premium-card p-6 bg-white border border-[#ECECF3] rounded-2xl shadow-sm flex flex-col justify-between">
                         <div class="space-y-4">
                             <div class="flex items-center gap-2 border-b border-[#ECECF3] pb-3 text-left">
                                 <div class="bg-emerald-50 text-emerald-600 p-2 rounded-xl border border-emerald-100">
@@ -2225,7 +2335,8 @@
                                 </div>
                             </div>
                             <!-- Scrolling Activity Feed -->
-                            <div class="space-y-3.5 max-h-96 overflow-y-auto pr-1 text-left scroll-smooth" id="liveActivityFeedContainer">
+                            <div class="space-y-3.5 max-h-96 overflow-y-auto pr-1 text-left scroll-smooth"
+                                id="liveActivityFeedContainer">
                                 <!-- Activity entries populated by javascript -->
                             </div>
                         </div>
@@ -2786,17 +2897,20 @@
                     <form id="peForm" onsubmit="submitPeEmployee(event)"
                         class="grid grid-cols-1 md:grid-cols-4 gap-4 text-xs">
                         <div>
-                            <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Employee Name *</label>
+                            <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Employee Name
+                                *</label>
                             <input type="text" id="peName" required placeholder="John Doe"
                                 class="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-600 bg-slate-50 text-xs text-slate-800 font-medium">
                         </div>
                         <div>
-                            <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Official Company Email *</label>
+                            <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Official Company
+                                Email *</label>
                             <input type="email" id="peEmail" required placeholder="johndoe@company.com"
                                 class="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-600 bg-slate-50 text-xs text-slate-800 font-medium">
                         </div>
                         <div>
-                            <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Department *</label>
+                            <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Department
+                                *</label>
                             <select id="peDepartment" required
                                 class="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-600 bg-slate-50 text-xs text-slate-800 font-semibold cursor-pointer">
                                 <option value="HR">HR</option>
@@ -2811,17 +2925,20 @@
                             </select>
                         </div>
                         <div>
-                            <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Designation *</label>
+                            <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Designation
+                                *</label>
                             <input type="text" id="peDesignation" required placeholder="Software Engineer"
                                 class="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-600 bg-slate-50 text-xs text-slate-800 font-medium">
                         </div>
                         <div>
-                            <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Joining Date *</label>
+                            <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Joining Date
+                                *</label>
                             <input type="date" id="peJoiningDate" required
                                 class="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-600 bg-slate-50 text-xs text-slate-800 font-semibold">
                         </div>
                         <div>
-                            <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Employment Type *</label>
+                            <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Employment Type
+                                *</label>
                             <select id="peEmploymentType" required
                                 class="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-600 bg-slate-50 text-xs text-slate-800 font-semibold cursor-pointer">
                                 <option value="Full Time">Full Time</option>
@@ -2831,7 +2948,8 @@
                             </select>
                         </div>
                         <div>
-                            <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Reporting Manager *</label>
+                            <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Reporting Manager
+                                *</label>
                             <select id="peReportingManager" required
                                 class="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-600 bg-slate-50 text-xs text-slate-800 font-semibold cursor-pointer">
                                 <!-- Populated dynamically -->
@@ -2849,7 +2967,8 @@
                             </select>
                         </div>
                         <div>
-                            <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Portal Status *</label>
+                            <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Portal Status
+                                *</label>
                             <select id="peStatus" required
                                 class="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-600 bg-slate-50 text-xs text-slate-800 font-semibold cursor-pointer">
                                 <option value="Pending Activation" selected>Pending Activation</option>
@@ -6071,12 +6190,6 @@
                             <i data-lucide="clock" class="w-3.5 h-3.5 text-purple-200"></i>
                             <span class="hero-date-time">Loading...</span>
                         </div>
-                        <!-- RIGHT: Health Status Capsule -->
-                        <div
-                            class="inline-flex items-center gap-1.5 px-3 py-1 text-[10px] font-bold rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-300">
-                            <span class="health-pulse-dot"></span>
-                            <span>System Health 100%</span>
-                        </div>
                     </div>
 
                     <!-- GLOBAL DIVIDER LINE -->
@@ -6085,8 +6198,8 @@
                     <!-- CONTENT CONTAINER (Relative positioned container to place Left Area, Vertical divider, and Command Panel) -->
                     <div class="relative flex-grow flex flex-col justify-between" style="min-height: 220px;">
 
-                        <!-- Left Content Area (Width restricted to 58% to allow absolute split) -->
-                        <div class="w-[58%] flex flex-col justify-between" style="height: calc(100% - 2px);">
+                        <!-- Left Content Area (Width restricted to 56% to allow absolute split) -->
+                        <div class="w-[56%] flex flex-col justify-between" style="height: calc(100% - 2px);">
 
                             <!-- Title Block (shifted slightly lower, pt-2 to reduce space above) -->
                             <div class="text-left pt-2 flex flex-col gap-1">
@@ -6128,8 +6241,8 @@
                         <!-- DIVIDER #2 (Full width, below metrics, above actions) -->
                         <div class="bezent-hero-divider"></div>
 
-                        <!-- Actions Area (width restricted to 58%) -->
-                        <div class="w-[58%] pb-1">
+                        <!-- Actions Area (width restricted to 56%) -->
+                        <div class="w-[56%] pb-1">
                             <div
                                 style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; width: 100%; align-items: center;">
                                 <!-- Primary: Access Management -->
@@ -6163,68 +6276,67 @@
 
                         <!-- VERTICAL DIVIDER (Absolute positioned at 60%) -->
                         <div class="bezent-vertical-divider"></div>
-
-                        <!-- COMMAND PANEL (Absolute positioned on the right at 38% width, spanning full height below Divider #1) -->
-                        <div
-                            class="absolute right-0 top-0 bottom-0 w-[38%] command-glass-panel flex flex-col justify-between p-4 text-white">
-                            <div class="flex items-center justify-between pb-1.5 border-b border-white/5">
-                                <span
-                                    class="text-[9px] font-extrabold text-purple-200 uppercase tracking-widest">Command
-                                    Panel</span>
-                                <span
-                                    class="text-[8px] font-mono font-bold bg-purple-500/20 text-purple-200 px-1.5 py-0.5 rounded border border-purple-500/10">System
-                                    Secure</span>
-                            </div>
-
-                            <!-- Horizontal Grid with Dominant numbers -->
-                            <div class="grid grid-cols-4 gap-2 my-2">
-                                <div class="premium-kpi-card">
-                                    <span class="card-number" id="adminHeroTotalEmp">52</span>
-                                    <span class="card-label">Employees</span>
-                                </div>
-                                <div class="premium-kpi-card">
-                                    <span class="card-number" id="adminHeroDepts">4</span>
-                                    <span class="card-label">Depts</span>
-                                </div>
-                                <div class="premium-kpi-card">
-                                    <span class="card-number" id="adminHeroProjects">12</span>
-                                    <span class="card-label">Projects</span>
-                                </div>
-                                <div class="premium-kpi-card">
-                                    <span class="card-number" id="adminHeroApprovals">9</span>
-                                    <span class="card-label">Approvals</span>
-                                </div>
-                            </div>
-
-                            <!-- Progress Bar -->
-                            <div class="space-y-1">
-                                <div class="flex justify-between items-center text-[9.5px] text-white/95">
-                                    <span class="font-semibold tracking-wide">Access Governance Score</span>
-                                    <span class="font-mono text-purple-200 font-bold">96%</span>
-                                </div>
-                                <div class="w-full bg-white/10 rounded-full h-1 overflow-hidden relative">
-                                    <div
-                                        class="progress-shimmer absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent">
-                                    </div>
-                                    <div class="bg-emerald-400 h-full rounded-full transition-all duration-[1200ms]"
-                                        style="width: 96%"></div>
-                                </div>
-                            </div>
-
-                            <!-- Alert Footer -->
-                            <div
-                                class="pt-2 border-t border-white/5 flex items-center justify-between text-[9.5px] text-purple-200/90 font-semibold">
-                                <div class="flex items-center gap-1.5">
-                                    <span class="w-1.5 h-1.5 rounded-full bg-amber-400 live-pulse-dot"></span>
-                                    <span>2 Audit Reviews Pending</span>
-                                </div>
-                                <i data-lucide="shield-alert" class="w-3.5 h-3.5 text-purple-200/60"></i>
-                            </div>
-                        </div>
                     </div>
                 </div>
 
-            </div>
+                <!-- COMMAND PANEL (Absolute positioned on the right at 40% width) -->
+                <div
+                    class="absolute right-[28px] top-[16px] bottom-[16px] w-[40%] command-glass-panel flex flex-col justify-between p-5 pb-6 text-white z-20">
+                        <div class="flex items-center justify-between pb-1.5 border-b border-white/5">
+                            <span
+                                class="text-[9px] font-extrabold text-purple-200 uppercase tracking-widest">Command
+                                Panel</span>
+                            <span
+                                class="text-[8px] font-mono font-bold bg-purple-500/20 text-purple-200 px-1.5 py-0.5 rounded border border-purple-500/10">System
+                                Secure</span>
+                        </div>
+
+                        <!-- Horizontal Grid with Dominant numbers -->
+                        <div class="grid grid-cols-4 gap-2 my-2.5">
+                            <div class="premium-kpi-card">
+                                <span class="card-number" id="adminHeroTotalEmp">52</span>
+                                <span class="card-label">Employees</span>
+                            </div>
+                            <div class="premium-kpi-card">
+                                <span class="card-number" id="adminHeroDepts">4</span>
+                                <span class="card-label">Depts</span>
+                            </div>
+                            <div class="premium-kpi-card">
+                                <span class="card-number" id="adminHeroProjects">12</span>
+                                <span class="card-label">Projects</span>
+                            </div>
+                            <div class="premium-kpi-card">
+                                <span class="card-number" id="adminHeroApprovals">9</span>
+                                <span class="card-label">Approvals</span>
+                            </div>
+                        </div>
+
+                        <!-- Progress Bar -->
+                        <div class="space-y-1 mt-1">
+                            <div class="flex justify-between items-center text-[11px] text-white/90">
+                                <span class="font-semibold tracking-wide">Access Governance Score</span>
+                                <span class="font-mono text-purple-200 font-bold">96%</span>
+                            </div>
+                            <div class="w-full bg-white/10 rounded-full h-2 overflow-hidden relative shadow-[inset_0_1px_2px_rgba(0,0,0,0.4)] border border-white/5">
+                                <div
+                                    class="progress-shimmer absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent">
+                                </div>
+                                <div class="bg-emerald-400 h-full rounded-full transition-all duration-[1200ms]"
+                                    style="width: 96%"></div>
+                            </div>
+                        </div>
+
+                        <!-- Alert Footer -->
+                        <div
+                            class="pt-1.5 border-t border-white/8 flex items-center justify-between text-[10px] text-purple-200/90 font-semibold mt-1">
+                            <div class="flex items-center gap-1.5">
+                                <span class="w-2 h-2 rounded-full bg-amber-400 live-pulse-dot"></span>
+                                <span>2 Audit Reviews Pending</span>
+                            </div>
+                            <i data-lucide="shield-alert" class="w-3.5 h-3.5 text-purple-200/40"></i>
+                        </div>
+                    </div>
+                </div>
 
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
                 <div class="premium-card p-6">
@@ -11854,7 +11966,7 @@
             ];
 
             container.innerHTML = stages.map((stage, idx) => {
-                const pct = idx === 0 ? 100 : Math.round((stage.count / stages[idx-1].count) * 100);
+                const pct = idx === 0 ? 100 : Math.round((stage.count / stages[idx - 1].count) * 100);
                 const arrow = idx < stages.length - 1 ? `
                     <div class="absolute top-1/2 -translate-y-1/2 -right-2 z-20 text-[#ECECF3] hidden md:block">
                         <i data-lucide="chevron-right" class="w-5 h-5 text-slate-300"></i>
@@ -12028,45 +12140,63 @@
             const container = document.getElementById('liveActivityFeedContainer');
             if (!container) return;
 
-            const activities = [
-                { user: 'Amit Kumar', action: 'joined Engineering', time: '10 mins ago', type: 'join' },
-                { user: 'Priya Sharma', action: 'approved leave request', time: '45 mins ago', type: 'leave' },
-                { user: 'Rahul Sabin', action: 'probation confirmed', time: '1 hour ago', type: 'probation' },
-                { user: 'Neha Sharma', action: 'profile verified', time: '2 hours ago', type: 'verify' },
-                { user: 'System', action: 'Employee portal activated', time: '3 hours ago', type: 'system' },
-                { user: 'System', action: 'Payroll generated', time: '4 hours ago', type: 'payroll' }
+            const initialActivities = [
+                { user: 'Rahul Sabin', action: 'checked in', time: 'Just now', type: 'checkin' },
+                { user: 'System', action: 'Salary batch processed', time: '5 mins ago', type: 'payroll' },
+                { user: 'Priya Sharma', action: 'Leave request approved', time: '12 mins ago', type: 'leave' },
+                { user: 'System', action: 'New employee onboarded', time: '30 mins ago', type: 'onboard' },
+                { user: 'Amit Kumar', action: 'joined Engineering', time: '1 hour ago', type: 'join' },
+                { user: 'Neha Sharma', action: 'profile verified', time: '2 hours ago', type: 'verify' }
             ];
 
-            container.innerHTML = activities.map(act => {
+            function makeActivityHtml(act) {
                 return `
-                    <div class="flex gap-3 text-xs items-center p-2.5 bg-[#FAFAFC] border border-[#ECECF3] rounded-2xl hover:border-[#7C3AED] hover:shadow-sm transition-all duration-300">
-                        <img src="https://ui-avatars.com/api/?name=${encodeURIComponent(act.user)}&background=random" class="w-8 h-8 rounded-full border border-slate-200" alt="${act.user}">
+                    <div class="flex gap-3 text-xs items-center p-2.5 bg-[#FAFAFC] border border-[#ECECF3] rounded-2xl hover:border-[#7C3AED] hover:shadow-sm transition-all duration-300 slide-in-feed">
+                        <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-[#7C3AED] to-[#312E81] text-white flex items-center justify-center font-bold text-[10px]">
+                            ${(act.user || 'SY').substring(0, 2).toUpperCase()}
+                        </div>
                         <div class="flex-1 min-w-0">
-                            <p class="font-bold text-slate-800 truncate">${act.user}</p>
-                            <p class="text-[10px] text-slate-500 truncate">${act.action}</p>
+                            <p class="font-bold text-slate-800 truncate text-left">${act.user}</p>
+                            <p class="text-[10px] text-slate-500 truncate text-left">${act.action}</p>
                         </div>
                         <span class="text-[9px] text-slate-400 font-mono flex-shrink-0">${act.time}</span>
                     </div>
                 `;
-            }).join('');
+            }
 
-            // Setup auto-scroll when not hovered
-            setTimeout(() => {
-                if (container.scrollHeight > container.clientHeight) {
-                    let isHovered = false;
-                    container.addEventListener('mouseenter', () => isHovered = true);
-                    container.addEventListener('mouseleave', () => isHovered = false);
+            container.innerHTML = initialActivities.map(makeActivityHtml).join('');
 
-                    setInterval(() => {
-                        if (!isHovered) {
-                            container.scrollTop += 1;
-                            if (container.scrollTop >= container.scrollHeight - container.clientHeight - 2) {
-                                container.scrollTop = 0;
-                            }
-                        }
-                    }, 60);
+            // Setup real-time interval pushing new activities
+            const feedPool = [
+                { user: 'Sanjay Dutt', action: 'clocked in (Late)', time: 'Just now', type: 'checkin' },
+                { user: 'System', action: 'PF Export completed', time: 'Just now', type: 'system' },
+                { user: 'Rohan Gupta', action: 'submitted feedback form', time: 'Just now', type: 'feedback' },
+                { user: 'Anjali Sen', action: 'updated bank details', time: 'Just now', type: 'verify' },
+                { user: 'Kunal Kapoor', action: 'applied for sick leave', time: 'Just now', type: 'leave' }
+            ];
+
+            let poolIndex = 0;
+            const activityInterval = setInterval(() => {
+                if (!document.getElementById('liveActivityFeedContainer')) {
+                    clearInterval(activityInterval);
+                    return;
                 }
-            }, 1000);
+                const newAct = feedPool[poolIndex];
+                poolIndex = (poolIndex + 1) % feedPool.length;
+
+                // Create element
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = makeActivityHtml(newAct);
+                const itemNode = tempDiv.firstElementChild;
+
+                // Prepend to feed
+                container.insertBefore(itemNode, container.firstChild);
+
+                // Keep only top 8 items to avoid memory/overflow problems
+                if (container.children.length > 8) {
+                    container.removeChild(container.lastChild);
+                }
+            }, 12000);
         }
 
         // Section 10 Insights
@@ -12109,111 +12239,180 @@
             lucide.createIcons();
         }
 
+        function animateCounter(elementOrId, targetValue, duration = 1000) {
+            const el = typeof elementOrId === 'string' ? document.getElementById(elementOrId) : elementOrId;
+            if (!el) return;
+
+            const cleanStr = String(targetValue).replace(/[^\d.-]/g, '');
+            const target = parseFloat(cleanStr);
+            if (isNaN(target)) {
+                el.textContent = targetValue;
+                return;
+            }
+
+            const isPercent = String(targetValue).includes('%');
+            const isPlus = String(targetValue).includes('+');
+            const isMinus = String(targetValue).includes('-');
+
+            const start = 0;
+            const startTime = performance.now();
+
+            function update(now) {
+                const elapsed = now - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                const easeProgress = progress * (2 - progress); // easeOutQuad
+                const current = start + (target - start) * easeProgress;
+
+                let displayVal = Math.round(current);
+                if (isPercent) displayVal += '%';
+                if (isPlus) displayVal = '+' + displayVal;
+                if (isMinus && displayVal > 0) displayVal = '-' + displayVal;
+
+                el.textContent = displayVal;
+
+                if (progress < 1) {
+                    requestAnimationFrame(update);
+                } else {
+                    el.textContent = targetValue;
+                }
+            }
+            requestAnimationFrame(update);
+        }
+
+        function populateHrDashboardTelemetry() {
+            const employees = employeesData || [];
+            const attendance = attendanceData || [];
+            const leaves = leavesData || [];
+            const candidates = candidatesData || [];
+
+            const totalEmp = employees.length || 52;
+            const today = new Date().toISOString().split('T')[0];
+            const presentToday = attendance.filter(a => a.date === today);
+
+            const totalPunches = presentToday.length;
+            const lateCount = presentToday.filter(a => a.status === 'Late' || a.status === 'Half Day').length;
+            const attCompliance = totalPunches > 0 ? Math.round(((totalPunches - lateCount) / totalPunches) * 100) : 94;
+
+            const pendingLeaves = leaves.filter(l => l.status === 'Pending').length;
+            const pendingVer = employees.filter(e => e.onboarding_status === 'Pending Verification').length;
+            const pendingConfirmations = employees.filter(e => {
+                if (e.status !== 'Probation' && e.probation_status !== 'Probation') return false;
+                return e.probation_end_date && new Date(e.probation_end_date) <= new Date();
+            }).length;
+            const pendingExits = employees.filter(e => e.status === 'Exiting').length;
+            const newJoiners = employees.filter(e => e.joined_date && e.joined_date.startsWith("2026-06")).length;
+
+            // Animate Left Mini-Glass Pills
+            animateCounter('metricHrEmployees', totalEmp);
+            animateCounter('metricHrPresentToday', presentToday.length || 49);
+            animateCounter('metricHrPendingLeaves', pendingLeaves);
+            animateCounter('metricHrPayroll', '88%');
+
+            // Animate Right Command Panel Cards
+            animateCounter('hrHeroAttendanceCompliance', attCompliance + '%');
+            animateCounter('hrHeroNewJoiners', newJoiners || 5);
+            animateCounter('hrHeroProbation', pendingConfirmations || 4);
+            animateCounter('hrHeroVerifications', pendingVer || 2);
+
+            // Animate Progress Bar Percentage Counter
+            animateCounter('hrHeroPayrollPercentText', '88%');
+            const payrollBar = document.getElementById('payrollProgressBar');
+            if (payrollBar) {
+                setTimeout(() => {
+                    payrollBar.style.width = '88%';
+                }, 200);
+            }
+
+            // AI Insight Card fields
+            animateCounter('aiComplianceVal', '98%');
+            animateCounter('aiPayrollReadyVal', '88%');
+            animateCounter('aiOnboardVal', 3);
+
+            // Overview Dashboard Stats
+            animateCounter('statTotalEmployeesOverview', totalEmp);
+            animateCounter('statNewJoinersMonth', newJoiners || 5);
+
+            const growth = ((newJoiners / Math.max(1, totalEmp - newJoiners)) * 100).toFixed(1);
+            document.getElementById('statWorkforceGrowthPct').textContent = "+" + (newJoiners > 0 ? growth : "4.8") + "%";
+
+            animateCounter('statAvailabilityPct', attCompliance + '%');
+            const availProg = document.getElementById('statAvailabilityProgress');
+            if (availProg) {
+                setTimeout(() => {
+                    availProg.style.width = attCompliance + '%';
+                }, 200);
+            }
+            animateCounter('statOverviewPresent', presentToday.length || 49);
+            animateCounter('statOverviewAbsent', (totalEmp - presentToday.length) || 3);
+            animateCounter('statOverviewLeave', leaves.filter(l => l.status === 'Approved').length || 1);
+
+            animateCounter('statOverviewApplied', candidates.filter(c => c.stage === 'Applied').length || 48);
+            animateCounter('statOverviewInterviews', candidates.filter(c => ['Interview Scheduled', 'Interview Completed'].includes(c.stage)).length || 24);
+            animateCounter('statOverviewOffers', candidates.filter(c => c.stage === 'Offer Sent').length || 8);
+
+            animateCounter('statOverviewLeavesPending', pendingLeaves);
+            animateCounter('statOverviewVerificationsPending', pendingVer);
+            animateCounter('statOverviewConfirmationsPending', pendingConfirmations);
+            animateCounter('statOverviewExitsPending', pendingExits);
+            animateCounter('statOverviewCriticalActions', pendingLeaves + pendingVer + pendingConfirmations + pendingExits);
+
+            animateCounter('attPresentVal', presentToday.length || 49);
+            animateCounter('attAbsentVal', (totalEmp - presentToday.length) || 3);
+            animateCounter('attLateVal', presentToday.filter(a => a.status === 'Late').length || 2);
+            animateCounter('attHalfDayVal', presentToday.filter(a => a.status === 'Half Day').length || 1);
+            animateCounter('attLeaveVal', leaves.filter(l => l.status === 'Approved').length || 1);
+            animateCounter('attWfhVal', employees.filter(e => e.work_mode === 'Remote' || e.work_mode === 'WFH').length || 4);
+
+            const compGaugeArc = document.getElementById('complianceCircularArc');
+            if (compGaugeArc) {
+                const offset = 251.2 - (251.2 * attCompliance / 100);
+                compGaugeArc.style.strokeDashoffset = offset;
+            }
+            animateCounter('complianceGaugeText', attCompliance + '%');
+
+            // Populate Admin Hero
+            const adminHeroTotalEl = document.getElementById('adminHeroTotalEmp');
+            if (adminHeroTotalEl) adminHeroTotalEl.textContent = totalEmp;
+            const metricAdminEmployeesEl = document.getElementById('metricAdminEmployees');
+            if (metricAdminEmployeesEl) metricAdminEmployeesEl.textContent = totalEmp;
+            const adminHeroDeptsEl = document.getElementById('adminHeroDepts');
+            let uniqueDeptsCount = 0;
+            if (adminHeroDeptsEl) {
+                const uniqueDepts = new Set(employees.map(e => e.department).filter(Boolean));
+                uniqueDeptsCount = uniqueDepts.size;
+                adminHeroDeptsEl.textContent = uniqueDeptsCount || '0';
+            }
+            const metricAdminDeptsEl = document.getElementById('metricAdminDepts');
+            if (metricAdminDeptsEl) metricAdminDeptsEl.textContent = uniqueDeptsCount || '0';
+
+            const totalGenders = employees.length;
+            if (totalGenders > 0) {
+                const males = employees.filter(e => e.gender === 'Male').length;
+                const females = employees.filter(e => e.gender === 'Female').length;
+                const others = totalGenders - males - females;
+                const genderRatioTextEl = document.getElementById('genderRatioText');
+                if (genderRatioTextEl) {
+                    genderRatioTextEl.textContent =
+                        `${Math.round((males / totalGenders) * 100)}% / ${Math.round((females / totalGenders) * 100)}% / ${Math.round((others / totalGenders) * 100)}%`;
+                }
+            }
+
+            renderRecruitmentFunnel();
+            renderEmployeeLifecycle();
+            renderPriorityActions();
+            renderPeopleCalendar();
+            renderActivityFeed();
+            renderWorkforceInsights();
+
+            setTimeout(initWeeklyChart, 100);
+        }
+
         // HR Admin View Controllers
         async function loadHrAdminView(target) {
             await loadAllHRMSData();
 
             if (target === 'dashView') {
-                const today = new Date().toISOString().split('T')[0];
-                const presentToday = attendanceData.filter(a => a.date === today);
-
-                // Section 1: Overview stats
-                document.getElementById('statTotalEmployeesOverview').textContent = employeesData.length;
-                
-                const currentMonthPrefix = "2026-06";
-                const newJoiners = employeesData.filter(e => e.joined_date && e.joined_date.startsWith(currentMonthPrefix)).length;
-                document.getElementById('statNewJoinersMonth').textContent = newJoiners || 5;
-                const growth = ((newJoiners / Math.max(1, employeesData.length - newJoiners)) * 100).toFixed(1);
-                document.getElementById('statWorkforceGrowthPct').textContent = "+" + (newJoiners > 0 ? growth : "4.8") + "%";
-
-                const totalPunches = presentToday.length;
-                const lateCount = presentToday.filter(a => a.status === 'Late' || a.status === 'Half Day').length;
-                const attCompliance = totalPunches > 0 ? Math.round(((totalPunches - lateCount) / totalPunches) * 100) : 94;
-                document.getElementById('statAvailabilityPct').textContent = attCompliance + "%";
-                document.getElementById('statAvailabilityProgress').style.width = attCompliance + "%";
-
-                document.getElementById('statOverviewPresent').textContent = presentToday.length || 49;
-                document.getElementById('statOverviewAbsent').textContent = (employeesData.length - presentToday.length) || 3;
-                document.getElementById('statOverviewLeave').textContent = leavesData.filter(l => l.status === 'Approved').length || 1;
-
-                document.getElementById('statOverviewApplied').textContent = candidatesData.filter(c => c.stage === 'Applied').length || 48;
-                document.getElementById('statOverviewInterviews').textContent = candidatesData.filter(c => ['Interview Scheduled', 'Interview Completed'].includes(c.stage)).length || 24;
-                document.getElementById('statOverviewOffers').textContent = candidatesData.filter(c => c.stage === 'Offer Sent').length || 8;
-
-                const pendingLeaves = leavesData.filter(l => l.status === 'Pending').length;
-                const pendingVer = employeesData.filter(e => e.onboarding_status === 'Pending Verification').length;
-                const pendingConfirmations = employeesData.filter(e => {
-                    if (e.status !== 'Probation' && e.probation_status !== 'Probation') return false;
-                    return e.probation_end_date && new Date(e.probation_end_date) <= new Date();
-                }).length;
-                const pendingExits = employeesData.filter(e => e.status === 'Exiting').length;
-
-                document.getElementById('statOverviewLeavesPending').textContent = pendingLeaves;
-                document.getElementById('statOverviewVerificationsPending').textContent = pendingVer;
-                document.getElementById('statOverviewConfirmationsPending').textContent = pendingConfirmations;
-                document.getElementById('statOverviewExitsPending').textContent = pendingExits;
-                document.getElementById('statOverviewCriticalActions').textContent = pendingLeaves + pendingVer + pendingConfirmations + pendingExits;
-
-                // Section 3: Attendance Center Detailed stats
-                document.getElementById('attPresentVal').textContent = presentToday.length || 49;
-                document.getElementById('attAbsentVal').textContent = (employeesData.length - presentToday.length) || 3;
-                document.getElementById('attLateVal').textContent = presentToday.filter(a => a.status === 'Late').length || 2;
-                document.getElementById('attHalfDayVal').textContent = presentToday.filter(a => a.status === 'Half Day').length || 1;
-                document.getElementById('attLeaveVal').textContent = leavesData.filter(l => l.status === 'Approved').length || 1;
-                document.getElementById('attWfhVal').textContent = employeesData.filter(e => e.work_mode === 'Remote' || e.work_mode === 'WFH').length || 4;
-
-                const compGaugeArc = document.getElementById('complianceCircularArc');
-                if (compGaugeArc) {
-                    const offset = 251.2 - (251.2 * attCompliance / 100);
-                    compGaugeArc.style.strokeDashoffset = offset;
-                }
-                document.getElementById('complianceGaugeText').textContent = attCompliance + "%";
-
-                // Populate Hero counters & pills
-                const hrHeroTotalEl = document.getElementById('hrHeroTotalEmp');
-                if (hrHeroTotalEl) hrHeroTotalEl.textContent = employeesData.length;
-                const metricHrEmployeesEl = document.getElementById('metricHrEmployees');
-                if (metricHrEmployeesEl) metricHrEmployeesEl.textContent = employeesData.length;
-                const hrHeroLateInEl = document.getElementById('hrHeroLateIn');
-                if (hrHeroLateInEl) hrHeroLateInEl.textContent = presentToday.filter(a => a.status === 'Late').length;
-                const hrHeroLeaveReqEl = document.getElementById('hrHeroLeaveReq');
-                if (hrHeroLeaveReqEl) hrHeroLeaveReqEl.textContent = pendingLeaves;
-                const metricHrPendingLeavesEl = document.getElementById('metricHrPendingLeaves');
-                if (metricHrPendingLeavesEl) metricHrPendingLeavesEl.textContent = pendingLeaves;
-
-                // Populate Admin Hero
-                const adminHeroTotalEl = document.getElementById('adminHeroTotalEmp');
-                if (adminHeroTotalEl) adminHeroTotalEl.textContent = employeesData.length;
-                const metricAdminEmployeesEl = document.getElementById('metricAdminEmployees');
-                if (metricAdminEmployeesEl) metricAdminEmployeesEl.textContent = employeesData.length;
-                const adminHeroDeptsEl = document.getElementById('adminHeroDepts');
-                let uniqueDeptsCount = 0;
-                if (adminHeroDeptsEl) {
-                    const uniqueDepts = new Set(employeesData.map(e => e.department).filter(Boolean));
-                    uniqueDeptsCount = uniqueDepts.size;
-                    adminHeroDeptsEl.textContent = uniqueDeptsCount || '0';
-                }
-                const metricAdminDeptsEl = document.getElementById('metricAdminDepts');
-                if (metricAdminDeptsEl) metricAdminDeptsEl.textContent = uniqueDeptsCount || '0';
-
-                const totalGenders = employeesData.length;
-                if (totalGenders > 0) {
-                    const males = employeesData.filter(e => e.gender === 'Male').length;
-                    const females = employeesData.filter(e => e.gender === 'Female').length;
-                    const others = totalGenders - males - females;
-                    document.getElementById('genderRatioText').textContent =
-                        `${Math.round((males / totalGenders) * 100)}% / ${Math.round((females / totalGenders) * 100)}% / ${Math.round((others / totalGenders) * 100)}%`;
-                }
-
-                // Render components
-                renderRecruitmentFunnel();
-                renderEmployeeLifecycle();
-                renderPriorityActions();
-                renderPeopleCalendar();
-                renderActivityFeed();
-                renderWorkforceInsights();
-
-                setTimeout(initWeeklyChart, 100);
+                populateHrDashboardTelemetry();
             } else if (target === 'directoryView') {
                 renderEmployeeCards(employeesData);
                 populateWorkforceKPICards();

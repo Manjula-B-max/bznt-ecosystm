@@ -247,15 +247,81 @@ export const getDashboardSummary = async (req, res) => {
     } catch (err) { res.status(500).json({ error: err.message }); }
 };
 
+const fmtTime = (d) => d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+const fmtWorked = (ms) => { const h = Math.floor(ms / 3600000), m = Math.floor((ms % 3600000) / 60000); return `${h}h ${String(m).padStart(2,'0')}m`; };
+const parseClockTime = (str, refDate) => {
+    const m = str.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
+    if (!m) return null;
+    let h = parseInt(m[1]), min = parseInt(m[2]), ap = m[3].toUpperCase();
+    if (ap === 'PM' && h !== 12) h += 12;
+    if (ap === 'AM' && h === 12) h = 0;
+    const d = new Date(refDate); d.setHours(h, min, 0, 0); return d;
+};
+
+export const getTodayAttendance = async (req, res) => {
+    try {
+        const { employee } = await getSessionDetails(req.userId);
+        const today = new Date().toISOString().split('T')[0];
+        const Attendance = getModel('hr_attendance');
+        const record = await Attendance.findOne({ user_email: employee.user_email.toLowerCase(), date: today }).lean();
+        res.json(record || null);
+    } catch (err) { res.status(500).json({ error: err.message }); }
+};
+
 export const tapIn = async (req, res) => {
     try {
-        res.json({ ok: true, status: 'Present', time: new Date().toLocaleTimeString() });
+        const { employee } = await getSessionDetails(req.userId);
+        const email = employee.user_email.toLowerCase();
+        const today = new Date().toISOString().split('T')[0];
+        const Attendance = getModel('hr_attendance');
+
+        let record = await Attendance.findOne({ user_email: email, date: today });
+        if (record?.clock_in) return res.status(400).json({ error: 'Already punched in today' });
+
+        const now = new Date();
+        const clock_in = fmtTime(now);
+        const nineAM = new Date(now); nineAM.setHours(9, 0, 0, 0);
+        const isLate = now > nineAM;
+        const status = isLate ? 'Late' : 'Present';
+        const late_minutes = isLate ? Math.floor((now - nineAM) / 60000) : 0;
+
+        if (record) {
+            record.clock_in = clock_in; record.status = status;
+            if (late_minutes) record.late_minutes = late_minutes;
+            await record.save();
+        } else {
+            await Attendance.create({
+                id: 'att_' + Math.random().toString(36).slice(2, 9),
+                user_id: req.userId, user_email: email,
+                company_id: employee.company_id, date: today,
+                clock_in, status, late_minutes: late_minutes || undefined
+            });
+        }
+        res.json({ ok: true, clock_in, status, late_minutes });
     } catch (err) { res.status(500).json({ error: err.message }); }
 };
 
 export const tapOut = async (req, res) => {
     try {
-        res.json({ ok: true, status: 'Completed', time: new Date().toLocaleTimeString() });
+        const { employee } = await getSessionDetails(req.userId);
+        const email = employee.user_email.toLowerCase();
+        const today = new Date().toISOString().split('T')[0];
+        const Attendance = getModel('hr_attendance');
+
+        const record = await Attendance.findOne({ user_email: email, date: today });
+        if (!record?.clock_in) return res.status(400).json({ error: 'Not punched in today' });
+        if (record.clock_out) return res.status(400).json({ error: 'Already punched out today' });
+
+        const now = new Date();
+        const clock_out = fmtTime(now);
+        const inDate = parseClockTime(record.clock_in, now);
+        const worked_hours = inDate ? fmtWorked(now - inDate) : '—';
+
+        record.clock_out = clock_out;
+        record.worked_hours = worked_hours;
+        await record.save();
+
+        res.json({ ok: true, clock_out, worked_hours, status: record.status });
     } catch (err) { res.status(500).json({ error: err.message }); }
 };
 
@@ -471,27 +537,207 @@ export const getAttendanceHistory = async (req, res) => {
     } catch (err) { res.status(500).json({ error: err.message }); }
 };
 
+const calculateLateArrivalDetails = (arrivalTimeStr) => {
+    if (!arrivalTimeStr) return { minutes: 0, credits: 0, isHalfDay: false };
+    const match = arrivalTimeStr.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)?$/i);
+    if (!match) return { minutes: 0, credits: 0, isHalfDay: false };
+    
+    let hours = parseInt(match[1]);
+    const minutes = parseInt(match[2]);
+    const ampm = match[3] ? match[3].toUpperCase() : 'AM';
+    
+    if (ampm === 'PM' && hours !== 12) hours += 12;
+    if (ampm === 'AM' && hours === 12) hours = 0;
+    
+    const totalMinutes = hours * 60 + minutes;
+    const nineAM = 9 * 60;
+    
+    if (totalMinutes <= nineAM) {
+        return { minutes: 0, credits: 0, isHalfDay: false };
+    }
+    
+    const diff = totalMinutes - nineAM;
+    if (totalMinutes <= nineAM + 6) {
+        return { minutes: diff, credits: diff, isHalfDay: false };
+    } else {
+        return { minutes: diff, credits: 0, isHalfDay: true };
+    }
+};
+
 export const postAttendanceCorrection = async (req, res) => {
     try {
         const { employee } = await getSessionDetails(req.userId);
         const email = employee.user_email.toLowerCase();
         const Correction = getModel('hr_corrections');
 
+        const {
+            date,
+            category,
+            specify_category,
+            reason,
+            additional_notes,
+            attachment,
+            clock_in_time,
+            clock_out_time,
+            arrival_time,
+            permission_date,
+            from_time,
+            to_time,
+            manager_name
+        } = req.body;
+
+        if (!date || !category || !reason) {
+            return res.status(400).json({ error: 'Date, category, and reason are required fields.' });
+        }
+
+        let late_minutes = 0;
+        let credits_deducted = 0;
+        let remaining_credits = employee.late_credits || 40;
+
+        if (category === 'Late Arrival') {
+            if (!arrival_time) {
+                return res.status(400).json({ error: 'Arrival time is required for late arrival requests.' });
+            }
+            const details = calculateLateArrivalDetails(arrival_time);
+            late_minutes = details.minutes;
+            credits_deducted = details.credits;
+            remaining_credits = Math.max(0, (employee.late_credits || 40) - credits_deducted);
+        }
+
         const doc = new Correction({
             id: 'CORR-' + Math.random().toString(36).slice(2, 8).toUpperCase(),
+            user_id: req.userId,
             user_email: email,
             company_id: employee.company_id,
-            date: req.body.date,
-            type: req.body.type,
-            reason: req.body.reason,
-            remarks: req.body.remarks,
+            date,
+            type: category,
+            category,
+            specify_category,
+            reason,
+            additional_notes,
+            attachment,
+            clock_in_time,
+            clock_out_time,
+            arrival_time,
+            permission_date,
+            from_time,
+            to_time,
+            manager_name,
+            late_minutes,
+            credits_deducted,
+            remaining_credits,
             status: 'Pending',
+            manager_status: 'Pending',
+            hr_status: 'Pending',
             manager_remarks: '',
+            hr_remarks: '',
             created_at: new Date().toISOString().split('T')[0]
         });
 
         await doc.save();
-        res.json({ ok: true, message: 'Correction request submitted.' });
+        res.json({ ok: true, message: 'Regularization request submitted.', id: doc.id });
+    } catch (err) { res.status(500).json({ error: err.message }); }
+};
+
+export const editAttendanceCorrection = async (req, res) => {
+    try {
+        const { employee } = await getSessionDetails(req.userId);
+        const email = employee.user_email.toLowerCase();
+        const Correction = getModel('hr_corrections');
+        const reqId = req.params.id;
+
+        const doc = await Correction.findOne({ id: reqId, user_email: email });
+        if (!doc) {
+            return res.status(404).json({ error: 'Regularization request not found.' });
+        }
+
+        if (doc.status !== 'Pending') {
+            return res.status(400).json({ error: 'Requests can only be edited while pending manager review.' });
+        }
+
+        const {
+            date,
+            category,
+            specify_category,
+            reason,
+            additional_notes,
+            attachment,
+            clock_in_time,
+            clock_out_time,
+            arrival_time,
+            permission_date,
+            from_time,
+            to_time,
+            manager_name
+        } = req.body;
+
+        if (!date || !category || !reason) {
+            return res.status(400).json({ error: 'Date, category, and reason are required fields.' });
+        }
+
+        let late_minutes = 0;
+        let credits_deducted = 0;
+        let remaining_credits = employee.late_credits || 40;
+
+        if (category === 'Late Arrival') {
+            if (!arrival_time) {
+                return res.status(400).json({ error: 'Arrival time is required for late arrival requests.' });
+            }
+            const details = calculateLateArrivalDetails(arrival_time);
+            late_minutes = details.minutes;
+            credits_deducted = details.credits;
+            remaining_credits = Math.max(0, (employee.late_credits || 40) - credits_deducted);
+        }
+
+        await Correction.findOneAndUpdate(
+            { id: reqId, user_email: email },
+            {
+                $set: {
+                    date,
+                    category,
+                    type: category,
+                    specify_category,
+                    reason,
+                    additional_notes,
+                    attachment,
+                    clock_in_time,
+                    clock_out_time,
+                    arrival_time,
+                    permission_date,
+                    from_time,
+                    to_time,
+                    manager_name,
+                    late_minutes,
+                    credits_deducted,
+                    remaining_credits
+                }
+            }
+        );
+        res.json({ ok: true, message: 'Regularization request updated successfully.' });
+    } catch (err) { res.status(500).json({ error: err.message }); }
+};
+
+export const cancelAttendanceCorrection = async (req, res) => {
+    try {
+        const { employee } = await getSessionDetails(req.userId);
+        const email = employee.user_email.toLowerCase();
+        const Correction = getModel('hr_corrections');
+        const reqId = req.params.id;
+
+        const doc = await Correction.findOne({ id: reqId, user_email: email });
+        if (!doc) {
+            return res.status(404).json({ error: 'Regularization request not found.' });
+        }
+
+        if (doc.status !== 'Pending') {
+            return res.status(400).json({ error: 'Requests can only be cancelled while pending manager review.' });
+        }
+
+        await Correction.findOneAndUpdate(
+            { id: reqId, user_email: email },
+            { $set: { status: 'Cancelled' } }
+        );
+        res.json({ ok: true, message: 'Regularization request cancelled.' });
     } catch (err) { res.status(500).json({ error: err.message }); }
 };
 
@@ -700,37 +946,163 @@ export const getHolidays = async (req, res) => {
 // 5. Request Center
 export const postOnDuty = async (req, res) => {
     try {
-        res.json({ ok: true, message: 'On-Duty request submitted.' });
+        const { user, employee } = await getSessionDetails(req.userId);
+        const email = employee.user_email.toLowerCase();
+        
+        const OnDuty = getModel('hr_onduty');
+        const data = req.body;
+        
+        const id = 'od_' + Math.random().toString(36).slice(2, 9);
+        const newReq = {
+            id,
+            user_id: req.userId,
+            user_email: email,
+            company_id: employee.company_id,
+            date: data.date,
+            purpose: data.purpose,
+            location: data.location,
+            remarks: data.remarks || '',
+            departure_date: data.departure_date,
+            departure_time: data.departure_time,
+            expected_return_date: data.expected_return_date,
+            expected_return_time: data.expected_return_time,
+            status: 'Pending',
+            manager_email: (employee.reporting_manager || '').toLowerCase(),
+            created_at: new Date().toISOString()
+        };
+        
+        await OnDuty.create(newReq);
+        
+        const Notification = getModel('employee_notifications');
+        await Notification.create({
+            id: 'notif_' + Math.random().toString(36).slice(2, 9),
+            user_id: req.userId,
+            user_email: email,
+            company_id: employee.company_id,
+            title: 'On Duty Request Submitted',
+            message: `Your On Duty request for ${data.date} (${data.purpose}) has been submitted.`,
+            module: 'on-duty',
+            ref_id: id,
+            is_read: false,
+            created_at: new Date().toISOString()
+        });
+        
+        res.json({ ok: true, message: 'On-Duty request submitted.', id });
     } catch (err) { res.status(500).json({ error: err.message }); }
 };
 
 export const getOnDutyHistory = async (req, res) => {
     try {
-        res.json([]);
+        const { employee } = await getSessionDetails(req.userId);
+        const email = employee.user_email.toLowerCase();
+        
+        const OnDuty = getModel('hr_onduty');
+        const list = await OnDuty.find({ user_email: email }).sort({ created_at: -1 }).lean();
+        res.json(list);
     } catch (err) { res.status(500).json({ error: err.message }); }
 };
 
 export const getOnDutyApproved = async (req, res) => {
     try {
-        res.json([]);
+        const { employee } = await getSessionDetails(req.userId);
+        const email = employee.user_email.toLowerCase();
+        
+        const OnDuty = getModel('hr_onduty');
+        const list = await OnDuty.find({ user_email: email, status: 'Approved' }).lean();
+        res.json(list);
     } catch (err) { res.status(500).json({ error: err.message }); }
 };
 
 export const postReimbursement = async (req, res) => {
     try {
-        res.json({ ok: true, message: 'Reimbursement claim submitted.' });
+        const { user, employee } = await getSessionDetails(req.userId);
+        const email = employee.user_email.toLowerCase();
+        
+        const Expense = getModel('hr_expenses');
+        const data = req.body;
+        
+        const id = data.id || 'exp_' + Math.random().toString(36).slice(2, 9);
+        const items = data.items || [];
+        const total_amount = items.reduce((sum, item) => sum + Number(item.amount || 0), 0);
+        
+        const newClaim = {
+            id,
+            user_id: req.userId,
+            user_email: email,
+            company_id: employee.company_id,
+            title: data.title,
+            date: data.date,
+            client_project: data.client_project || '',
+            purpose: data.purpose,
+            manager_email: (employee.reporting_manager || '').toLowerCase(),
+            status: 'Pending Manager Approval',
+            payment_status: 'Unpaid',
+            items,
+            total_amount,
+            created_at: new Date().toISOString()
+        };
+        
+        await Expense.create(newClaim);
+        
+        const Notification = getModel('employee_notifications');
+        await Notification.create({
+            id: 'notif_' + Math.random().toString(36).slice(2, 9),
+            user_id: req.userId,
+            user_email: email,
+            company_id: employee.company_id,
+            title: 'Expense Claim Submitted',
+            message: `Your Expense claim "${data.title}" for ₹${total_amount} has been submitted.`,
+            module: 'reimbursement',
+            ref_id: id,
+            is_read: false,
+            created_at: new Date().toISOString()
+        });
+        
+        res.json({ ok: true, message: 'Reimbursement claim submitted.', id });
     } catch (err) { res.status(500).json({ error: err.message }); }
 };
 
 export const getReimbursementHistory = async (req, res) => {
     try {
-        res.json([]);
+        const { employee } = await getSessionDetails(req.userId);
+        const email = employee.user_email.toLowerCase();
+        
+        const Expense = getModel('hr_expenses');
+        const list = await Expense.find({ user_email: email }).sort({ created_at: -1 }).lean();
+        res.json(list);
     } catch (err) { res.status(500).json({ error: err.message }); }
 };
 
 export const getReimbursementPendingBadge = async (req, res) => {
     try {
-        res.json({ pending_count: 0 });
+        const { employee } = await getSessionDetails(req.userId);
+        const email = employee.user_email.toLowerCase();
+        
+        const Notification = getModel('employee_notifications');
+        const count = await Notification.countDocuments({ user_email: email, is_read: false });
+        res.json({ pending_count: count });
+    } catch (err) { res.status(500).json({ error: err.message }); }
+};
+
+export const getNotifications = async (req, res) => {
+    try {
+        const { employee } = await getSessionDetails(req.userId);
+        const email = employee.user_email.toLowerCase();
+        
+        const Notification = getModel('employee_notifications');
+        const list = await Notification.find({ user_email: email }).sort({ created_at: -1 }).limit(50).lean();
+        res.json(list);
+    } catch (err) { res.status(500).json({ error: err.message }); }
+};
+
+export const markNotificationsRead = async (req, res) => {
+    try {
+        const { employee } = await getSessionDetails(req.userId);
+        const email = employee.user_email.toLowerCase();
+        
+        const Notification = getModel('employee_notifications');
+        await Notification.updateMany({ user_email: email, is_read: false }, { $set: { is_read: true } });
+        res.json({ ok: true });
     } catch (err) { res.status(500).json({ error: err.message }); }
 };
 

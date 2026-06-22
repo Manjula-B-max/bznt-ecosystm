@@ -28,7 +28,7 @@ const employeeAccessMiddleware = async (req, res, next) => {
     try {
         const user = await User.findById(req.userId);
         if (!user) return res.status(401).json({ error: 'User not found' });
-        const hasAccess = user.employee_access || user.hr_access || ['super_admin', 'admin', 'owner'].includes(user.role);
+        const hasAccess = user.employee_access || user.hr_access || ['super_admin', 'admin', 'owner', 'manager', 'Manager'].includes(user.role);
         if (!hasAccess) {
             return res.status(403).json({ error: 'Access denied. Employee portal credentials required.' });
         }
@@ -44,7 +44,20 @@ const getScopedFilter = async (req, restrictToUser = false) => {
     if (!user) throw new Error('User not found');
 
     const isHrAdmin = user.hr_access || ['super_admin', 'admin', 'owner'].includes(user.role);
-    if (restrictToUser || !isHrAdmin) {
+    if (restrictToUser) {
+        return { user_email: user.email.toLowerCase() };
+    }
+
+    if (!isHrAdmin) {
+        const isManager = user.role === 'manager' || user.manager_access;
+        if (isManager) {
+            const EmployeeModel = getModel('hr_employees');
+            const team = await EmployeeModel.find({
+                reporting_manager: { $regex: new RegExp('^' + user.email.trim() + '$', 'i') }
+            }).lean();
+            const teamEmails = team.map(e => e.user_email.toLowerCase());
+            return { user_email: { $in: [user.email.toLowerCase(), ...teamEmails] } };
+        }
         return { user_email: user.email.toLowerCase() };
     }
 
@@ -291,12 +304,248 @@ router.post('/corrections', employeeAccessMiddleware, async (req, res) => {
     } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-router.put('/corrections/:id', hrAccessMiddleware, async (req, res) => {
+router.put('/corrections/:id', employeeAccessMiddleware, async (req, res) => {
     try {
-        const data = req.body;
-        delete data.id; delete data._id;
-        await CorrectionModel.findOneAndUpdate({ id: req.params.id }, { $set: data });
-        res.json({ ok: true });
+        const user = await User.findById(req.userId);
+        if (!user) return res.status(401).json({ error: 'User not found' });
+
+        const correction = await CorrectionModel.findOne({ id: req.params.id });
+        if (!correction) return res.status(404).json({ error: 'Correction request not found' });
+
+        const isHr = user.hr_access || ['super_admin', 'admin', 'owner'].includes(user.role);
+        const applicantEmp = await EmployeeModel.findOne({ user_email: correction.user_email });
+        const isManager = applicantEmp && applicantEmp.reporting_manager && applicantEmp.reporting_manager.toLowerCase() === user.email.toLowerCase();
+
+        if (!isHr && !isManager) {
+            return res.status(403).json({ error: 'Access denied.' });
+        }
+
+        const action = req.body.action; // 'approve' | 'reject' | 'clarify'
+        const remarks = req.body.remarks || '';
+
+        if (!action) {
+            return res.status(400).json({ error: 'Action is required.' });
+        }
+
+        const calculateLateArrivalDetails = (arrivalTimeStr) => {
+            if (!arrivalTimeStr) return { minutes: 0, credits: 0, isHalfDay: false };
+            const match = arrivalTimeStr.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)?$/i);
+            if (!match) return { minutes: 0, credits: 0, isHalfDay: false };
+            
+            let hours = parseInt(match[1]);
+            const minutes = parseInt(match[2]);
+            const ampm = match[3] ? match[3].toUpperCase() : 'AM';
+            
+            if (ampm === 'PM' && hours !== 12) hours += 12;
+            if (ampm === 'AM' && hours === 12) hours = 0;
+            
+            const totalMinutes = hours * 60 + minutes;
+            const nineAM = 9 * 60;
+            
+            if (totalMinutes <= nineAM) {
+                return { minutes: 0, credits: 0, isHalfDay: false };
+            }
+            
+            const diff = totalMinutes - nineAM;
+            if (totalMinutes <= nineAM + 6) {
+                return { minutes: diff, credits: diff, isHalfDay: false };
+            } else {
+                return { minutes: diff, credits: 0, isHalfDay: true };
+            }
+        };
+
+        const computeWorkedHours = (clockInStr, clockOutStr, refDateStr) => {
+            if (!clockInStr || !clockOutStr) return '—';
+            const parseClockTimeLocal = (str, refDate) => {
+                const m = str.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)?$/i);
+                if (!m) return null;
+                let h = parseInt(m[1]), min = parseInt(m[2]), ap = m[3] ? m[3].toUpperCase() : null;
+                if (ap === 'PM' && h !== 12) h += 12;
+                if (ap === 'AM' && h === 12) h = 0;
+                const d = new Date(refDate); d.setHours(h, min, 0, 0); return d;
+            };
+            const refDate = new Date(refDateStr);
+            const inDate = parseClockTimeLocal(clockInStr, refDate);
+            const outDate = parseClockTimeLocal(clockOutStr, refDate);
+            if (inDate && outDate && outDate > inDate) {
+                const ms = outDate - inDate;
+                const h = Math.floor(ms / 3600000), m = Math.floor((ms % 3600000) / 60000);
+                return `${h}h ${String(m).padStart(2,'0')}m`;
+            }
+            return '—';
+        };
+
+        if (isManager && !isHr) {
+            // Manager Action
+            if (correction.status !== 'Pending') {
+                return res.status(400).json({ error: 'Manager can only review pending requests.' });
+            }
+
+            if (action === 'approve') {
+                correction.status = 'Manager Approved';
+                correction.manager_status = 'Approved';
+            } else if (action === 'reject') {
+                correction.status = 'Manager Rejected';
+                correction.manager_status = 'Rejected';
+            } else {
+                return res.status(400).json({ error: 'Invalid manager action.' });
+            }
+            correction.manager_remarks = remarks;
+            await CorrectionModel.findOneAndUpdate(
+                { id: correction.id },
+                { $set: { status: correction.status, manager_status: correction.manager_status, manager_remarks: correction.manager_remarks } }
+            );
+
+            // Send notification
+            const Notification = getModel('employee_notifications');
+            await Notification.create({
+                id: 'notif_' + Math.random().toString(36).slice(2, 9),
+                user_id: correction.user_id,
+                user_email: correction.user_email,
+                company_id: correction.company_id,
+                title: `Attendance Regularization: Manager ${action}d`,
+                message: `Your manager has ${action}d your request for ${correction.date}. Remarks: ${remarks}`,
+                module: 'regularization',
+                ref_id: correction.id,
+                is_read: false,
+                created_at: new Date().toISOString()
+            });
+
+            await logAudit(req, 'Regularization Manager Review', `Manager ${action}d request ${correction.id}`);
+            return res.json({ ok: true, message: `Request successfully ${action}d by Manager.` });
+        }
+
+        if (isHr) {
+            // HR Action
+            if (correction.status === 'Manager Rejected' || correction.status === 'HR Approved' || correction.status === 'HR Rejected' || correction.status === 'Cancelled') {
+                return res.status(400).json({ error: 'Request is already closed.' });
+            }
+
+            if (action === 'approve') {
+                correction.status = 'HR Approved';
+                correction.hr_status = 'Approved';
+                correction.hr_remarks = remarks;
+                await CorrectionModel.findOneAndUpdate(
+                    { id: correction.id },
+                    { $set: { status: correction.status, hr_status: correction.hr_status, hr_remarks: correction.hr_remarks } }
+                );
+
+                // 1. Process Late Credit Deduction securely if category is Late Arrival
+                if (correction.category === 'Late Arrival' && applicantEmp) {
+                    const details = calculateLateArrivalDetails(correction.arrival_time);
+                    if (!details.isHalfDay && details.credits > 0) {
+                        const currentCredits = applicantEmp.late_credits !== undefined ? applicantEmp.late_credits : 40;
+                        const updatedCredits = Math.max(0, currentCredits - details.credits);
+                        const logs = applicantEmp.late_credit_logs || [];
+                        logs.push({
+                            date: correction.date,
+                            late_minutes: details.minutes,
+                            deducted_credits: details.credits,
+                            balance: updatedCredits
+                        });
+                        await EmployeeModel.findOneAndUpdate(
+                            { user_email: correction.user_email },
+                            { $set: { late_credits: updatedCredits, late_credit_logs: logs } }
+                        );
+                    }
+                }
+
+                // 2. Update/Create Attendance Log
+                const Attendance = getModel('hr_attendance');
+                const attendanceData = {
+                    user_email: correction.user_email,
+                    date: correction.date
+                };
+
+                if (correction.category === 'Missed Tap In') {
+                    attendanceData.clock_in = correction.clock_in_time;
+                    attendanceData.status = 'Present';
+                } else if (correction.category === 'Missed Tap Out') {
+                    attendanceData.clock_out = correction.clock_out_time;
+                    attendanceData.status = 'Present';
+                } else if (correction.category === 'Wrong Attendance Entry') {
+                    attendanceData.clock_in = correction.clock_in_time;
+                    attendanceData.clock_out = correction.clock_out_time;
+                    attendanceData.status = 'Present';
+                } else if (correction.category === 'Late Arrival') {
+                    attendanceData.clock_in = correction.arrival_time;
+                    const details = calculateLateArrivalDetails(correction.arrival_time);
+                    attendanceData.status = details.isHalfDay ? 'Half Day' : 'Late';
+                    if (details.minutes > 0) attendanceData.late_minutes = details.minutes;
+                } else if (correction.category === 'Office Permission Correction') {
+                    attendanceData.status = 'Present';
+                    if (correction.from_time && correction.to_time) {
+                        attendanceData.clock_in = correction.from_time;
+                        attendanceData.clock_out = correction.to_time;
+                    }
+                    attendanceData.remarks = `Office Permission Correction: Approved by ${correction.manager_name || 'Manager'}`;
+                } else {
+                    attendanceData.status = 'Present';
+                    attendanceData.remarks = correction.specify_category || correction.reason;
+                }
+
+                let existingAtt = await Attendance.findOne({ user_email: correction.user_email, date: correction.date });
+                const finalClockIn = attendanceData.clock_in || existingAtt?.clock_in;
+                const finalClockOut = attendanceData.clock_out || existingAtt?.clock_out;
+                if (finalClockIn && finalClockOut) {
+                    attendanceData.worked_hours = computeWorkedHours(finalClockIn, finalClockOut, correction.date);
+                }
+
+                const attId = existingAtt?.id || 'att_' + Math.random().toString(36).slice(2, 9);
+                const attUserId = existingAtt?.user_id || (applicantEmp ? applicantEmp.id : 'unknown');
+
+                await Attendance.findOneAndUpdate(
+                    { user_email: correction.user_email, date: correction.date },
+                    {
+                        $set: {
+                            id: attId,
+                            user_id: attUserId,
+                            company_id: correction.company_id,
+                            ...attendanceData
+                        }
+                    },
+                    { upsert: true, new: true, strict: false }
+                );
+
+            } else if (action === 'reject') {
+                correction.status = 'HR Rejected';
+                correction.hr_status = 'Rejected';
+                correction.hr_remarks = remarks;
+                await CorrectionModel.findOneAndUpdate(
+                    { id: correction.id },
+                    { $set: { status: correction.status, hr_status: correction.hr_status, hr_remarks: correction.hr_remarks } }
+                );
+            } else if (action === 'clarify') {
+                correction.status = 'Pending';
+                correction.hr_status = 'Clarification Requested';
+                correction.hr_remarks = remarks;
+                await CorrectionModel.findOneAndUpdate(
+                    { id: correction.id },
+                    { $set: { status: correction.status, hr_status: correction.hr_status, hr_remarks: correction.hr_remarks } }
+                );
+            } else {
+                return res.status(400).json({ error: 'Invalid HR action.' });
+            }
+
+            // Send notification
+            const Notification = getModel('employee_notifications');
+            await Notification.create({
+                id: 'notif_' + Math.random().toString(36).slice(2, 9),
+                user_id: correction.user_id,
+                user_email: correction.user_email,
+                company_id: correction.company_id,
+                title: `Attendance Regularization: HR ${action}d`,
+                message: `HR has ${action}d your request for ${correction.date}. Remarks: ${remarks}`,
+                module: 'regularization',
+                ref_id: correction.id,
+                is_read: false,
+                created_at: new Date().toISOString()
+            });
+
+            await logAudit(req, 'Regularization HR Review', `HR ${action}d request ${correction.id}`);
+            return res.json({ ok: true, message: `Request successfully ${action}d by HR.` });
+        }
+
     } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
@@ -354,6 +603,148 @@ router.put('/leaves/:id', employeeAccessMiddleware, async (req, res) => {
 
         await LeaveModel.findOneAndUpdate({ id: req.params.id }, { $set: data });
         await logAudit(req, 'Leave Status', `Leave request for ${leave.user_email} updated to ${data.status} by ${user.email}`);
+        res.json({ ok: true });
+    } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// ── ON DUTY REQUESTS APPROVALS ──
+const OnDutyModel = getModel('hr_onduty');
+
+router.get('/on-duty', employeeAccessMiddleware, async (req, res) => {
+    try {
+        const userOnly = req.query.self === 'true';
+        const filter = await getScopedFilter(req, userOnly);
+        const list = await OnDutyModel.find(filter).sort({ created_at: -1 }).lean();
+        res.json(list.map(d => { delete d._id; delete d.__v; return d; }));
+    } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+router.put('/on-duty/:id', employeeAccessMiddleware, async (req, res) => {
+    try {
+        const data = req.body;
+        delete data.id; delete data._id;
+
+        const user = await User.findById(req.userId);
+        const onduty = await OnDutyModel.findOne({ id: req.params.id });
+        if (!onduty) return res.status(404).json({ error: 'On Duty request not found' });
+
+        const isHr = user.hr_access || ['super_admin', 'admin', 'owner'].includes(user.role);
+        const applicantEmp = await EmployeeModel.findOne({ user_email: onduty.user_email });
+        const isManager = applicantEmp && applicantEmp.reporting_manager && applicantEmp.reporting_manager.toLowerCase() === user.email.toLowerCase();
+
+        if (!isHr && !isManager) {
+            return res.status(403).json({ error: 'Access denied.' });
+        }
+
+        if (data.status === 'Approved') {
+            data.approved_by = user.name || user.email;
+            data.approved_date = new Date().toISOString().split('T')[0];
+            
+            // Attendance integration
+            const Attendance = getModel('hr_attendance');
+            const targetDate = onduty.date;
+            
+            const existingPunch = await Attendance.findOne({ user_email: onduty.user_email, date: targetDate });
+            if (existingPunch) {
+                const updates = {
+                    status: 'On Duty',
+                    remarks: 'On Duty Approved: ' + (onduty.purpose || '')
+                };
+                if (existingPunch.clock_in && !existingPunch.clock_out) {
+                    updates.clock_out = '06:00 PM';
+                    updates.worked_hours = '08h 45m';
+                }
+                await Attendance.findOneAndUpdate({ id: existingPunch.id }, { $set: updates });
+            } else {
+                await Attendance.create({
+                    id: 'att_' + Math.random().toString(36).slice(2, 9),
+                    user_id: onduty.user_id,
+                    user_email: onduty.user_email,
+                    company_id: onduty.company_id,
+                    date: targetDate,
+                    status: 'On Duty',
+                    clock_in: '09:00 AM',
+                    clock_out: '06:00 PM',
+                    worked_hours: '09h 00m',
+                    remarks: 'On Duty Approved: ' + (onduty.purpose || '')
+                });
+            }
+        }
+
+        await OnDutyModel.findOneAndUpdate({ id: req.params.id }, { $set: data });
+        
+        const Notification = getModel('employee_notifications');
+        await Notification.create({
+            id: 'notif_' + Math.random().toString(36).slice(2, 9),
+            user_id: onduty.user_id,
+            user_email: onduty.user_email,
+            company_id: onduty.company_id,
+            title: `On Duty Request ${data.status}`,
+            message: `Manager ${data.status.toLowerCase()} your On Duty request for ${onduty.date}.${data.manager_remarks ? ' Remarks: ' + data.manager_remarks : ''}`,
+            module: 'on-duty',
+            ref_id: onduty.id,
+            is_read: false,
+            created_at: new Date().toISOString()
+        });
+
+        await logAudit(req, 'On Duty Status', `On Duty request for ${onduty.user_email} updated to ${data.status} by ${user.email}`);
+        res.json({ ok: true });
+    } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// ── EXPENSE REIMBURSEMENTS APPROVALS ──
+const ExpenseModel = getModel('hr_expenses');
+
+router.get('/reimbursements', employeeAccessMiddleware, async (req, res) => {
+    try {
+        const userOnly = req.query.self === 'true';
+        const filter = await getScopedFilter(req, userOnly);
+        const list = await ExpenseModel.find(filter).sort({ created_at: -1 }).lean();
+        res.json(list.map(d => { delete d._id; delete d.__v; return d; }));
+    } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+router.put('/reimbursements/:id', employeeAccessMiddleware, async (req, res) => {
+    try {
+        const data = req.body;
+        delete data.id; delete data._id;
+
+        const user = await User.findById(req.userId);
+        const expense = await ExpenseModel.findOne({ id: req.params.id });
+        if (!expense) return res.status(404).json({ error: 'Expense claim not found' });
+
+        const isHr = user.hr_access || ['super_admin', 'admin', 'owner'].includes(user.role);
+        const applicantEmp = await EmployeeModel.findOne({ user_email: expense.user_email });
+        const isManager = applicantEmp && applicantEmp.reporting_manager && applicantEmp.reporting_manager.toLowerCase() === user.email.toLowerCase();
+
+        if (!isHr && !isManager) {
+            return res.status(403).json({ error: 'Access denied.' });
+        }
+
+        if (data.status === 'Manager Approved') {
+            data.approved_by = user.name || user.email;
+            data.approved_on = new Date().toISOString();
+        } else if (data.status === 'Paid') {
+            data.payment_status = 'Paid';
+        }
+
+        await ExpenseModel.findOneAndUpdate({ id: req.params.id }, { $set: data });
+
+        const Notification = getModel('employee_notifications');
+        await Notification.create({
+            id: 'notif_' + Math.random().toString(36).slice(2, 9),
+            user_id: expense.user_id,
+            user_email: expense.user_email,
+            company_id: expense.company_id,
+            title: `Expense Claim Update`,
+            message: `Your Expense claim "${expense.title}" status is now: ${data.status}.${data.manager_remarks ? ' Remarks: ' + data.manager_remarks : ''}`,
+            module: 'reimbursement',
+            ref_id: expense.id,
+            is_read: false,
+            created_at: new Date().toISOString()
+        });
+
+        await logAudit(req, 'Expense Status', `Expense claim for ${expense.user_email} updated to ${data.status} by ${user.email}`);
         res.json({ ok: true });
     } catch (err) { res.status(500).json({ error: err.message }); }
 });

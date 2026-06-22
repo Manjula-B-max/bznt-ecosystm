@@ -20,7 +20,9 @@ export async function apiClient(path, options = {}) {
 
     // Auto-serialize body if it's a plain object
     const fetchOptions = { ...options, headers };
-    if (fetchOptions.body && typeof fetchOptions.body === 'object' && !(fetchOptions.body instanceof FormData)) {
+    if (fetchOptions.body && fetchOptions.body instanceof FormData) {
+        delete fetchOptions.headers['Content-Type'];
+    } else if (fetchOptions.body && typeof fetchOptions.body === 'object') {
         fetchOptions.body = JSON.stringify(fetchOptions.body);
     }
 

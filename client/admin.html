@@ -7456,6 +7456,28 @@
             </div>
         </div>
 
+        <!-- On Duty Request Approvals -->
+        <div id="mgrOnDutyPanel" class="manager-panel space-y-6 fade-up-view">
+            <div class="text-left border-b border-[#ECECF3] pb-4">
+                <h2 class="text-2xl font-bold tracking-tight">On Duty Request Approvals Queue</h2>
+                <p class="text-sm text-[#6B7280]">Review field duty, conference, and client visit requests from your team members. Approved requests automatically update attendance status.</p>
+            </div>
+            <div class="space-y-4" id="mgrOnDutyQueueContainer">
+                <!-- Dynamically populated cards representing applications -->
+            </div>
+        </div>
+
+        <!-- Expense Reimbursement Approvals -->
+        <div id="mgrExpensesPanel" class="manager-panel space-y-6 fade-up-view">
+            <div class="text-left border-b border-[#ECECF3] pb-4">
+                <h2 class="text-2xl font-bold tracking-tight">Expense Reimbursements queue</h2>
+                <p class="text-sm text-[#6B7280]">Review business expense claims, check category breakdowns, verify receipt attachments, and process payments.</p>
+            </div>
+            <div class="space-y-4" id="mgrExpensesQueueContainer">
+                <!-- Dynamically populated cards representing applications -->
+            </div>
+        </div>
+
         <!-- 6. Performance Reviews -->
         <div id="mgrPerformancePanel" class="manager-panel space-y-6 fade-up-view">
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
@@ -9251,6 +9273,8 @@
                     { id: 'mgr-employees', label: 'Team Directory', icon: 'users', targetPanel: 'mgrTeamPanel' },
                     { id: 'mgr-assignments', label: 'Task Assignments', icon: 'check-square', targetPanel: 'mgrAssignmentsPanel' },
                     { id: 'mgr-leaves', label: 'Leave Management', icon: 'calendar-days', targetPanel: 'mgrLeavesPanel' },
+                    { id: 'mgr-on-duty', label: 'On Duty Request', icon: 'map-pin', targetPanel: 'mgrOnDutyPanel' },
+                    { id: 'mgr-expenses', label: 'Expense Reimbursement', icon: 'dollar-sign', targetPanel: 'mgrExpensesPanel' },
                     { id: 'mgr-performance', label: 'Performance', icon: 'trending-up', targetPanel: 'mgrPerformancePanel' },
                     { id: 'mgr-reports', label: 'Reports', icon: 'bar-chart-3', targetPanel: 'mgrReportsPanel' },
                     { id: 'mgr-notifications', label: 'Notifications', icon: 'bell', targetPanel: 'mgrNotificationsPanel' },
@@ -17040,6 +17064,10 @@
                 renderManagerAssignments();
             } else if (panelId === 'mgrLeavesPanel') {
                 renderManagerLeaves();
+            } else if (panelId === 'mgrOnDutyPanel') {
+                renderManagerOnDuty();
+            } else if (panelId === 'mgrExpensesPanel') {
+                renderManagerExpenses();
             } else if (panelId === 'mgrPerformancePanel') {
                 renderManagerPerformance();
             } else if (panelId === 'mgrReportsPanel') {
@@ -17674,6 +17702,200 @@
                 await loadAllHRMSData();
                 renderManagerLeaves();
                 alert(`Leave request successfully ${approved ? 'Approved' : 'Rejected'}!`);
+            }
+        }
+
+        async function renderManagerOnDuty() {
+            const container = document.getElementById('mgrOnDutyQueueContainer');
+            if (!container) return;
+
+            container.innerHTML = `<div class="text-center py-6 text-slate-400 italic">Loading requests...</div>`;
+
+            try {
+                const list = await apiFetch('/hr/on-duty');
+                const pending = list.filter(l => l.status === 'Pending');
+                if (pending.length === 0) {
+                    container.innerHTML = `<div class="bg-white border rounded-[24px] p-8 text-center text-slate-400 italic text-xs">No pending On Duty requests in queue.</div>`;
+                    return;
+                }
+
+                container.innerHTML = pending.map(item => {
+                    const formattedDep = `${item.departure_date} ${item.departure_time}`;
+                    const formattedRet = `${item.expected_return_date} ${item.expected_return_time}`;
+                    return `
+                        <div class="premium-card p-6 bg-white border border-[#ECECF3] space-y-4 text-left">
+                            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                                <div>
+                                    <h4 class="font-bold text-slate-800 text-sm">${item.user_email} <span class="text-xs font-normal text-slate-400">(${item.id})</span></h4>
+                                    <p class="text-xs text-[#610173] font-semibold mt-0.5">Purpose: ${item.purpose} | Target Date: ${item.date}</p>
+                                </div>
+                                <span class="px-2.5 py-0.5 bg-amber-50 border border-amber-100 text-amber-700 rounded text-[9px] font-bold uppercase">${item.status}</span>
+                            </div>
+                            
+                            <div class="grid grid-cols-2 gap-4 text-xs">
+                                <div>
+                                    <span class="text-[9px] text-slate-400 font-bold uppercase tracking-wide block">Location:</span>
+                                    <span class="text-slate-700 font-semibold">${item.location}</span>
+                                </div>
+                                <div>
+                                    <span class="text-[9px] text-slate-400 font-bold uppercase tracking-wide block">Timings:</span>
+                                    <span class="text-slate-700 font-semibold">Dep: ${formattedDep} | Ret: ${formattedRet}</span>
+                                </div>
+                            </div>
+                            
+                            <div class="p-3 bg-slate-50 border border-slate-100 rounded-xl text-xs space-y-2">
+                                <span class="text-[10px] text-slate-400 font-bold uppercase tracking-wide block">Remarks:</span>
+                                <p class="text-slate-700 font-medium">${item.remarks || 'No remarks provided.'}</p>
+                            </div>
+                            
+                            <!-- Inline Manager Remarks -->
+                            <div class="space-y-1">
+                                <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wide">Manager Remarks (Optional)</label>
+                                <input type="text" id="od-remarks-${item.id}" placeholder="e.g. Approved for client meeting" class="w-full text-xs font-semibold border border-[#ECECF3] rounded-xl px-3 py-2 bg-[#F7F7FB] outline-none text-[#111827]">
+                            </div>
+                            
+                            <div class="flex justify-end gap-3 pt-2">
+                                <button onclick="processManagerOnDuty('${item.id}', 'Rejected')" class="px-4 py-2 border border-rose-200 text-rose-600 font-bold rounded-xl text-xs hover:bg-rose-50 transition">Reject Request</button>
+                                <button onclick="processManagerOnDuty('${item.id}', 'Approved')" class="px-4 py-2 bg-[#610173] hover:brightness-110 text-white font-bold rounded-xl text-xs transition shadow-sm">Approve Request</button>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+                if (typeof lucide !== 'undefined') lucide.createIcons();
+            } catch (err) {
+                container.innerHTML = `<div class="bg-red-50 text-red-700 p-4 rounded-xl text-xs">Failed to load queue: ${err.message}</div>`;
+            }
+        }
+
+        async function processManagerOnDuty(id, status) {
+            const remarksInput = document.getElementById(`od-remarks-${id}`);
+            const manager_remarks = remarksInput ? remarksInput.value : '';
+            
+            try {
+                const res = await apiFetch(`/hr/on-duty/${id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ status, manager_remarks })
+                });
+                
+                if (res && res.ok) {
+                    alert(`Request has been ${status.toLowerCase()} successfully.`);
+                    renderManagerOnDuty();
+                } else {
+                    const data = await res.json().catch(() => ({}));
+                    alert(data.error || 'Failed to process request.');
+                }
+            } catch (err) {
+                alert('Error: ' + err.message);
+            }
+        }
+
+        async function renderManagerExpenses() {
+            const container = document.getElementById('mgrExpensesQueueContainer');
+            if (!container) return;
+
+            container.innerHTML = `<div class="text-center py-6 text-slate-400 italic">Loading claims...</div>`;
+
+            try {
+                const list = await apiFetch('/hr/reimbursements');
+                const pending = list.filter(l => l.status !== 'Paid' && l.status !== 'Rejected');
+                if (pending.length === 0) {
+                    container.innerHTML = `<div class="bg-white border rounded-[24px] p-8 text-center text-slate-400 italic text-xs">No pending expense claims in queue.</div>`;
+                    return;
+                }
+
+                container.innerHTML = pending.map(item => {
+                    const items = item.items || [];
+                    const status = item.status;
+                    return `
+                        <div class="premium-card p-6 bg-white border border-[#ECECF3] space-y-4 text-left">
+                            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                                <div>
+                                    <h4 class="font-bold text-slate-800 text-sm">${item.user_email} <span class="text-xs font-normal text-slate-400">(${item.id})</span></h4>
+                                    <p class="text-xs text-[#610173] font-semibold mt-0.5">Claim: ${item.title} | Date: ${item.date} | Project: ${item.client_project || '—'}</p>
+                                </div>
+                                <div class="flex gap-2">
+                                    <span class="px-2.5 py-0.5 bg-amber-50 border border-amber-100 text-amber-700 rounded text-[9px] font-bold uppercase">${status}</span>
+                                    <span class="px-2.5 py-0.5 bg-slate-100 border border-slate-200 text-slate-700 rounded text-[9px] font-bold uppercase">${item.payment_status}</span>
+                                </div>
+                            </div>
+                            
+                            <div class="p-3 bg-slate-50 border border-slate-100 rounded-xl text-xs space-y-2">
+                                <span class="text-[10px] text-slate-400 font-bold uppercase tracking-wide block">Purpose/Description:</span>
+                                <p class="text-slate-700 font-medium">${item.purpose || 'No description provided.'}</p>
+                            </div>
+                            
+                            <div class="border border-[#ECECF3] rounded-xl overflow-hidden text-xs">
+                                <table class="w-full text-left border-collapse">
+                                    <thead>
+                                        <tr class="bg-slate-50 text-[10px] font-bold uppercase tracking-wider text-slate-400 border-b border-[#ECECF3]">
+                                            <th class="p-2.5 pl-4">Category</th>
+                                            <th class="p-2.5">Amount</th>
+                                            <th class="p-2.5 pr-4 text-right">Receipt</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-[#ECECF3] text-slate-700">
+                                        ${items.map(it => `
+                                            <tr>
+                                                <td class="p-2.5 pl-4 font-semibold text-slate-800">${it.category}</td>
+                                                <td class="p-2.5 font-bold">₹${Number(it.amount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
+                                                <td class="p-2.5 pr-4 text-right">
+                                                    ${it.bill_url ? `<a href="${it.bill_url}" target="_blank" class="px-2 py-1 bg-purple-50 text-[#610173] hover:bg-[#610173] hover:text-white rounded border border-purple-100 text-[10px] font-bold transition inline-flex items-center gap-1"><i data-lucide="file" class="w-3 h-3"></i> View Bill</a>` : '<span class="text-slate-400 italic text-[10px]">No bill</span>'}
+                                                </td>
+                                            </tr>
+                                        `).join('')}
+                                    </tbody>
+                                </table>
+                            </div>
+                            
+                            <div class="flex justify-between items-center text-xs">
+                                <span class="text-[10px] text-slate-400 font-bold uppercase tracking-wide">Total Amount:</span>
+                                <span class="text-base font-extrabold text-slate-800">₹${Number(item.total_amount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+                            </div>
+                            
+                            <!-- Inline Manager Remarks -->
+                            <div class="space-y-1">
+                                <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wide">Manager Remarks (Optional)</label>
+                                <input type="text" id="exp-remarks-${item.id}" placeholder="e.g. Valid client visit receipt verified" class="w-full text-xs font-semibold border border-[#ECECF3] rounded-xl px-3 py-2 bg-[#F7F7FB] outline-none text-[#111827]">
+                            </div>
+                            
+                            <div class="flex justify-end gap-3 pt-2">
+                                <button onclick="processManagerExpense('${item.id}', 'Rejected')" class="px-4 py-2 border border-rose-200 text-rose-600 font-bold rounded-xl text-xs hover:bg-rose-50 transition">Reject Claim</button>
+                                ${status === 'Pending Manager Approval' ? `
+                                    <button onclick="processManagerExpense('${item.id}', 'Manager Approved')" class="px-4 py-2 bg-[#610173] hover:brightness-110 text-white font-bold rounded-xl text-xs transition shadow-sm">Approve Claim</button>
+                                ` : `
+                                    <button onclick="processManagerExpense('${item.id}', 'Paid')" class="px-4 py-2 bg-emerald-600 hover:brightness-110 text-white font-bold rounded-xl text-xs transition shadow-sm">Mark as Paid</button>
+                                `}
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+                if (typeof lucide !== 'undefined') lucide.createIcons();
+            } catch (err) {
+                container.innerHTML = `<div class="bg-red-50 text-red-700 p-4 rounded-xl text-xs">Failed to load claims: ${err.message}</div>`;
+            }
+        }
+
+        async function processManagerExpense(id, status) {
+            const remarksInput = document.getElementById(`exp-remarks-${id}`);
+            const manager_remarks = remarksInput ? remarksInput.value : '';
+            
+            try {
+                const res = await apiFetch(`/hr/reimbursements/${id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ status, manager_remarks })
+                });
+                
+                if (res && res.ok) {
+                    alert(`Claim has been ${status.toLowerCase()} successfully.`);
+                    renderManagerExpenses();
+                } else {
+                    const data = await res.json().catch(() => ({}));
+                    alert(data.error || 'Failed to process claim.');
+                }
+            } catch (err) {
+                alert('Error: ' + err.message);
             }
         }
 

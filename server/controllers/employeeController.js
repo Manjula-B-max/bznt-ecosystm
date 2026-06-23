@@ -1109,13 +1109,121 @@ export const markNotificationsRead = async (req, res) => {
 // 6. Payroll
 export const getPayrollSlips = async (req, res) => {
     try {
-        res.json([]);
+        const { employee } = await getSessionDetails(req.userId);
+        const email = employee.user_email.toLowerCase();
+        const PayrollModel = getModel('hr_payroll');
+        const list = await PayrollModel.find({ user_email: email }).sort({ month: -1 }).lean();
+        res.json(list);
     } catch (err) { res.status(500).json({ error: err.message }); }
 };
 
 export const getPayrollStructure = async (req, res) => {
     try {
-        res.json({ basic: 0, hra: 0, special: 0, deductions: 0 });
+        const { employee } = await getSessionDetails(req.userId);
+        const gross = employee.salary || 100000;
+        const basic = Math.floor(gross * 0.5);
+        const hra = Math.floor(basic * 0.4);
+        
+        const email = employee.user_email.toLowerCase();
+        const isCanteen = email.includes("rahul") || email.includes("amit");
+        const foodAllowance = isCanteen ? 0 : 800;
+        const canteenDeduction = isCanteen ? 1200 : 0;
+        
+        const special = gross - basic - hra;
+        const finalAllowance = special + foodAllowance;
+        
+        const pf = Math.floor(basic * 0.12);
+        const esi = Math.floor(gross * 0.0075);
+        const pt = 200;
+        const tax = Math.floor(gross * 0.05);
+        
+        let deductions = pf + esi + pt + tax + canteenDeduction;
+        
+        const LoanModel = getModel('hr_loans');
+        const activeLoan = await LoanModel.findOne({
+            user_email: email,
+            status: { $in: ['Approved', 'Active'] },
+            remaining_balance: { $gt: 0 }
+        });
+        
+        let loanEMI = 0;
+        if (activeLoan) {
+            loanEMI = Math.min(activeLoan.monthly_emi, activeLoan.remaining_balance);
+        }
+        deductions += loanEMI;
+        
+        const finalGross = gross + foodAllowance;
+        const net = finalGross - deductions;
+        
+        res.json({
+            gross: finalGross,
+            basic,
+            hra,
+            special: finalAllowance,
+            pf,
+            esi,
+            pt,
+            tax,
+            canteenDeduction,
+            loanEMI,
+            deductions,
+            net
+        });
+    } catch (err) { res.status(500).json({ error: err.message }); }
+};
+
+export const applyLoan = async (req, res) => {
+    try {
+        const { employee } = await getSessionDetails(req.userId);
+        const email = employee.user_email.toLowerCase();
+        const { amount, repayment_months, reason } = req.body;
+        
+        const amt = parseFloat(amount);
+        const months = parseInt(repayment_months);
+        
+        if (!amt || amt <= 0) {
+            return res.status(400).json({ error: 'Please enter a valid loan amount.' });
+        }
+        if (!months || months < 1 || months > 24) {
+            return res.status(400).json({ error: 'Repayment duration must be between 1 and 24 months.' });
+        }
+        if (!reason || reason.trim() === '') {
+            return res.status(400).json({ error: 'Reason for salary advance is required.' });
+        }
+        
+        const LoanModel = getModel('hr_loans');
+        const monthly_emi = Math.round(amt / months);
+        
+        const doc = new LoanModel({
+            id: 'LOAN-' + Math.random().toString(36).slice(2, 8).toUpperCase(),
+            user_id: req.userId,
+            user_email: email,
+            employee_id: employee.employee_id || employee.id,
+            name: employee.name,
+            amount: amt,
+            reason: reason.trim(),
+            repayment_months: months,
+            monthly_emi,
+            status: 'Pending',
+            remaining_balance: amt,
+            company_id: employee.company_id,
+            company: employee.company,
+            remarks: '',
+            created_at: new Date().toISOString().split('T')[0]
+        });
+        
+        await doc.save();
+        res.json({ ok: true, message: 'Salary advance request submitted successfully.', id: doc.id });
+    } catch (err) { res.status(500).json({ error: err.message }); }
+};
+
+export const getLoans = async (req, res) => {
+    try {
+        const { employee } = await getSessionDetails(req.userId);
+        const email = employee.user_email.toLowerCase();
+        const LoanModel = getModel('hr_loans');
+        const list = await LoanModel.find({ user_email: email }).sort({ created_at: -1 }).lean();
+        res.json(list);
     } catch (err) { res.status(500).json({ error: err.message }); }
 };
 

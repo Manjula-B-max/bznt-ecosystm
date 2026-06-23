@@ -22,6 +22,7 @@ let currentOnDutySubView = 'form'; // Set default view directly to form
 let currentReimbursementSubView = 'initial';
 let onDutyHistoryList = [];
 let reimbursementHistoryList = [];
+let currentPayrollTab = 'slips';
 
 const MOCK_ON_DUTY = [
     { id: 'OD_1001', purpose: 'Site Visit', location: 'Pune Tech Center', departure_date: '2026-06-10', departure_time: '09:00', expected_return_date: '2026-06-10', expected_return_time: '18:00', status: 'Approved', date: '2026-06-09', remarks: 'Site visit for engine maintenance.', manager_remarks: 'All documents verified.', approved_by: 'manager@bezent.com', manager_email: 'manager@bezent.com' },
@@ -162,10 +163,10 @@ function renderActionCard(module, id, activeId, title, desc, iconName) {
 
 // Module-level feature config shared between renderer and switcher
 const ATT_FEATURES = [
-    { id: 'calendar',     label: 'Calendar',     subtitle: 'Monthly attendance view', icon: 'calendar', color: '#7C3AED', light: 'rgba(124,58,237,0.08)', gradient: 'linear-gradient(145deg,#7C3AED 0%,#9333EA 100%)' },
-    { id: 'corrections',  label: 'Corrections',  subtitle: 'Fix attendance errors',   icon: 'edit-3',   color: '#D97706', light: 'rgba(217,119,6,0.08)',  gradient: 'linear-gradient(145deg,#D97706 0%,#F59E0B 100%)' },
-    { id: 'late-credits', label: 'Late Credits', subtitle: 'Manage credit balance',   icon: 'wallet',   color: '#0891B2', light: 'rgba(8,145,178,0.08)',  gradient: 'linear-gradient(145deg,#0891B2 0%,#06B6D4 100%)' },
-    { id: 'leaderboard',  label: 'Leaderboard',  subtitle: 'Team performance rank',   icon: 'trophy',   color: '#059669', light: 'rgba(5,150,105,0.08)',  gradient: 'linear-gradient(145deg,#059669 0%,#10B981 100%)' }
+    { id: 'calendar', label: 'Calendar', subtitle: 'Monthly attendance view', icon: 'calendar', color: '#7C3AED', light: 'rgba(124,58,237,0.08)', gradient: 'linear-gradient(145deg,#7C3AED 0%,#9333EA 100%)' },
+    { id: 'corrections', label: 'Corrections', subtitle: 'Fix attendance errors', icon: 'edit-3', color: '#D97706', light: 'rgba(217,119,6,0.08)', gradient: 'linear-gradient(145deg,#D97706 0%,#F59E0B 100%)' },
+    { id: 'late-credits', label: 'Late Credits', subtitle: 'Manage credit balance', icon: 'wallet', color: '#0891B2', light: 'rgba(8,145,178,0.08)', gradient: 'linear-gradient(145deg,#0891B2 0%,#06B6D4 100%)' },
+    { id: 'leaderboard', label: 'Leaderboard', subtitle: 'Team performance rank', icon: 'trophy', color: '#059669', light: 'rgba(5,150,105,0.08)', gradient: 'linear-gradient(145deg,#059669 0%,#10B981 100%)' }
 ];
 
 window.setAttendanceSubView = async (viewName) => {
@@ -178,7 +179,7 @@ window.setAttendanceSubView = async (viewName) => {
 
     // History/Corrections need full-page render
     if (viewName === 'history' || viewName === 'corrections' ||
-        prevView  === 'history' || prevView  === 'corrections') {
+        prevView === 'history' || prevView === 'corrections') {
         loadPanel('attendance');
         return;
     }
@@ -190,18 +191,18 @@ window.setAttendanceSubView = async (viewName) => {
         const card = document.querySelector(`[data-fid="${f.id}"]`);
         if (!card) return;
         const active = f.id === viewName;
-        card.style.background  = active ? f.gradient : ('linear-gradient(145deg,' + f.light + ' 0%,#ffffff 60%)');
+        card.style.background = active ? f.gradient : ('linear-gradient(145deg,' + f.light + ' 0%,#ffffff 60%)');
         card.style.borderColor = active ? 'transparent' : (f.color + '20');
-        card.style.boxShadow   = active ? ('0 8px 24px ' + f.color + '38,0 0 0 2.5px ' + f.color + '28') : '';
-        card.style.transform   = active ? 'translateY(-2px)' : '';
+        card.style.boxShadow = active ? ('0 8px 24px ' + f.color + '38,0 0 0 2.5px ' + f.color + '28') : '';
+        card.style.transform = active ? 'translateY(-2px)' : '';
         const ico = card.querySelector('i[data-lucide]'); if (ico) ico.style.color = active ? '#fff' : f.color;
-        const lbl = card.querySelector('.fc-label');      if (lbl) lbl.style.color = active ? '#fff' : '#0f172a';
-        const sub = card.querySelector('.fc-sub');        if (sub) sub.style.color = active ? 'rgba(255,255,255,0.7)' : '#94a3b8';
+        const lbl = card.querySelector('.fc-label'); if (lbl) lbl.style.color = active ? '#fff' : '#0f172a';
+        const sub = card.querySelector('.fc-sub'); if (sub) sub.style.color = active ? 'rgba(255,255,255,0.7)' : '#94a3b8';
         const arr = card.querySelector('.fc-arrow');
         if (arr) {
-            arr.style.background  = active ? 'rgba(255,255,255,0.18)' : f.light;
+            arr.style.background = active ? 'rgba(255,255,255,0.18)' : f.light;
             arr.style.borderColor = active ? 'rgba(255,255,255,0.25)' : (f.color + '25');
-            arr.style.color       = active ? '#fff' : f.color;
+            arr.style.color = active ? '#fff' : f.color;
         }
         const dot = card.querySelector('.fc-dot'); if (dot) dot.style.display = active ? 'inline-block' : 'none';
     });
@@ -218,10 +219,10 @@ window.setAttendanceSubView = async (viewName) => {
 
     // 3. Inject new workspace HTML
     let html = '';
-    if (viewName === 'calendar')          html = renderCalendarWorkspace();
+    if (viewName === 'calendar') html = renderCalendarWorkspace();
     else if (viewName === 'late-credits') html = renderLateCreditsWorkspace();
-    else if (viewName === 'leaderboard')  html = renderLeaderboardWorkspace();
-    else if (viewName === 'analytics')    html = renderAnalyticsWorkspace();
+    else if (viewName === 'leaderboard') html = renderLeaderboardWorkspace();
+    else if (viewName === 'analytics') html = renderAnalyticsWorkspace();
 
     if (ws) {
         ws.innerHTML = html;
@@ -230,10 +231,10 @@ window.setAttendanceSubView = async (viewName) => {
         requestAnimationFrame(() => requestAnimationFrame(() => {
             ws.style.cssText = 'opacity:1;transform:translateY(0);transition:opacity .35s cubic-bezier(0.16,1,0.3,1),transform .35s cubic-bezier(0.16,1,0.3,1);pointer-events:auto;';
         }));
-        if (viewName === 'calendar')          initAttendanceCalendar(employeeState);
+        if (viewName === 'calendar') initAttendanceCalendar(employeeState);
         else if (viewName === 'late-credits') initAttendanceLateCredits(employeeState);
-        else if (viewName === 'leaderboard')  initAttendanceLeaderboard(employeeState);
-        else if (viewName === 'analytics')    initAttendanceAnalytics(employeeState);
+        else if (viewName === 'leaderboard') initAttendanceLeaderboard(employeeState);
+        else if (viewName === 'analytics') initAttendanceAnalytics(employeeState);
     }
 };
 
@@ -259,18 +260,18 @@ function renderAttendanceHybrid() {
         return `
             <div class="att-feature-card" data-fid="${f.id}" onclick="setAttendanceSubView('${f.id}')"
                  style="${isActive
-                    ? `background:${f.gradient};border-color:transparent;box-shadow:0 8px 24px ${f.color}38,0 0 0 2.5px ${f.color}28;transform:translateY(-2px);`
-                    : `background:linear-gradient(145deg,${f.light} 0%,#ffffff 60%);border-color:${f.color}20;`}">
+                ? `background:${f.gradient};border-color:transparent;box-shadow:0 8px 24px ${f.color}38,0 0 0 2.5px ${f.color}28;transform:translateY(-2px);`
+                : `background:linear-gradient(145deg,${f.light} 0%,#ffffff 60%);border-color:${f.color}20;`}">
                 <div style="padding:12px 13px;display:flex;flex-direction:column;justify-content:space-between;height:100%;">
                     <div style="display:flex;align-items:center;justify-content:space-between;">
                         <div style="width:38px;height:38px;border-radius:11px;display:flex;align-items:center;justify-content:center;flex-shrink:0;
                             background:${isActive ? 'rgba(255,255,255,0.22)' : 'rgba(255,255,255,0.9)'};
-                            border:1.5px solid ${isActive ? 'rgba(255,255,255,0.3)' : f.color+'22'};">
+                            border:1.5px solid ${isActive ? 'rgba(255,255,255,0.3)' : f.color + '22'};">
                             <i data-lucide="${f.icon}" style="width:18px;height:18px;color:${isActive ? '#fff' : f.color};"></i>
                         </div>
                         <div class="fc-arrow" style="width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;
                             background:${isActive ? 'rgba(255,255,255,0.18)' : f.light};
-                            border:1px solid ${isActive ? 'rgba(255,255,255,0.25)' : f.color+'25'};
+                            border:1px solid ${isActive ? 'rgba(255,255,255,0.25)' : f.color + '25'};
                             color:${isActive ? '#fff' : f.color};">
                             <i data-lucide="chevron-right" style="width:11px;height:11px;"></i>
                         </div>
@@ -288,10 +289,10 @@ function renderAttendanceHybrid() {
     }).join('');
 
     let workspaceHtml = '';
-    if (currentAttendanceSubView === 'calendar')          workspaceHtml = renderCalendarWorkspace();
+    if (currentAttendanceSubView === 'calendar') workspaceHtml = renderCalendarWorkspace();
     else if (currentAttendanceSubView === 'late-credits') workspaceHtml = renderLateCreditsWorkspace();
-    else if (currentAttendanceSubView === 'leaderboard')  workspaceHtml = renderLeaderboardWorkspace();
-    else if (currentAttendanceSubView === 'analytics')    workspaceHtml = renderAnalyticsWorkspace();
+    else if (currentAttendanceSubView === 'leaderboard') workspaceHtml = renderLeaderboardWorkspace();
+    else if (currentAttendanceSubView === 'analytics') workspaceHtml = renderAnalyticsWorkspace();
 
     return `
         <div class="space-y-3 animate-fade-in w-full min-w-0">
@@ -461,7 +462,7 @@ function renderAttendanceHybrid() {
 async function initAttendanceLanding(state) {
     try {
         const overview = await apiClient('/employee/attendance/overview');
-        
+
         const present = parseInt(overview.present_days) || 0;
         const absent = parseInt(overview.absent_days) || 0;
         const half = parseInt(overview.half_days) || 0;
@@ -470,9 +471,9 @@ async function initAttendanceLanding(state) {
 
         const setEl = (id, val) => { const el = document.getElementById(id); if (el) el.innerText = val; };
         setEl('landing-present', present);
-        setEl('landing-absent',  absent);
-        setEl('landing-half',    half);
-        setEl('landing-late',    late);
+        setEl('landing-absent', absent);
+        setEl('landing-half', half);
+        setEl('landing-late', late);
         setEl('landing-credits', credits);
 
         // Update progress bar widths and percentages based on 30 working days / 40 credits
@@ -485,9 +486,9 @@ async function initAttendanceLanding(state) {
         };
 
         updateProgress('progress-present', 'pct-present', present, 30);
-        updateProgress('progress-absent',  'pct-absent',  absent, 30);
-        updateProgress('progress-half',    'pct-half',    half, 30);
-        updateProgress('progress-late',    'pct-late',    late, 30);
+        updateProgress('progress-absent', 'pct-absent', absent, 30);
+        updateProgress('progress-half', 'pct-half', half, 30);
+        updateProgress('progress-late', 'pct-late', late, 30);
         updateProgress('progress-credits', 'pct-credits', credits, 40);
 
     } catch (e) {
@@ -497,8 +498,8 @@ async function initAttendanceLanding(state) {
 }
 
 function renderCalendarWorkspace() {
-    const MONTH_NAMES = ['January','February','March','April','May','June','July','August','September','October','November','December'];
-    
+    const MONTH_NAMES = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+
     // Generate month-year selection options: from last year to next year
     const current = new Date();
     let selectOpts = '';
@@ -506,20 +507,20 @@ function renderCalendarWorkspace() {
     const endYear = current.getFullYear() + 2;
     for (let y = startYear; y <= endYear; y++) {
         for (let m = 0; m < 12; m++) {
-            const val = `${y}-${m+1}`;
-            const isSelected = (calendarYear === y && calendarMonth === m+1);
+            const val = `${y}-${m + 1}`;
+            const isSelected = (calendarYear === y && calendarMonth === m + 1);
             const label = `${MONTH_NAMES[m]} ${y}`;
             selectOpts += `<option value="${val}" ${isSelected ? 'selected' : ''}>${label}</option>`;
         }
     }
 
     const LEGEND_ITEMS = [
-        { label: 'Present',  color: '#22C55E' },
-        { label: 'Absent',   color: '#EF4444' },
+        { label: 'Present', color: '#22C55E' },
+        { label: 'Absent', color: '#EF4444' },
         { label: 'Half Day', color: '#F59E0B' },
-        { label: 'On Duty',  color: '#2563EB' },
-        { label: 'Leave',    color: '#06B6D4' },
-        { label: 'Holiday',  color: '#8B5CF6' },
+        { label: 'On Duty', color: '#2563EB' },
+        { label: 'Leave', color: '#06B6D4' },
+        { label: 'Holiday', color: '#8B5CF6' },
     ];
     const legendHtml = LEGEND_ITEMS.map(l =>
         `<span class="cal-legend-item">
@@ -527,8 +528,8 @@ function renderCalendarWorkspace() {
         </span>`
     ).join('');
 
-    const dayHeaders = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun']
-        .map((d,i) => `<div class="cal-day-header ${i>=5?'cal-day-header--weekend':''}">${d}</div>`).join('');
+    const dayHeaders = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+        .map((d, i) => `<div class="cal-day-header ${i >= 5 ? 'cal-day-header--weekend' : ''}">${d}</div>`).join('');
 
     return `
         <div class="cal-workspace animate-fade-in">
@@ -604,7 +605,7 @@ async function initAttendanceCalendar() {
         const startOffset = firstDay === 0 ? 6 : firstDay - 1;
         const totalDays = new Date(calendarYear, calendarMonth, 0).getDate();
         const today = new Date();
-        const todayStr = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
+        const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
 
         // Previous month's trailing days
         const prevMonthLastDay = new Date(calendarYear, calendarMonth - 1, 0).getDate();
@@ -616,15 +617,15 @@ async function initAttendanceCalendar() {
 
         // Current month days
         for (let day = 1; day <= totalDays; day++) {
-            const dateStr = `${calendarYear}-${String(calendarMonth).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+            const dateStr = `${calendarYear}-${String(calendarMonth).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
             const record = list.find(r => r.date === dateStr);
             const isSelected = calendarSelectedDate === dateStr;
             const isToday = dateStr === todayStr;
-            
+
             const dateObj = new Date(calendarYear, calendarMonth - 1, day);
             const isSunday = dateObj.getDay() === 0;
 
-            const dotCls = record ? `cal-tile__dot--${record.status.replace(/\s+/g,'-')}` : 'cal-tile__dot--empty';
+            const dotCls = record ? `cal-tile__dot--${record.status.replace(/\s+/g, '-')}` : 'cal-tile__dot--empty';
             let extraCls = isSelected ? 'cal-tile--selected' : isToday ? 'cal-tile--today' : '';
             if (isSunday) {
                 extraCls += ' cal-tile--sunday';
@@ -796,43 +797,43 @@ window.selectCalendarDate = async (dateStr) => {
         let details = await apiClient(`/employee/attendance/date-details/${dateStr}`);
 
         const [y, m, d] = dateStr.split('-');
-        const monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-        const DAYS = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+        const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
         const dateObj = new Date(parseInt(y), parseInt(m) - 1, parseInt(d));
         const dayName = DAYS[dateObj.getDay()];
-        const displayDate = `${dayName}, ${parseInt(d)} ${monthNames[parseInt(m)-1]} ${y}`;
+        const displayDate = `${dayName}, ${parseInt(d)} ${monthNames[parseInt(m) - 1]} ${y}`;
 
         const STATUS_STYLES = {
-            'Present':    { bg: '#DCFCE7', color: '#15803D', border: '#BBF7D0', dot: '#22C55E' },
-            'Absent':     { bg: '#FEE2E2', color: '#B91C1C', border: '#FECACA', dot: '#EF4444' },
-            'Half Day':   { bg: '#FEF3C7', color: '#B45309', border: '#FDE68A', dot: '#F59E0B' },
-            'Half-Day':   { bg: '#FEF3C7', color: '#B45309', border: '#FDE68A', dot: '#F59E0B' },
-            'On Duty':    { bg: '#DBEAFE', color: '#1D4ED8', border: '#BFDBFE', dot: '#3B82F6' },
-            'On-Duty':    { bg: '#DBEAFE', color: '#1D4ED8', border: '#BFDBFE', dot: '#3B82F6' },
-            'Leave':      { bg: '#CFFAFE', color: '#0E7490', border: '#A5F3FC', dot: '#06B6D4' },
-            'Holiday':    { bg: '#EDE9FE', color: '#6D28D9', border: '#DDD6FE', dot: '#8B5CF6' },
-            'Late':       { bg: '#FAF5FF', color: '#7E22CE', border: '#F3E8FF', dot: '#A855F7' },
-            'Weekend':    { bg: '#F3F4F6', color: '#4B5563', border: '#E5E7EB', dot: '#9CA3AF' },
+            'Present': { bg: '#DCFCE7', color: '#15803D', border: '#BBF7D0', dot: '#22C55E' },
+            'Absent': { bg: '#FEE2E2', color: '#B91C1C', border: '#FECACA', dot: '#EF4444' },
+            'Half Day': { bg: '#FEF3C7', color: '#B45309', border: '#FDE68A', dot: '#F59E0B' },
+            'Half-Day': { bg: '#FEF3C7', color: '#B45309', border: '#FDE68A', dot: '#F59E0B' },
+            'On Duty': { bg: '#DBEAFE', color: '#1D4ED8', border: '#BFDBFE', dot: '#3B82F6' },
+            'On-Duty': { bg: '#DBEAFE', color: '#1D4ED8', border: '#BFDBFE', dot: '#3B82F6' },
+            'Leave': { bg: '#CFFAFE', color: '#0E7490', border: '#A5F3FC', dot: '#06B6D4' },
+            'Holiday': { bg: '#EDE9FE', color: '#6D28D9', border: '#DDD6FE', dot: '#8B5CF6' },
+            'Late': { bg: '#FAF5FF', color: '#7E22CE', border: '#F3E8FF', dot: '#A855F7' },
+            'Weekend': { bg: '#F3F4F6', color: '#4B5563', border: '#E5E7EB', dot: '#9CA3AF' },
             'Weekly Off': { bg: '#F3F4F6', color: '#4B5563', border: '#E5E7EB', dot: '#9CA3AF' },
-            'Scheduled':  { bg: '#F9FAFB', color: '#6B7280', border: '#E5E7EB', dot: '#D1D5DB' },
-            'No Record':  { bg: '#F9FAFB', color: '#6B7280', border: '#E5E7EB', dot: '#D1D5DB' }
+            'Scheduled': { bg: '#F9FAFB', color: '#6B7280', border: '#E5E7EB', dot: '#D1D5DB' },
+            'No Record': { bg: '#F9FAFB', color: '#6B7280', border: '#E5E7EB', dot: '#D1D5DB' }
         };
 
         if (!details) {
             const dayOfWeek = dateObj.getDay();
             const today = new Date();
-            const todayStr = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
+            const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
             let status = dateStr > todayStr ? 'Scheduled' : (dayOfWeek === 0 || dayOfWeek === 6 ? 'Weekend' : 'Absent');
             details = { status, remarks: dateStr > todayStr ? 'Upcoming date' : (dayOfWeek === 0 || dayOfWeek === 6 ? 'Weekly Off' : 'No attendance record') };
         }
 
         // Enrich with plausible dummy values when timing fields are missing
         const _hash = dateStr.split('-').reduce((a, v) => a + parseInt(v, 10), 0) % 12;
-        const _CIs = ['08:52 AM','08:58 AM','09:00 AM','09:02 AM','09:04 AM','09:06 AM','08:55 AM','09:01 AM','08:48 AM','09:03 AM','09:07 AM','08:57 AM'];
-        const _COs = ['05:55 PM','06:00 PM','06:05 PM','06:10 PM','06:15 PM','06:18 PM','06:02 PM','06:08 PM','05:50 PM','06:12 PM','06:20 PM','06:00 PM'];
-        const _HRs = ['08h 55m','09h 00m','09h 05m','09h 10m','09h 08m','09h 12m','09h 02m','09h 06m','08h 50m','09h 09m','09h 15m','09h 00m'];
-        const _OTs = [null,'15 mins',null,'10 mins',null,'18 mins',null,'5 mins',null,'12 mins',null,null];
-        const _PHs = [null,null,'30 mins',null,null,'1h 00m',null,null,'45 mins',null,null,null];
+        const _CIs = ['08:52 AM', '08:58 AM', '09:00 AM', '09:02 AM', '09:04 AM', '09:06 AM', '08:55 AM', '09:01 AM', '08:48 AM', '09:03 AM', '09:07 AM', '08:57 AM'];
+        const _COs = ['05:55 PM', '06:00 PM', '06:05 PM', '06:10 PM', '06:15 PM', '06:18 PM', '06:02 PM', '06:08 PM', '05:50 PM', '06:12 PM', '06:20 PM', '06:00 PM'];
+        const _HRs = ['08h 55m', '09h 00m', '09h 05m', '09h 10m', '09h 08m', '09h 12m', '09h 02m', '09h 06m', '08h 50m', '09h 09m', '09h 15m', '09h 00m'];
+        const _OTs = [null, '15 mins', null, '10 mins', null, '18 mins', null, '5 mins', null, '12 mins', null, null];
+        const _PHs = [null, null, '30 mins', null, null, '1h 00m', null, null, '45 mins', null, null, null];
         const _noIn = !details.clock_in || details.clock_in === '—';
         if (details.status === 'Present' && _noIn) {
             details.clock_in = _CIs[_hash]; details.clock_out = _COs[_hash]; details.worked_hours = _HRs[_hash];
@@ -840,7 +841,7 @@ window.selectCalendarDate = async (dateStr) => {
             if (!details.permission_hours && _PHs[_hash]) details.permission_hours = _PHs[_hash];
         } else if (details.status === 'Late' && _noIn) {
             const lm = 10 + (_hash % 20);
-            details.clock_in = `09:${String(lm).padStart(2,'0')} AM`;
+            details.clock_in = `09:${String(lm).padStart(2, '0')} AM`;
             details.clock_out = _COs[_hash]; details.worked_hours = _HRs[_hash];
             details.remarks = details.remarks || 'Late arrival';
         } else if ((details.status === 'Half Day' || details.status === 'Half-Day') && _noIn) {
@@ -854,13 +855,13 @@ window.selectCalendarDate = async (dateStr) => {
         const ss = STATUS_STYLES[details.status] || { bg: '#F3F4F6', color: '#374151', border: '#E5E7EB', dot: '#9CA3AF' };
 
         const fields = [
-            { label: 'Check In',              value: details.clock_in || '—',                icon: 'log-in',       ic: '#EA580C', bg: '#FFF7ED' },
-            { label: 'Check Out',             value: details.clock_out || '—',               icon: 'log-out',      ic: '#2563EB', bg: '#EFF6FF' },
-            { label: 'Worked Hours',          value: details.worked_hours || '—',            icon: 'clock',        ic: '#059669', bg: '#ECFDF5' },
-            { label: 'Overtime',              value: details.overtime || '—',                icon: 'zap',          ic: '#D97706', bg: '#FFFBEB' },
-            { label: 'Permission Hours',      value: details.permission_hours || '—',        icon: 'shield-check', ic: '#7C3AED', bg: '#F5F3FF' },
-            { label: 'Regularization',        value: details.regularization_status || '—',   icon: 'refresh-cw',   ic: '#0891B2', bg: '#ECFEFF' },
-            { label: 'Remarks',               value: details.remarks || '—',                 icon: 'message-square', ic: '#6B7280', bg: '#F9FAFB' }
+            { label: 'Check In', value: details.clock_in || '—', icon: 'log-in', ic: '#EA580C', bg: '#FFF7ED' },
+            { label: 'Check Out', value: details.clock_out || '—', icon: 'log-out', ic: '#2563EB', bg: '#EFF6FF' },
+            { label: 'Worked Hours', value: details.worked_hours || '—', icon: 'clock', ic: '#059669', bg: '#ECFDF5' },
+            { label: 'Overtime', value: details.overtime || '—', icon: 'zap', ic: '#D97706', bg: '#FFFBEB' },
+            { label: 'Permission Hours', value: details.permission_hours || '—', icon: 'shield-check', ic: '#7C3AED', bg: '#F5F3FF' },
+            { label: 'Regularization', value: details.regularization_status || '—', icon: 'refresh-cw', ic: '#0891B2', bg: '#ECFEFF' },
+            { label: 'Remarks', value: details.remarks || '—', icon: 'message-square', ic: '#6B7280', bg: '#F9FAFB' }
         ];
 
         const rowsHtml = fields
@@ -1042,9 +1043,9 @@ async function initAttendanceHistory(state) {
             from_date: historyFilters.from_date,
             to_date: historyFilters.to_date
         });
-        
+
         const res = await apiClient(`/employee/attendance/history?${queryParams.toString()}`);
-        
+
         let rowsHtml = '';
         if (res.data.length === 0) {
             rowsHtml = `
@@ -1064,7 +1065,7 @@ async function initAttendanceHistory(state) {
                 else if (row.status === 'On Duty') statusBadge += `bg-blue-50 text-blue-700 border-blue-100">On Duty</span>`;
                 else if (row.status === 'Holiday') statusBadge += `bg-violet-50 text-violet-700 border-violet-100">Holiday</span>`;
                 else statusBadge += `bg-slate-50 text-slate-700 border-slate-100">${row.status}</span>`;
-                
+
                 rowsHtml += `
                     <tr class="hover:bg-[#FAFAFC]/50 transition-colors">
                         <td class="px-6 py-4 text-xs font-bold text-slate-800">${row.date}</td>
@@ -1078,23 +1079,23 @@ async function initAttendanceHistory(state) {
                 `;
             });
         }
-        
+
         const body = document.getElementById('history-table-body');
         if (body) body.innerHTML = rowsHtml;
-        
+
         const startRange = (historyFilters.page - 1) * historyFilters.limit + 1;
         const endRange = Math.min(historyFilters.page * historyFilters.limit, res.total);
         const rangeText = res.total > 0 ? `${startRange}-${endRange} of ${res.total}` : '0-0 of 0';
-        
+
         const textRange = document.getElementById('hist-total-range');
         if (textRange) textRange.innerText = rangeText;
-        
+
         const prevBtn = document.getElementById('hist-prev-btn');
         const nextBtn = document.getElementById('hist-next-btn');
-        
+
         if (prevBtn) prevBtn.disabled = historyFilters.page === 1;
         if (nextBtn) nextBtn.disabled = endRange >= res.total;
-        
+
         if (typeof lucide !== 'undefined') lucide.createIcons();
     } catch (e) {
         console.error('History fetch error', e);
@@ -1106,7 +1107,7 @@ let filterDebounceTimer;
 window.updateHistoryFilters = (key, val) => {
     historyFilters[key] = val;
     if (key !== 'page') historyFilters.page = 1;
-    
+
     if (key === 'search') {
         clearTimeout(filterDebounceTimer);
         filterDebounceTimer = setTimeout(() => {
@@ -1143,7 +1144,7 @@ window.triggerExport = (type) => {
         from_date: historyFilters.from_date,
         to_date: historyFilters.to_date
     });
-    
+
     const url = `/api/employee/attendance/export/${type}?${queryParams.toString()}`;
     const link = document.createElement('a');
     link.href = url;
@@ -1242,7 +1243,7 @@ async function initAttendanceCorrections(state) {
                 if (row.status === 'Approved') statusBadge += `bg-emerald-50 text-emerald-700 border-emerald-100">Approved</span>`;
                 else if (row.status === 'Rejected') statusBadge += `bg-rose-50 text-rose-700 border-rose-100">Rejected</span>`;
                 else statusBadge += `bg-amber-50 text-amber-700 border-amber-100">Pending</span>`;
-                
+
                 rowsHtml += `
                     <tr class="hover:bg-[#FAFAFC]/50 transition-colors">
                         <td class="px-4 py-3 text-xs font-bold text-[#610173]">${row.id}</td>
@@ -1255,7 +1256,7 @@ async function initAttendanceCorrections(state) {
                 `;
             });
         }
-        
+
         const body = document.getElementById('corrections-table-body');
         if (body) body.innerHTML = rowsHtml;
     } catch (e) {
@@ -1270,13 +1271,13 @@ window.submitCorrectionRequest = async (e) => {
     const type = document.getElementById('corr-type').value;
     const reason = document.getElementById('corr-reason').value;
     const remarks = document.getElementById('corr-remarks').value;
-    
+
     try {
         const res = await apiClient('/employee/attendance/corrections', {
             method: 'POST',
             body: { date, type, reason, remarks }
         });
-        
+
         if (res.ok) {
             showToast('Correction request submitted successfully!', 'success');
             document.getElementById('correction-form').reset();
@@ -1361,7 +1362,7 @@ async function initAttendanceLateCredits(state) {
         document.getElementById('credits-total').innerText = info.total_credits;
         document.getElementById('credits-used').innerText = info.used_credits;
         document.getElementById('credits-remaining').innerText = info.remaining_credits;
-        
+
         let rowsHtml = '';
         if (info.logs.length === 0) {
             rowsHtml = `
@@ -1443,7 +1444,7 @@ async function initAttendanceLeaderboard(state) {
         let rowsHtml = '';
         let myRank = '-';
         let myMovement = '—';
-        
+
         list.forEach((row, i) => {
             const isMe = row.is_me;
             if (isMe) {
@@ -1477,15 +1478,15 @@ async function initAttendanceLeaderboard(state) {
                 </tr>
             `;
         });
-        
+
         const myRankEl = document.getElementById('lead-my-rank');
         const myMovEl = document.getElementById('lead-my-movement');
         const body = document.getElementById('leaderboard-table-body');
-        
+
         if (myRankEl) myRankEl.innerText = myRank;
         if (myMovEl) {
             myMovEl.innerText = myMovement;
-            myMovEl.className = `text-xl font-bold mt-0.5 inline-block px-3 py-0.5 rounded-lg bg-white/10 border border-white/10 ` + 
+            myMovEl.className = `text-xl font-bold mt-0.5 inline-block px-3 py-0.5 rounded-lg bg-white/10 border border-white/10 ` +
                 (myMovement.includes('↑') ? 'text-emerald-400' : myMovement.includes('↓') ? 'text-rose-400' : 'text-purple-200');
         }
         if (body) body.innerHTML = rowsHtml;
@@ -1533,15 +1534,15 @@ function renderAnalyticsWorkspace() {
 async function initAttendanceAnalytics(state) {
     try {
         const info = await apiClient('/employee/attendance/analytics');
-        
-        if (distChartInstance)  { distChartInstance.destroy();  distChartInstance  = null; }
+
+        if (distChartInstance) { distChartInstance.destroy(); distChartInstance = null; }
         if (trendChartInstance) { trendChartInstance.destroy(); trendChartInstance = null; }
         if (hoursChartInstance) { hoursChartInstance.destroy(); hoursChartInstance = null; }
-        
+
         const distCanvas = document.getElementById('chart-distribution');
         const trendCanvas = document.getElementById('chart-trend');
         const hoursCanvas = document.getElementById('chart-worked-hours');
-        
+
         if (distCanvas) {
             const labels = Object.keys(info.attendance_distribution);
             const data = Object.values(info.attendance_distribution);
@@ -1554,7 +1555,7 @@ async function initAttendanceAnalytics(state) {
                 "Holiday": "#8B5CF6"
             };
             const backgroundColors = labels.map(l => colors[l] || "#94A3B8");
-            
+
             distChartInstance = new Chart(distCanvas, {
                 type: 'doughnut',
                 data: {
@@ -1583,7 +1584,7 @@ async function initAttendanceAnalytics(state) {
                 }
             });
         }
-        
+
         if (trendCanvas) {
             trendChartInstance = new Chart(trendCanvas, {
                 type: 'line',
@@ -1630,7 +1631,7 @@ async function initAttendanceAnalytics(state) {
                 }
             });
         }
-        
+
         if (hoursCanvas) {
             hoursChartInstance = new Chart(hoursCanvas, {
                 type: 'bar',
@@ -1786,10 +1787,10 @@ function getOnDutyKpisHtml() {
 function getOnDutyActionCardsHtml() {
     const isForm = currentOnDutySubView === 'form';
     const isHistory = currentOnDutySubView === 'history';
-    
+
     const activeClass = 'bg-[#610173] text-white border-[#610173]';
     const inactiveClass = 'bg-white text-slate-700 border-[#ECECF3] hover:bg-slate-50 hover:text-slate-900';
-    
+
     return `
         <div id="on-duty-actions-container" class="flex gap-3">
             <button onclick="setActionSubView('od', 'form')" class="px-5 h-11 rounded-xl border font-bold text-xs flex items-center gap-2 transition ${isForm ? activeClass : inactiveClass}">
@@ -2222,7 +2223,7 @@ window.filterAndRenderOnDutyHistory = () => {
     }
     if (odHistorySearch) {
         const query = odHistorySearch.toLowerCase();
-        filtered = filtered.filter(r => 
+        filtered = filtered.filter(r =>
             (r.id || '').toLowerCase().includes(query) ||
             (r.purpose || '').toLowerCase().includes(query) ||
             (r.location || '').toLowerCase().includes(query)
@@ -2234,7 +2235,7 @@ window.filterAndRenderOnDutyHistory = () => {
     const approvedCount = onDutyHistoryList.filter(r => r.status === 'Approved').length;
     const rejectedCount = onDutyHistoryList.filter(r => r.status === 'Rejected').length;
 
-    const chipClass = (active) => active 
+    const chipClass = (active) => active
         ? 'px-3.5 py-1.5 bg-[#610173] text-white text-[11px] font-extrabold rounded-full transition'
         : 'px-3.5 py-1.5 bg-slate-50 text-slate-500 hover:bg-slate-100 text-[11px] font-extrabold rounded-full transition border border-slate-100';
 
@@ -2408,7 +2409,7 @@ window.submitOnDutyRequest = async () => {
             }
         });
         showToast('On Duty request submitted for manager approval.', 'success');
-        
+
         await updateOnDutyHistory();
         currentOnDutySubView = 'history';
         loadPanel('on-duty');
@@ -2426,11 +2427,11 @@ window.submitOnDutyRequest = async () => {
 window.viewOnDutyDetails = (id) => {
     const item = onDutyHistoryList.find(r => r.id === id);
     if (!item) return;
-    
+
     const modalDiv = document.createElement('div');
     modalDiv.id = 'od-detail-modal';
     modalDiv.style.cssText = 'position:fixed;inset:0;background:rgba(15,23,42,0.6);backdrop-filter:blur(4px);z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px;animation:fadeIn 0.2s ease-out;';
-    
+
     let statusClass = 'bg-amber-50 text-amber-700 border-amber-100';
     if (item.status === 'Approved') statusClass = 'bg-emerald-50 text-emerald-700 border-emerald-100';
     if (item.status === 'Rejected') statusClass = 'bg-rose-50 text-rose-700 border-rose-100';
@@ -2511,7 +2512,7 @@ window.viewOnDutyDetails = (id) => {
             </div>
         </div>
     `;
-    
+
     document.body.appendChild(modalDiv);
     if (typeof lucide !== 'undefined') lucide.createIcons();
 };
@@ -2897,7 +2898,7 @@ function getReimbursementFormHtml() {
 window.handlePurposeChange = (val) => {
     const otherContainer = document.getElementById('reimb-other-purpose-container');
     const scanningContainer = document.getElementById('reimb-scanning-visit-container');
-    
+
     if (otherContainer) {
         if (val === 'Others') {
             otherContainer.classList.remove('hidden');
@@ -2909,7 +2910,7 @@ window.handlePurposeChange = (val) => {
             if (input) input.removeAttribute('required');
         }
     }
-    
+
     if (scanningContainer) {
         if (val === 'Scanning') {
             scanningContainer.classList.remove('hidden');
@@ -2922,12 +2923,12 @@ window.handlePurposeChange = (val) => {
 window.resetReimbursementForm = () => {
     const form = document.getElementById('reimbursement-form');
     if (form) form.reset();
-    
+
     const otherContainer = document.getElementById('reimb-other-purpose-container');
     const scanningContainer = document.getElementById('reimb-scanning-visit-container');
     if (otherContainer) otherContainer.classList.add('hidden');
     if (scanningContainer) scanningContainer.classList.add('hidden');
-    
+
     const tbody = document.getElementById('reimb-items-tbody');
     if (tbody) {
         tbody.innerHTML = '';
@@ -3405,16 +3406,16 @@ window.submitReimbursementClaim = async () => {
     try {
         await apiClient('/employee/reimbursement', {
             method: 'POST',
-            body: { 
-                id: currentReimbursementClaimId, 
-                title, 
-                date, 
-                client_project, 
-                purpose, 
+            body: {
+                id: currentReimbursementClaimId,
+                title,
+                date,
+                client_project,
+                purpose,
                 location,
                 work_description: workDescription,
                 visit_type: visitType,
-                items 
+                items
             }
         });
         showToast('Expense claim submitted for manager approval.', 'success');
@@ -3435,7 +3436,7 @@ window.viewReimbursementDetails = (id) => {
     const modalDiv = document.createElement('div');
     modalDiv.id = 'reimb-detail-modal';
     modalDiv.style.cssText = 'position:fixed;inset:0;background:rgba(15,23,42,0.6);backdrop-filter:blur(4px);z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px;animation:fadeIn 0.2s ease-out;';
-    
+
     // Status colors matching final master prompt colors
     let statusClass = 'bg-amber-50 text-amber-700 border-amber-100'; // Pending -> Amber
     if (item.status === 'Manager Approved') statusClass = 'bg-blue-50 text-blue-700 border-blue-100'; // Manager Approved -> Blue
@@ -3457,7 +3458,7 @@ window.viewReimbursementDetails = (id) => {
     const isPaid = item.status === 'Paid';
 
     const step1Html = `<div class="flex items-center gap-1.5 text-emerald-600 font-bold"><i data-lucide="check-circle" class="w-4 h-4"></i> Submitted</div>`;
-    
+
     let step2Html = `<div class="flex items-center gap-1.5 text-slate-400 font-semibold"><i data-lucide="circle" class="w-4 h-4"></i> Manager Review</div>`;
     if (isManagerApproved) {
         step2Html = `<div class="flex items-center gap-1.5 text-emerald-600 font-bold"><i data-lucide="check-circle" class="w-4 h-4"></i> Manager Approved</div>`;
@@ -3543,12 +3544,12 @@ window.viewReimbursementDetails = (id) => {
                             </thead>
                             <tbody class="divide-y divide-[#ECECF3] text-slate-700">
                                 ${items.map(it => {
-                                    const hasScanDetails = it.category === 'Scanning Visit' && (it.scan_visit_type || it.scan_location);
-                                    const scanText = hasScanDetails
-                                        ? `<div class="text-[9.5px] text-amber-600 font-semibold mt-1">(${it.scan_visit_type || ''} • ${it.scan_location || ''} • Client: ${it.scan_client || ''})</div>`
-                                        : '';
+        const hasScanDetails = it.category === 'Scanning Visit' && (it.scan_visit_type || it.scan_location);
+        const scanText = hasScanDetails
+            ? `<div class="text-[9.5px] text-amber-600 font-semibold mt-1">(${it.scan_visit_type || ''} • ${it.scan_location || ''} • Client: ${it.scan_client || ''})</div>`
+            : '';
 
-                                    return `
+        return `
                                         <tr>
                                             <td class="p-2.5 pl-4">
                                                 <span class="font-bold text-slate-800">${it.category}</span>
@@ -3560,7 +3561,7 @@ window.viewReimbursementDetails = (id) => {
                                             </td>
                                         </tr>
                                     `;
-                                }).join('')}
+    }).join('')}
                             </tbody>
                         </table>
                     </div>
@@ -4448,7 +4449,7 @@ const PANELS = {
         render: (state) => {
             ensureDbStyles();
             const emp = state.employee || {};
-            const initials = emp.name ? emp.name.trim().split(/\s+/).map(w => w[0]).join('').slice(0,2).toUpperCase() : '--';
+            const initials = emp.name ? emp.name.trim().split(/\s+/).map(w => w[0]).join('').slice(0, 2).toUpperCase() : '--';
             const empName = emp.name || 'Employee';
             const designation = emp.designation || 'Team Member';
             const department = emp.department || 'Operations';
@@ -4819,7 +4820,7 @@ const PANELS = {
             window.bzDashboardRequestsFilter = 'All';
             window.bzDashboardRequestsSearch = '';
 
-            const initials = state.employee?.name ? state.employee.name.trim().split(/\s+/).map(w => w[0]).join('').slice(0,2).toUpperCase() : '--';
+            const initials = state.employee?.name ? state.employee.name.trim().split(/\s+/).map(w => w[0]).join('').slice(0, 2).toUpperCase() : '--';
 
             // Profile photo retrieval
             const avatar = document.getElementById('db-hero-avatar-initials');
@@ -4833,7 +4834,7 @@ const PANELS = {
                     img.style.cssText = 'width:100%;height:100%;object-fit:cover;border-radius:50%;';
                     img.src = URL.createObjectURL(blob);
                     img.onload = () => { avatar.innerHTML = ''; avatar.appendChild(img); };
-                }).catch(() => {});
+                }).catch(() => { });
             }
 
             // Asynchronous data loads (with loader classes on DOM nodes)
@@ -4982,7 +4983,7 @@ const PANELS = {
                     const h = Math.floor(actualDiff / 3600000);
                     const m = Math.floor((actualDiff % 3600000) / 60000);
                     const s = Math.floor((actualDiff % 60000) / 1000);
-                    const label = `${String(h).padStart(2,'0')}h ${String(m).padStart(2,'0')}m ${String(s).padStart(2,'0')}s`;
+                    const label = `${String(h).padStart(2, '0')}h ${String(m).padStart(2, '0')}m ${String(s).padStart(2, '0')}s`;
                     setVal('db-val-worked', label);
                     setVal('db-snap-monthlyworked', label);
                 };
@@ -5002,7 +5003,7 @@ const PANELS = {
                 setVal('db-leave-cl', leaveBalance.casual_leave);
                 setVal('db-leave-sl', leaveBalance.sick_leave);
                 setVal('db-leave-el', leaveBalance.paid_leave);
-                
+
                 const totalUsed = (12 - leaveBalance.casual_leave) + (10 - leaveBalance.sick_leave) + (15 - leaveBalance.paid_leave);
                 const totalBalance = 12 + 10 + 15;
                 const utilPercent = totalBalance > 0 ? Math.round((totalUsed / totalBalance) * 100) : 0;
@@ -5189,7 +5190,7 @@ const PANELS = {
             profileRequests.forEach(r => unifiedRequests.push({ type: 'Profile Correction', applied: r.date, date: r.date, status: r.status || 'Pending', details: `Correct field ${r.field_key} to ${r.new_value}`, raw: r }));
 
             // Sort by applied date descending
-            unifiedRequests.sort((a,b) => b.applied.localeCompare(a.applied));
+            unifiedRequests.sort((a, b) => b.applied.localeCompare(a.applied));
             window.bzDashboardRequestsList = unifiedRequests;
 
             // Requests Filtering & Searching function
@@ -5345,17 +5346,17 @@ const PANELS = {
                 try {
                     const res = await apiClient('/employee/attendance/tap-in', { method: 'POST' });
                     const clockIn = res.clock_in || res.time || new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
-                    
+
                     setVal('db-val-checkin', clockIn);
                     setVal('db-val-checkout', '--:--');
                     startTimerTick(clockIn);
-                    
+
                     btnIn.disabled = true;
                     btnOut.disabled = false;
                     setVal('db-summary-status', 'Present');
                     setVal('db-snap-status', 'Present');
                     setVal('db-snap-lastupdate', `Punched in today at ${clockIn}`);
-                    
+
                     if (presenceDot) {
                         presenceDot.className = 'bz-db-hero-presence-dot present';
                     }
@@ -5377,12 +5378,12 @@ const PANELS = {
                 try {
                     const res = await apiClient('/employee/attendance/tap-out', { method: 'POST' });
                     const clockOut = res.clock_out || res.time || new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
-                    
+
                     if (window.bzDashboardTimer) {
                         clearInterval(window.bzDashboardTimer);
                         window.bzDashboardTimer = null;
                     }
-                    
+
                     const clockIcon = document.getElementById('db-clock-hand-icon');
                     if (clockIcon) clockIcon.classList.remove('bz-clock-spin');
 
@@ -5391,12 +5392,12 @@ const PANELS = {
                         setVal('db-val-worked', res.worked_hours);
                         setVal('db-snap-monthlyworked', res.worked_hours);
                     }
-                    
+
                     btnIn.disabled = true;
                     btnOut.disabled = true;
                     setVal('db-summary-status', 'Checked Out');
                     setVal('db-snap-status', 'Checked Out');
-                    
+
                     if (presenceDot) {
                         presenceDot.className = 'bz-db-hero-presence-dot';
                     }
@@ -5414,109 +5415,109 @@ const PANELS = {
 
             // Surprise Overlay Constants & Picker setup
             const tapInCards = [
-                { illustration:'🚀', title:'Ready For Takeoff', message:"Let's make today count." },
-                { illustration:'☕', title:'Coffee Mode Activated', message:'Wishing you a productive and energized day.' },
-                { illustration:'✨', title:"You're All Set", message:'Hope today brings great results.' },
-                { illustration:'🌱', title:'New Day, New Progress', message:'Small steps matter. Keep going.' },
-                { illustration:'🎯', title:'Focus Mode On', message:"One task at a time. You've got this." },
-                { illustration:'☀️', title:'Bright Start', message:'Have an amazing day ahead.' },
-                { illustration:'💜', title:'Welcome Back', message:'Your workspace is ready and waiting.' },
-                { illustration:'⚡', title:'Energy Unlocked', message:'Today is full of possibilities.' },
-                { illustration:'🌟', title:'Star Player', message:'Your dedication makes the difference.' },
-                { illustration:'🎵', title:'In the Zone', message:'Find your rhythm and own the day.' },
-                { illustration:'🌈', title:'New Horizons', message:'Every morning is a fresh canvas.' },
-                { illustration:'🦋', title:'Time to Flourish', message:'Today is yours to make extraordinary.' },
-                { illustration:'🏆', title:'Champion Mindset', message:'Consistency is the secret of success.' },
-                { illustration:'🌊', title:'In the Flow', message:"Ride today's momentum to great things." },
-                { illustration:'🎨', title:'Creative Energy', message:'Bring your best ideas today.' },
-                { illustration:'🔥', title:'On Fire Today', message:'Your energy is contagious. Keep it up!' },
-                { illustration:'💡', title:'Bright Ideas Ahead', message:'Today might just be your breakthrough day.' },
-                { illustration:'🌸', title:'Fresh & Ready', message:'A beautiful day starts with a great attitude.' },
-                { illustration:'🎉', title:"Let's Celebrate Progress", message:'Every day worked is a day forward.' },
-                { illustration:'🧠', title:'Mindset: Unstoppable', message:'Your potential knows no limits today.' },
-                { illustration:'🛡️', title:'Powered Up', message:'Challenges are just opportunities in disguise.' },
-                { illustration:'🌺', title:'Blooming Day', message:'Watch great things unfold today.' },
-                { illustration:'🎗️', title:'Purpose Driven', message:'Your work creates real impact.' },
-                { illustration:'🔮', title:'Future is Bright', message:'Build tomorrow with what you do today.' },
-                { illustration:'🌍', title:'World-Class Day', message:'Your contributions matter. Thank you for being here.' },
-                { illustration:'💫', title:'Making Magic', message:'Ordinary days lead to extraordinary results.' },
-                { illustration:'🎯', title:'Precision Mode', message:'Clear goals, sharp focus, amazing results.' },
-                { illustration:'🦅', title:'Soar High', message:'Perspective from the top: everything is possible.' },
-                { illustration:'🏔️', title:'Peak Performance', message:'Step by step, you reach the summit.' },
-                { illustration:'🎭', title:'Show Time', message:'Today is your stage. Perform brilliantly.' },
-                { illustration:'🌿', title:'Growing Stronger', message:'Every effort roots you deeper.' },
-                { illustration:'💎', title:'Diamond Day', message:'Pressure creates diamonds. Shine today.' },
-                { illustration:'🌅', title:'Golden Hour Begins', message:"Seize the light of this new day." },
-                { illustration:'🚂', title:'Full Steam Ahead', message:"Nothing can stop your momentum today." },
-                { illustration:'🎟️', title:'Earned Entry', message:'Your presence here makes a difference.' },
-                { illustration:'🌻', title:'Sunflower Spirit', message:'Turn toward the light and grow.' },
-                { illustration:'⚙️', title:'Gears in Motion', message:"The machine is running. Let's build." },
-                { illustration:'🎁', title:'Gifted Day Ahead', message:'Unwrap what today has in store.' },
-                { illustration:'🦁', title:'Lion Energy', message:'Lead with courage and confidence.' },
-                { illustration:'🧩', title:'Pieces Fall Into Place', message:'Today you complete something great.' },
-                { illustration:'📡', title:'Signals Strong', message:"You're connected, focused, and ready." },
-                { illustration:'🪄', title:'Work Your Magic', message:'You have the power to make things happen.' },
-                { illustration:'🌟', title:'Wish Upon a Star', message:'Set your intention and make it real.' },
-                { illustration:'🔑', title:'Key to Success', message:'Today you unlock something amazing.' },
-                { illustration:'🎈', title:'Celebrate Your Start', message:'Showing up is already a win.' },
-                { illustration:'💪', title:'Strength & Grace', message:'Bring both to everything today.' },
-                { illustration:'☀️', title:'Bright & Radiant', message:'Let your energy light up the room.' },
-                { illustration:'🎸', title:'Rock Solid', message:'Stay grounded, stay brilliant.' },
-                { illustration:'🌴', title:'Tropical Vibes', message:'Smooth, steady, and effortlessly excellent.' },
-                { illustration:'🕊️', title:'Calm & Clear', message:'Clarity of mind leads to great work.' }
+                { illustration: '🚀', title: 'Ready For Takeoff', message: "Let's make today count." },
+                { illustration: '☕', title: 'Coffee Mode Activated', message: 'Wishing you a productive and energized day.' },
+                { illustration: '✨', title: "You're All Set", message: 'Hope today brings great results.' },
+                { illustration: '🌱', title: 'New Day, New Progress', message: 'Small steps matter. Keep going.' },
+                { illustration: '🎯', title: 'Focus Mode On', message: "One task at a time. You've got this." },
+                { illustration: '☀️', title: 'Bright Start', message: 'Have an amazing day ahead.' },
+                { illustration: '💜', title: 'Welcome Back', message: 'Your workspace is ready and waiting.' },
+                { illustration: '⚡', title: 'Energy Unlocked', message: 'Today is full of possibilities.' },
+                { illustration: '🌟', title: 'Star Player', message: 'Your dedication makes the difference.' },
+                { illustration: '🎵', title: 'In the Zone', message: 'Find your rhythm and own the day.' },
+                { illustration: '🌈', title: 'New Horizons', message: 'Every morning is a fresh canvas.' },
+                { illustration: '🦋', title: 'Time to Flourish', message: 'Today is yours to make extraordinary.' },
+                { illustration: '🏆', title: 'Champion Mindset', message: 'Consistency is the secret of success.' },
+                { illustration: '🌊', title: 'In the Flow', message: "Ride today's momentum to great things." },
+                { illustration: '🎨', title: 'Creative Energy', message: 'Bring your best ideas today.' },
+                { illustration: '🔥', title: 'On Fire Today', message: 'Your energy is contagious. Keep it up!' },
+                { illustration: '💡', title: 'Bright Ideas Ahead', message: 'Today might just be your breakthrough day.' },
+                { illustration: '🌸', title: 'Fresh & Ready', message: 'A beautiful day starts with a great attitude.' },
+                { illustration: '🎉', title: "Let's Celebrate Progress", message: 'Every day worked is a day forward.' },
+                { illustration: '🧠', title: 'Mindset: Unstoppable', message: 'Your potential knows no limits today.' },
+                { illustration: '🛡️', title: 'Powered Up', message: 'Challenges are just opportunities in disguise.' },
+                { illustration: '🌺', title: 'Blooming Day', message: 'Watch great things unfold today.' },
+                { illustration: '🎗️', title: 'Purpose Driven', message: 'Your work creates real impact.' },
+                { illustration: '🔮', title: 'Future is Bright', message: 'Build tomorrow with what you do today.' },
+                { illustration: '🌍', title: 'World-Class Day', message: 'Your contributions matter. Thank you for being here.' },
+                { illustration: '💫', title: 'Making Magic', message: 'Ordinary days lead to extraordinary results.' },
+                { illustration: '🎯', title: 'Precision Mode', message: 'Clear goals, sharp focus, amazing results.' },
+                { illustration: '🦅', title: 'Soar High', message: 'Perspective from the top: everything is possible.' },
+                { illustration: '🏔️', title: 'Peak Performance', message: 'Step by step, you reach the summit.' },
+                { illustration: '🎭', title: 'Show Time', message: 'Today is your stage. Perform brilliantly.' },
+                { illustration: '🌿', title: 'Growing Stronger', message: 'Every effort roots you deeper.' },
+                { illustration: '💎', title: 'Diamond Day', message: 'Pressure creates diamonds. Shine today.' },
+                { illustration: '🌅', title: 'Golden Hour Begins', message: "Seize the light of this new day." },
+                { illustration: '🚂', title: 'Full Steam Ahead', message: "Nothing can stop your momentum today." },
+                { illustration: '🎟️', title: 'Earned Entry', message: 'Your presence here makes a difference.' },
+                { illustration: '🌻', title: 'Sunflower Spirit', message: 'Turn toward the light and grow.' },
+                { illustration: '⚙️', title: 'Gears in Motion', message: "The machine is running. Let's build." },
+                { illustration: '🎁', title: 'Gifted Day Ahead', message: 'Unwrap what today has in store.' },
+                { illustration: '🦁', title: 'Lion Energy', message: 'Lead with courage and confidence.' },
+                { illustration: '🧩', title: 'Pieces Fall Into Place', message: 'Today you complete something great.' },
+                { illustration: '📡', title: 'Signals Strong', message: "You're connected, focused, and ready." },
+                { illustration: '🪄', title: 'Work Your Magic', message: 'You have the power to make things happen.' },
+                { illustration: '🌟', title: 'Wish Upon a Star', message: 'Set your intention and make it real.' },
+                { illustration: '🔑', title: 'Key to Success', message: 'Today you unlock something amazing.' },
+                { illustration: '🎈', title: 'Celebrate Your Start', message: 'Showing up is already a win.' },
+                { illustration: '💪', title: 'Strength & Grace', message: 'Bring both to everything today.' },
+                { illustration: '☀️', title: 'Bright & Radiant', message: 'Let your energy light up the room.' },
+                { illustration: '🎸', title: 'Rock Solid', message: 'Stay grounded, stay brilliant.' },
+                { illustration: '🌴', title: 'Tropical Vibes', message: 'Smooth, steady, and effortlessly excellent.' },
+                { illustration: '🕊️', title: 'Calm & Clear', message: 'Clarity of mind leads to great work.' }
             ];
 
             const tapOutCards = [
-                { illustration:'🌙', title:'Day Completed', message:'Hope today went exactly as you planned.' },
-                { illustration:'🏡', title:'Heading Home', message:'Take some well-deserved rest tonight.' },
-                { illustration:'🌿', title:'Workday Wrapped', message:'Rest well. See you tomorrow.' },
-                { illustration:'💜', title:'Thank You', message:'Your efforts today truly matter.' },
-                { illustration:'⭐', title:'Another Step Forward', message:'Progress is progress, no matter the size.' },
-                { illustration:'✨', title:'Mission Complete', message:'Tomorrow is a brand new opportunity.' },
-                { illustration:'🌅', title:'Beautiful Ending', message:'You made today count. Well done.' },
-                { illustration:'🎯', title:'Goals Chased', message:'Every effort brings you closer.' },
-                { illustration:'🛋️', title:'Rest Mode Activated', message:'Recharge for an even better tomorrow.' },
-                { illustration:'🏆', title:"Today's Champion", message:'Another great day in the books.' },
-                { illustration:'🌸', title:'Day Well Spent', message:'Your time here creates lasting value.' },
-                { illustration:'🌊', title:'Smooth Sailing', message:'You navigated today with grace.' },
-                { illustration:'🎭', title:'Curtain Falls', message:'What a performance. Take a bow.' },
-                { illustration:'💎', title:'Polished & Done', message:'Quality work. Quality rest awaits.' },
-                { illustration:'🌻', title:'Day in Full Bloom', message:'You grew a little more today.' },
-                { illustration:'🦋', title:'Transformation Day', message:'You are evolving, day by day.' },
-                { illustration:'🎁', title:'Gift of Work', message:'What you gave today returns as growth.' },
-                { illustration:'🌈', title:'After the Rain', message:'The rainbow was worth it. Rest now.' },
-                { illustration:'🔮', title:'Future Looking Bright', message:"Today's work builds tomorrow's success." },
-                { illustration:'🌍', title:'Impact Made', message:'The world is slightly better because of you.' },
-                { illustration:'💫', title:'Stardust Moments', message:'Small wins today. Big story tomorrow.' },
-                { illustration:'🎵', title:'Day in Harmony', message:'You kept the rhythm going. Nice work.' },
-                { illustration:'🧠', title:'Mind Well Used', message:'Proud of the thinking you did today.' },
-                { illustration:'🛡️', title:'Protected & Done', message:'You handled everything that came your way.' },
-                { illustration:'🦅', title:'High Altitude Done', message:'You soared today. Land gracefully.' },
-                { illustration:'🌺', title:'Bloomed & Closed', message:'Beautiful effort. Rest and bloom again.' },
-                { illustration:'🎈', title:'Wrap Party', message:'Every ending is a new beginning.' },
-                { illustration:'💡', title:'Lights Out, Good Work', message:'Your ideas made today brighter.' },
-                { illustration:'⚡', title:'Energy Well Spent', message:"Recharge for tomorrow's adventure." },
-                { illustration:'🌱', title:'Seeds Planted', message:'What you did today will grow.' },
-                { illustration:'🎗️', title:'Well Deserved Rest', message:'Purpose fulfilled for today.' },
-                { illustration:'🏔️', title:'Summit Reached', message:'You climbed well. Descend safely.' },
-                { illustration:'🌟', title:'Star Performance', message:'Another reason to be proud.' },
-                { illustration:'🎨', title:'Canvas Complete', message:'Today was your masterpiece.' },
-                { illustration:'🔥', title:'Flame Kept Alive', message:'Your spark is still burning bright.' },
-                { illustration:'🦁', title:'Roar of Completion', message:'You owned the day. Respect.' },
-                { illustration:'🧩', title:'Puzzle Solved', message:'Another piece of your journey complete.' },
-                { illustration:'🌟', title:'Under the Stars', message:'The work is done. The sky is yours.' },
-                { illustration:'🪄', title:'Magic Happened', message:'You created real value today.' },
-                { illustration:'🎟️', title:'Medal Earned', message:'Your presence here makes a difference.' },
-                { illustration:'☕', title:'Deserved Brew', message:'Sit back. You earned that cup.' },
-                { illustration:'🌙', title:'Full Moon Finish', message:'Complete and luminous. Great day.' },
-                { illustration:'🚀', title:'Mission Control: Off', message:'Spacecraft secured. All systems resting.' },
-                { illustration:'🌴', title:'Island Mode', message:"Disconnect. You've done enough today." },
-                { illustration:'⚙️', title:'Gears Powered Down', message:'You ran smoothly all day. Well done.' },
-                { illustration:'🎸', title:'Last Note Played', message:'Today was a great track.' },
-                { illustration:'🌙', title:'Goodnight Star', message:'Dream well. Big plans await tomorrow.' },
-                { illustration:'🏖️', title:'Shore Reached', message:'You made it through. Enjoy the evening.' },
-                { illustration:'💪', title:'Strong Finish', message:'You held it together all day. Impressive.' },
-                { illustration:'🕊️', title:'Peace Earned', message:'Rest with the peace of work well done.' }
+                { illustration: '🌙', title: 'Day Completed', message: 'Hope today went exactly as you planned.' },
+                { illustration: '🏡', title: 'Heading Home', message: 'Take some well-deserved rest tonight.' },
+                { illustration: '🌿', title: 'Workday Wrapped', message: 'Rest well. See you tomorrow.' },
+                { illustration: '💜', title: 'Thank You', message: 'Your efforts today truly matter.' },
+                { illustration: '⭐', title: 'Another Step Forward', message: 'Progress is progress, no matter the size.' },
+                { illustration: '✨', title: 'Mission Complete', message: 'Tomorrow is a brand new opportunity.' },
+                { illustration: '🌅', title: 'Beautiful Ending', message: 'You made today count. Well done.' },
+                { illustration: '🎯', title: 'Goals Chased', message: 'Every effort brings you closer.' },
+                { illustration: '🛋️', title: 'Rest Mode Activated', message: 'Recharge for an even better tomorrow.' },
+                { illustration: '🏆', title: "Today's Champion", message: 'Another great day in the books.' },
+                { illustration: '🌸', title: 'Day Well Spent', message: 'Your time here creates lasting value.' },
+                { illustration: '🌊', title: 'Smooth Sailing', message: 'You navigated today with grace.' },
+                { illustration: '🎭', title: 'Curtain Falls', message: 'What a performance. Take a bow.' },
+                { illustration: '💎', title: 'Polished & Done', message: 'Quality work. Quality rest awaits.' },
+                { illustration: '🌻', title: 'Day in Full Bloom', message: 'You grew a little more today.' },
+                { illustration: '🦋', title: 'Transformation Day', message: 'You are evolving, day by day.' },
+                { illustration: '🎁', title: 'Gift of Work', message: 'What you gave today returns as growth.' },
+                { illustration: '🌈', title: 'After the Rain', message: 'The rainbow was worth it. Rest now.' },
+                { illustration: '🔮', title: 'Future Looking Bright', message: "Today's work builds tomorrow's success." },
+                { illustration: '🌍', title: 'Impact Made', message: 'The world is slightly better because of you.' },
+                { illustration: '💫', title: 'Stardust Moments', message: 'Small wins today. Big story tomorrow.' },
+                { illustration: '🎵', title: 'Day in Harmony', message: 'You kept the rhythm going. Nice work.' },
+                { illustration: '🧠', title: 'Mind Well Used', message: 'Proud of the thinking you did today.' },
+                { illustration: '🛡️', title: 'Protected & Done', message: 'You handled everything that came your way.' },
+                { illustration: '🦅', title: 'High Altitude Done', message: 'You soared today. Land gracefully.' },
+                { illustration: '🌺', title: 'Bloomed & Closed', message: 'Beautiful effort. Rest and bloom again.' },
+                { illustration: '🎈', title: 'Wrap Party', message: 'Every ending is a new beginning.' },
+                { illustration: '💡', title: 'Lights Out, Good Work', message: 'Your ideas made today brighter.' },
+                { illustration: '⚡', title: 'Energy Well Spent', message: "Recharge for tomorrow's adventure." },
+                { illustration: '🌱', title: 'Seeds Planted', message: 'What you did today will grow.' },
+                { illustration: '🎗️', title: 'Well Deserved Rest', message: 'Purpose fulfilled for today.' },
+                { illustration: '🏔️', title: 'Summit Reached', message: 'You climbed well. Descend safely.' },
+                { illustration: '🌟', title: 'Star Performance', message: 'Another reason to be proud.' },
+                { illustration: '🎨', title: 'Canvas Complete', message: 'Today was your masterpiece.' },
+                { illustration: '🔥', title: 'Flame Kept Alive', message: 'Your spark is still burning bright.' },
+                { illustration: '🦁', title: 'Roar of Completion', message: 'You owned the day. Respect.' },
+                { illustration: '🧩', title: 'Puzzle Solved', message: 'Another piece of your journey complete.' },
+                { illustration: '🌟', title: 'Under the Stars', message: 'The work is done. The sky is yours.' },
+                { illustration: '🪄', title: 'Magic Happened', message: 'You created real value today.' },
+                { illustration: '🎟️', title: 'Medal Earned', message: 'Your presence here makes a difference.' },
+                { illustration: '☕', title: 'Deserved Brew', message: 'Sit back. You earned that cup.' },
+                { illustration: '🌙', title: 'Full Moon Finish', message: 'Complete and luminous. Great day.' },
+                { illustration: '🚀', title: 'Mission Control: Off', message: 'Spacecraft secured. All systems resting.' },
+                { illustration: '🌴', title: 'Island Mode', message: "Disconnect. You've done enough today." },
+                { illustration: '⚙️', title: 'Gears Powered Down', message: 'You ran smoothly all day. Well done.' },
+                { illustration: '🎸', title: 'Last Note Played', message: 'Today was a great track.' },
+                { illustration: '🌙', title: 'Goodnight Star', message: 'Dream well. Big plans await tomorrow.' },
+                { illustration: '🏖️', title: 'Shore Reached', message: 'You made it through. Enjoy the evening.' },
+                { illustration: '💪', title: 'Strong Finish', message: 'You held it together all day. Impressive.' },
+                { illustration: '🕊️', title: 'Peace Earned', message: 'Rest with the peace of work well done.' }
             ];
 
             window.bzShowSurpriseOverlay = (type) => {
@@ -5616,10 +5617,10 @@ const PANELS = {
                 // Always load the top KPI/snapshot data
                 initAttendanceLanding(state);
                 // Then load the active workspace content
-                if (currentAttendanceSubView === 'calendar')     initAttendanceCalendar(state);
+                if (currentAttendanceSubView === 'calendar') initAttendanceCalendar(state);
                 else if (currentAttendanceSubView === 'late-credits') initAttendanceLateCredits(state);
-                else if (currentAttendanceSubView === 'leaderboard')  initAttendanceLeaderboard(state);
-                else if (currentAttendanceSubView === 'analytics')    initAttendanceAnalytics(state);
+                else if (currentAttendanceSubView === 'leaderboard') initAttendanceLeaderboard(state);
+                else if (currentAttendanceSubView === 'analytics') initAttendanceAnalytics(state);
             }
         }
     },
@@ -5672,7 +5673,7 @@ const PANELS = {
                         }
                     }
                 }
-                
+
                 if (currentOnDutySubView === 'form') {
                     const todayStr = new Date().toISOString().split('T')[0];
                     const odDate = document.getElementById('od-date');
@@ -5698,7 +5699,7 @@ const PANELS = {
                         });
                     }
                 }
-                
+
                 if (typeof lucide !== 'undefined') lucide.createIcons();
             } catch (err) {
                 console.error('Failed to load On Duty history:', err);
@@ -5795,9 +5796,10 @@ const PANELS = {
         render: () => getPlaceholderTemplate('Helpdesk', 'ticket', 'Raise and track IT, HR, facility, or administrative support tickets.')
     },
     payroll: {
-        title: 'Payslip',
+        title: 'Payslips & Advances',
         icon: 'wallet',
-        render: () => getPlaceholderTemplate('Payslip Panel', 'wallet', 'Download salary slips, view salary structures, and manage tax documentation.')
+        render: (state) => renderPayrollModule(state),
+        init: (state) => initPayrollModule(state)
     },
     documents: {
         title: 'My Documents',
@@ -6047,12 +6049,12 @@ function renderProfileHero(emp) {
     emp = emp || {};
     const initials = emp.name ? emp.name.slice(0, 2).toUpperCase() : '—';
     const pct = emp.completion || 0;
-    const joined = emp.joined_date ? new Date(emp.joined_date).toLocaleDateString('en-IN', {day:'2-digit',month:'short',year:'numeric'}) : '—';
+    const joined = emp.joined_date ? new Date(emp.joined_date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : '—';
     let exp = '—';
     if (emp.joined_date) {
         const ms = Date.now() - new Date(emp.joined_date).getTime();
-        const yrs = Math.floor(ms / (1000*60*60*24*365.25));
-        const mos = Math.floor((ms % (1000*60*60*24*365.25)) / (1000*60*60*24*30.4));
+        const yrs = Math.floor(ms / (1000 * 60 * 60 * 24 * 365.25));
+        const mos = Math.floor((ms % (1000 * 60 * 60 * 24 * 365.25)) / (1000 * 60 * 60 * 24 * 30.4));
         exp = yrs > 0 ? `${yrs}y ${mos}m` : mos > 0 ? `${mos} mos` : 'New joinee';
     }
     return `
@@ -6068,7 +6070,7 @@ function renderProfileHero(emp) {
                 <div style="display:flex;flex-wrap:wrap;gap:5px;">
                     <span style="padding:3px 11px;border-radius:999px;background:rgba(255,255,255,0.14);border:1px solid rgba(255,255,255,0.20);font-size:11.5px;font-weight:700;color:#fff;" id="mp-hero-desig">${emp.designation || '—'}</span>
                     <span style="padding:3px 11px;border-radius:999px;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);font-size:11.5px;font-weight:500;color:rgba(255,255,255,0.80);" id="mp-hero-dept">${emp.department || '—'}</span>
-                    <span class="mp-badge-pill ${(emp.status||'Active').toLowerCase()==='active'?'active':'pending'}" id="mp-hero-status">${emp.status || 'Active'}</span>
+                    <span class="mp-badge-pill ${(emp.status || 'Active').toLowerCase() === 'active' ? 'active' : 'pending'}" id="mp-hero-status">${emp.status || 'Active'}</span>
                 </div>
             </div>
             <div style="display:flex;align-items:center;gap:10px;flex-shrink:0;">
@@ -6107,14 +6109,14 @@ function renderProfileHero(emp) {
 // ── Inner nav (icon tab strip) ────────────────────────────────────────────
 function renderInnerNav(section, activeKey, items) {
     const iconMap = {
-        'personal-details':'user','contact-info':'phone','emergency':'heart-pulse',
-        'employment-info':'briefcase','reporting-manager':'users','payroll-info':'landmark',
-        'identity-docs':'id-card','educational-docs':'graduation-cap','employment-docs':'file-text','payroll-docs':'landmark',
-        'request-dashboard':'layout-dashboard','new-request':'plus-circle','history':'clock','details':'file-search'
+        'personal-details': 'user', 'contact-info': 'phone', 'emergency': 'heart-pulse',
+        'employment-info': 'briefcase', 'reporting-manager': 'users', 'payroll-info': 'landmark',
+        'identity-docs': 'id-card', 'educational-docs': 'graduation-cap', 'employment-docs': 'file-text', 'payroll-docs': 'landmark',
+        'request-dashboard': 'layout-dashboard', 'new-request': 'plus-circle', 'history': 'clock', 'details': 'file-search'
     };
     return `<div class="mp-tab-strip">${items.map(([key, label]) => {
         const icon = iconMap[key] || 'circle';
-        return `<button class="mp-tab-btn2${activeKey===key?' mp-tab-active':''}" data-key="${key}" onclick="setMpInnerNav('${section}','${key}')">
+        return `<button class="mp-tab-btn2${activeKey === key ? ' mp-tab-active' : ''}" data-key="${key}" onclick="setMpInnerNav('${section}','${key}')">
             <i data-lucide="${icon}" style="width:13px;height:13px;"></i>${label}
         </button>`;
     }).join('')}</div>`;
@@ -6134,12 +6136,12 @@ function mpField(label, value, span) {
 function mpF(label, value, icon, bg, color, spanClass) {
     const v = (value != null && String(value).trim()) ? String(value).trim() : '';
     return `<div class="mpf-item${spanClass ? ' ' + spanClass : ''}">
-        <div class="mpf-icon" style="background:${bg||'#F5F3FF'};">
-            <i data-lucide="${icon||'file'}" style="width:14px;height:14px;color:${color||'#7C3AED'};"></i>
+        <div class="mpf-icon" style="background:${bg || '#F5F3FF'};">
+            <i data-lucide="${icon || 'file'}" style="width:14px;height:14px;color:${color || '#7C3AED'};"></i>
         </div>
         <div style="flex:1;min-width:0;">
             <div class="mpf-label">${label}</div>
-            <div class="mpf-val${v?'':' empty'}">${v||'—'}</div>
+            <div class="mpf-val${v ? '' : ' empty'}">${v || '—'}</div>
         </div>
     </div>`;
 }
@@ -6150,7 +6152,7 @@ function mpAddr(a) {
 }
 
 function maskAcct(n) { return n ? '•••• •••• ' + String(n).slice(-4) : ''; }
-function maskPan(p)  { return p ? p.slice(0,2) + '•••••' + p.slice(-2) : ''; }
+function maskPan(p) { return p ? p.slice(0, 2) + '•••••' + p.slice(-2) : ''; }
 function maskAadh(a) { return a ? '•••• •••• ' + String(a).slice(-4) : ''; }
 
 // ── Page shell ────────────────────────────────────────────────────────────
@@ -6171,10 +6173,10 @@ function renderProfilePage(section, state) {
 
 function getInnerNavItems(section) {
     const map = {
-        personal:  [['personal-details','Personal Details'],['contact-info','Contact Information'],['emergency','Emergency Contact']],
-        job:       [['employment-info','Employment Information'],['reporting-manager','Reporting Manager'],['payroll-info','Payroll Information']],
-        documents: [['identity-docs','Identity Documents'],['educational-docs','Educational Documents'],['employment-docs','Employment Documents'],['payroll-docs','Payroll Documents']],
-        requests:  [['request-dashboard','Dashboard'],['new-request','New Request'],['history','Request History'],['details','Request Details']],
+        personal: [['personal-details', 'Personal Details'], ['contact-info', 'Contact Information'], ['emergency', 'Emergency Contact']],
+        job: [['employment-info', 'Employment Information'], ['reporting-manager', 'Reporting Manager'], ['payroll-info', 'Payroll Information']],
+        documents: [['identity-docs', 'Identity Documents'], ['educational-docs', 'Educational Documents'], ['employment-docs', 'Employment Documents'], ['payroll-docs', 'Payroll Documents']],
+        requests: [['request-dashboard', 'Dashboard'], ['new-request', 'New Request'], ['history', 'Request History'], ['details', 'Request Details']],
     };
     return map[section] || [];
 }
@@ -6183,26 +6185,26 @@ function getInnerNavItems(section) {
 function renderMpContent(section, innerNav, emp, docs, requests) {
     if (section === 'personal') {
         if (innerNav === 'personal-details') return renderMpPersonalDetails(emp);
-        if (innerNav === 'contact-info')     return renderMpContactInfo(emp);
-        if (innerNav === 'emergency')        return renderMpEmergency(emp);
+        if (innerNav === 'contact-info') return renderMpContactInfo(emp);
+        if (innerNav === 'emergency') return renderMpEmergency(emp);
     }
     if (section === 'job') {
-        if (innerNav === 'employment-info')    return renderMpEmploymentInfo(emp);
-        if (innerNav === 'reporting-manager')  return renderMpManagerCard(emp);
-        if (innerNav === 'payroll-info')       return renderMpPayrollInfo(emp);
+        if (innerNav === 'employment-info') return renderMpEmploymentInfo(emp);
+        if (innerNav === 'reporting-manager') return renderMpManagerCard(emp);
+        if (innerNav === 'payroll-info') return renderMpPayrollInfo(emp);
     }
     if (section === 'documents') {
         const docMap = {}; docs.forEach(d => { docMap[d.doc_type] = d; });
-        if (innerNav === 'identity-docs')    return renderMpDocVault(docMap, 'identity');
+        if (innerNav === 'identity-docs') return renderMpDocVault(docMap, 'identity');
         if (innerNav === 'educational-docs') return renderMpDocVault(docMap, 'educational');
-        if (innerNav === 'employment-docs')  return renderMpDocVault(docMap, 'employment');
-        if (innerNav === 'payroll-docs')     return renderMpDocVault(docMap, 'payroll-docs');
+        if (innerNav === 'employment-docs') return renderMpDocVault(docMap, 'employment');
+        if (innerNav === 'payroll-docs') return renderMpDocVault(docMap, 'payroll-docs');
     }
     if (section === 'requests') {
         if (innerNav === 'request-dashboard') return renderMpReqDashboard(requests);
-        if (innerNav === 'new-request')       return renderMpNewRequestForm(emp);
-        if (innerNav === 'history')           return renderMpReqHistory(requests);
-        if (innerNav === 'details')           return renderMpReqDetails(_mpActiveRequest);
+        if (innerNav === 'new-request') return renderMpNewRequestForm(emp);
+        if (innerNav === 'history') return renderMpReqHistory(requests);
+        if (innerNav === 'details') return renderMpReqDetails(_mpActiveRequest);
     }
     return '';
 }
@@ -6323,7 +6325,7 @@ function renderMpManagerCard(emp) {
         <i data-lucide="user-x" style="width:36px;height:36px;margin:0 auto 12px;display:block;opacity:0.4;"></i>
         <div style="font-size:14px;font-weight:600;">${emp.reporting_manager || 'No manager assigned'}</div>
     </div>`;
-    const mgrInitials = mgr.name ? mgr.name.slice(0,2).toUpperCase() : 'MG';
+    const mgrInitials = mgr.name ? mgr.name.slice(0, 2).toUpperCase() : 'MG';
     return `
     <div class="mp-grp">
         <div class="mp-grp-hdr">Reporting Manager</div>
@@ -6418,8 +6420,8 @@ const DOC_GROUPS = {
 function renderMpDocVault(docMap, group) {
     const g = DOC_GROUPS[group];
     const statusBadge = (s) => {
-        const map = { Verified:'verified', Approved:'active', Pending:'pending', Rejected:'rejected' };
-        return `<span class="mp-badge-pill ${map[s]||'pending'}" style="font-size:10px;">${s||'Pending'}</span>`;
+        const map = { Verified: 'verified', Approved: 'active', Pending: 'pending', Rejected: 'rejected' };
+        return `<span class="mp-badge-pill ${map[s] || 'pending'}" style="font-size:10px;">${s || 'Pending'}</span>`;
     };
     const uploaded = g.types.filter(t => docMap[t.type]).length;
     return `
@@ -6435,15 +6437,15 @@ function renderMpDocVault(docMap, group) {
         </div>
         <div>
             ${g.types.map(t => {
-                const doc = docMap[t.type];
-                return `<div class="mp-doc-row">
-                    <div class="mp-doc-icon2" style="background:${doc?g.color:'#F9FAFB'};border:1px solid ${doc?g.iconColor+'22':'#F1F5F9'};">
-                        <i data-lucide="${g.icon}" style="width:16px;height:16px;color:${doc?g.iconColor:'#CBD5E1'};"></i>
+        const doc = docMap[t.type];
+        return `<div class="mp-doc-row">
+                    <div class="mp-doc-icon2" style="background:${doc ? g.color : '#F9FAFB'};border:1px solid ${doc ? g.iconColor + '22' : '#F1F5F9'};">
+                        <i data-lucide="${g.icon}" style="width:16px;height:16px;color:${doc ? g.iconColor : '#CBD5E1'};"></i>
                     </div>
                     <div style="flex:1;min-width:0;">
-                        <div style="font-size:13px;font-weight:700;color:${doc?'#1E293B':'#94A3B8'};">${t.label}</div>
+                        <div style="font-size:13px;font-weight:700;color:${doc ? '#1E293B' : '#94A3B8'};">${t.label}</div>
                         <div style="font-size:11px;color:#94A3B8;margin-top:2px;">
-                            ${doc ? `Uploaded ${doc.uploaded_at ? new Date(doc.uploaded_at).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}) : ''}` : 'Not yet uploaded'}
+                            ${doc ? `Uploaded ${doc.uploaded_at ? new Date(doc.uploaded_at).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : ''}` : 'Not yet uploaded'}
                         </div>
                     </div>
                     <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">
@@ -6452,10 +6454,10 @@ function renderMpDocVault(docMap, group) {
                         <button class="mp-btn-sm" onclick="viewMpDoc('${t.type}','${t.label}')" style="padding:5px 10px;" title="View"><i data-lucide="eye" style="width:12px;height:12px;"></i></button>
                         <button class="mp-btn-sm" onclick="downloadMpDoc('${t.type}','${t.label}')" style="padding:5px 10px;" title="Download"><i data-lucide="download" style="width:12px;height:12px;"></i></button>
                         <button class="mp-btn-sm" onclick="uploadMpDoc('${t.type}','${t.label}')" style="padding:5px 10px;background:#F0FDF4;border-color:#BBF7D0;color:#16A34A;" title="Re-upload"><i data-lucide="upload" style="width:12px;height:12px;"></i> Re-upload</button>` :
-                        `<button class="mp-btn-sm" onclick="uploadMpDoc('${t.type}','${t.label}')" style="padding:5px 12px;background:#FDF4FF;border-color:#E9D5FF;color:#7C3AED;" title="Upload document"><i data-lucide="upload" style="width:12px;height:12px;"></i> Upload</button>`}
+                `<button class="mp-btn-sm" onclick="uploadMpDoc('${t.type}','${t.label}')" style="padding:5px 12px;background:#FDF4FF;border-color:#E9D5FF;color:#7C3AED;" title="Upload document"><i data-lucide="upload" style="width:12px;height:12px;"></i> Upload</button>`}
                     </div>
                 </div>`;
-            }).join('')}
+    }).join('')}
         </div>
     </div>`;
 }
@@ -6465,13 +6467,13 @@ function renderMpDocVault(docMap, group) {
 // ══════════════════════════════════════════════════════════════════
 function renderMpReqDashboard(requests) {
     requests = requests || [];
-    const total = requests.length, pending = requests.filter(r=>r.status==='Pending').length,
-          approved = requests.filter(r=>r.status==='Approved').length, rejected = requests.filter(r=>r.status==='Rejected').length;
-    const recent = requests.slice(0,5);
+    const total = requests.length, pending = requests.filter(r => r.status === 'Pending').length,
+        approved = requests.filter(r => r.status === 'Approved').length, rejected = requests.filter(r => r.status === 'Rejected').length;
+    const recent = requests.slice(0, 5);
     return `
     <div class="space-y-4">
         <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;">
-            ${[['Total',total,'#610173','#FDF4FF','layers'],['Pending',pending,'#B45309','#FFFBEB','clock'],['Approved',approved,'#059669','#ECFDF5','check-circle'],['Rejected',rejected,'#DC2626','#FEF2F2','x-circle']].map(([l,v,c,bg,icon])=>`
+            ${[['Total', total, '#610173', '#FDF4FF', 'layers'], ['Pending', pending, '#B45309', '#FFFBEB', 'clock'], ['Approved', approved, '#059669', '#ECFDF5', 'check-circle'], ['Rejected', rejected, '#DC2626', '#FEF2F2', 'x-circle']].map(([l, v, c, bg, icon]) => `
             <div class="mp-kpi-card" style="border-color:${c}20;background:linear-gradient(135deg,${bg},#fff);">
                 <div style="width:36px;height:36px;border-radius:10px;background:${c}18;display:flex;align-items:center;justify-content:center;margin:0 auto 8px;">
                     <i data-lucide="${icon}" style="width:16px;height:16px;color:${c};"></i>
@@ -6488,7 +6490,7 @@ function renderMpReqDashboard(requests) {
                 </button>
             </div>
             <div style="padding:0 20px;">
-                ${recent.length>0 ? recent.map(r=>mpReqRow(r,true)).join('') : `
+                ${recent.length > 0 ? recent.map(r => mpReqRow(r, true)).join('') : `
                 <div style="text-align:center;padding:40px;color:#94A3B8;">
                     <i data-lucide="inbox" style="width:32px;height:32px;margin:0 auto 10px;display:block;opacity:0.35;"></i>
                     <div style="font-size:13px;font-weight:600;">No requests yet</div>
@@ -6500,29 +6502,29 @@ function renderMpReqDashboard(requests) {
 }
 
 function mpReqRow(r, clickable) {
-    const statusStyles = {Pending:{bg:'#FFFBEB',c:'#B45309',dot:'#F59E0B'},Approved:{bg:'#ECFDF5',c:'#059669',dot:'#22C55E'},Rejected:{bg:'#FEF2F2',c:'#DC2626',dot:'#EF4444'},'Under Review':{bg:'#F5F3FF',c:'#7C3AED',dot:'#8B5CF6'}};
+    const statusStyles = { Pending: { bg: '#FFFBEB', c: '#B45309', dot: '#F59E0B' }, Approved: { bg: '#ECFDF5', c: '#059669', dot: '#22C55E' }, Rejected: { bg: '#FEF2F2', c: '#DC2626', dot: '#EF4444' }, 'Under Review': { bg: '#F5F3FF', c: '#7C3AED', dot: '#8B5CF6' } };
     const ss = statusStyles[r.status] || statusStyles.Pending;
-    const dateStr = r.applied_on ? new Date(r.applied_on).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}) : '—';
-    return `<div class="mp-req-row2" ${clickable?`onclick="viewMpRequest('${r.id}')"`:''} style="${clickable?'':'cursor:default;'}">
+    const dateStr = r.applied_on ? new Date(r.applied_on).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : '—';
+    return `<div class="mp-req-row2" ${clickable ? `onclick="viewMpRequest('${r.id}')"` : ''} style="${clickable ? '' : 'cursor:default;'}">
         <div style="width:7px;height:7px;border-radius:50%;background:${ss.dot};flex-shrink:0;"></div>
         <div style="flex:1;min-width:0;">
-            <div style="font-size:12.5px;font-weight:600;color:#1E293B;">${r.request_type||'—'}</div>
-            <div style="font-size:11px;color:#94A3B8;margin-top:1px;">${dateStr} · #${r.id||'—'}</div>
+            <div style="font-size:12.5px;font-weight:600;color:#1E293B;">${r.request_type || '—'}</div>
+            <div style="font-size:11px;color:#94A3B8;margin-top:1px;">${dateStr} · #${r.id || '—'}</div>
         </div>
-        <span style="padding:3px 10px;border-radius:999px;font-size:10.5px;font-weight:700;background:${ss.bg};color:${ss.c};flex-shrink:0;">${r.status||'Pending'}</span>
-        ${clickable?`<i data-lucide="chevron-right" style="width:14px;height:14px;color:#CBD5E1;flex-shrink:0;"></i>`:''}
+        <span style="padding:3px 10px;border-radius:999px;font-size:10.5px;font-weight:700;background:${ss.bg};color:${ss.c};flex-shrink:0;">${r.status || 'Pending'}</span>
+        ${clickable ? `<i data-lucide="chevron-right" style="width:14px;height:14px;color:#CBD5E1;flex-shrink:0;"></i>` : ''}
     </div>`;
 }
 
 function renderMpNewRequestForm(_emp) {
     const reqTypes = [
-        {id:'Contact Update',icon:'phone',bg:'#EFF6FF',c:'#2563EB'},
-        {id:'Address Update',icon:'map-pin',bg:'#ECFDF5',c:'#059669'},
-        {id:'Bank Details Update',icon:'landmark',bg:'#FDF4FF',c:'#9333EA'},
-        {id:'Emergency Contact Update',icon:'heart-pulse',bg:'#FFF1F2',c:'#E11D48'},
-        {id:'Document Re-upload',icon:'upload',bg:'#FFFBEB',c:'#D97706'},
-        {id:'Name Correction',icon:'user-pen',bg:'#F0FDF4',c:'#16A34A'},
-        {id:'Other',icon:'more-horizontal',bg:'#F8FAFC',c:'#64748B'}
+        { id: 'Contact Update', icon: 'phone', bg: '#EFF6FF', c: '#2563EB' },
+        { id: 'Address Update', icon: 'map-pin', bg: '#ECFDF5', c: '#059669' },
+        { id: 'Bank Details Update', icon: 'landmark', bg: '#FDF4FF', c: '#9333EA' },
+        { id: 'Emergency Contact Update', icon: 'heart-pulse', bg: '#FFF1F2', c: '#E11D48' },
+        { id: 'Document Re-upload', icon: 'upload', bg: '#FFFBEB', c: '#D97706' },
+        { id: 'Name Correction', icon: 'user-pen', bg: '#F0FDF4', c: '#16A34A' },
+        { id: 'Other', icon: 'more-horizontal', bg: '#F8FAFC', c: '#64748B' }
     ];
     return `
     <div>
@@ -6530,7 +6532,7 @@ function renderMpNewRequestForm(_emp) {
         <div style="margin-bottom:20px;font-size:12.5px;color:#94A3B8;font-weight:500;">Select the type of update you'd like to request from HR.</div>
         <div style="font-size:12px;font-weight:700;color:#374151;margin-bottom:10px;">Request Type <span style="color:#EF4444;">*</span></div>
         <div class="mp-req-type-grid">
-            ${reqTypes.map(t=>`
+            ${reqTypes.map(t => `
             <div class="mp-req-type-card" onclick="selectMpReqType(this,'${t.id}')">
                 <div class="mp-rt-icon" style="background:${t.bg};">
                     <i data-lucide="${t.icon}" style="width:16px;height:16px;color:${t.c};"></i>
@@ -6584,15 +6586,15 @@ function renderMpReqHistory(requests) {
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
             <div>
                 <div style="font-size:14px;font-weight:700;color:#1E293B;">Request History</div>
-                <div style="font-size:11.5px;color:#94A3B8;font-weight:500;margin-top:2px;">${requests.length} request${requests.length!==1?'s':''} total</div>
+                <div style="font-size:11.5px;color:#94A3B8;font-weight:500;margin-top:2px;">${requests.length} request${requests.length !== 1 ? 's' : ''} total</div>
             </div>
             <button class="mp-btn-primary" style="padding:8px 16px;font-size:12px;" onclick="setMpInnerNav('requests','new-request')">
                 <i data-lucide="plus" style="width:13px;height:13px;"></i> New
             </button>
         </div>
-        ${requests.length>0 ? `
+        ${requests.length > 0 ? `
         <div style="border:1px solid #ECECF3;border-radius:16px;overflow:hidden;background:#fff;padding:0 20px;">
-            ${requests.map(r=>mpReqRow(r,true)).join('')}
+            ${requests.map(r => mpReqRow(r, true)).join('')}
         </div>` : `
         <div style="text-align:center;padding:48px;background:#F9FAFB;border-radius:16px;border:1px dashed #E2E8F0;color:#94A3B8;">
             <i data-lucide="inbox" style="width:32px;height:32px;margin:0 auto 10px;display:block;opacity:0.4;"></i>
@@ -6611,7 +6613,7 @@ function renderMpReqDetails(req) {
             <i data-lucide="arrow-left" style="width:13px;height:13px;"></i> Go to History
         </button>
     </div>`;
-    const statusStyles = {Pending:{bg:'#FFFBEB',c:'#B45309'},Approved:{bg:'#ECFDF5',c:'#059669'},Rejected:{bg:'#FEF2F2',c:'#DC2626'},'Under Review':{bg:'#F5F3FF',c:'#7C3AED'}};
+    const statusStyles = { Pending: { bg: '#FFFBEB', c: '#B45309' }, Approved: { bg: '#ECFDF5', c: '#059669' }, Rejected: { bg: '#FEF2F2', c: '#DC2626' }, 'Under Review': { bg: '#F5F3FF', c: '#7C3AED' } };
     const ss = statusStyles[req.status] || statusStyles.Pending;
     return `
     <div class="space-y-4">
@@ -6620,7 +6622,7 @@ function renderMpReqDetails(req) {
                 <div style="font-size:16px;font-weight:800;color:#1E293B;">${req.request_type}</div>
                 <div style="font-size:12px;color:#94A3B8;font-weight:600;margin-top:3px;">Request ID: ${req.id}</div>
             </div>
-            <span style="padding:5px 16px;border-radius:999px;font-size:12px;font-weight:700;background:${ss.bg};color:${ss.c};white-space:nowrap;">${req.status||'Pending'}</span>
+            <span style="padding:5px 16px;border-radius:999px;font-size:12px;font-weight:700;background:${ss.bg};color:${ss.c};white-space:nowrap;">${req.status || 'Pending'}</span>
         </div>
         <div class="mp-grp">
             <div class="mp-grp-hdr">Request Information</div>
@@ -6636,9 +6638,9 @@ function renderMpReqDetails(req) {
             <div class="mp-grp-hdr">HR Review</div>
             <div class="mpf-grid-2">
                 ${mpF('Review Status', req.status, 'activity', ss.bg, ss.c)}
-                ${mpF('Reviewed By', req.reviewed_by||'Pending', 'user-check', '#F5F3FF', '#7C3AED')}
-                ${mpF('Submitted On', req.applied_on?new Date(req.applied_on).toLocaleDateString('en-IN',{day:'2-digit',month:'long',year:'numeric'}):'—', 'calendar', '#EFF6FF', '#2563EB')}
-                ${mpF('Reviewed Date', req.reviewed_date?new Date(req.reviewed_date).toLocaleDateString('en-IN',{day:'2-digit',month:'long',year:'numeric'}):'—', 'calendar-check', '#ECFDF5', '#059669')}
+                ${mpF('Reviewed By', req.reviewed_by || 'Pending', 'user-check', '#F5F3FF', '#7C3AED')}
+                ${mpF('Submitted On', req.applied_on ? new Date(req.applied_on).toLocaleDateString('en-IN', { day: '2-digit', month: 'long', year: 'numeric' }) : '—', 'calendar', '#EFF6FF', '#2563EB')}
+                ${mpF('Reviewed Date', req.reviewed_date ? new Date(req.reviewed_date).toLocaleDateString('en-IN', { day: '2-digit', month: 'long', year: 'numeric' }) : '—', 'calendar-check', '#ECFDF5', '#059669')}
                 ${req.hr_remarks ? mpF('HR Remarks', req.hr_remarks, 'message-square', '#F8FAFC', '#64748B', 'mpf-span2') : ''}
             </div>
         </div>
@@ -6651,7 +6653,7 @@ function renderMpReqDetails(req) {
 // ══════════════════════════════════════════════════════════════════
 // WINDOW ACTIONS
 // ══════════════════════════════════════════════════════════════════
-window.setMpInnerNav = function(section, nav) {
+window.setMpInnerNav = function (section, nav) {
     _mpInnerNav[section] = nav;
     document.querySelectorAll('.mp-tab-btn2').forEach(b => {
         b.classList.toggle('mp-tab-active', b.dataset.key === nav);
@@ -6663,7 +6665,7 @@ window.setMpInnerNav = function(section, nav) {
     }
 };
 
-window.selectMpReqType = function(el, typeLabel) {
+window.selectMpReqType = function (el, typeLabel) {
     document.querySelectorAll('.mp-req-type-card').forEach(c => c.classList.remove('rt-selected'));
     el.classList.add('rt-selected');
     const input = document.getElementById('mp-req-type');
@@ -6673,7 +6675,7 @@ window.selectMpReqType = function(el, typeLabel) {
     if (typeof lucide !== 'undefined') lucide.createIcons();
 };
 
-window.toggleMpPayroll = function() {
+window.toggleMpPayroll = function () {
     const body = document.getElementById('mp-payroll-body');
     const arrow = document.getElementById('mp-payroll-arrow');
     const lock = document.getElementById('mp-payroll-lock');
@@ -6683,7 +6685,7 @@ window.toggleMpPayroll = function() {
     if (lock) lock.style.display = open ? 'none' : '';
 };
 
-window.viewMpDoc = function(docType, label) {
+window.viewMpDoc = function (docType, label) {
     const jwt = localStorage.getItem('bezent_jwt') || '';
     // Open in new tab via protected route
     const url = `/api/employee/profile/documents/${encodeURIComponent(docType)}/view`;
@@ -6700,24 +6702,24 @@ window.viewMpDoc = function(docType, label) {
         .catch(() => showToast(`Cannot view ${label} — file not found`, 'error'));
 };
 
-window.downloadMpDoc = async function(docType, label) {
+window.downloadMpDoc = async function (docType, label) {
     try {
         showToast(`Downloading ${label}...`, 'info');
         const jwt = localStorage.getItem('bezent_jwt') || '';
         const resp = await fetch(`/api/employee/profile/documents/${encodeURIComponent(docType)}/download`, {
             headers: { Authorization: 'Bearer ' + jwt }
         });
-        if (!resp.ok) throw new Error((await resp.json().catch(()=>({}))).error || 'Download failed');
+        if (!resp.ok) throw new Error((await resp.json().catch(() => ({}))).error || 'Download failed');
         const blob = await resp.blob();
         const a = document.createElement('a');
         a.href = URL.createObjectURL(blob);
-        a.download = label.replace(/\s+/g,'_');
+        a.download = label.replace(/\s+/g, '_');
         document.body.appendChild(a); a.click(); a.remove();
         showToast(`${label} downloaded!`, 'success');
     } catch (e) { showToast(e.message, 'error'); }
 };
 
-window.reuploadMpDoc = function(docType, label) {
+window.reuploadMpDoc = function (docType, label) {
     // Navigate to new request form pre-filled with Document Re-upload
     _mpInnerNav['requests'] = 'new-request';
     employeeState.update({ activePanel: 'profile-requests' });
@@ -6729,7 +6731,7 @@ window.reuploadMpDoc = function(docType, label) {
     }, 200);
 };
 
-window.uploadMpDoc = function(docType, docLabel) {
+window.uploadMpDoc = function (docType, docLabel) {
     const input = document.createElement('input');
     input.type = 'file';
     input.accept = '.pdf,.jpg,.jpeg,.png,.doc,.docx';
@@ -6769,13 +6771,13 @@ window.uploadMpDoc = function(docType, docLabel) {
     input.click();
 };
 
-window.viewMpRequest = async function(id) {
+window.viewMpRequest = async function (id) {
     const req = _mpRequests.find(r => r.id === id);
     _mpActiveRequest = req || null;
     if (!_mpActiveRequest && id) {
         try {
             _mpActiveRequest = await apiClient('/employee/profile/requests/' + id);
-        } catch (_) {}
+        } catch (_) { }
     }
     _mpInnerNav['requests'] = 'details';
     const content = document.getElementById('mp-content');
@@ -6789,11 +6791,11 @@ window.viewMpRequest = async function(id) {
     }
 };
 
-window.submitMpNewRequest = async function() {
+window.submitMpNewRequest = async function () {
     const getVal = id => { const e = document.getElementById(id); return e ? e.value.trim() : ''; };
     const request_type = getVal('mp-req-type');
-    const new_value    = getVal('mp-req-new');
-    const reason       = getVal('mp-req-reason');
+    const new_value = getVal('mp-req-new');
+    const reason = getVal('mp-req-reason');
     if (!request_type || !new_value || !reason) {
         showToast('Please fill Request Type, New Value, and Reason.', 'error'); return;
     }
@@ -6829,17 +6831,17 @@ async function initProfilePage(section, state) {
                 apiClient('/employee/profile/documents'),
                 apiClient('/employee/profile/requests')
             ]);
-            _mpEmp      = profRes.employee || null;
-            _mpDocs     = docsRes || [];
+            _mpEmp = profRes.employee || null;
+            _mpDocs = docsRes || [];
             _mpRequests = reqsRes || [];
-            _mpLoaded   = true;
+            _mpLoaded = true;
         } else {
             // Refresh profile + requests; use cached docs
             const [profRes, reqsRes] = await Promise.all([
                 apiClient('/employee/profile'),
                 apiClient('/employee/profile/requests').catch(() => _mpRequests)
             ]);
-            _mpEmp      = profRes.employee || _mpEmp;
+            _mpEmp = profRes.employee || _mpEmp;
             _mpRequests = reqsRes || [];
         }
     } catch (e) {
@@ -6852,16 +6854,16 @@ async function initProfilePage(section, state) {
 
     // Update hero elements
     const setText = (id, v) => { const el = document.getElementById(id); if (el && v) el.textContent = v; };
-    setText('mp-hero-name',   emp.name);
-    setText('mp-hero-empid',  emp.employee_id);
-    setText('mp-hero-desig',  emp.designation || '—');
-    setText('mp-hero-dept',   emp.department || '—');
+    setText('mp-hero-name', emp.name);
+    setText('mp-hero-empid', emp.employee_id);
+    setText('mp-hero-desig', emp.designation || '—');
+    setText('mp-hero-dept', emp.department || '—');
     setText('mp-hero-status', emp.status || 'Active');
 
     // Animate completion ring
     const pct = emp.completion || 0;
-    const pctEl  = document.getElementById('mp-ring-pct');
-    const arcEl  = document.getElementById('mp-ring-arc');
+    const pctEl = document.getElementById('mp-ring-pct');
+    const arcEl = document.getElementById('mp-ring-arc');
     if (pctEl) pctEl.textContent = pct + '%';
     if (arcEl) {
         const c = 159.3;
@@ -6878,7 +6880,7 @@ async function initProfilePage(section, state) {
             const img = new Image();
             img.style.cssText = 'width:100%;height:100%;object-fit:cover;';
             img.src = '/api/employee/profile/documents/employee_photo/view';
-            img.onerror = () => { avatar.textContent = emp.name ? emp.name.slice(0,2).toUpperCase() : '—'; };
+            img.onerror = () => { avatar.textContent = emp.name ? emp.name.slice(0, 2).toUpperCase() : '—'; };
             avatar.innerHTML = '';
             avatar.appendChild(img);
         }
@@ -7085,7 +7087,7 @@ export function renderSidebar(state) {
     window.toggleEmpAccordion = (sectionId) => {
         const content = document.getElementById(`content-${sectionId}`);
         const chevron = document.getElementById(`chevron-${sectionId}`);
-        const header  = document.querySelector(`#accordion-section-${sectionId} .accordion-header`);
+        const header = document.querySelector(`#accordion-section-${sectionId} .accordion-header`);
         if (!content) return;
 
         const isExpanded = content.classList.contains('expanded');
@@ -7212,7 +7214,7 @@ export function loadPanel(panelId) {
 
     // Skip full re-render when already on this panel (state update without panel change)
     // For attendance, allow re-rendering if the active subview has changed
-    if (panelId === window._lastPanelId && 
+    if (panelId === window._lastPanelId &&
         (panelId !== 'attendance' || window._lastSubView === currentAttendanceSubView) &&
         (panelId !== 'on-duty' || window._lastSubView === currentOnDutySubView) &&
         (panelId !== 'reimbursement' || window._lastSubView === currentReimbursementSubView) &&
@@ -7223,7 +7225,7 @@ export function loadPanel(panelId) {
     if (window._lastPanelId === 'attendance' && panelId !== 'attendance') {
         currentAttendanceSubView = 'calendar';
         calendarSelectedDate = null;
-        if (distChartInstance)  { distChartInstance.destroy();  distChartInstance  = null; }
+        if (distChartInstance) { distChartInstance.destroy(); distChartInstance = null; }
         if (trendChartInstance) { trendChartInstance.destroy(); trendChartInstance = null; }
         if (hoursChartInstance) { hoursChartInstance.destroy(); hoursChartInstance = null; }
     }
@@ -7233,7 +7235,7 @@ export function loadPanel(panelId) {
         currentPerformanceView = 'landing';
         if (pfTrendChart) { pfTrendChart.destroy(); pfTrendChart = null; }
         if (pfGoalsChart) { pfGoalsChart.destroy(); pfGoalsChart = null; }
-        if (pfDistChart)  { pfDistChart.destroy();  pfDistChart = null; }
+        if (pfDistChart) { pfDistChart.destroy(); pfDistChart = null; }
     }
 
     window._lastPanelId = panelId;
@@ -7289,10 +7291,10 @@ export function showToast(message, type = 'info') {
 
     const toast = document.createElement('div');
     toast.className = `toast-card flex items-center gap-3 px-4 py-3 bg-white border border-[#ECECF3] rounded-xl shadow-lg animate-slide-in text-xs font-semibold pointer-events-auto`;
-    
+
     let borderClass = 'border-l-4 border-blue-500';
     let icon = 'info';
-    
+
     if (type === 'success') {
         borderClass = 'border-l-4 border-emerald-500';
         icon = 'check-circle';
@@ -7309,7 +7311,7 @@ export function showToast(message, type = 'info') {
     `;
 
     container.appendChild(toast);
-    
+
     if (typeof lucide !== 'undefined') {
         lucide.createIcons();
     }
@@ -7500,22 +7502,22 @@ async function loadRegularizationHistory() {
     try {
         const list = await apiClient('/employee/attendance/corrections');
         regularizationRequests = list || [];
-        
+
         const total = regularizationRequests.length;
         const pending = regularizationRequests.filter(r => r.status === 'Pending').length;
         const approved = regularizationRequests.filter(r => r.status === 'HR Approved').length;
         const rejected = regularizationRequests.filter(r => r.status === 'Manager Rejected' || r.status === 'HR Rejected').length;
-        
+
         const cardTotal = document.getElementById('reg-kpi-total');
         const cardPending = document.getElementById('reg-kpi-pending');
         const cardApproved = document.getElementById('reg-kpi-approved');
         const cardRejected = document.getElementById('reg-kpi-rejected');
-        
+
         if (cardTotal) cardTotal.innerText = total;
         if (cardPending) cardPending.innerText = pending;
         if (cardApproved) cardApproved.innerText = approved;
         if (cardRejected) cardRejected.innerText = rejected;
-        
+
         populateRegHistoryTable();
     } catch (e) {
         console.error('Failed to load regularization logs:', e);
@@ -7540,7 +7542,7 @@ window.applyRegFilters = (val) => {
 function populateRegHistoryTable() {
     const tbody = document.getElementById('reg-table-body');
     if (!tbody) return;
-    
+
     let filtered = regularizationRequests;
     if (regFilters.status !== 'All') {
         if (regFilters.status === 'Rejected') {
@@ -7549,7 +7551,7 @@ function populateRegHistoryTable() {
             filtered = regularizationRequests.filter(r => r.status === regFilters.status);
         }
     }
-    
+
     if (filtered.length === 0) {
         tbody.innerHTML = `
             <tr>
@@ -7560,17 +7562,17 @@ function populateRegHistoryTable() {
         `;
         return;
     }
-    
+
     let html = '';
     filtered.forEach(row => {
         let statusBadgeClass = 'bg-amber-50 text-amber-700 border-amber-100';
         if (row.status === 'HR Approved') statusBadgeClass = 'bg-emerald-50 text-emerald-700 border-emerald-100';
         else if (row.status === 'Manager Rejected' || row.status === 'HR Rejected') statusBadgeClass = 'bg-rose-50 text-rose-700 border-rose-100';
         else if (row.status === 'Cancelled') statusBadgeClass = 'bg-slate-100 text-slate-600 border-slate-200';
-        
+
         const cat = row.category || row.type;
         const isEditable = row.status === 'Pending';
-        
+
         html += `
             <tr class="hover:bg-[#FAFAFC]/50 transition-colors">
                 <td class="px-6 py-4 text-xs font-bold text-[#610173]">${row.id}</td>
@@ -7598,7 +7600,7 @@ function populateRegHistoryTable() {
             </tr>
         `;
     });
-    
+
     tbody.innerHTML = html;
     if (typeof lucide !== 'undefined') lucide.createIcons();
 }
@@ -7609,7 +7611,7 @@ window.toggleRegTab = (tab) => {
     const btnHist = document.getElementById('reg-tab-btn-history');
     const viewNew = document.getElementById('reg-content-new');
     const viewHist = document.getElementById('reg-content-history');
-    
+
     if (btnNew && btnHist && viewNew && viewHist) {
         if (tab === 'new-request') {
             btnNew.classList.remove('text-slate-400', 'border-transparent');
@@ -7634,9 +7636,9 @@ window.handleRegCategoryChange = () => {
     const category = document.getElementById('reg-category').value;
     const dynamicFields = document.getElementById('reg-dynamic-fields');
     if (!dynamicFields) return;
-    
+
     let html = '';
-    
+
     if (category === 'Missed Tap In') {
         html = `
             <div>
@@ -7701,7 +7703,7 @@ window.handleRegCategoryChange = () => {
             </div>
         `;
     }
-    
+
     dynamicFields.innerHTML = html;
     if (typeof lucide !== 'undefined') lucide.createIcons();
 };
@@ -7709,16 +7711,16 @@ window.handleRegCategoryChange = () => {
 window.calculateLateCreditsPreview = (arrivalTime) => {
     const previewDiv = document.getElementById('late-credits-preview');
     if (!previewDiv || !arrivalTime) return;
-    
+
     previewDiv.classList.remove('hidden');
-    
+
     const [hh, mm] = arrivalTime.split(':').map(Number);
     const totalMinutes = hh * 60 + mm;
     const nineAM = 9 * 60;
-    
+
     const state = window.employeeState ? window.employeeState.get() : {};
     const curCredits = state.employee?.late_credits !== undefined ? state.employee.late_credits : 40;
-    
+
     if (totalMinutes <= nineAM) {
         previewDiv.innerHTML = `
             <div class="flex items-start gap-2">
@@ -7765,23 +7767,23 @@ window.calculateLateCreditsPreview = (arrivalTime) => {
 window.uploadRegAttachment = async (event) => {
     const file = event.target.files[0];
     if (!file) return;
-    
+
     const zone = document.getElementById('reg-upload-zone');
     if (zone) zone.innerHTML = `<span class="text-[10.5px] text-[#610173] font-semibold animate-pulse flex items-center gap-1.5"><i data-lucide="loader" class="w-3.5 h-3.5"></i> Uploading attachment...</span>`;
     if (typeof lucide !== 'undefined') lucide.createIcons();
-    
+
     try {
         const formData = new FormData();
         formData.append('documents', file);
-        
+
         const state = window.employeeState ? window.employeeState.get() : {};
         const empId = state.employee?.id || 'doc';
-        
+
         const res = await apiClient(`/upload/regularizations/${empId}`, {
             method: 'POST',
             body: formData
         });
-        
+
         if (res && res.success && res.files && res.files[0]) {
             currentRegFileUrl = res.files[0];
             if (zone) {
@@ -7833,17 +7835,17 @@ function formatTime12(timeStr) {
     const ap = h >= 12 ? 'PM' : 'AM';
     h = h % 12;
     if (h === 0) h = 12;
-    return `${String(h).padStart(2,'0')}:${m} ${ap}`;
+    return `${String(h).padStart(2, '0')}:${m} ${ap}`;
 }
 
 window.submitRegularizationRequest = async (event) => {
     event.preventDefault();
-    
+
     const date = document.getElementById('reg-date').value;
     const category = document.getElementById('reg-category').value;
     const reason = document.getElementById('reg-reason').value;
     const additional_notes = document.getElementById('reg-notes').value;
-    
+
     let specify_category = '';
     let clock_in_time = '';
     let clock_out_time = '';
@@ -7852,7 +7854,7 @@ window.submitRegularizationRequest = async (event) => {
     let from_time = '';
     let to_time = '';
     let manager_name = '';
-    
+
     if (category === 'Other') {
         specify_category = document.getElementById('reg-specify-category').value;
     } else if (category === 'Missed Tap In') {
@@ -7870,7 +7872,7 @@ window.submitRegularizationRequest = async (event) => {
         from_time = formatTime12(document.getElementById('reg-from-time').value);
         to_time = formatTime12(document.getElementById('reg-to-time').value);
     }
-    
+
     const payload = {
         date,
         category,
@@ -7886,7 +7888,7 @@ window.submitRegularizationRequest = async (event) => {
         to_time,
         manager_name
     };
-    
+
     try {
         let res;
         if (editingRegRequest) {
@@ -7900,7 +7902,7 @@ window.submitRegularizationRequest = async (event) => {
                 body: payload
             });
         }
-        
+
         if (res && res.ok) {
             showToast(editingRegRequest ? 'Regularization request updated.' : 'Regularization request submitted.', 'success');
             window.resetRegForm();
@@ -7916,25 +7918,25 @@ window.submitRegularizationRequest = async (event) => {
 window.resetRegForm = () => {
     editingRegRequest = null;
     currentRegFileUrl = '';
-    
+
     const form = document.getElementById('reg-request-form');
     if (form) form.reset();
-    
+
     const dateInput = document.getElementById('reg-date');
     if (dateInput) {
         dateInput.value = '';
         dateInput.disabled = false;
     }
-    
+
     const categorySelect = document.getElementById('reg-category');
     if (categorySelect) {
         categorySelect.value = 'Missed Tap In';
         categorySelect.disabled = false;
     }
-    
+
     window.handleRegCategoryChange();
     window.clearRegAttachment();
-    
+
     const submitBtn = document.getElementById('reg-submit-btn');
     if (submitBtn) submitBtn.innerText = 'Submit Request';
 };
@@ -7942,35 +7944,35 @@ window.resetRegForm = () => {
 window.editRegRequest = (id) => {
     const item = regularizationRequests.find(r => r.id === id);
     if (!item) return;
-    
+
     if (item.status !== 'Pending') {
         showToast('Cannot edit request after manager review has started.', 'error');
         return;
     }
-    
+
     editingRegRequest = item;
     window.toggleRegTab('new-request');
-    
+
     const dateInput = document.getElementById('reg-date');
     if (dateInput) {
         dateInput.value = item.date;
         dateInput.disabled = true;
     }
-    
+
     const categorySelect = document.getElementById('reg-category');
     if (categorySelect) {
         categorySelect.value = item.category || item.type;
         categorySelect.disabled = true;
     }
-    
+
     window.handleRegCategoryChange();
-    
+
     const reasonInput = document.getElementById('reg-reason');
     if (reasonInput) reasonInput.value = item.reason || '';
-    
+
     const notesInput = document.getElementById('reg-notes');
     if (notesInput) notesInput.value = item.additional_notes || '';
-    
+
     const convert12to24 = (timeStr) => {
         if (!timeStr) return '';
         const match = timeStr.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)?$/i);
@@ -7980,9 +7982,9 @@ window.editRegRequest = (id) => {
         const ap = match[3] ? match[3].toUpperCase() : null;
         if (ap === 'PM' && h !== 12) h += 12;
         if (ap === 'AM' && h === 12) h = 0;
-        return `${String(h).padStart(2,'0')}:${m}`;
+        return `${String(h).padStart(2, '0')}:${m}`;
     };
-    
+
     const cat = item.category || item.type;
     if (cat === 'Other') {
         const spec = document.getElementById('reg-specify-category');
@@ -8014,7 +8016,7 @@ window.editRegRequest = (id) => {
         if (ft) ft.value = convert12to24(item.from_time || '');
         if (tt) tt.value = convert12to24(item.to_time || '');
     }
-    
+
     if (item.attachment) {
         currentRegFileUrl = item.attachment;
         const filename = item.attachment.split('/').pop() || 'Attachment';
@@ -8035,7 +8037,7 @@ window.editRegRequest = (id) => {
         }
         if (typeof lucide !== 'undefined') lucide.createIcons();
     }
-    
+
     const submitBtn = document.getElementById('reg-submit-btn');
     if (submitBtn) submitBtn.innerText = 'Update Request';
 };
@@ -8043,16 +8045,16 @@ window.editRegRequest = (id) => {
 window.cancelRegRequest = async (id) => {
     const item = regularizationRequests.find(r => r.id === id);
     if (!item) return;
-    
+
     if (item.status !== 'Pending') {
         showToast('Cannot cancel request after manager review has started.', 'error');
         return;
     }
-    
+
     if (!confirm('Are you sure you want to cancel this regularization request?')) {
         return;
     }
-    
+
     try {
         const res = await apiClient(`/employee/attendance/corrections/${id}/cancel`, {
             method: 'POST'
@@ -8071,15 +8073,15 @@ window.cancelRegRequest = async (id) => {
 window.viewRegRequest = (id) => {
     const item = regularizationRequests.find(r => r.id === id);
     if (!item) return;
-    
+
     let statusClass = 'bg-amber-50 text-amber-700 border-amber-100';
     if (item.status === 'HR Approved') statusClass = 'bg-emerald-50 text-emerald-700 border-emerald-100';
     if (item.status === 'Manager Rejected' || item.status === 'HR Rejected') statusClass = 'bg-rose-50 text-rose-700 border-rose-100';
     if (item.status === 'Cancelled') statusClass = 'bg-slate-100 text-slate-600 border-slate-200';
-    
+
     const cat = item.category || item.type;
     let specificDetailsHtml = '';
-    
+
     if (cat === 'Missed Tap In') {
         specificDetailsHtml = `
             <div>
@@ -9175,7 +9177,7 @@ async function initPerformanceAnalytics(state) {
         const analytics = await apiClient('/employee/performance/analytics');
         if (pfTrendChart) { pfTrendChart.destroy(); pfTrendChart = null; }
         if (pfGoalsChart) { pfGoalsChart.destroy(); pfGoalsChart = null; }
-        if (pfDistChart)  { pfDistChart.destroy();  pfDistChart = null; }
+        if (pfDistChart) { pfDistChart.destroy(); pfDistChart = null; }
 
         const trendCtx = document.getElementById('pf-trend-chart')?.getContext('2d');
         if (trendCtx) {
@@ -9265,6 +9267,538 @@ async function initPerformanceAnalytics(state) {
         if (typeof lucide !== 'undefined') lucide.createIcons();
     } catch (e) {
         console.error('Failed to initialize performance analytics charts', e);
+    }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// PAYROLL & LOANS MODULE — Complete Implementation
+// ─────────────────────────────────────────────────────────────────────────────
+
+function renderPayrollModule(state) {
+    return `
+        <div id="payrollPanel" class="w-full space-y-6 animate-fade-in min-w-0">
+            <style>
+                .payroll-tab {
+                    cursor: pointer;
+                    transition: all 0.2s ease;
+                    border-bottom: 2px solid transparent;
+                }
+                .payroll-tab.active {
+                    color: #610173;
+                    border-bottom-color: #610173;
+                    font-weight: 700;
+                }
+                .payslip-grid {
+                    display: grid;
+                    grid-template-columns: 1fr 1.2fr;
+                    gap: 24px;
+                }
+                @media (max-width: 1024px) {
+                    .payslip-grid {
+                        grid-template-columns: 1fr;
+                    }
+                }
+            </style>
+            <!-- Panel Title -->
+            <div class="flex flex-col md:flex-row md:items-center justify-between pb-4 border-b border-slate-100 gap-4">
+                <div>
+                    <h1 class="text-xl md:text-2xl font-black text-slate-800 tracking-tight flex items-center gap-2">
+                        <i data-lucide="wallet" class="w-6 h-6 text-purple-600"></i> Payroll & Advances Portal
+                    </h1>
+                    <p class="text-xs text-slate-500 font-semibold mt-1">Manage your payslips, verify your monthly earnings structure, and request salary loans.</p>
+                </div>
+            </div>
+
+            <!-- Tab Headers -->
+            <div class="flex border-b border-slate-200">
+                <div class="payroll-tab py-3 px-6 text-sm font-semibold text-slate-500 flex items-center gap-2 ${currentPayrollTab === 'slips' ? 'active' : ''}" data-tab="slips">
+                    <i data-lucide="file-text" class="w-4 h-4"></i> My Payslips
+                </div>
+                <div class="payroll-tab py-3 px-6 text-sm font-semibold text-slate-500 flex items-center gap-2 ${currentPayrollTab === 'structure' ? 'active' : ''}" data-tab="structure">
+                    <i data-lucide="landmark" class="w-4 h-4"></i> Salary Structure
+                </div>
+                <div class="payroll-tab py-3 px-6 text-sm font-semibold text-slate-500 flex items-center gap-2 ${currentPayrollTab === 'loans' ? 'active' : ''}" data-tab="loans">
+                    <i data-lucide="coins" class="w-4 h-4"></i> Salary Advance & Loans
+                </div>
+            </div>
+
+            <!-- Tab Content Container -->
+            <div id="payroll-tab-content" class="w-full min-h-[400px]">
+                <div class="flex items-center justify-center h-48">
+                    <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></div>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+async function initPayrollModule(state) {
+    const root = document.querySelector("#payrollPanel");
+    if (!root) return;
+
+    // Bind Tab Click Switcher
+    root.querySelectorAll('.payroll-tab').forEach(tab => {
+        tab.addEventListener('click', (e) => {
+            const selectedTab = e.currentTarget.getAttribute('data-tab');
+            if (selectedTab && selectedTab !== currentPayrollTab) {
+                currentPayrollTab = selectedTab;
+                loadPanel('payroll'); // Reload active panel to redraw view
+            }
+        });
+    });
+
+    try {
+        // Fetch data
+        const [slips, structure, loans] = await Promise.all([
+            apiClient('/employee/payroll/slips').catch(() => []),
+            apiClient('/employee/payroll/structure').catch(() => ({ basic: 0, hra: 0, special: 0, deductions: 0 })),
+            apiClient('/employee/loans').catch(() => [])
+        ]);
+
+        const contentContainer = root.querySelector('#payroll-tab-content');
+        if (!contentContainer) return;
+
+        if (currentPayrollTab === 'slips') {
+            if (slips.length === 0) {
+                contentContainer.innerHTML = `
+                    <div class="bg-white p-8 rounded-2xl border border-slate-100 text-center shadow-sm max-w-lg mx-auto mt-6">
+                        <div class="w-16 h-16 bg-purple-50 rounded-full flex items-center justify-center mx-auto mb-4 text-[#610173]">
+                            <i data-lucide="file-text" class="w-8 h-8"></i>
+                        </div>
+                        <h3 class="text-base font-bold text-slate-800 mb-1">No Payslips Disbursed Yet</h3>
+                        <p class="text-xs text-slate-500 font-medium leading-relaxed">Your monthly payslip details will appear here once compiled and disbursed by the finance department.</p>
+                    </div>
+                `;
+            } else {
+                contentContainer.innerHTML = `
+                    <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden mt-2">
+                        <table class="w-full border-collapse">
+                            <thead>
+                                <tr class="bg-slate-50 border-b border-slate-100 text-[10px] font-bold text-slate-400 uppercase tracking-wider text-left">
+                                    <th class="px-6 py-4">Disbursal Month</th>
+                                    <th class="px-6 py-4">Gross Earnings</th>
+                                    <th class="px-6 py-4">Total Deductions</th>
+                                    <th class="px-6 py-4">Net Salary Paid</th>
+                                    <th class="px-6 py-4">Payment Status</th>
+                                    <th class="px-6 py-4 text-right">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-100 text-xs font-semibold text-slate-600">
+                                ${slips.map(s => `
+                                    <tr class="hover:bg-slate-50/50 transition">
+                                        <td class="px-6 py-4 font-bold text-slate-800">${s.month}</td>
+                                        <td class="px-6 py-4">₹${(s.basic + s.hra + s.allowance).toLocaleString()}</td>
+                                        <td class="px-6 py-4 text-rose-500">-₹${s.deduction.toLocaleString()}</td>
+                                        <td class="px-6 py-4 text-emerald-600 font-extrabold">₹${s.net_salary.toLocaleString()}</td>
+                                        <td class="px-6 py-4">
+                                            <span class="px-2 py-0.5 rounded text-[9px] font-bold uppercase bg-emerald-50 text-emerald-700 border border-emerald-100">Disbursed</span>
+                                        </td>
+                                        <td class="px-6 py-4 text-right">
+                                            <button data-slip-id="${s.id}" class="payslip-view-btn px-3 py-1.5 bg-purple-50 text-[#610173] hover:bg-[#610173] hover:text-white rounded-lg border border-purple-100 text-[11px] font-bold cursor-pointer transition flex items-center gap-1.5 ml-auto">
+                                                <i data-lucide="eye" class="w-3.5 h-3.5"></i> View Payslip
+                                            </button>
+                                        </td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+
+                // Bind View Payslip clicks
+                contentContainer.querySelectorAll('.payslip-view-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        const slipId = e.currentTarget.getAttribute('data-slip-id');
+                        const slip = slips.find(s => s.id === slipId);
+                        if (slip) {
+                            showPayslipModal(slip, state);
+                        }
+                    });
+                });
+            }
+        } else if (currentPayrollTab === 'structure') {
+            contentContainer.innerHTML = `
+                <div class="payslip-grid mt-2">
+                    <!-- Earnings -->
+                    <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm space-y-4">
+                        <h2 class="text-sm font-extrabold text-slate-800 flex items-center gap-1.5 pb-2 border-b border-slate-50">
+                            <i data-lucide="plus-circle" class="w-4 h-4 text-emerald-500"></i> Monthly Earnings
+                        </h2>
+                        <div class="space-y-3 text-xs font-semibold text-slate-600">
+                            <div class="flex justify-between items-center py-1">
+                                <span>Basic Salary</span>
+                                <span class="text-slate-800 font-bold">₹${structure.basic.toLocaleString()}</span>
+                            </div>
+                            <div class="flex justify-between items-center py-1">
+                                <span>House Rent Allowance (HRA)</span>
+                                <span class="text-slate-800 font-bold">₹${structure.hra.toLocaleString()}</span>
+                            </div>
+                            <div class="flex justify-between items-center py-1">
+                                <span>Special & Other Allowances</span>
+                                <span class="text-slate-800 font-bold">₹${structure.special.toLocaleString()}</span>
+                            </div>
+                            <div class="flex justify-between items-center py-2 border-t border-slate-100 font-bold text-slate-800 text-sm">
+                                <span>Gross Salary</span>
+                                <span>₹${structure.gross.toLocaleString()}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Deductions -->
+                    <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm space-y-4">
+                        <h2 class="text-sm font-extrabold text-slate-800 flex items-center gap-1.5 pb-2 border-b border-slate-50">
+                            <i data-lucide="minus-circle" class="w-4 h-4 text-rose-500"></i> Monthly Deductions
+                        </h2>
+                        <div class="space-y-3 text-xs font-semibold text-slate-600">
+                            <div class="flex justify-between items-center py-1">
+                                <span>Provident Fund (PF)</span>
+                                <span class="text-slate-800 font-bold">₹${structure.pf.toLocaleString()}</span>
+                            </div>
+                            <div class="flex justify-between items-center py-1">
+                                <span>ESI Contribution</span>
+                                <span class="text-slate-800 font-bold">₹${structure.esi.toLocaleString()}</span>
+                            </div>
+                            <div class="flex justify-between items-center py-1">
+                                <span>Professional Tax</span>
+                                <span class="text-slate-800 font-bold">₹${structure.pt.toLocaleString()}</span>
+                            </div>
+                            <div class="flex justify-between items-center py-1">
+                                <span>TDS (Income Tax)</span>
+                                <span class="text-slate-800 font-bold">₹${structure.tax.toLocaleString()}</span>
+                            </div>
+                            ${structure.canteenDeduction ? `
+                            <div class="flex justify-between items-center py-1">
+                                <span>Canteen Subscription</span>
+                                <span class="text-slate-800 font-bold">₹${structure.canteenDeduction.toLocaleString()}</span>
+                            </div>` : ''}
+                            ${structure.loanEMI ? `
+                            <div class="flex justify-between items-center py-1 font-bold text-rose-500">
+                                <span>Salary Loan EMI Deduction</span>
+                                <span>₹${structure.loanEMI.toLocaleString()}</span>
+                            </div>` : ''}
+                            <div class="flex justify-between items-center py-2 border-t border-slate-100 font-bold text-rose-500 text-sm">
+                                <span>Total Deductions</span>
+                                <span>-₹${structure.deductions.toLocaleString()}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Summary Card -->
+                <div class="bg-gradient-to-br from-[#610173] to-[#dd73f0] p-6 rounded-2xl text-white shadow-md flex justify-between items-center mt-6">
+                    <div>
+                        <span class="text-[10px] font-bold uppercase tracking-wider opacity-75">Estimated Take Home Pay</span>
+                        <h3 class="text-2xl font-black mt-1">₹${structure.net.toLocaleString()} / month</h3>
+                    </div>
+                    <div class="w-12 h-12 bg-white/10 rounded-full flex items-center justify-center backdrop-blur-sm">
+                        <i data-lucide="sparkles" class="w-6 h-6 text-white"></i>
+                    </div>
+                </div>
+            `;
+        } else if (currentPayrollTab === 'loans') {
+            let outstandingBalance = 0;
+            let monthlyEMI = 0;
+            let totalOriginalAmount = 0;
+            let totalPaidAmount = 0;
+
+            const activeLoans = loans.filter(l => ['Approved', 'Active'].includes(l.status));
+            activeLoans.forEach(l => {
+                outstandingBalance += l.remaining_balance || 0;
+                monthlyEMI += Math.min(l.monthly_emi, l.remaining_balance);
+                totalOriginalAmount += l.amount;
+                totalPaidAmount += (l.amount - l.remaining_balance);
+            });
+
+            const paidLoans = loans.filter(l => l.status === 'Paid');
+            paidLoans.forEach(l => {
+                totalOriginalAmount += l.amount;
+                totalPaidAmount += l.amount;
+            });
+
+            const progressPercent = totalOriginalAmount > 0 ? Math.round((totalPaidAmount / totalOriginalAmount) * 100) : 0;
+
+            contentContainer.innerHTML = `
+                <!-- KPI Overview -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6 mt-2">
+                    <div class="bg-white p-5 border border-slate-100 rounded-2xl shadow-sm flex flex-col justify-between">
+                        <div class="flex items-center justify-between">
+                            <span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Outstanding Balance</span>
+                            <i data-lucide="coins" class="w-4 h-4 text-[#610173]"></i>
+                        </div>
+                        <span class="text-xl font-black text-slate-800 mt-2">₹${outstandingBalance.toLocaleString()}</span>
+                        <span class="text-[9px] text-slate-400 font-semibold mt-1">To be recovered</span>
+                    </div>
+                    <div class="bg-white p-5 border border-slate-100 rounded-2xl shadow-sm flex flex-col justify-between">
+                        <div class="flex items-center justify-between">
+                            <span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Monthly Loan EMI</span>
+                            <i data-lucide="calendar" class="w-4 h-4 text-emerald-500"></i>
+                        </div>
+                        <span class="text-xl font-black text-slate-800 mt-2">₹${monthlyEMI.toLocaleString()}</span>
+                        <span class="text-[9px] text-slate-400 font-semibold mt-1">Next deduction on payrun</span>
+                    </div>
+                    <div class="bg-white p-5 border border-slate-100 rounded-2xl shadow-sm flex flex-col justify-between">
+                        <div class="flex items-center justify-between">
+                            <span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Repayment Progress</span>
+                            <i data-lucide="activity" class="w-4 h-4 text-blue-500"></i>
+                        </div>
+                        <span class="text-xl font-black text-slate-800 mt-2">${progressPercent}%</span>
+                        <div class="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden mt-1.5">
+                            <div class="bg-[#610173] h-full rounded-full" style="width: ${progressPercent}%"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="payslip-grid">
+                    <!-- Loan Form -->
+                    <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm space-y-4 h-fit">
+                        <h2 class="text-sm font-extrabold text-slate-800 flex items-center gap-1.5 pb-2 border-b border-slate-50">
+                            <i data-lucide="plus-circle" class="w-4 h-4 text-[#610173]"></i> Request Salary Advance
+                        </h2>
+                        <form id="loan-request-form" class="space-y-4">
+                            <div class="space-y-1">
+                                <label class="text-[10px] font-bold uppercase text-slate-400">Advance Amount (₹)</label>
+                                <input type="number" id="loan-amount" placeholder="Enter amount (e.g. 20000)" class="w-full px-4 py-2 border border-slate-200 rounded-xl text-xs font-semibold focus:outline-none focus:border-purple-500" required />
+                            </div>
+                            <div class="space-y-1">
+                                <label class="text-[10px] font-bold uppercase text-slate-400">Repayment Duration</label>
+                                <select id="loan-duration" class="w-full px-4 py-2 border border-slate-200 rounded-xl text-xs font-semibold focus:outline-none focus:border-purple-500" required>
+                                    <option value="1">1 Month (Immediate Return)</option>
+                                    <option value="3">3 Months (Short Term)</option>
+                                    <option value="6">6 Months (Standard)</option>
+                                    <option value="12">12 Months (Long Term)</option>
+                                </select>
+                            </div>
+                            <div class="space-y-1">
+                                <label class="text-[10px] font-bold uppercase text-slate-400">Reason for Advance</label>
+                                <textarea id="loan-reason" rows="3" placeholder="Provide a detailed reason..." class="w-full px-4 py-2 border border-slate-200 rounded-xl text-xs font-semibold focus:outline-none focus:border-purple-500" required></textarea>
+                            </div>
+
+                            <!-- Estimated Breakup -->
+                            <div class="p-3 bg-purple-50/50 border border-purple-100 rounded-xl text-[11px] font-semibold text-[#610173] space-y-1.5">
+                                <div class="flex justify-between"><span>Estimated EMI</span> <strong id="loan-calc-emi">₹0 / month</strong></div>
+                                <div class="flex justify-between opacity-80"><span>Tenure</span> <span id="loan-calc-tenure">1 month</span></div>
+                            </div>
+
+                            <button type="submit" class="w-full py-2.5 bg-gradient-to-r from-[#610173] to-[#dd73f0] hover:opacity-90 text-white rounded-xl border-none text-xs font-bold cursor-pointer transition shadow-sm flex items-center justify-center gap-1.5">
+                                <i data-lucide="send" class="w-3.5 h-3.5"></i> Submit Request
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Historical Ledger -->
+                    <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm space-y-4">
+                        <h2 class="text-sm font-extrabold text-slate-800 flex items-center gap-1.5 pb-2 border-b border-slate-50">
+                            <i data-lucide="history" class="w-4 h-4 text-[#610173]"></i> Advance Request Ledger
+                        </h2>
+                        <div class="space-y-3 max-h-[420px] overflow-y-auto pr-1">
+                            ${loans.length === 0 ? `
+                                <div class="text-center py-12 text-slate-400 italic text-xs font-medium">No historical advance requests logged.</div>
+                            ` : loans.map(l => {
+                let badge = 'bg-slate-100 text-slate-600';
+                if (l.status === 'Pending') badge = 'bg-amber-50 text-amber-700 border border-amber-100';
+                else if (l.status === 'Approved' || l.status === 'Active') badge = 'bg-purple-50 text-purple-700 border border-purple-100';
+                else if (l.status === 'Rejected') badge = 'bg-rose-50 text-rose-700 border border-rose-100';
+                else if (l.status === 'Paid') badge = 'bg-emerald-50 text-emerald-700 border border-emerald-100';
+
+                return `
+                                    <div class="p-4 border border-slate-100 rounded-xl space-y-2 text-xs font-semibold">
+                                        <div class="flex justify-between items-start">
+                                            <div>
+                                                <div class="font-bold text-slate-800">₹${l.amount.toLocaleString()} <span class="text-[10px] text-slate-400 font-normal">(${l.repayment_months} months)</span></div>
+                                                <div class="text-[9.5px] text-slate-400 mt-0.5">Applied: ${l.created_at || 'Recently'}</div>
+                                            </div>
+                                            <span class="px-2 py-0.5 rounded text-[8.5px] font-bold border uppercase ${badge}">${l.status}</span>
+                                        </div>
+                                        <div class="text-[10px] text-slate-500 font-medium leading-relaxed italic bg-slate-50 p-2 rounded-lg border border-slate-100">" ${l.reason} "</div>
+                                        ${l.remarks ? `<div class="text-[9.5px] text-[#610173] mt-1 font-semibold flex items-start gap-1"><span>Admin Remarks:</span> <span class="font-medium text-slate-600">${l.remarks}</span></div>` : ''}
+                                        
+                                        <!-- Installments progress if active/paid -->
+                                        ${['Approved', 'Active', 'Paid'].includes(l.status) ? `
+                                        <div class="pt-2 border-t border-slate-50 flex items-center justify-between text-[9px] text-slate-400">
+                                            <span>EMI: ₹${l.monthly_emi.toLocaleString()}/mo</span>
+                                            <span>Remaining Balance: ₹${l.remaining_balance.toLocaleString()}</span>
+                                        </div>` : ''}
+                                    </div>
+                                `;
+            }).join('')}
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // Bind Live Calculator
+            const amtInput = root.querySelector('#loan-amount');
+            const durSelect = root.querySelector('#loan-duration');
+            const calcEmi = root.querySelector('#loan-calc-emi');
+            const calcTenure = root.querySelector('#loan-calc-tenure');
+
+            const updateCalc = () => {
+                if (!amtInput || !durSelect || !calcEmi || !calcTenure) return;
+                const amt = parseFloat(amtInput.value) || 0;
+                const months = parseInt(durSelect.value) || 1;
+                const emi = Math.round(amt / months);
+                calcEmi.textContent = `₹${emi.toLocaleString()} / month`;
+                calcTenure.textContent = `${months} ${months === 1 ? 'month' : 'months'}`;
+            };
+
+            if (amtInput) amtInput.addEventListener('input', updateCalc);
+            if (durSelect) durSelect.addEventListener('change', updateCalc);
+
+            // Bind Form Submission
+            const form = root.querySelector('#loan-request-form');
+            if (form) {
+                form.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    const amount = parseFloat(amtInput.value);
+                    const repayment_months = parseInt(durSelect.value);
+                    const reason = root.querySelector('#loan-reason').value;
+
+                    try {
+                        const res = await apiClient('/employee/loans', {
+                            method: 'POST',
+                            body: { amount, repayment_months, reason }
+                        });
+                        showToast(res.message || 'Salary advance request submitted successfully!', 'success');
+                        loadPanel('payroll'); // Refresh the view
+                    } catch (err) {
+                        showToast(err.message || 'Failed to submit loan request', 'error');
+                    }
+                });
+            }
+        }
+
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+    } catch (e) {
+        console.error('Failed to load payroll details', e);
+        showToast('Failed to load payroll details', 'error');
+    }
+}
+
+function showPayslipModal(slip, state) {
+    const modal = document.createElement('div');
+    modal.className = 'fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[9999] flex items-center justify-center p-4';
+    modal.id = 'payslip-modal-overlay';
+
+    const gross = slip.basic + slip.hra + slip.allowance;
+    const pf = Math.floor(slip.basic * 0.12);
+    const esi = Math.floor(gross * 0.0075);
+    const pt = 200;
+    const tax = Math.floor(gross * 0.05);
+
+    modal.innerHTML = `
+        <div class="bg-white rounded-2xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto" onclick="event.stopPropagation()">
+            <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100">
+                <span class="font-extrabold text-slate-800 text-sm">Payslip Statement</span>
+                <div class="flex items-center gap-2">
+                    <button id="payslip-print-btn" class="px-3 py-1.5 bg-purple-50 hover:bg-[#610173] text-[#610173] hover:text-white border border-purple-100 rounded-lg text-xs font-bold cursor-pointer transition flex items-center gap-1.5">
+                        <i data-lucide="printer" class="w-3.5 h-3.5"></i> Print / Save PDF
+                    </button>
+                    <button id="payslip-close-btn" class="text-slate-400 hover:text-slate-600 border-none bg-none cursor-pointer p-1">
+                        <i data-lucide="x" class="w-5 h-5"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="p-6" id="payslip-modal-content">
+                <div class="border border-slate-100 p-6 rounded-2xl bg-white space-y-4 text-left">
+                    <div class="flex justify-between items-start border-b border-slate-100 pb-4">
+                        <div>
+                          <h2 class="text-base font-extrabold text-[#610173]">${state.employee?.company || 'BEZENT'}</h2>
+                          <p class="text-[10px] text-slate-500 font-semibold uppercase mt-0.5">Corporate Headquarters | Monthly Payslip Statement</p>
+                        </div>
+                        <div class="text-right">
+                          <span class="px-2 py-0.5 bg-emerald-50 text-emerald-700 border border-emerald-100 rounded text-[9px] font-bold uppercase">DISBURSED</span>
+                          <p class="text-[10px] text-slate-500 font-bold mt-1">Month: ${slip.month}</p>
+                        </div>
+                    </div>
+                  
+                    <div class="grid grid-cols-2 gap-4 text-[11px] py-2 font-semibold text-slate-600">
+                        <div>
+                          <p><span class="text-slate-400">Employee Name:</span> <strong class="text-slate-700">${state.employee?.name || 'Associate'}</strong></p>
+                          <p class="mt-1.5"><span class="text-slate-400">Designation:</span> <span class="text-slate-700">${state.employee?.designation || 'Associate'}</span></p>
+                          <p class="mt-1.5"><span class="text-slate-400">Department:</span> <span class="text-slate-700">${state.employee?.department || 'General'}</span></p>
+                        </div>
+                        <div>
+                          <p><span class="text-slate-400">Email:</span> <span class="text-slate-700">${state.employee?.user_email}</span></p>
+                          <p class="mt-1.5"><span class="text-slate-400">Date Joined:</span> <span class="text-slate-700">${state.employee?.joined_date || 'N/A'}</span></p>
+                          <p class="mt-1.5"><span class="text-slate-400">Status:</span> <span class="text-slate-700">Bank Transfer Credited</span></p>
+                        </div>
+                    </div>
+                  
+                    <div class="grid grid-cols-2 gap-6 border-t border-slate-100 pt-4 text-xs font-semibold">
+                        <div>
+                          <h4 class="font-extrabold text-slate-800 border-b border-slate-100 pb-1.5 mb-2 uppercase tracking-wide text-[9px]">Earnings (Credit)</h4>
+                          <div class="space-y-1.5 text-slate-600">
+                              <div class="flex justify-between"><span>Basic Salary</span> <strong>₹${slip.basic.toLocaleString()}</strong></div>
+                              <div class="flex justify-between"><span>House Rent Allowance</span> <strong>₹${slip.hra.toLocaleString()}</strong></div>
+                              <div class="flex justify-between"><span>Special Allowances</span> <strong>₹${slip.allowance.toLocaleString()}</strong></div>
+                              <div class="flex justify-between border-t border-slate-100 pt-1.5 font-bold text-slate-800">
+                                  <span>Gross Earnings</span>
+                                  <span>₹${gross.toLocaleString()}</span>
+                              </div>
+                          </div>
+                        </div>
+                        <div>
+                          <h4 class="font-extrabold text-slate-800 border-b border-slate-100 pb-1.5 mb-2 uppercase tracking-wide text-[9px]">Deductions (Debit)</h4>
+                          <div class="space-y-1.5 text-slate-600">
+                              <div class="flex justify-between"><span>Provident Fund (PF)</span> <strong>₹${pf.toLocaleString()}</strong></div>
+                              <div class="flex justify-between"><span>ESI Contribution</span> <strong>₹${esi.toLocaleString()}</strong></div>
+                              <div class="flex justify-between"><span>Professional Tax</span> <strong>₹200</strong></div>
+                              <div class="flex justify-between"><span>TDS (Income Tax)</span> <strong>₹${tax.toLocaleString()}</strong></div>
+                              ${slip.loan_deduction ? `<div class="flex justify-between font-bold text-rose-600"><span>Salary Loan EMI</span> <strong>₹${slip.loan_deduction.toLocaleString()}</strong></div>` : ''}
+                              <div class="flex justify-between border-t border-slate-100 pt-1.5 font-bold text-rose-600">
+                                  <span>Total Deductions</span>
+                                  <span>-₹${slip.deduction.toLocaleString()}</span>
+                              </div>
+                          </div>
+                        </div>
+                    </div>
+                  
+                    <div class="border-t border-slate-100 pt-4 flex justify-between items-center bg-slate-50 p-3.5 rounded-xl border border-slate-100">
+                        <span class="font-bold text-slate-700 text-sm">Net Pay Released</span>
+                        <span class="text-base font-black text-emerald-600">₹${slip.net_salary.toLocaleString()}</span>
+                    </div>
+                  
+                    <div class="pt-4 flex justify-between items-end">
+                        <div class="text-[9px] text-slate-400 font-medium">
+                            <p>Note: This is a system-generated salary slip requiring no physical signatures.</p>
+                        </div>
+                        <div class="text-right">
+                            <span class="font-bold text-slate-400 block text-[9px] uppercase tracking-wider">Authorized Signatory</span>
+                            <span class="font-serif italic text-xs text-purple-700 block mt-1">Bezent Finance Board</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+
+    document.body.appendChild(modal);
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+
+    // Close button listeners
+    const closeModal = () => modal.remove();
+    modal.addEventListener('click', closeModal);
+    const closeBtn = modal.querySelector('#payslip-close-btn');
+    if (closeBtn) closeBtn.addEventListener('click', closeModal);
+
+    // Print Listener
+    const printBtn = modal.querySelector('#payslip-print-btn');
+    if (printBtn) {
+        printBtn.addEventListener('click', () => {
+            const printWindow = window.open('', '', 'height=600,width=800');
+            printWindow.document.write('<html><head><title>Payslip - ' + (state.employee?.name || 'Employee') + '</title>');
+            printWindow.document.write('<script src="https://cdn.tailwindcss.com"><\/script>');
+            printWindow.document.write('<style>@import url("https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap"); * { font-family: "Outfit", sans-serif; }</style>');
+            printWindow.document.write('</head><body class="p-8 bg-white">');
+            printWindow.document.write(modal.querySelector('#payslip-modal-content').innerHTML);
+            printWindow.document.write('</body></html>');
+            printWindow.document.close();
+            printWindow.focus();
+            setTimeout(() => {
+                printWindow.print();
+                printWindow.close();
+            }, 500);
+        });
     }
 }
 

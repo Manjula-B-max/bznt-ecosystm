@@ -809,12 +809,67 @@ router.post('/payroll', hrAccessMiddleware, async (req, res) => {
         data.id = data.id || uid();
         if (data.user_email) data.user_email = data.user_email.toLowerCase();
 
+        // Check if employee has an active approved loan
+        const LoanModel = getModel('hr_loans');
+        const activeLoan = await LoanModel.findOne({
+            user_email: data.user_email,
+            status: { $in: ['Approved', 'Active'] },
+            remaining_balance: { $gt: 0 }
+        });
+
+        if (activeLoan) {
+            const emi = activeLoan.monthly_emi || 0;
+            const deductionAmt = Math.min(emi, activeLoan.remaining_balance);
+            if (deductionAmt > 0) {
+                data.loan_deduction = deductionAmt;
+                data.deduction = (data.deduction || 0) + deductionAmt;
+                data.net_salary = (data.net_salary || 0) - deductionAmt;
+
+                activeLoan.remaining_balance -= deductionAmt;
+                if (activeLoan.remaining_balance <= 0) {
+                    activeLoan.status = 'Paid';
+                } else {
+                    activeLoan.status = 'Active';
+                }
+                await activeLoan.save();
+            }
+        }
+
         await PayrollModel.findOneAndUpdate(
             { id: data.id },
             { $set: data },
             { upsert: true, new: true }
         );
         res.json({ id: data.id, ok: true });
+    } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+router.get('/loans', hrAccessMiddleware, async (req, res) => {
+    try {
+        const filter = await getScopedFilter(req);
+        const LoanModel = getModel('hr_loans');
+        const list = await LoanModel.find(filter).sort({ created_at: -1 }).lean();
+        res.json(list.map(d => { delete d._id; delete d.__v; return d; }));
+    } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+router.put('/loans/:id', hrAccessMiddleware, async (req, res) => {
+    try {
+        const data = req.body;
+        const { status, remarks } = data;
+        const LoanModel = getModel('hr_loans');
+        const loan = await LoanModel.findOne({ id: req.params.id });
+        if (!loan) return res.status(404).json({ error: 'Loan request not found.' });
+
+        loan.status = status;
+        if (status === 'Approved') {
+            loan.remaining_balance = loan.amount;
+        }
+        loan.remarks = remarks || '';
+        await loan.save();
+
+        await logAudit(req, 'Loan Verification', `Loan request for ${loan.name} (Amount: ${loan.amount}) updated: ${status}`);
+        res.json({ ok: true, id: loan.id });
     } catch (err) { res.status(500).json({ error: err.message }); }
 });
 

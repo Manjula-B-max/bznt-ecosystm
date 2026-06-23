@@ -68,6 +68,8 @@ router.post('/notifications/read', ctrl.markNotificationsRead);
 router.get('/payroll/slips', ctrl.getPayrollSlips);
 router.get('/payroll/structure', ctrl.getPayrollStructure);
 router.get('/payroll/tax-documents', ctrl.getTaxDocuments);
+router.post('/loans', ctrl.applyLoan);
+router.get('/loans', ctrl.getLoans);
 
 // 7. Documents
 router.get('/documents', ctrl.getDocuments);

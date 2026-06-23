@@ -5834,7 +5834,47 @@ const PANELS = {
     performance: {
         title: 'My Performance',
         icon: 'trending-up',
-        render: () => getPlaceholderTemplate('Performance Evaluations', 'trending-up', 'Acknowledge performance appraisals, reviews, and HR feedback reports.')
+        render: (state) => {
+            ensurePfStyles();
+            let contentHtml = '';
+            switch (currentPerformanceView) {
+                case "goals":
+                    contentHtml = renderPerformanceGoals();
+                    break;
+                case "reviews":
+                    contentHtml = renderPerformanceReviews();
+                    break;
+                case "feedback":
+                    contentHtml = renderPerformanceFeedback();
+                    break;
+                case "achievements":
+                    contentHtml = renderPerformanceAchievements();
+                    break;
+                case "analytics":
+                    contentHtml = renderPerformanceAnalytics();
+                    break;
+                default:
+                    contentHtml = renderPerformanceLanding();
+                    break;
+            }
+            return `<div id="performancePanel" class="w-full">${contentHtml}</div>`;
+        },
+        init: (state) => {
+            bindPerformanceEvents();
+            if (currentPerformanceView === 'goals') {
+                initPerformanceGoals(state);
+            } else if (currentPerformanceView === 'reviews') {
+                initPerformanceReviews(state);
+            } else if (currentPerformanceView === 'feedback') {
+                initPerformanceFeedback(state);
+            } else if (currentPerformanceView === 'achievements') {
+                initPerformanceAchievements(state);
+            } else if (currentPerformanceView === 'analytics') {
+                initPerformanceAnalytics(state);
+            } else {
+                initPerformanceLanding(state);
+            }
+        }
     },
     'team-collaboration': {
         title: 'Team Collaboration',
@@ -7175,7 +7215,8 @@ export function loadPanel(panelId) {
     if (panelId === window._lastPanelId && 
         (panelId !== 'attendance' || window._lastSubView === currentAttendanceSubView) &&
         (panelId !== 'on-duty' || window._lastSubView === currentOnDutySubView) &&
-        (panelId !== 'reimbursement' || window._lastSubView === currentReimbursementSubView)
+        (panelId !== 'reimbursement' || window._lastSubView === currentReimbursementSubView) &&
+        (panelId !== 'performance' || window._lastSubView === currentPerformanceView)
     ) return;
 
     // Clean up when leaving attendance
@@ -7187,6 +7228,14 @@ export function loadPanel(panelId) {
         if (hoursChartInstance) { hoursChartInstance.destroy(); hoursChartInstance = null; }
     }
 
+    // Clean up when leaving performance
+    if (window._lastPanelId === 'performance' && panelId !== 'performance') {
+        currentPerformanceView = 'landing';
+        if (pfTrendChart) { pfTrendChart.destroy(); pfTrendChart = null; }
+        if (pfGoalsChart) { pfGoalsChart.destroy(); pfGoalsChart = null; }
+        if (pfDistChart)  { pfDistChart.destroy();  pfDistChart = null; }
+    }
+
     window._lastPanelId = panelId;
     if (panelId === 'attendance') {
         window._lastSubView = currentAttendanceSubView;
@@ -7194,6 +7243,8 @@ export function loadPanel(panelId) {
         window._lastSubView = currentOnDutySubView;
     } else if (panelId === 'reimbursement') {
         window._lastSubView = currentReimbursementSubView;
+    } else if (panelId === 'performance') {
+        window._lastSubView = currentPerformanceView;
     }
 
     const panel = PANELS[panelId];
@@ -8209,3 +8260,1011 @@ window.viewRegRequest = (id) => {
     document.body.appendChild(modalDiv);
     if (typeof lucide !== 'undefined') lucide.createIcons();
 };
+
+// ═══════════════════════════════════════════════════════════════════
+// PERFORMANCE MODULE — Complete Implementation
+// ═══════════════════════════════════════════════════════════════════
+
+let currentPerformanceView = 'landing';
+let pfTrendChart = null;
+let pfGoalsChart = null;
+let pfDistChart = null;
+
+function renderPerformance() {
+    loadPanel('performance');
+}
+
+window.setPerformanceSubView = (viewName) => {
+    currentPerformanceView = viewName;
+    renderPerformance();
+};
+
+function bindPerformanceEvents() {
+    const performanceRoot = document.querySelector("#performancePanel");
+    if (!performanceRoot) return;
+    if (performanceRoot._pfEventsBound) return;
+    performanceRoot._pfEventsBound = true;
+
+    performanceRoot.addEventListener("click", (event) => {
+        const target = event.target.closest("[data-performance-view]");
+        if (!target) return;
+
+        currentPerformanceView = target.dataset.performanceView;
+        renderPerformance();
+    });
+}
+
+const PF_CSS = `
+<style id="pf-styles">
+    .pf-container {
+        animation: pfFadeIn 0.25s ease forwards;
+    }
+    .pf-kpi-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 12px;
+    }
+    .pf-kpi-card {
+        background: #ffffff;
+        border: 1px solid #ECECF3;
+        border-radius: 18px;
+        padding: 16px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .pf-kpi-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 18px rgba(97, 1, 115, 0.08);
+    }
+    .pf-kpi-icon {
+        width: 42px;
+        height: 42px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+    .pf-kpi-details {
+        display: flex;
+        flex-direction: column;
+    }
+    .pf-kpi-value {
+        font-size: 20px;
+        font-weight: 800;
+        color: #111827;
+        line-height: 1.2;
+    }
+    .pf-kpi-label {
+        font-size: 10px;
+        font-weight: 700;
+        color: #6B7280;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin-top: 2px;
+    }
+    /* Snapshot */
+    .pf-snapshot {
+        background: linear-gradient(135deg, #FAF5FF 0%, #ECE9FC 100%) !important;
+        border-radius: 20px;
+        border: 1.5px solid #E4E1FA !important;
+        box-shadow: 0 4px 16px rgba(97, 1, 115, 0.03);
+        padding: 16px 24px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 16px;
+    }
+    .pf-snapshot-item {
+        display: flex;
+        flex-direction: column;
+    }
+    .pf-snapshot-lbl {
+        font-size: 9.5px;
+        font-weight: 800;
+        color: #9CA3AF;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        margin-bottom: 2px;
+    }
+    .pf-snapshot-val {
+        font-size: 14px;
+        font-weight: 700;
+        color: #1e1b4b;
+    }
+    /* Feature Cards */
+    .pf-feature-grid {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 12px;
+    }
+    .pf-feature-card {
+        background: #ffffff;
+        border: 1px solid #ECECF3;
+        border-radius: 20px;
+        padding: 20px 16px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        min-height: 156px;
+        cursor: pointer;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
+        transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s ease;
+    }
+    .pf-feature-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 12px 28px rgba(97, 1, 115, 0.12);
+        border-color: rgba(97, 1, 115, 0.2);
+    }
+    .pf-feature-icon {
+        width: 38px;
+        height: 38px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 12px;
+    }
+    .pf-feature-title {
+        font-size: 13.5px;
+        font-weight: 800;
+        color: #1e1b4b;
+        margin-bottom: 4px;
+    }
+    .pf-feature-desc {
+        font-size: 10.5px;
+        color: #6B7280;
+        font-weight: 500;
+        line-height: 1.35;
+        flex-grow: 1;
+    }
+    .pf-feature-cta {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-top: 12px;
+        font-size: 10.5px;
+        font-weight: 700;
+        color: #610173;
+    }
+    .pf-feature-arrow {
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        background: #FAF5FF;
+        border: 1px solid rgba(97, 1, 115, 0.08);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s;
+    }
+    .pf-feature-card:hover .pf-feature-arrow {
+        transform: translateX(4px);
+        background: #610173;
+        color: #ffffff;
+    }
+    /* Sub-view Headers */
+    .pf-sub-hdr {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding-bottom: 14px;
+        border-bottom: 1px solid #ECECF3;
+        margin-bottom: 20px;
+    }
+    .pf-back-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 14px;
+        border-radius: 10px;
+        border: 1px solid #ECECF3;
+        background: #ffffff;
+        font-size: 11.5px;
+        font-weight: 700;
+        color: #374151;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    .pf-back-btn:hover {
+        border-color: #610173;
+        color: #610173;
+        background: #FAF5FF;
+    }
+    /* Table */
+    .pf-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    .pf-table th {
+        background: #FAFAFC;
+        padding: 10px 14px;
+        font-size: 9.5px;
+        font-weight: 800;
+        color: #6B7280;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        border-bottom: 1px solid #ECECF3;
+    }
+    .pf-table td {
+        padding: 12px 14px;
+        border-bottom: 1px solid #ECECF3;
+        font-size: 12px;
+        font-weight: 500;
+        color: #374151;
+    }
+    .pf-table tr:hover {
+        background: rgba(97, 1, 115, 0.02);
+    }
+    /* Progress Bar */
+    .pf-progress-bar {
+        width: 100%;
+        height: 6px;
+        background: #F3F4F6;
+        border-radius: 9999px;
+        overflow: hidden;
+    }
+    .pf-progress-fill {
+        height: 100%;
+        border-radius: 9999px;
+        transition: width 0.5s ease-in-out;
+    }
+    /* Feedback Cards */
+    .pf-feedback-timeline {
+        position: relative;
+        padding-left: 20px;
+    }
+    .pf-feedback-timeline::before {
+        content: '';
+        position: absolute;
+        top: 8px;
+        bottom: 8px;
+        left: 4px;
+        width: 2px;
+        background: #ECECF3;
+    }
+    .pf-feedback-card {
+        position: relative;
+        background: #ffffff;
+        border: 1px solid #ECECF3;
+        border-radius: 16px;
+        padding: 16px;
+        margin-bottom: 16px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
+    }
+    .pf-feedback-card::before {
+        content: '';
+        position: absolute;
+        top: 20px;
+        left: -20px;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #610173;
+        border: 2px solid #ffffff;
+        box-shadow: 0 0 0 3px rgba(97, 1, 115, 0.15);
+    }
+    /* Achievements */
+    .pf-ach-card {
+        background: #ffffff;
+        border: 1.5px solid #F1F5F9;
+        border-radius: 18px;
+        padding: 20px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
+        display: flex;
+        align-items: flex-start;
+        gap: 14px;
+    }
+    .pf-ach-badge {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        background: #FFFBEB;
+        border: 1px solid #FEF3C7;
+        color: #D97706;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+        flex-shrink: 0;
+    }
+    /* Analytics Grid */
+    .pf-analytics-grid {
+        display: grid;
+        grid-template-columns: 55% 1fr;
+        gap: 16px;
+    }
+    .pf-chart-wrapper {
+        background: #ffffff;
+        border: 1px solid #ECECF3;
+        border-radius: 20px;
+        padding: 16px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
+    }
+    .pf-chart-canvas-wrap {
+        position: relative;
+        height: 220px;
+        width: 100%;
+    }
+    @keyframes pfFadeIn {
+        from { opacity: 0; transform: translateY(8px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    @media (max-width: 1024px) {
+        .pf-kpi-grid { grid-template-columns: repeat(2, 1fr); }
+        .pf-feature-grid { grid-template-columns: repeat(3, 1fr); }
+        .pf-analytics-grid { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 640px) {
+        .pf-kpi-grid { grid-template-columns: 1fr; }
+        .pf-feature-grid { grid-template-columns: 1fr; }
+    }
+</style>
+`;
+
+function ensurePfStyles() {
+    let style = document.getElementById('pf-styles');
+    if (!style) {
+        const div = document.createElement('div');
+        div.innerHTML = PF_CSS;
+        document.head.appendChild(div.firstElementChild);
+    }
+}
+
+function renderPerformanceLanding(state) {
+    return `
+        <div class="pf-container space-y-6">
+            <!-- Summary KPI Cards -->
+            <div class="pf-kpi-grid">
+                <div class="pf-kpi-card">
+                    <div class="pf-kpi-icon bg-purple-50 text-purple-600">
+                        <i data-lucide="award" class="w-5 h-5"></i>
+                    </div>
+                    <div class="pf-kpi-details">
+                        <span id="pf-kpi-score" class="pf-kpi-value">--%</span>
+                        <span class="pf-kpi-label">Performance Score</span>
+                    </div>
+                </div>
+                <div class="pf-kpi-card">
+                    <div class="pf-kpi-icon bg-blue-50 text-blue-600">
+                        <i data-lucide="check-square" class="w-5 h-5"></i>
+                    </div>
+                    <div class="pf-kpi-details">
+                        <span id="pf-kpi-tasks" class="pf-kpi-value">--</span>
+                        <span class="pf-kpi-label">Tasks Completed</span>
+                    </div>
+                </div>
+                <div class="pf-kpi-card">
+                    <div class="pf-kpi-icon bg-green-50 text-green-600">
+                        <i data-lucide="compass" class="w-5 h-5"></i>
+                    </div>
+                    <div class="pf-kpi-details">
+                        <span id="pf-kpi-goals" class="pf-kpi-value">--</span>
+                        <span class="pf-kpi-label">Goals Achieved</span>
+                    </div>
+                </div>
+                <div class="pf-kpi-card">
+                    <div class="pf-kpi-icon bg-amber-50 text-amber-600">
+                        <i data-lucide="star" class="w-5 h-5"></i>
+                    </div>
+                    <div class="pf-kpi-details">
+                        <span id="pf-kpi-rating" class="pf-kpi-value">-- / 5</span>
+                        <span class="pf-kpi-label">Manager Rating</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Performance Snapshot Banner -->
+            <div class="pf-snapshot">
+                <div class="pf-snapshot-item">
+                    <span class="pf-snapshot-lbl">Review Cycle</span>
+                    <span id="pf-snap-quarter" class="pf-snapshot-val">--</span>
+                </div>
+                <div class="pf-snapshot-item">
+                    <span class="pf-snapshot-lbl">Review Status</span>
+                    <span id="pf-snap-status" class="pf-snapshot-val">--</span>
+                </div>
+                <div class="pf-snapshot-item">
+                    <span class="pf-snapshot-lbl">Performance Trend</span>
+                    <span id="pf-snap-trend" class="pf-snapshot-val">--</span>
+                </div>
+            </div>
+
+            <!-- Feature Cards Grid -->
+            <div class="pf-feature-grid">
+                <div class="pf-feature-card" data-performance-view="goals">
+                    <div>
+                        <div class="pf-feature-icon bg-purple-50 text-purple-600"><i data-lucide="compass" class="w-4.5 h-4.5"></i></div>
+                        <h4 class="pf-feature-title">Goals</h4>
+                        <p class="pf-feature-desc">Track progress of objectives, goals, and key results.</p>
+                    </div>
+                    <div class="pf-feature-cta">
+                        <span>Track Goals</span>
+                        <div class="pf-feature-arrow"><i data-lucide="chevron-right" class="w-3 h-3"></i></div>
+                    </div>
+                </div>
+                <div class="pf-feature-card" data-performance-view="reviews">
+                    <div>
+                        <div class="pf-feature-icon bg-blue-50 text-blue-600"><i data-lucide="file-text" class="w-4.5 h-4.5"></i></div>
+                        <h4 class="pf-feature-title">Reviews</h4>
+                        <p class="pf-feature-desc">View latest performance reviews and feedback cycle logs.</p>
+                    </div>
+                    <div class="pf-feature-cta">
+                        <span>View Reviews</span>
+                        <div class="pf-feature-arrow"><i data-lucide="chevron-right" class="w-3 h-3"></i></div>
+                    </div>
+                </div>
+                <div class="pf-feature-card" data-performance-view="feedback">
+                    <div>
+                        <div class="pf-feature-icon bg-green-50 text-green-600"><i data-lucide="message-square" class="w-4.5 h-4.5"></i></div>
+                        <h4 class="pf-feature-title">Feedback</h4>
+                        <p class="pf-feature-desc">Browse competency feedback and supervisor recommendations.</p>
+                    </div>
+                    <div class="pf-feature-cta">
+                        <span>Read Feedback</span>
+                        <div class="pf-feature-arrow"><i data-lucide="chevron-right" class="w-3 h-3"></i></div>
+                    </div>
+                </div>
+                <div class="pf-feature-card" data-performance-view="achievements">
+                    <div>
+                        <div class="pf-feature-icon bg-amber-50 text-amber-600"><i data-lucide="award" class="w-4.5 h-4.5"></i></div>
+                        <h4 class="pf-feature-title">Achievements</h4>
+                        <p class="pf-feature-desc">Access badges, awards, and work acknowledgements.</p>
+                    </div>
+                    <div class="pf-feature-cta">
+                        <span>See Achievements</span>
+                        <div class="pf-feature-arrow"><i data-lucide="chevron-right" class="w-3 h-3"></i></div>
+                    </div>
+                </div>
+                <div class="pf-feature-card" data-performance-view="analytics">
+                    <div>
+                        <div class="pf-feature-icon bg-rose-50 text-rose-600"><i data-lucide="bar-chart-2" class="w-4.5 h-4.5"></i></div>
+                        <h4 class="pf-feature-title">Analytics</h4>
+                        <p class="pf-feature-desc">Visualize score trends, goal status, and rating distribution.</p>
+                    </div>
+                    <div class="pf-feature-cta">
+                        <span>Open Analytics</span>
+                        <div class="pf-feature-arrow"><i data-lucide="chevron-right" class="w-3 h-3"></i></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+async function initPerformanceLanding(state) {
+    try {
+        const overview = await apiClient('/employee/performance/overview');
+        const setEl = (id, val) => { const el = document.getElementById(id); if (el) el.innerText = val; };
+        setEl('pf-kpi-score', (overview.overall_score || 87) + '%');
+        setEl('pf-kpi-tasks', overview.tasks_completed || 48);
+        setEl('pf-kpi-goals', overview.goals_achieved || 9);
+        setEl('pf-kpi-rating', (overview.manager_rating || 4.5) + ' / 5');
+        setEl('pf-snap-quarter', overview.current_quarter || 'Q2 2026');
+        setEl('pf-snap-status', overview.review_status || 'In Progress');
+        const trendEl = document.getElementById('pf-snap-trend');
+        if (trendEl) {
+            trendEl.innerHTML = `<span class="text-emerald-600 font-bold">${overview.performance_trend || 'Improving'} ↑</span>`;
+        }
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+    } catch (e) {
+        console.error('Failed to load performance overview', e);
+    }
+}
+
+function renderPerformanceGoals(state) {
+    return `
+        <div class="pf-container space-y-6">
+            <div class="pf-sub-hdr">
+                <button class="pf-back-btn" data-performance-view="landing">
+                    <i data-lucide="arrow-left" class="w-4 h-4"></i> Back to Performance Center
+                </button>
+                <div class="text-right">
+                    <h3 class="text-base font-extrabold text-slate-800 leading-tight">My Goals & OKRs</h3>
+                    <p class="text-[9.5px] text-[#6B7280] font-bold uppercase tracking-wider mt-0.5">Performance / Goals</p>
+                </div>
+            </div>
+
+            <div class="pf-kpi-grid">
+                <div class="pf-kpi-card">
+                    <div class="pf-kpi-icon bg-slate-100 text-slate-700"><i data-lucide="list" class="w-4.5 h-4.5"></i></div>
+                    <div class="pf-kpi-details">
+                        <span id="goals-total" class="pf-kpi-value">--</span>
+                        <span class="pf-kpi-label">Total Goals</span>
+                    </div>
+                </div>
+                <div class="pf-kpi-card">
+                    <div class="pf-kpi-icon bg-emerald-50 text-emerald-700"><i data-lucide="check" class="w-4.5 h-4.5"></i></div>
+                    <div class="pf-kpi-details">
+                        <span id="goals-completed" class="pf-kpi-value">--</span>
+                        <span class="pf-kpi-label">Completed Goals</span>
+                    </div>
+                </div>
+                <div class="pf-kpi-card">
+                    <div class="pf-kpi-icon bg-blue-50 text-blue-700"><i data-lucide="loader" class="w-4.5 h-4.5 animate-spin"></i></div>
+                    <div class="pf-kpi-details">
+                        <span id="goals-pending" class="pf-kpi-value">--</span>
+                        <span class="pf-kpi-label">In Progress</span>
+                    </div>
+                </div>
+                <div class="pf-kpi-card">
+                    <div class="pf-kpi-icon bg-rose-50 text-rose-700"><i data-lucide="alert-triangle" class="w-4.5 h-4.5"></i></div>
+                    <div class="pf-kpi-details">
+                        <span id="goals-overdue" class="pf-kpi-value">--</span>
+                        <span class="pf-kpi-label">Overdue Goals</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-2xl border border-[#ECECF3] p-6 shadow-sm space-y-4">
+                <h4 class="font-bold text-xs text-slate-800 uppercase tracking-wider">Objectives Progress</h4>
+                <div id="goals-progress-list" class="space-y-4">
+                    <div class="bz-db-skeleton h-10 rounded-xl"></div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-2xl border border-[#ECECF3] shadow-sm overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="pf-table">
+                        <thead>
+                            <tr>
+                                <th>Goal Name</th>
+                                <th>Category</th>
+                                <th>Target Date</th>
+                                <th class="w-1/4">Progress</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="goals-tbody">
+                            <tr><td colspan="5" class="text-center py-6 text-slate-400 italic">Loading goals...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+async function initPerformanceGoals(state) {
+    try {
+        const goals = await apiClient('/employee/performance/goals');
+        const total = goals.length;
+        const completed = goals.filter(g => g.status === 'Completed').length;
+        const pending = goals.filter(g => g.status === 'In Progress' || g.status === 'Not Started').length;
+        const overdue = goals.filter(g => g.status === 'Overdue').length;
+
+        const setEl = (id, val) => { const el = document.getElementById(id); if (el) el.innerText = val; };
+        setEl('goals-total', total);
+        setEl('goals-completed', completed);
+        setEl('goals-pending', pending);
+        setEl('goals-overdue', overdue);
+
+        const progressList = document.getElementById('goals-progress-list');
+        if (progressList) {
+            progressList.innerHTML = goals.map(g => {
+                const color = g.status === 'Completed' ? 'bg-emerald-500' : g.status === 'Overdue' ? 'bg-rose-500' : 'bg-purple-600';
+                return `
+                    <div class="space-y-2">
+                        <div class="flex justify-between items-center text-xs font-bold">
+                            <span class="text-slate-800">${g.goal_name}</span>
+                            <span class="text-slate-500">${g.progress}%</span>
+                        </div>
+                        <div class="pf-progress-bar">
+                            <div class="pf-progress-fill ${color}" style="width: ${g.progress}%"></div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        const tbody = document.getElementById('goals-tbody');
+        if (tbody) {
+            if (goals.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="text-center py-6 text-slate-400 italic">No goals assigned.</td></tr>`;
+            } else {
+                tbody.innerHTML = goals.map(g => {
+                    let statusBadge = `<span class="px-2 py-0.5 rounded-full text-[9px] font-extrabold uppercase border `;
+                    if (g.status === 'Completed') statusBadge += `bg-emerald-50 text-emerald-700 border-emerald-100">Completed</span>`;
+                    else if (g.status === 'Overdue') statusBadge += `bg-rose-50 text-rose-700 border-rose-100">Overdue</span>`;
+                    else if (g.status === 'In Progress') statusBadge += `bg-blue-50 text-blue-700 border-blue-100">In Progress</span>`;
+                    else statusBadge += `bg-slate-50 text-slate-700 border-slate-100">Not Started</span>`;
+
+                    return `
+                        <tr>
+                            <td class="font-bold text-slate-800">${g.goal_name}</td>
+                            <td class="font-semibold text-slate-500">${g.goal_category}</td>
+                            <td class="font-semibold text-slate-500">${g.target_date}</td>
+                            <td>
+                                <div class="flex items-center gap-3">
+                                    <div class="pf-progress-bar flex-grow" style="height: 5px;">
+                                        <div class="pf-progress-fill ${g.status === 'Completed' ? 'bg-emerald-500' : g.status === 'Overdue' ? 'bg-rose-500' : 'bg-purple-600'}" style="width: ${g.progress}%"></div>
+                                    </div>
+                                    <span class="text-[10px] font-bold text-slate-500">${g.progress}%</span>
+                                </div>
+                            </td>
+                            <td>${statusBadge}</td>
+                        </tr>
+                    `;
+                }).join('');
+            }
+        }
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+    } catch (e) {
+        console.error('Failed to load goals', e);
+    }
+}
+
+function renderPerformanceReviews(state) {
+    return `
+        <div class="pf-container space-y-6">
+            <div class="pf-sub-hdr">
+                <button class="pf-back-btn" data-performance-view="landing">
+                    <i data-lucide="arrow-left" class="w-4 h-4"></i> Back to Performance Center
+                </button>
+                <div class="text-right">
+                    <h3 class="text-base font-extrabold text-slate-800 leading-tight">Evaluation Reviews</h3>
+                    <p class="text-[9.5px] text-[#6B7280] font-bold uppercase tracking-wider mt-0.5">Performance / Reviews</p>
+                </div>
+            </div>
+
+            <div class="bg-gradient-to-r from-[#610173] to-[#312E81] text-white p-5 rounded-2xl shadow-md space-y-4">
+                <h4 class="font-bold text-xs text-purple-200 uppercase tracking-wider">Latest Review Details</h4>
+                <div class="grid grid-cols-4 gap-4">
+                    <div>
+                        <span class="text-[10px] text-purple-200 uppercase tracking-wider block font-bold">Review Period</span>
+                        <span id="latest-review-period" class="text-base font-extrabold mt-0.5">--</span>
+                    </div>
+                    <div>
+                        <span class="text-[10px] text-purple-200 uppercase tracking-wider block font-bold">Reviewer</span>
+                        <span id="latest-reviewer" class="text-base font-extrabold mt-0.5">--</span>
+                    </div>
+                    <div>
+                        <span class="text-[10px] text-purple-200 uppercase tracking-wider block font-bold">Overall Rating</span>
+                        <span id="latest-rating" class="text-base font-extrabold text-amber-300 mt-0.5">--</span>
+                    </div>
+                    <div>
+                        <span class="text-[10px] text-purple-200 uppercase tracking-wider block font-bold">Status</span>
+                        <span id="latest-status" class="text-base font-extrabold mt-0.5">--</span>
+                    </div>
+                </div>
+                <div class="border-t border-white/10 pt-3 mt-3">
+                    <span class="text-[10px] text-purple-200 uppercase tracking-wider block font-bold">Manager Remarks</span>
+                    <p id="latest-remarks" class="text-xs text-purple-100 font-medium leading-relaxed mt-1 italic">--</p>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-2xl border border-[#ECECF3] shadow-sm overflow-hidden">
+                <div class="px-6 py-4 border-b border-[#ECECF3]">
+                    <h3 class="font-bold text-sm text-slate-800 uppercase tracking-wider">Appraisal Cycle History</h3>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="pf-table">
+                        <thead>
+                            <tr>
+                                <th>Review Cycle</th>
+                                <th>Overall Rating</th>
+                                <th>Reviewer</th>
+                                <th>Status</th>
+                                <th>Review Date</th>
+                            </tr>
+                        </thead>
+                        <tbody id="reviews-tbody">
+                            <tr><td colspan="5" class="text-center py-6 text-slate-400 italic">Loading review history...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+async function initPerformanceReviews(state) {
+    try {
+        const reviews = await apiClient('/employee/performance/reviews');
+        reviews.sort((a, b) => b.review_cycle.localeCompare(a.review_cycle));
+        const latest = reviews[0] || {};
+        const setEl = (id, val) => { const el = document.getElementById(id); if (el) el.innerText = val; };
+        setEl('latest-review-period', latest.review_cycle || 'None');
+        setEl('latest-reviewer', latest.reviewer || 'None');
+        setEl('latest-rating', latest.manager_rating ? `${latest.manager_rating} / 5` : 'N/A');
+        setEl('latest-status', latest.review_status || 'N/A');
+        setEl('latest-remarks', latest.remarks || 'No remarks provided.');
+
+        const tbody = document.getElementById('reviews-tbody');
+        if (tbody) {
+            if (reviews.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="text-center py-6 text-slate-400 italic">No appraisal records found.</td></tr>`;
+            } else {
+                tbody.innerHTML = reviews.map(r => {
+                    let statusBadge = `<span class="px-2 py-0.5 rounded-full text-[9px] font-extrabold uppercase border `;
+                    if (r.review_status === 'Completed') statusBadge += `bg-emerald-50 text-emerald-700 border-emerald-100">Completed</span>`;
+                    else statusBadge += `bg-amber-50 text-amber-700 border-amber-100">In Progress</span>`;
+
+                    return `
+                        <tr>
+                            <td class="font-bold text-slate-800">${r.review_cycle}</td>
+                            <td class="font-bold text-amber-600">${r.manager_rating} / 5</td>
+                            <td class="font-semibold text-slate-600">${r.reviewer}</td>
+                            <td>${statusBadge}</td>
+                            <td class="font-semibold text-slate-500">${r.review_date || '—'}</td>
+                        </tr>
+                    `;
+                }).join('');
+            }
+        }
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+    } catch (e) {
+        console.error('Failed to load reviews', e);
+    }
+}
+
+function renderPerformanceFeedback(state) {
+    return `
+        <div class="pf-container space-y-6">
+            <div class="pf-sub-hdr">
+                <button class="pf-back-btn" data-performance-view="landing">
+                    <i data-lucide="arrow-left" class="w-4 h-4"></i> Back to Performance Center
+                </button>
+                <div class="text-right">
+                    <h3 class="text-base font-extrabold text-slate-800 leading-tight">Supervisor Feedback</h3>
+                    <p class="text-[9.5px] text-[#6B7280] font-bold uppercase tracking-wider mt-0.5">Performance / Feedback</p>
+                </div>
+            </div>
+
+            <div class="pf-feedback-timeline" id="feedback-list">
+                <div class="bz-db-skeleton h-20 rounded-xl"></div>
+            </div>
+        </div>
+    `;
+}
+
+async function initPerformanceFeedback(state) {
+    try {
+        const feedback = await apiClient('/employee/performance/feedback');
+        const list = document.getElementById('feedback-list');
+        if (list) {
+            if (feedback.length === 0) {
+                list.innerHTML = `<div class="text-center py-12 text-slate-400 italic">No feedback entries recorded.</div>`;
+            } else {
+                list.innerHTML = feedback.map(f => {
+                    const stars = '★'.repeat(Math.floor(f.rating)) + '☆'.repeat(5 - Math.floor(f.rating));
+                    return `
+                        <div class="pf-feedback-card">
+                            <div class="flex justify-between items-start flex-wrap gap-2">
+                                <div>
+                                    <h4 class="text-sm font-bold text-slate-800">${f.reviewer}</h4>
+                                    <span class="text-[10px] text-slate-400 font-semibold block mt-0.5">Category: <strong class="text-purple-600">${f.category}</strong></span>
+                                </div>
+                                <div class="text-right">
+                                    <span class="text-xs font-bold text-amber-500 leading-none">${stars} (${f.rating})</span>
+                                    <span class="text-[10px] text-slate-400 block mt-1 font-semibold">${f.created_at ? f.created_at.split('T')[0] : 'Recent'}</span>
+                                </div>
+                            </div>
+                            <p class="text-xs text-slate-600 font-medium mt-3 leading-relaxed bg-[#FAFAFC] p-3 rounded-xl border border-slate-100 italic">
+                                "${f.comments}"
+                            </p>
+                        </div>
+                    `;
+                }).join('');
+            }
+        }
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+    } catch (e) {
+        console.error('Failed to load feedback', e);
+    }
+}
+
+function renderPerformanceAchievements(state) {
+    return `
+        <div class="pf-container space-y-6">
+            <div class="pf-sub-hdr">
+                <button class="pf-back-btn" data-performance-view="landing">
+                    <i data-lucide="arrow-left" class="w-4 h-4"></i> Back to Performance Center
+                </button>
+                <div class="text-right">
+                    <h3 class="text-base font-extrabold text-slate-800 leading-tight">Achievements & Recognitions</h3>
+                    <p class="text-[9.5px] text-[#6B7280] font-bold uppercase tracking-wider mt-0.5">Performance / Achievements</p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="achievements-grid">
+                <div class="bz-db-skeleton h-24 rounded-2xl"></div>
+            </div>
+        </div>
+    `;
+}
+
+async function initPerformanceAchievements(state) {
+    try {
+        const achievements = await apiClient('/employee/performance/achievements');
+        const grid = document.getElementById('achievements-grid');
+        if (grid) {
+            if (achievements.length === 0) {
+                grid.innerHTML = `<div class="text-center col-span-2 py-12 text-slate-400 italic">No achievements recorded yet.</div>`;
+            } else {
+                grid.innerHTML = achievements.map(a => {
+                    let emoji = '🏆';
+                    if (a.achievement_name.includes('Champion')) emoji = '🏅';
+                    else if (a.achievement_name.includes('Star')) emoji = '⭐';
+                    else if (a.achievement_name.includes('Innovation')) emoji = '💡';
+                    else if (a.achievement_name.includes('Client')) emoji = '🤝';
+
+                    return `
+                        <div class="pf-ach-card">
+                            <div class="pf-ach-badge">${emoji}</div>
+                            <div class="space-y-1">
+                                <h4 class="text-sm font-extrabold text-slate-800">${a.achievement_name}</h4>
+                                <span class="text-[9.5px] text-slate-400 font-bold block uppercase tracking-wider">Awarded by: ${a.awarded_by} • ${a.awarded_on}</span>
+                                <p class="text-xs text-slate-500 font-medium leading-relaxed pt-1.5">${a.description}</p>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+        }
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+    } catch (e) {
+        console.error('Failed to load achievements', e);
+    }
+}
+
+function renderPerformanceAnalytics(state) {
+    return `
+        <div class="pf-container space-y-6">
+            <div class="pf-sub-hdr">
+                <button class="pf-back-btn" data-performance-view="landing">
+                    <i data-lucide="arrow-left" class="w-4 h-4"></i> Back to Performance Center
+                </button>
+                <div class="text-right">
+                    <h3 class="text-base font-extrabold text-slate-800 leading-tight">Performance Analytics</h3>
+                    <p class="text-[9.5px] text-[#6B7280] font-bold uppercase tracking-wider mt-0.5">Performance / Analytics</p>
+                </div>
+            </div>
+
+            <div class="pf-analytics-grid">
+                <div class="pf-chart-wrapper">
+                    <h4 class="font-bold text-xs text-slate-800 uppercase tracking-wider mb-4"><span class="flex items-center gap-1.5"><i data-lucide="trending-up" class="w-4 h-4 text-purple-600"></i> Performance Trend</span></h4>
+                    <div class="pf-chart-canvas-wrap">
+                        <canvas id="pf-trend-chart"></canvas>
+                    </div>
+                </div>
+
+                <div class="pf-chart-wrapper">
+                    <h4 class="font-bold text-xs text-slate-800 uppercase tracking-wider mb-4"><span class="flex items-center gap-1.5"><i data-lucide="compass" class="w-4 h-4 text-purple-600"></i> Goal Status Breakdown</span></h4>
+                    <div class="pf-chart-canvas-wrap">
+                        <canvas id="pf-goals-chart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="pf-chart-wrapper md:col-span-1">
+                    <h4 class="font-bold text-xs text-slate-800 uppercase tracking-wider mb-4"><span class="flex items-center gap-1.5"><i data-lucide="pie-chart" class="w-4 h-4 text-purple-600"></i> Rating Distribution</span></h4>
+                    <div class="pf-chart-canvas-wrap" style="height: 180px;">
+                        <canvas id="pf-dist-chart"></canvas>
+                    </div>
+                </div>
+                <div class="bg-white rounded-2xl border border-[#ECECF3] p-6 shadow-sm md:col-span-2 flex flex-col justify-center">
+                    <h4 class="font-bold text-xs text-slate-800 uppercase tracking-wider mb-4 flex items-center gap-1.5"><i data-lucide="award" class="w-4 h-4 text-purple-600"></i> Analytics Summary Insights</h4>
+                    <ul class="space-y-3 text-xs text-slate-600 font-semibold">
+                        <li class="flex items-start gap-2.5">
+                            <span class="w-1.5 h-1.5 rounded-full bg-purple-600 mt-1.5 flex-shrink-0"></span>
+                            <span>Your performance score shows a continuous upward trajectory, rising from <strong>80% in January</strong> to <strong>87% in June</strong>.</span>
+                        </li>
+                        <li class="flex items-start gap-2.5">
+                            <span class="w-1.5 h-1.5 rounded-full bg-purple-600 mt-1.5 flex-shrink-0"></span>
+                            <span>Goal completion stands strong with <strong>9 Completed Goals</strong>, indicating timely project delivery and compliance.</span>
+                        </li>
+                        <li class="flex items-start gap-2.5">
+                            <span class="w-1.5 h-1.5 rounded-full bg-purple-600 mt-1.5 flex-shrink-0"></span>
+                            <span>The rating distribution highlights that <strong>90% of evaluations</strong> fall within the 'Excellent' or 'Good' ranges.</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+async function initPerformanceAnalytics(state) {
+    try {
+        const analytics = await apiClient('/employee/performance/analytics');
+        if (pfTrendChart) { pfTrendChart.destroy(); pfTrendChart = null; }
+        if (pfGoalsChart) { pfGoalsChart.destroy(); pfGoalsChart = null; }
+        if (pfDistChart)  { pfDistChart.destroy();  pfDistChart = null; }
+
+        const trendCtx = document.getElementById('pf-trend-chart')?.getContext('2d');
+        if (trendCtx) {
+            pfTrendChart = new Chart(trendCtx, {
+                type: 'line',
+                data: {
+                    labels: analytics.trend.map(t => t.month),
+                    datasets: [{
+                        label: 'Performance Score (%)',
+                        data: analytics.trend.map(t => t.score),
+                        borderColor: '#610173',
+                        backgroundColor: 'rgba(97, 1, 115, 0.04)',
+                        borderWidth: 3,
+                        pointBackgroundColor: '#610173',
+                        pointBorderColor: '#ffffff',
+                        pointBorderWidth: 2,
+                        pointRadius: 4,
+                        fill: true,
+                        tension: 0.3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { min: 70, max: 100, grid: { color: '#F3F4F6' } },
+                        x: { grid: { display: false } }
+                    }
+                }
+            });
+        }
+
+        const goalsCtx = document.getElementById('pf-goals-chart')?.getContext('2d');
+        if (goalsCtx) {
+            const data = analytics.goals;
+            pfGoalsChart = new Chart(goalsCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Completed', 'Pending', 'Overdue'],
+                    datasets: [{
+                        data: [data.completed, data.pending, data.overdue],
+                        backgroundColor: ['#10B981', '#3B82F6', '#EF4444'],
+                        borderRadius: 6,
+                        barThickness: 24
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { beginAtZero: true, ticks: { stepSize: 1 }, grid: { color: '#F3F4F6' } },
+                        x: { grid: { display: false } }
+                    }
+                }
+            });
+        }
+
+        const distCtx = document.getElementById('pf-dist-chart')?.getContext('2d');
+        if (distCtx) {
+            const dist = analytics.distribution;
+            pfDistChart = new Chart(distCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Excellent', 'Good', 'Average', 'Needs Imp.'],
+                    datasets: [{
+                        data: [dist.excellent, dist.good, dist.average, dist.needs_improvement],
+                        backgroundColor: ['#610173', '#9333EA', '#C4B5FD', '#F3E8FF'],
+                        borderWidth: 1.5,
+                        borderColor: '#ffffff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: { boxWidth: 8, font: { family: 'Outfit', size: 9 } }
+                        }
+                    },
+                    cutout: '65%'
+                }
+            });
+        }
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+    } catch (e) {
+        console.error('Failed to initialize performance analytics charts', e);
+    }
+}
+

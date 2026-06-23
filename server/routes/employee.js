@@ -79,6 +79,12 @@ router.get('/tasks', ctrl.getTasks);
 router.get('/projects', ctrl.getProjects);
 router.get('/goals', ctrl.getGoals);
 router.get('/performance', ctrl.getPerformance);
+router.get('/performance/overview', ctrl.getPerformanceOverview);
+router.get('/performance/goals', ctrl.getPerformanceGoals);
+router.get('/performance/reviews', ctrl.getPerformanceReviews);
+router.get('/performance/feedback', ctrl.getPerformanceFeedback);
+router.get('/performance/achievements', ctrl.getPerformanceAchievements);
+router.get('/performance/analytics', ctrl.getPerformanceAnalytics);
 router.get('/collaboration', ctrl.getCollaboration);
 router.get('/reports', ctrl.getReports);
 

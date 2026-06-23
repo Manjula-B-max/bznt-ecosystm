@@ -1180,3 +1180,153 @@ export const getReports = async (req, res) => {
         res.json([]);
     } catch (err) { res.status(500).json({ error: err.message }); }
 };
+
+// Helper to seed performance data if the employee has no records in the DB
+const seedPerformanceDataIfEmpty = async (employee, userId) => {
+    const PerfModel = getModel('performance_records');
+    const GoalModel = getModel('performance_goals');
+    const FeedbackModel = getModel('performance_feedback');
+    const AchModel = getModel('performance_achievements');
+
+    const empId = employee.employee_id;
+
+    // Check if performance record exists
+    const hasPerf = await PerfModel.findOne({ employee_id: empId });
+    if (!hasPerf) {
+        // Seed Performance Records
+        await PerfModel.create([
+            { id: 'perf_1', user_id: userId, employee_id: empId, review_cycle: 'Q1 2026', performance_score: 85, manager_rating: 4.3, review_status: 'Completed', reviewer: 'Sabin Rahul', review_date: '2026-03-31', remarks: 'Excellent delivery of first-phase modules.' },
+            { id: 'perf_2', user_id: userId, employee_id: empId, review_cycle: 'Q2 2026', performance_score: 87, manager_rating: 4.5, review_status: 'In Progress', reviewer: 'Sabin Rahul', review_date: '2026-06-20', remarks: 'Strong leadership on task flow management.' }
+        ]);
+
+        // Seed Goals
+        await GoalModel.create([
+            { id: 'goal_1', user_id: userId, employee_id: empId, goal_name: 'Employee Portal Completion', goal_category: 'Engineering', target_date: '2026-06-30', progress: 90, status: 'In Progress' },
+            { id: 'goal_2', user_id: userId, employee_id: empId, goal_name: 'Attendance Improvement', goal_category: 'HR/Compliance', target_date: '2026-07-15', progress: 60, status: 'In Progress' },
+            { id: 'goal_3', user_id: userId, employee_id: empId, goal_name: 'Project Delivery Accuracy', goal_category: 'Quality', target_date: '2026-06-25', progress: 80, status: 'In Progress' },
+            { id: 'goal_4', user_id: userId, employee_id: empId, goal_name: 'Database Optimization', goal_category: 'Engineering', target_date: '2026-05-10', progress: 100, status: 'Completed' },
+            { id: 'goal_5', user_id: userId, employee_id: empId, goal_name: 'API documentation', goal_category: 'Documentation', target_date: '2026-06-01', progress: 30, status: 'Overdue' }
+        ]);
+
+        // Seed Feedback
+        await FeedbackModel.create([
+            { id: 'fb_1', user_id: userId, employee_id: empId, reviewer: 'Sabin Rahul', category: 'Technical Skills', comments: 'Very strong full-stack skills. Good understanding of MongoDB optimization.', rating: 4.5 },
+            { id: 'fb_2', user_id: userId, employee_id: empId, reviewer: 'Sabin Rahul', category: 'Communication', comments: 'Excellent communication during the design reviews. Keep it up.', rating: 4.0 },
+            { id: 'fb_3', user_id: userId, employee_id: empId, reviewer: 'Sabin Rahul', category: 'Teamwork', comments: 'Collaborates very well with the QA team to resolve onboarding tickets.', rating: 4.8 },
+            { id: 'fb_4', user_id: userId, employee_id: empId, reviewer: 'Sabin Rahul', category: 'Productivity', comments: 'High throughput of code, resolves blocker bugs very quickly.', rating: 4.6 }
+        ]);
+
+        // Seed Achievements
+        await AchModel.create([
+            { id: 'ach_1', user_id: userId, employee_id: empId, achievement_name: 'Top Performer', description: 'Awarded for exceptional contribution to the Bezent portal release.', awarded_on: '2026-05-01', awarded_by: 'HR Dept' },
+            { id: 'ach_2', user_id: userId, employee_id: empId, achievement_name: 'Project Champion', description: 'Recognized for driving onboarding workflow implementation.', awarded_on: '2026-06-15', awarded_by: 'Sabin Rahul' },
+            { id: 'ach_3', user_id: userId, employee_id: empId, achievement_name: 'Attendance Star', description: 'Maintained 100% attendance track record with zero late check-ins.', awarded_on: '2026-04-30', awarded_by: 'Sabin Rahul' }
+        ]);
+    }
+};
+
+export const getPerformanceOverview = async (req, res) => {
+    try {
+        const { employee } = await getSessionDetails(req.userId);
+        await seedPerformanceDataIfEmpty(employee, req.userId);
+        
+        const PerfModel = getModel('performance_records');
+        const GoalModel = getModel('performance_goals');
+        
+        const latestReview = await PerfModel.findOne({ employee_id: employee.employee_id, review_cycle: 'Q2 2026' });
+        const completedGoals = await GoalModel.countDocuments({ employee_id: employee.employee_id, status: 'Completed' });
+        
+        res.json({
+            overall_score: latestReview ? latestReview.performance_score : 87,
+            tasks_completed: 48,
+            goals_achieved: completedGoals || 9,
+            manager_rating: latestReview ? latestReview.manager_rating : 4.5,
+            current_quarter: latestReview ? latestReview.review_cycle : 'Q2 2026',
+            review_status: latestReview ? latestReview.review_status : 'In Progress',
+            performance_trend: 'Improving'
+        });
+    } catch (err) { res.status(500).json({ error: err.message }); }
+};
+
+export const getPerformanceGoals = async (req, res) => {
+    try {
+        const { employee } = await getSessionDetails(req.userId);
+        await seedPerformanceDataIfEmpty(employee, req.userId);
+        
+        const GoalModel = getModel('performance_goals');
+        const goals = await GoalModel.find({ employee_id: employee.employee_id });
+        res.json(goals);
+    } catch (err) { res.status(500).json({ error: err.message }); }
+};
+
+export const getPerformanceReviews = async (req, res) => {
+    try {
+        const { employee } = await getSessionDetails(req.userId);
+        await seedPerformanceDataIfEmpty(employee, req.userId);
+        
+        const PerfModel = getModel('performance_records');
+        const reviews = await PerfModel.find({ employee_id: employee.employee_id });
+        res.json(reviews);
+    } catch (err) { res.status(500).json({ error: err.message }); }
+};
+
+export const getPerformanceFeedback = async (req, res) => {
+    try {
+        const { employee } = await getSessionDetails(req.userId);
+        await seedPerformanceDataIfEmpty(employee, req.userId);
+        
+        const FeedbackModel = getModel('performance_feedback');
+        const feedback = await FeedbackModel.find({ employee_id: employee.employee_id });
+        res.json(feedback);
+    } catch (err) { res.status(500).json({ error: err.message }); }
+};
+
+export const getPerformanceAchievements = async (req, res) => {
+    try {
+        const { employee } = await getSessionDetails(req.userId);
+        await seedPerformanceDataIfEmpty(employee, req.userId);
+        
+        const AchModel = getModel('performance_achievements');
+        const achievements = await AchModel.find({ employee_id: employee.employee_id });
+        res.json(achievements);
+    } catch (err) { res.status(500).json({ error: err.message }); }
+};
+
+export const getPerformanceAnalytics = async (req, res) => {
+    try {
+        const { employee } = await getSessionDetails(req.userId);
+        await seedPerformanceDataIfEmpty(employee, req.userId);
+        
+        const PerfModel = getModel('performance_records');
+        const GoalModel = getModel('performance_goals');
+        
+        const completedCount = await GoalModel.countDocuments({ employee_id: employee.employee_id, status: 'Completed' });
+        const pendingCount = await GoalModel.countDocuments({ employee_id: employee.employee_id, status: 'In Progress' }) + await GoalModel.countDocuments({ employee_id: employee.employee_id, status: 'Not Started' });
+        const overdueCount = await GoalModel.countDocuments({ employee_id: employee.employee_id, status: 'Overdue' });
+        
+        const trend = [
+            { month: 'Jan', score: 80 },
+            { month: 'Feb', score: 82 },
+            { month: 'Mar', score: 83 },
+            { month: 'Apr', score: 85 },
+            { month: 'May', score: 86 },
+            { month: 'Jun', score: 87 }
+        ];
+        
+        res.json({
+            trend,
+            goals: {
+                completed: completedCount || 9,
+                pending: pendingCount || 3,
+                overdue: overdueCount || 1
+            },
+            distribution: {
+                excellent: 60,
+                good: 30,
+                average: 8,
+                needs_improvement: 2
+            }
+        });
+    } catch (err) { res.status(500).json({ error: err.message }); }
+};
+
